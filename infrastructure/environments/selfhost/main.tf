@@ -134,7 +134,7 @@ module "pronounce_app" {
   project_uuid          = coolify_project.engflex.uuid
   server_uuid           = var.server_uuid
   base_directory        = "/"
-  dockerfile_location   = "infrastructure/pronounce/Dockerfile"
+  dockerfile_location   = "/infrastructure/pronounce/Dockerfile"
   ports_exposes         = "8000"
   domains               = []
   health_check_path     = "/health"
