@@ -6,6 +6,9 @@ resource "coolify_application" "this" {
   git_repository = var.git_repository
   git_branch     = var.git_branch
 
+  # The local dumb-HTTP git mirror cannot shallow-clone (git limitation).
+  is_git_shallow_clone_enabled = false
+
   build_pack              = var.build_pack
   base_directory          = var.base_directory
   dockerfile_location     = var.build_pack == "dockerfile" ? var.dockerfile_location : null
