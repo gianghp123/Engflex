@@ -12,7 +12,7 @@ locals {
 
 resource "coolify_project" "engflex" {
   name        = "engflex"
-  description = "Managed by Terraform — see infrastructure/environments/selfhost"
+  description = "Managed by Terraform - see infrastructure/environments/selfhost"
 }
 
 module "postgres" {
@@ -42,7 +42,7 @@ module "api_app" {
 
   # Repo-root context: dockerfile_location is repo-relative.
   base_directory      = "/"
-  dockerfile_location = "apps/api/Dockerfile"
+  dockerfile_location = "/apps/api/Dockerfile"
   ports_exposes       = "8000"
 
   domains           = [local.api_url]
@@ -82,7 +82,7 @@ module "web_app" {
   server_uuid  = var.server_uuid
 
   base_directory      = "/"
-  dockerfile_location = "apps/web/Dockerfile"
+  dockerfile_location = "/apps/web/Dockerfile"
   ports_exposes       = "3000"
 
   domains           = [local.web_url]

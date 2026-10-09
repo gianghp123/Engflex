@@ -14,7 +14,7 @@ variable "git_repository" {
   type = string
   # Local dumb-HTTP git mirror on this machine (its `main` = the working
   # snapshot); GitHub push intentionally avoided — see the SDD ledger.
-  default = "http://192.168.1.10:9419/engflex.git"
+  default = "http://engflex-git.192-168-1-10.sslip.io:9419/engflex.git"
 }
 
 variable "git_branch" {
