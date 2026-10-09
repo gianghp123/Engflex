@@ -49,14 +49,12 @@ func NewRouter(db *gorm.DB, cfg config.Config) *gin.Engine {
 		}
 	}
 	r.Use(cors.New(cors.Config{
-		// Dev: allow all origins. For production, switch to
-		// AllowOrigins: cfg.Cors.AllowedOrigins (and re-enable
-		// AllowCredentials, which browsers reject with a wildcard).
-		AllowAllOrigins: true,
-		AllowMethods:    []string{"GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"},
-		AllowHeaders:    []string{"Origin", "Content-Type", "Accept", "Authorization"},
-		ExposeHeaders:   []string{"Content-Length"},
-		MaxAge:          12 * time.Hour,
+		AllowOrigins:     cfg.Cors.AllowedOrigins,
+		AllowCredentials: true,
+		AllowMethods:     []string{"GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
+		ExposeHeaders:    []string{"Content-Length"},
+		MaxAge:           12 * time.Hour,
 	}))
 
 	r.GET("/health", func(c *gin.Context) {

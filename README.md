@@ -268,13 +268,46 @@ make contracts                     # tygo generate → packages/contracts
 make swagger                       # swag init -g cmd/server/main.go
 ```
 
-<!-----
-
 ## Deployment
 
-Demo-oriented (graduation project): services run on team hardware, exposed via
-Cloudflare Tunnel (HTTPS without opening modem ports). Keep a pre-recorded demo
-as backup for defense day in case of network issues.-->
+Self-hosted on this machine via Coolify + Terraform. Rationale lives in
+`docs/superpowers/specs/2026-10-09-coolify-deploy-design.md`.
+
+### Prerequisites
+
+- Coolify running locally, with an API token scoped `read:sensitive` (Coolify UI → Security → API Tokens).
+- Tools: `terraform` (>= 1.6), `goose` (`~/go/bin/goose`), `mkcert` (HTTPS only).
+- `openssl rand -hex 24` for generating the secret values below.
+
+### Bootstrap
+
+```bash
+cp infrastructure/environments/selfhost/terraform.tfvars.example \
+   infrastructure/environments/selfhost/terraform.tfvars
+# Fill in real values (never commit this file): coolify_token, server_uuid
+# (Coolify UI → Servers), server_ip (this machine's LAN IP), db/minio
+# passwords, Clerk keys, LLM keys, voice_internal_secret.
+make deploy        # terraform apply → goose migrations → trigger api/web/voice/pronounce → health polls
+make deploy-seed   # create the lesson-audio bucket, open anonymous reads, TTS-seed audio
+```
+
+### Access
+
+- Web: `https://engflex-web.<ip-dashed>.sslip.io`, API health:
+  `https://engflex-api.<ip-dashed>.sslip.io/health` (`<ip-dashed>` is the
+  server LAN IP with dashes, e.g. `192-168-1-50`).
+- HTTPS uses an mkcert wildcard cert installed into Coolify's Traefik proxy.
+  Install the CA (`$(~/go/bin/mkcert -CAROOT)/rootCA.pem`) as a trusted root
+  on each LAN test device, or browsers will warn.
+
+### Ops notes
+
+- Migrations run from the host before every deploy trigger — never AutoMigrate.
+- Rollback = redeploy the previous commit (Coolify UI, or `make deploy` on that ref).
+- The local dev compose stack (`apps/api/docker-compose.yaml`) is separate;
+  deploys never touch it. Tunnel/auto-deploy are future work.
+- Builds clone from a local git mirror served at `http://192.168.1.10:9419/engflex.git`
+  (keep it running; the ledger holds the exact restart command).
 
 <!-----
 

@@ -1,0 +1,44 @@
+services:
+  voice:
+    # Repo-root context: the Dockerfile's COPY paths are repo-relative (and
+    # match the Step 3 local build); compose resolves this relative to this
+    # file — infrastructure/voice/../.. = repo root.
+    build:
+      context: ../..
+      dockerfile: apps/voice/Dockerfile
+    # No published ports: signaling is Go-proxied (internal-only) and media
+    # relays through coturn below. The voice container needs UDP *egress* only.
+    environment:
+      - API_URL=${API_URL}
+      - INTERNAL_SECRET=${INTERNAL_SECRET}
+      - STT_API_KEY=${STT_API_KEY}
+      - LLM_API_KEY=${LLM_API_KEY}
+      - LLM_BASE_URL=${LLM_BASE_URL}
+      - LLM_MODEL=${LLM_MODEL}
+      - TTS_API_KEY=${TTS_API_KEY}
+      - VOICE_MODEL=${VOICE_MODEL}
+      - MALE_VOICE_ID=${MALE_VOICE_ID}
+      - FEMALE_VOICE_ID=${FEMALE_VOICE_ID}
+      - MAX_DURATION_SEC=${MAX_DURATION_SEC:-300}
+      - IDLE_TIMEOUT_SEC=${IDLE_TIMEOUT_SEC:-300}
+      - PIPECAT_ICE_SERVERS=${PIPECAT_ICE_SERVERS}
+    restart: unless-stopped
+
+  coturn:
+    image: coturn/coturn:4.6
+    # Narrow relay range for the LAN pilot; coturn owns the fixed published
+    # UDP surface. STUN + TURN are advertised to both peers; direct candidates
+    # still win when they work (media degrades gracefully).
+    command: >
+      --realm=engflex.local
+      --lt-cred-mech
+      --user=engflex:${TURN_SECRET}
+      --fingerprint
+      --no-cli
+      --min-port=49160 --max-port=49200
+      --external-ip=${SERVER_IP}
+    ports:
+      - "3478:3478/udp"
+      - "3478:3478/tcp"
+      - "49160-49200:49160-49200/udp"
+    restart: unless-stopped

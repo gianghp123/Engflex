@@ -132,6 +132,9 @@ export function defineLiveConfig({
 				env: {
 					PORT: String(API_PORT),
 					...e2eDbParts(),
+					// The router allows only configured origins: the specs
+					// drive the API cross-origin from the live web server.
+					CORS_ORIGINS: `http://localhost:${WEB_PORT}`,
 					VOICE_SERVICE_URL: `http://localhost:${ENGINE_PORT}`,
 					VOICE_INTERNAL_SECRET: "dev-internal-secret",
 					VOICE_START_TIMEOUT_MS: "30000",

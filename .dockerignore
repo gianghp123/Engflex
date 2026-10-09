@@ -1,0 +1,11 @@
+.git
+node_modules
+**/node_modules
+**/dist
+**/.output
+**/.env*
+apps/voice/.venv
+docs
+.superpowers
+*.md
+apps/voice/models

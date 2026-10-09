@@ -75,3 +75,10 @@ apps/voice/models/
 !/docs/superpowers/rules/
 !/docs/superpowers/rules/*.md
 /docs/**/*.mjs
+
+# --- Terraform ---
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example
