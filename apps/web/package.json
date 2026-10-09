@@ -9,7 +9,7 @@
     "dev": "vite dev --port 3000",
     "generate-routes": "tsr generate",
     "build": "vite build",
-    "start": "srvx --prod -s dist/client dist/server/server.js --port 3000",
+    "start": "srvx --prod -s ../client dist/server/server.js --port 3000",
     "compile:messages": "paraglide-js compile --project ./project.inlang --outdir ./src/paraglide",
     "preview": "vite preview",
     "format": "biome format",
