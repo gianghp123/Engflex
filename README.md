@@ -308,6 +308,9 @@ make deploy-seed   # create the lesson-audio bucket, open anonymous reads, TTS-s
   deploys never touch it. Tunnel/auto-deploy are future work.
 - Builds clone from a local git mirror served at `http://192.168.1.10:9419/engflex.git`
   (keep it running; the ledger holds the exact restart command).
+- MinIO images are served from a local registry (`127.0.0.1:5000`, container
+  `engflex-registry`) because upstream minio images were withdrawn; keep it
+  running alongside the git mirror.
 
 <!-----
 
