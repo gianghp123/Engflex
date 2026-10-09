@@ -6,7 +6,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PORT=8000
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends ffmpeg espeak-ng libsndfile1 git \
+    && apt-get install -y --no-install-recommends ffmpeg espeak-ng libsndfile1 git curl \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app

@@ -3,6 +3,11 @@ FROM ghcr.io/astral-sh/uv:latest AS uv
 
 FROM python:3.12-slim
 COPY --from=uv /uv /uvx /bin/
+# curl is required for Coolify's container healthcheck (same rule as the api
+# and pronounce images); python-slim ships neither curl nor wget.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends curl \
+    && rm -rf /var/lib/apt/lists/*
 
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 UV_COMPILE_BYTECODE=1
 WORKDIR /app

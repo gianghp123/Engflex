@@ -1,10 +1,16 @@
 services:
   voice:
-    # Repo-root context: the Dockerfile's COPY paths are repo-relative (and
-    # match the Step 3 local build); compose resolves this relative to this
-    # file — infrastructure/voice/../.. = repo root.
+    # Repo-root context: the Dockerfile's COPY paths are repo-relative.
+    # `context: .` (not `../..`) is REQUIRED: Coolify invokes compose with
+    # --project-directory=<clone root>, under which relative build paths
+    # resolve from the project directory, so `../..` becomes `/` and the
+    # build dies with `lstat /apps` (verified via `compose config` + local
+    # rebuild in both shapes). Local builds must therefore also pass
+    # --project-directory <repo root> (or run with an equivalent project
+    # dir); a bare `-f infrastructure/voice/compose.yaml` resolves `.` to
+    # infrastructure/voice and will NOT build.
     build:
-      context: ../..
+      context: .
       dockerfile: apps/voice/Dockerfile
     # No published ports: signaling is Go-proxied (internal-only) and media
     # relays through coturn below. The voice container needs UDP *egress* only.

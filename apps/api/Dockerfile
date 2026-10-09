@@ -10,7 +10,9 @@ RUN go install github.com/swaggo/swag/cmd/swag@v1.16.6 && \
 RUN CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /out/server ./cmd/server
 
 FROM alpine:3.20
-RUN apk add --no-cache ca-certificates tzdata
+# Coolify's Dockerfile-buildpack healthcheck execs curl (or wget) inside the
+# container — without it every deploy is marked unhealthy and rolled back.
+RUN apk add --no-cache ca-certificates tzdata curl
 COPY --from=build /out/server /server
 EXPOSE 8000
 ENTRYPOINT ["/server"]

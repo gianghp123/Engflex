@@ -49,7 +49,15 @@ module "api_app" {
   health_check_path = "/health"
 
   environment_variables = {
-    DATABASE_URL        = module.postgres.internal_url
+    DATABASE_URL = module.postgres.internal_url
+    # The Go app reads DB_* (config/database.go), never DATABASE_URL — send
+    # both so the contract the binary actually honors is populated.
+    DB_HOST             = module.postgres.uuid
+    DB_PORT             = "5432"
+    DB_USER             = var.db_user
+    DB_PASSWORD         = var.db_password
+    DB_NAME             = var.db_name
+    DB_SSLMODE          = "disable"
     REDIS_URL           = module.redis.internal_url
     REDIS_KEY_PREFIX    = "engflex"
     MINIO_ENDPOINT      = "http://minio:9000"
