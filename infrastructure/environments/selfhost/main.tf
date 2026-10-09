@@ -45,6 +45,10 @@ module "api_app" {
   dockerfile_location = "/apps/api/Dockerfile"
   ports_exposes       = "8000"
 
+  # Stable internal DNS on the shared coolify network (verified live:
+  # containers are otherwise aliased only by versioned names).
+  network_aliases = "engflex-api"
+
   domains           = [local.api_url]
   health_check_path = "/health"
 
@@ -137,15 +141,17 @@ module "voice_app" {
 }
 
 module "pronounce_app" {
-  source                = "../../modules/application"
-  name                  = "engflex-pronounce"
-  project_uuid          = coolify_project.engflex.uuid
-  server_uuid           = var.server_uuid
-  base_directory        = "/"
-  dockerfile_location   = "/infrastructure/pronounce/Dockerfile"
-  ports_exposes         = "8000"
-  domains               = []
-  health_check_path     = "/health"
+  source              = "../../modules/application"
+  name                = "engflex-pronounce"
+  project_uuid        = coolify_project.engflex.uuid
+  server_uuid         = var.server_uuid
+  base_directory      = "/"
+  dockerfile_location = "/infrastructure/pronounce/Dockerfile"
+  ports_exposes       = "8000"
+  domains             = []
+  health_check_path   = "/health"
+  # Stable internal DNS on the shared coolify network (same rule as api).
+  network_aliases       = "engflex-pronounce"
   environment_variables = {}
 }
 

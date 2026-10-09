@@ -29,6 +29,21 @@ services:
       - IDLE_TIMEOUT_SEC=${IDLE_TIMEOUT_SEC:-300}
       - PIPECAT_ICE_SERVERS=${PIPECAT_ICE_SERVERS}
     restart: unless-stopped
+    # Join the shared coolify network under a stable alias: same-project
+    # containers (api, deploy.sh probes) reach voice at engflex-voice:7860.
+    # The per-app compose network alone is invisible from `coolify`.
+    networks:
+      coolify:
+        aliases:
+          - engflex-voice
+    # Curl-based healthcheck so Coolify can mark the container healthy
+    # (python-slim ships curl via the Dockerfile; Coolify execs it inside).
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:7860/status"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 30s
 
   coturn:
     image: coturn/coturn:4.6
@@ -48,3 +63,7 @@ services:
       - "3478:3478/tcp"
       - "49160-49200:49160-49200/udp"
     restart: unless-stopped
+
+networks:
+  coolify:
+    external: true

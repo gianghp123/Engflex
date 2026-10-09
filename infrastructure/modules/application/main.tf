@@ -14,6 +14,7 @@ resource "coolify_application" "this" {
   dockerfile_location     = var.build_pack == "dockerfile" ? var.dockerfile_location : null
   docker_compose_location = var.build_pack == "dockercompose" ? var.docker_compose_location : null
   ports_exposes           = var.ports_exposes
+  custom_network_aliases  = var.network_aliases
 
   domains                = length(var.domains) > 0 ? join(",", var.domains) : null
   autogenerate_domain    = false

@@ -2,10 +2,13 @@
 # template bundle (359 keys, no minio — API answers 404 Invalid service type),
 # so the service is created from Coolify's own canonical minio compose
 # (templates/compose/minio.yaml `services:` block, comments stripped) via
-# docker_compose_raw. Service name stays "minio", so the `urls` entry below,
-# the api MINIO_ENDPOINT (http://minio:9000), and the four env vars are
-# unchanged. NOTE: heredoc `$VAR` stays literal in HCL (only `${` interpolates),
-# so the compose `$SERVICE_USER_MINIO`-style references reach Coolify intact.
+# docker_compose_raw. Image comes from the loopback registry
+# (127.0.0.1:5000/minio:latest — quay.io/Hub are not anonymously pullable;
+# see the SDD ledger). The service joins the shared `coolify` network with
+# the `minio` alias so same-project containers reach it at http://minio:9000
+# (resource-name DNS was disproven live on this instance). NOTE: heredoc
+# `$VAR` stays literal in HCL (only `${` interpolates), so the compose
+# `$SERVICE_USER_MINIO`-style references reach Coolify intact.
 resource "coolify_service" "this" {
   name               = var.name
   project_uuid       = var.project_uuid
@@ -13,7 +16,7 @@ resource "coolify_service" "this" {
   docker_compose_raw = <<-EOT
     services:
       minio:
-        image: quay.io/minio/minio:latest
+        image: 127.0.0.1:5000/minio:latest
         command: server /data --console-address ":9001"
         environment:
           - MINIO_SERVER_URL=$MINIO_SERVER_URL
@@ -22,11 +25,18 @@ resource "coolify_service" "this" {
           - MINIO_ROOT_PASSWORD=$SERVICE_PASSWORD_MINIO
         volumes:
           - minio-data:/data
+        networks:
+          coolify:
+            aliases:
+              - minio
         healthcheck:
           test: ["CMD", "mc", "ready", "local"]
           interval: 5s
           timeout: 20s
           retries: 10
+    networks:
+      coolify:
+        external: true
   EOT
   urls               = [{ name = "minio", url = "https://${var.minio_host}" }]
   instant_deploy     = true

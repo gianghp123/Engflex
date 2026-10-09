@@ -61,6 +61,13 @@ variable "health_check_path" {
   type = string
 }
 
+# Stable DNS name for this app on the shared `coolify` network
+# (resource-name resolution was disproven live on this instance).
+variable "network_aliases" {
+  type    = string
+  default = null
+}
+
 variable "environment_variables" {
   type      = map(string)
   default   = {}
