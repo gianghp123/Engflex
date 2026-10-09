@@ -275,7 +275,7 @@ Self-hosted on this machine via Coolify + Terraform. Rationale lives in
 
 ### Prerequisites
 
-- Coolify running locally, with an API token scoped `read:sensitive` (Coolify UI → Security → API Tokens).
+- Coolify running locally, with a root API token (or `read:sensitive` plus `deploy` — database/service creation routes require `deploy`; Coolify UI → Security → API Tokens).
 - Tools: `terraform` (>= 1.6), `goose` (`~/go/bin/goose`), `mkcert` (HTTPS only).
 - `openssl rand -hex 24` for generating the secret values below.
 
@@ -306,11 +306,14 @@ make deploy-seed   # create the lesson-audio bucket, open anonymous reads, TTS-s
 - Rollback = redeploy the previous commit (Coolify UI, or `make deploy` on that ref).
 - The local dev compose stack (`apps/api/docker-compose.yaml`) is separate;
   deploys never touch it. Tunnel/auto-deploy are future work.
-- Builds clone from a local git mirror served at `http://192.168.1.10:9419/engflex.git`
+- Builds clone from a local git mirror served at `http://engflex-git.192-168-1-10.sslip.io:9419/engflex.git`
   (keep it running; the ledger holds the exact restart command).
 - MinIO images are served from a local registry (`127.0.0.1:5000`, container
   `engflex-registry`) because upstream minio images were withdrawn; keep it
   running alongside the git mirror.
+- Never recreate/delete the Postgres or Redis resources outside `make deploy` —
+  the container-uuid hostnames baked into `DATABASE_URL`/`REDIS_URL` are
+  re-rendered by each deploy's apply.
 
 <!-----
 

@@ -50,7 +50,7 @@ echo "== seed audio =="
 # client needs the mkcert root (a bare mkcert SSL_CERT_FILE breaks uv with
 # UnknownIssuer). Cleaned up on exit.
 CA_COMBINED="$(mktemp)"
-trap 'rm -f "$CA_COMBINED"' EXIT
+trap 'rm -f "${CA_COMBINED:-}"' EXIT
 cat /etc/ssl/certs/ca-certificates.crt "$(~/go/bin/mkcert -CAROOT)/rootCA.pem" > "$CA_COMBINED"
 cd "$REPO_ROOT/apps/api"
 DATABASE_URL="$DATABASE_URL" \

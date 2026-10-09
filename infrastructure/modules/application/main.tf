@@ -31,6 +31,9 @@ resource "coolify_application" "this" {
 # for_each runs over nonsensitive() because the map is sensitive; values are
 # still read from the sensitive map so secrecy is preserved. Both flags are
 # true so VITE_* bake into the image build and secrets reach runtime.
+# Invariant: env vars are injected at build AND runtime, so Dockerfile ARGs
+# must only ever reference public values (VITE_*) — never declare a secret
+# ARG (it would bake the secret into an image layer).
 resource "coolify_environment_variable" "this" {
   for_each         = nonsensitive(var.environment_variables)
   application_uuid = coolify_application.this.uuid
