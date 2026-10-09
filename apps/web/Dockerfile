@@ -19,7 +19,12 @@ RUN pnpm compile:messages && pnpm build
 
 # Runtime stage: workspace + built output; serve via the app's own start script.
 FROM node:22-slim AS runtime
-RUN npm install -g pnpm@12.4.1
+# curl is required for Coolify's container healthcheck (same rule as the api,
+# voice and pronounce images); node-slim ships neither curl nor wget.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends curl \
+    && rm -rf /var/lib/apt/lists/* \
+    && npm install -g pnpm@12.4.1
 WORKDIR /app
 COPY --from=build /app /app
 
