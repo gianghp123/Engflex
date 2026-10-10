@@ -8,4 +8,5 @@
 # The artifact is ensured automatically by `make deploy` and can be managed
 # manually with `make pronounce-artifact` (see infrastructure/scripts/
 # ensure-pronounce-image.sh; recipe: Dockerfile.artifact).
+# NOTE: keep this tag in sync with ARTIFACT_TAG in ensure-pronounce-image.sh.
 FROM 127.0.0.1:5000/engflex-pronounce:v0.3.0

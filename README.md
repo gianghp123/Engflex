@@ -313,8 +313,9 @@ make deploy-seed   # create the lesson-audio bucket, open anonymous reads, TTS-s
   running alongside the git mirror.
 - Pronounce runs from a frozen image artifact in the local registry
   (`127.0.0.1:5000/engflex-pronounce:v0.3.0`); `make deploy` ensures it
-  automatically; force a rebuild with `make pronounce-artifact --force`
-  (e.g. after changing `Dockerfile.artifact`).
+  automatically; force a rebuild with `make pronounce-artifact ARGS=--force`
+  (or directly: `bash infrastructure/scripts/ensure-pronounce-image.sh --force`;
+  e.g. after changing `Dockerfile.artifact`).
 - Never recreate/delete the Postgres or Redis resources outside `make deploy` —
   the container-uuid hostnames baked into `DATABASE_URL`/`REDIS_URL` are
   re-rendered by each deploy's apply.

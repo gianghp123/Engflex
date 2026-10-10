@@ -5,6 +5,10 @@
 #   --force       build+push unconditionally
 #   --check-only  report what would happen, never build
 # Env overrides (used by tests): RECIPE_FILE, BUILD_CONTEXT, ARTIFACT_TAG.
+# NOTE: keep the ARTIFACT_TAG default in sync with the FROM tag in
+# infrastructure/pronounce/Dockerfile (stub). The recipe hash covers
+# Dockerfile.artifact only — the recipe must stay self-contained (no COPY
+# from the build context) for the hash to remain a complete change detector.
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
@@ -36,6 +40,7 @@ elif docker pull -q "$ARTIFACT_TAG" >/dev/null 2>&1; then
   # against both this artifact and the controller-seeded minio image).
   # The pull doubles as the presence check and ensures the image locally.
   CURRENT="$(docker image inspect --format '{{ index .Config.Labels "engflex.recipe-hash" }}' "$ARTIFACT_TAG" 2>/dev/null || true)"
+  case "$CURRENT" in "<no value>"|"") CURRENT="" ;; esac
   if [ "$CURRENT" != "$HASH" ]; then
     REASON="recipe changed (have ${CURRENT:-none}, want $HASH)"
   fi

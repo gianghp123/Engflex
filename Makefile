@@ -11,4 +11,4 @@ deploy-seed:
 	bash infrastructure/scripts/seed.sh
 
 pronounce-artifact:
-	bash infrastructure/scripts/ensure-pronounce-image.sh
+	@bash infrastructure/scripts/ensure-pronounce-image.sh $(ARGS)
