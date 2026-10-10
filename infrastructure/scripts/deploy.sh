@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Deploy: terraform apply → goose migrations (with postgres readiness wait)
-# → trigger all four Coolify app deploys (api, web, voice, pronounce) →
-# external health polls (api/web) + internal status probes (voice/pronounce).
+# → ensure frozen pronounce artifact → trigger all four Coolify app deploys
+# (api, web, voice, pronounce) → external health polls (api/web) + internal
+# status probes (voice/pronounce).
 # Run via `make deploy` from the repo root (or directly from anywhere).
 # Exit non-zero on the first failure, with the failing stage named.
 set -euo pipefail
@@ -44,6 +45,9 @@ until "$GOOSE" -dir "$MIGRATIONS_DIR" postgres "$DATABASE_URL" status >/dev/null
   sleep 5
 done
 "$GOOSE" -dir "$MIGRATIONS_DIR" postgres "$DATABASE_URL" up
+
+echo "== ensure pronounce artifact (frozen image) =="
+bash "$REPO_ROOT/infrastructure/scripts/ensure-pronounce-image.sh"
 
 echo "== trigger Coolify deploys =="
 VOICE_UUID="$(tf output -raw voice_app_uuid)"
