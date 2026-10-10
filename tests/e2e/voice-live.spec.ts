@@ -57,7 +57,7 @@ test.afterEach(async ({ browser }, testInfo) => {
 	// pattern here; the hook only needs testInfo.
 	void browser;
 	// Keep the conversation when the test fails: the boundary report
-	// (e2e/live-boundaries.mjs) reads its turns/feedback from the DB, and
+	// (live-boundaries.mjs) reads its turns/feedback from the DB, and
 	// afterEach deletion would turn its db/analyze rows misleadingly red.
 	if (testInfo.status !== testInfo.expectedStatus) {
 		console.log(`e2e: keeping failed conversation(s) ${created.join(",")}`);
@@ -76,7 +76,7 @@ test("live session: fake-mic turn analyzes into a diagnostics card", async ({
 }) => {
 	const conv = await apiCreateConversation({ mode: "free_talk" });
 	created.push(conv.id);
-	// Marker for e2e/live-boundaries.mjs: attributes engine log lines (which
+	// Marker for live-boundaries.mjs: attributes engine log lines (which
 	// carry no conversation id) to this session by time.
 	console.log(`e2e: live conversation ${conv.id}`);
 

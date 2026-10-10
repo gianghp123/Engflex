@@ -1,4 +1,4 @@
-import { defineLiveConfig, loadPlaywrightEnv } from "./e2e/live-stack";
+import { defineLiveConfig, loadPlaywrightEnv } from "./live-stack";
 
 /**
  * LIVE e2e for the on-demand transcript-recovery loop.

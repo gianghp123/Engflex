@@ -15,13 +15,18 @@ import { FAKE_MIC_AUDIO } from "./fake-mic";
  *
  * Env loading is identical in both configs: Playwright runs in Node and never
  * reads dotenv files itself, and Vite only exposes VITE_* to the browser.
+ * tests/e2e/.env wins, apps/web/.env.local is the fallback.
  * Shell env still wins.
  */
 export function loadPlaywrightEnv(): void {
-	for (const [key, value] of Object.entries(
-		loadEnv("development", process.cwd(), ""),
-	)) {
-		process.env[key] ??= value;
+	const E2E_DIR = import.meta.dirname;
+	const WEB_DIR = path.join(E2E_DIR, "../../apps/web");
+	for (const dir of [E2E_DIR, WEB_DIR]) {
+		for (const [key, value] of Object.entries(
+			loadEnv("development", dir, ""),
+		)) {
+			process.env[key] ??= value;
+		}
 	}
 	process.env.CLERK_PUBLISHABLE_KEY ??= process.env.VITE_CLERK_PUBLISHABLE_KEY;
 }
@@ -32,14 +37,14 @@ export const API_PORT = Number(process.env.E2E_LIVE_API_PORT ?? 8010);
 export const WEB_PORT = Number(process.env.E2E_LIVE_WEB_PORT ?? 3010);
 export const ENGINE_PORT = Number(process.env.E2E_LIVE_ENGINE_PORT ?? 7861);
 
-// e2e/helpers.ts builds its API base URL from these (same convention as the
+// helpers.ts builds its API base URL from these (same convention as the
 // default config). Workers inherit the main process env, so this is how the
 // specs learn they are talking to the live stack.
 process.env.E2E_API_PORT ??= String(API_PORT);
 process.env.E2E_WEB_PORT ??= String(WEB_PORT);
 
 // Go reads DB_* parts (not DATABASE_URL); the e2e database is created and
-// migrated by e2e/ensure-e2e-db.mjs.
+// migrated by ensure-e2e-db.mjs.
 function e2eDbParts(): Record<string, string> {
 	const raw = process.env.DATABASE_URL;
 	if (!raw) return {};
@@ -109,7 +114,7 @@ export function defineLiveConfig({
 		webServer: [
 			{
 				command: `uv run src/bot.py -t webrtc --port ${ENGINE_PORT}`,
-				cwd: "../voice",
+				cwd: "../../apps/voice",
 				url: `http://localhost:${ENGINE_PORT}/status`,
 				reuseExistingServer: false,
 				timeout: 120_000,
@@ -125,7 +130,7 @@ export function defineLiveConfig({
 				// The API cannot boot without its database, and webServers
 				// start before every setup hook — so create/migrate it here.
 				command: `node ${ENSURE_E2E_DB} && go run ./cmd/server`,
-				cwd: "../api",
+				cwd: "../../apps/api",
 				url: `http://localhost:${API_PORT}/health`,
 				reuseExistingServer: false,
 				timeout: 60_000,
@@ -146,6 +151,7 @@ export function defineLiveConfig({
 			},
 			{
 				command: `pnpm dev --port ${WEB_PORT}`,
+				cwd: "../../apps/web",
 				url: `http://localhost:${WEB_PORT}`,
 				reuseExistingServer: false,
 				timeout: 120_000,

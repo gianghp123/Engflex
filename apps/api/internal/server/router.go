@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	sentrygin "github.com/getsentry/sentry-go/gin"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
@@ -29,7 +30,15 @@ import (
 // profiles.RegisterRoutes(v1, db), contents.RegisterRoutes(v1, db), ...
 func NewRouter(db *gorm.DB, cfg config.Config) *gin.Engine {
 	r := gin.New()
-	r.Use(middleware.RequestID(), middleware.RequestLogger(), middleware.Recovery())
+	// Recovery mounts outermost (gin.Default semantics): sentrygin captures
+	// the panic first and repanics into Recovery, which writes the
+	// {message} envelope. Mounted the other way round, Recovery would
+	// swallow the panic before sentrygin sees it and nothing is reported.
+	r.Use(
+		middleware.Recovery(),
+		sentrygin.New(sentrygin.Options{Repanic: true, WaitForDelivery: false}),
+		middleware.RequestID(), middleware.RequestLogger(),
+	)
 	// Trust X-Forwarded-For only from configured proxies so the IP-keyed
 	// limiter buckets by real client IP (sona parity). Empty
 	// RATE_LIMIT_TRUSTED_PROXIES trusts none: spoofed headers are ignored.

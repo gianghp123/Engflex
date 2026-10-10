@@ -6,6 +6,10 @@ terraform {
       source  = "coolify-terraform/coolify"
       version = ">= 0.1"
     }
+    sentry = {
+      source  = "jianyuan/sentry"
+      version = "~> 0.15.0"
+    }
   }
 
   backend "local" {}
@@ -14,4 +18,10 @@ terraform {
 provider "coolify" {
   endpoint = var.coolify_endpoint
   token    = var.coolify_token
+}
+
+# Provider auth: an org-scoped internal-integration token (README Ops notes).
+# Stored only in the gitignored terraform.tfvars.
+provider "sentry" {
+  token = var.sentry_auth_token
 }

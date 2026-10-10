@@ -4,12 +4,15 @@ import { loadEnv } from "vite";
 
 // Playwright runs in Node and never loads dotenv files on its own (and Vite
 // only exposes VITE_*-prefixed vars to the browser anyway), so pull
-// apps/web/.env.local + .env in here. Shell env wins: existing entries are
-// never overwritten.
-for (const [key, value] of Object.entries(
-	loadEnv("development", process.cwd(), ""),
-)) {
-	process.env[key] ??= value;
+// tests/e2e/.env (+ apps/web/.env.local as fallback) in here. Shell env
+// wins: existing entries are never overwritten, and the e2e dir wins over
+// the web fallback.
+const E2E_DIR = import.meta.dirname;
+const WEB_DIR = path.join(E2E_DIR, "../../apps/web");
+for (const dir of [E2E_DIR, WEB_DIR]) {
+	for (const [key, value] of Object.entries(loadEnv("development", dir, ""))) {
+		process.env[key] ??= value;
+	}
 }
 // @clerk/testing wants the unprefixed name; the app uses the VITE_ one.
 process.env.CLERK_PUBLISHABLE_KEY ??= process.env.VITE_CLERK_PUBLISHABLE_KEY;
@@ -20,24 +23,24 @@ process.env.CLERK_PUBLISHABLE_KEY ??= process.env.VITE_CLERK_PUBLISHABLE_KEY;
  * setup-failure paths are deterministic.
  *
  * Ports are dedicated (8001/3001) and both servers boot with
- * `reuseExistingServer: false`, exactly like e2e/live-stack.ts: a dev server on
+ * `reuseExistingServer: false`, exactly like live-stack.ts: a dev server on
  * 8000 carries its own VOICE_SERVICE_URL and its own database, so reusing it
  * silently makes a run prove nothing (the observed failure modes are a missing
  * error modal and seed rows landing in a database the API is not using).
  *
- * Required env (see e2e/README.md):
+ * Required env (see README.md):
  *   DATABASE_URL              Postgres DSN — also the database the API is
  *                             pointed at, and what test seeding writes to
  *   CLERK_SECRET_KEY          same Clerk instance as the apps
  *   CLERK_PUBLISHABLE_KEY     or VITE_CLERK_PUBLISHABLE_KEY
  *   E2E_CLERK_USER_EMAIL      pre-created test user (…+clerk_test@… suffix)
  */
-const ENSURE_E2E_DB = path.join(import.meta.dirname, "e2e/ensure-e2e-db.mjs");
+const ENSURE_E2E_DB = path.join(import.meta.dirname, "ensure-e2e-db.mjs");
 const API_PORT = Number(process.env.E2E_API_PORT ?? 8001);
 const WEB_PORT = Number(process.env.E2E_WEB_PORT ?? 3001);
 
-// e2e/helpers.ts builds its API base URL from these (same convention as
-// e2e/live-stack.ts), so the specs learn the port even when it was defaulted
+// helpers.ts builds its API base URL from these (same convention as
+// live-stack.ts), so the specs learn the port even when it was defaulted
 // here rather than exported by the shell.
 process.env.E2E_API_PORT ??= String(API_PORT);
 process.env.E2E_WEB_PORT ??= String(WEB_PORT);
@@ -59,7 +62,7 @@ function e2eDbParts(): Record<string, string> {
 }
 
 export default defineConfig({
-	testDir: "./e2e",
+	testDir: ".",
 	fullyParallel: false,
 	workers: 1,
 	retries: 0,
@@ -91,7 +94,7 @@ export default defineConfig({
 			// The API cannot boot without its database, and webServers start
 			// before every setup hook — so create/migrate it right here.
 			command: `node ${ENSURE_E2E_DB} && go run ./cmd/server`,
-			cwd: "../api",
+			cwd: "../../apps/api",
 			url: `http://localhost:${API_PORT}/health`,
 			reuseExistingServer: false,
 			timeout: 60_000,
@@ -106,6 +109,7 @@ export default defineConfig({
 		},
 		{
 			command: `pnpm dev --port ${WEB_PORT}`,
+			cwd: "../../apps/web",
 			url: `http://localhost:${WEB_PORT}`,
 			reuseExistingServer: false,
 			timeout: 120_000,

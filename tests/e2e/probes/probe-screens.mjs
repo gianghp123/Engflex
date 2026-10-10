@@ -13,7 +13,7 @@ const shots = [
 
 const browser = await chromium.launch();
 const context = await browser.newContext({
-	storageState: "playwright/.clerk/user.json",
+	storageState: "../playwright/.clerk/user.json",
 	viewport: { width: 1440, height: 1000 },
 });
 const page = await context.newPage();
@@ -21,9 +21,14 @@ page.on("console", (msg) => {
 	if (msg.type() === "error") console.log("CONSOLE ERROR:", msg.text());
 });
 for (const [name, url] of shots) {
-	await page.goto(url, { waitUntil: "networkidle", timeout: 30000 }).catch((e) => console.log("goto failed", name, e.message));
+	await page
+		.goto(url, { waitUntil: "networkidle", timeout: 30000 })
+		.catch((e) => console.log("goto failed", name, e.message));
 	await page.waitForTimeout(1200);
-	await page.screenshot({ path: `/tmp/opencode/shot-${name}.png`, fullPage: false });
+	await page.screenshot({
+		path: `/tmp/opencode/shot-${name}.png`,
+		fullPage: false,
+	});
 	console.log("shot", name, "->", page.url());
 }
 await browser.close();

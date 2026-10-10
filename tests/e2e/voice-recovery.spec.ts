@@ -32,7 +32,7 @@ import {
 const EDITED_MARKER = "e2e correction edited sentence";
 const RAW_ANCHOR = /yesterday/i;
 const REVIEW = "Review transcript";
-// Frozen clip under e2e/fixtures, verified against the real endpoint: this is
+// Frozen clip under fixtures/, verified against the real endpoint: this is
 // what Deepgram hears in it, byte for byte.
 const FIXTURE_SENTENCE = "Well, I went to the market yesterday.";
 

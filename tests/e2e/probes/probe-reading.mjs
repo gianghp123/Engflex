@@ -6,7 +6,7 @@ const url = `${base}/lessons/${lesson}/parts/reading`;
 
 const browser = await chromium.launch();
 const context = await browser.newContext({
-	storageState: "playwright/.clerk/user.json",
+	storageState: "../playwright/.clerk/user.json",
 	viewport: { width: 1440, height: 1000 },
 });
 const page = await context.newPage();
@@ -22,10 +22,15 @@ page.on("response", async (res) => {
 page.on("console", (msg) => {
 	if (msg.type() === "error") console.log("CONSOLE:", msg.text().slice(0, 500));
 });
-await page.goto(url, { waitUntil: "networkidle", timeout: 30000 }).catch((e) => console.log("goto failed:", e.message));
+await page
+	.goto(url, { waitUntil: "networkidle", timeout: 30000 })
+	.catch((e) => console.log("goto failed:", e.message));
 await page.waitForTimeout(2500);
 await page.screenshot({ path: "/tmp/opencode/shot-reading.png" });
 console.log("final url:", page.url());
-const body = await page.locator("body").innerText().catch(() => "");
+const body = await page
+	.locator("body")
+	.innerText()
+	.catch(() => "");
 console.log("body text head:", body.slice(0, 400));
 await browser.close();

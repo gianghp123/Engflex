@@ -17,7 +17,7 @@
  * directly. Turn texts come from the DB (ground truth), not log parsing.
  *
  * Usage:
- *   node e2e/live-boundaries.mjs <run-log-path> <conversation-id>
+ *   node live-boundaries.mjs <run-log-path> <conversation-id>
  *   (DATABASE_URL must be set, same as the suite)
  */
 import fs from "node:fs";
@@ -25,9 +25,7 @@ import pg from "pg";
 
 const [logPath, convId] = process.argv.slice(2);
 if (!logPath || !convId) {
-	console.error(
-		"usage: node e2e/live-boundaries.mjs <run-log> <conversation-id>",
-	);
+	console.error("usage: node live-boundaries.mjs <run-log> <conversation-id>");
 	process.exit(2);
 }
 

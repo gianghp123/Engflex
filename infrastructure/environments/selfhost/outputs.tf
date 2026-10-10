@@ -82,3 +82,9 @@ output "minio_root_password" {
   value     = var.minio_root_password
   sensitive = true
 }
+
+output "sentry_project_dsns" {
+  description = "Provisioned Sentry DSN per service (sensitive; used by redeploy verification)."
+  value       = module.sentry.dsns
+  sensitive   = true
+}

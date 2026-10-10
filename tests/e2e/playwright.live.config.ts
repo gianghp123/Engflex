@@ -1,4 +1,4 @@
-import { defineLiveConfig, loadPlaywrightEnv } from "./e2e/live-stack";
+import { defineLiveConfig, loadPlaywrightEnv } from "./live-stack";
 
 /**
  * LIVE e2e for the Analyze flow: a real voice engine, a real session, a real
@@ -11,7 +11,7 @@ import { defineLiveConfig, loadPlaywrightEnv } from "./e2e/live-stack";
  *
  * Requires the engine's own prerequisites (apps/voice/.env with real STT,
  * LLM and TTS keys + the Piper voice in models/ for the fake-mic fixture) —
- * see e2e/README.md.
+ * see README.md.
  */
 loadPlaywrightEnv();
 

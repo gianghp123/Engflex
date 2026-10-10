@@ -15,6 +15,8 @@ import (
 	"os"
 	"strings"
 
+	"github.com/getsentry/sentry-go"
+
 	"engflex-api/internal/common"
 )
 
@@ -112,6 +114,13 @@ func Report(ctx context.Context, msg string, err error, attrs ...any) {
 		level = slog.LevelWarn
 	}
 	slog.Log(ctx, level, msg, append([]any{"error", err}, attrs...)...)
+	// Server faults (5xx/unknown) also go to Sentry when it is enabled.
+	// Client errors stay in logs only. Panics never reach here: the Sentry
+	// gin middleware captures them and re-panics into Recovery, which logs
+	// via slog — exactly one event per failure either way.
+	if level == slog.LevelError && sentry.CurrentHub().Client() != nil {
+		sentry.CaptureException(err)
+	}
 }
 
 func parseLevel(level string) slog.Level {

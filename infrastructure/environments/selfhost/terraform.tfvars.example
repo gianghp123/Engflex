@@ -18,3 +18,9 @@
 #male_voice_id   = ""
 #female_voice_id = ""
 #turn_secret     = ""
+#cors_extra_origins = [] # e.g. ["https://extra.example"]
+# Sentry provisioning (org must exist; the team is created by the module).
+# Auth token = Sentry internal-integration token (org-scoped, team/project write).
+#sentry_organization = "giang-pham-90"
+#sentry_team         = "engflex"
+#sentry_auth_token   = ""

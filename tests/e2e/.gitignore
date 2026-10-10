@@ -1,0 +1,5 @@
+# e2e runtime state + outputs (all regenerable, never committed)
+playwright/.clerk
+playwright/.fake-mic
+test-results
+playwright-report

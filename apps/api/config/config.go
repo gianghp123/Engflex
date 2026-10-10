@@ -13,6 +13,7 @@ type Config struct {
 	Log       LogConfig
 	Voice     VoiceConfig
 	LLM       LLMConfig
+	Sentry    SentryConfig
 	Redis     RedisConfig
 	RateLimit RateLimitConfig
 	Media     MediaConfig
@@ -37,6 +38,7 @@ func Load(dotEnvPaths ...string) (Config, error) {
 		Log:       LoadLogConfig(server.Env),
 		Voice:     LoadVoiceConfig(),
 		LLM:       LoadLLMConfig(),
+		Sentry:    LoadSentryConfig(server.Env),
 		Redis:     LoadRedisConfig(),
 		RateLimit: LoadRateLimitConfig(),
 		Media:     LoadMediaConfig(),

@@ -14,7 +14,7 @@ import path from "node:path";
  */
 export const FAKE_MIC_AUDIO = path.join(
 	import.meta.dirname,
-	"../playwright/.fake-mic/speech.wav",
+	"./playwright/.fake-mic/speech.wav",
 );
 
 /** Generate the fixture if missing. Idempotent, so reruns cost nothing. */
@@ -24,7 +24,10 @@ export function ensureFakeMicAudio(): string {
 	execFileSync(
 		"uv",
 		["run", "python", "scripts/make_fake_mic_audio.py", FAKE_MIC_AUDIO],
-		{ cwd: path.join(import.meta.dirname, "../../voice"), stdio: "inherit" },
+		{
+			cwd: path.join(import.meta.dirname, "../../apps/voice"),
+			stdio: "inherit",
+		},
 	);
 	return FAKE_MIC_AUDIO;
 }

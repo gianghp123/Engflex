@@ -3,6 +3,8 @@ packages:
   - "apps/*"
   # all packages in direct subdirs of packages/
   - "packages/*"
+  # end-to-end tests (own Playwright package)
+  - "tests/e2e"
   # all packages in subdirs of components/
   - "components/**"
   # exclude packages that are inside test directories

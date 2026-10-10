@@ -62,6 +62,61 @@
 
 ---
 
+## Deployment (Self-Hosted on Coolify)
+
+Two deployment topologies were designed; this repository implements the
+**self-hosted** one: a single machine running Coolify (Docker + Traefik),
+provisioned end-to-end with Terraform. The
+managed-services alternative is kept below as a design reference.
+
+<div align="center">
+  <img src="images/coolify_infra.png" alt="Self-hosted (Coolify) deployment topology" width="760" />
+  <p><em>Self-hosted topology</em></p>
+</div>
+
+<div align="center">
+  <img src="images/cloud_native_infra.png" alt="Cloud-native alternative topology: Vercel + Neon + Modal + ExpressTURN" width="760" />
+  <p><em>Cloud-native</em></p>
+</div>
+
+
+### What `make deploy` runs
+
+```text
+terraform apply              # Coolify project, Postgres, Redis, MinIO service, 4 apps, env vars, domains
+→ goose migrations           # host-run; SQL migrations are the only schema mechanism
+→ ensure pronounce artifact  # build + push the frozen OpenPronounce image when missing or when the recipe changed
+→ trigger 4 app deploys      # api, web, voice (+ coturn relay), pronounce — built from the local git mirror
+→ health polls               # api/web external; voice/pronounce internal
+```
+
+### Prerequisites
+
+- Coolify at `http://localhost:8000` with an API token (Coolify UI → Security →
+  API Tokens; database/service creation routes require `deploy` on the token).
+- Tools: `terraform` (>= 1.6), `goose` (`~/go/bin/goose`), `mkcert` (HTTPS), Docker.
+- `openssl rand -hex 24` for generating the secret values below.
+
+### Bootstrap
+
+```bash
+cp infrastructure/environments/selfhost/terraform.tfvars.example \
+   infrastructure/environments/selfhost/terraform.tfvars
+
+make deploy        # terraform apply → goose migrations → ensure pronounce artifact → trigger api/web/voice/pronounce → health polls
+make deploy-seed   # create the lesson-audio bucket, open anonymous reads, TTS-seed audio
+```
+
+### Ops notes
+
+- Sentry projects + DSNs are provisioned by Terraform (`infrastructure/modules/sentry`;
+  projects `engflex-{api,web,voice}-production` in org `giang-pham-90`). The provider
+  auth token is an org-scoped internal-integration token kept only in the gitignored
+  `terraform.tfvars`; `make deploy` provisions/refreshes the projects and injects the
+  DSNs into the app env vars (web's bakes at image build).
+
+---
+
 ## Architecture Overview
 
 > Diagrams below are Mermaid sources. To get the hand-drawn look, paste any
@@ -189,6 +244,7 @@ engflex-ultimate/
 | [uv](https://docs.astral.sh/uv/) | latest | Voice engine deps + runner |
 | [Node.js](https://nodejs.org/) | >= 20 | Web frontend |
 | [pnpm](https://pnpm.io/) | >= 9 | Monorepo workspaces |
+| [Docker](https://docs.docker.com/get-docker/) | Compose v2 | Dev infrastructure containers (Postgres, Redis, MinIO) + deployments |
 | [PostgreSQL](https://www.postgresql.org/) | 15+ | Database |
 | [goose](https://github.com/pressly/goose) | v3 | Migrations |
 | [mockery](https://vektra.github.io/mockery/) | v3 | Repo mocks |
@@ -210,37 +266,78 @@ Each service reads its own `.env` — copy from `.env.example` and fill in value
 
 ## Running Locally
 
-### 1. Database + migrations
+The whole dev stack runs on your machine: a small Docker compose stack
+(Postgres, Redis, MinIO, optional pronunciation model host) plus the three app
+processes.
+
+### 1. Workspace dependencies (once)
+
+```bash
+pnpm install               # from the repo root (pnpm workspace)
+```
+
+### 2. Dev infrastructure (Docker)
+
+```bash
+cd apps/api
+cp .env.example .env       # compose reads DB_* / MINIO_* / REDIS_* from here too
+docker compose up -d postgres redis minio
+```
+
+Optional, for pronunciation scoring — the OpenPronounce model host. The first
+`up` builds from the pinned upstream tag (one-time: ~5 GB, needs network):
+
+```bash
+docker compose up -d openpronounce
+make pronounce-warm        # load the wav2vec2 weights now (~20 s) instead of on the first request
+```
+
+### 3. App env files
+
+```bash
+cp apps/api/.env.example apps/api/.env
+cp apps/voice/.env.example apps/voice/.env
+cp apps/web/.env.example apps/web/.env
+```
+
+Fill in the keys: Clerk (api + web — the API refuses to boot without
+`CLERK_SECRET_KEY`), and LLM/STT/TTS (api scoring + voice engine). Keep
+`INTERNAL_SECRET` identical in api and voice; the `.env.example` files ship the
+same dev value. The web app talks to `http://localhost:8000` by default;
+override with `VITE_API_URL` if the API runs elsewhere.
+
+### 4. Database + migrations
 
 ```bash
 cd apps/api
 make migration-up          # goose up, DATABASE_URL from .env
 ```
 
-### 2. API (Go control plane)
+### 5. Run the apps (one terminal each)
+
+| Terminal | Command | Serves |
+|----------|---------|--------|
+| API | `cd apps/api && go run ./cmd/server` | `http://localhost:8000`; Swagger UI at `/swagger` (regenerate: `make swagger`) |
+| Voice engine | `cd apps/voice && uv run python src/bot.py` | `:7860`; the browser connects over WebRTC **directly** here — Go never proxies audio |
+| Web | `pnpm --filter web dev` | `http://localhost:3000` |
+
+### Local ports
+
+| Port | Service |
+|------|---------|
+| 3000 | Web (Vite dev) |
+| 8000 | API (Go) |
+| 7860 | Voice engine (Pipecat) |
+| 8001 | Pronunciation (OpenPronounce container) |
+| 9000 / 9010 | MinIO API / console |
+| 5777 | Postgres (host port; set by `DB_PORT` in `apps/api/.env`) |
+| 6379 | Redis |
+
+### Seed lesson content (optional)
 
 ```bash
-cd apps/api
-go run ./cmd/server
+cd apps/api && make seed-audio   # TTS-generate lesson audio into MinIO (needs a migrated DB + minio up)
 ```
-
-Swagger UI: `/swagger` (regenerate with `make swagger`).
-
-### 3. Voice engine (Python + Pipecat — always via `uv run`)
-
-```bash
-cd apps/voice
-uv run python src/bot.py   # Go never proxies audio — FE connects WebRTC directly here
-```
-
-### 4. Web frontend
-
-```bash
-pnpm install               # from repo root (workspace)
-pnpm --filter web dev      # Vite dev server on :3000
-```
-
-Open http://localhost:3000 in your browser.
 
 ### Gates (run before every change)
 
@@ -253,6 +350,9 @@ cd apps/voice && uv run pytest -q && uv run ruff check src tests
 
 # Web
 cd apps/web && pnpm check && pnpm exec tsc --noEmit && pnpm check:conventions && pnpm build
+
+# End-to-end (Playwright — needs its own env, see tests/e2e/README.md)
+pnpm --filter e2e test:e2e
 ```
 
 ---
@@ -267,58 +367,6 @@ make mocks                       # regenerate mockery mocks
 make contracts                     # tygo generate → packages/contracts
 make swagger                       # swag init -g cmd/server/main.go
 ```
-
-## Deployment
-
-Self-hosted on this machine via Coolify + Terraform. Rationale lives in
-`docs/superpowers/specs/2026-10-09-coolify-deploy-design.md`.
-
-### Prerequisites
-
-- Coolify running locally, with a root API token (or `read:sensitive` plus `deploy` — database/service creation routes require `deploy`; Coolify UI → Security → API Tokens).
-- Tools: `terraform` (>= 1.6), `goose` (`~/go/bin/goose`), `mkcert` (HTTPS only).
-- `openssl rand -hex 24` for generating the secret values below.
-
-### Bootstrap
-
-```bash
-cp infrastructure/environments/selfhost/terraform.tfvars.example \
-   infrastructure/environments/selfhost/terraform.tfvars
-# Fill in real values (never commit this file): coolify_token, server_uuid
-# (Coolify UI → Servers), server_ip (this machine's LAN IP), db/minio
-# passwords, Clerk keys, LLM keys, voice_internal_secret.
-make deploy        # terraform apply → goose migrations → trigger api/web/voice/pronounce → health polls
-make deploy-seed   # create the lesson-audio bucket, open anonymous reads, TTS-seed audio
-```
-
-### Access
-
-- Web: `https://engflex-web.<ip-dashed>.sslip.io`, API health:
-  `https://engflex-api.<ip-dashed>.sslip.io/health` (`<ip-dashed>` is the
-  server LAN IP with dashes, e.g. `192-168-1-50`).
-- HTTPS uses an mkcert wildcard cert installed into Coolify's Traefik proxy.
-  Install the CA (`$(~/go/bin/mkcert -CAROOT)/rootCA.pem`) as a trusted root
-  on each LAN test device, or browsers will warn.
-
-### Ops notes
-
-- Migrations run from the host before every deploy trigger — never AutoMigrate.
-- Rollback = redeploy the previous commit (Coolify UI, or `make deploy` on that ref).
-- The local dev compose stack (`apps/api/docker-compose.yaml`) is separate;
-  deploys never touch it. Tunnel/auto-deploy are future work.
-- Builds clone from a local git mirror served at `http://engflex-git.192-168-1-10.sslip.io:9419/engflex.git`
-  (keep it running; the ledger holds the exact restart command).
-- MinIO images are served from a local registry (`127.0.0.1:5000`, container
-  `engflex-registry`) because upstream minio images were withdrawn; keep it
-  running alongside the git mirror.
-- Pronounce runs from a frozen image artifact in the local registry
-  (`127.0.0.1:5000/engflex-pronounce:v0.3.0`); `make deploy` ensures it
-  automatically; force a rebuild with `make pronounce-artifact ARGS=--force`
-  (or directly: `bash infrastructure/scripts/ensure-pronounce-image.sh --force`;
-  e.g. after changing `Dockerfile.artifact`).
-- Never recreate/delete the Postgres or Redis resources outside `make deploy` —
-  the container-uuid hostnames baked into `DATABASE_URL`/`REDIS_URL` are
-  re-rendered by each deploy's apply.
 
 <!-----
 

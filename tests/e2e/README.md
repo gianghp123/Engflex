@@ -7,15 +7,14 @@ need a live engine + media and are out of scope.
 
 ## Prerequisites
 
-`playwright.config.ts` loads `apps/web/.env.local` (then `.env`) via
-Vite's `loadEnv`, so put everything there — shell env still wins on
-conflict. Only one value has no file fallback:
+`playwright.config.ts` loads `tests/e2e/.env` (then `apps/web/.env.local`
+as fallback) via Vite's `loadEnv`, so put e2e values in `tests/e2e/.env` —
+shell env still wins on conflict. Only one value has no file fallback:
 
 ```sh
-# apps/web/.env.local (already gitignored)
+# tests/e2e/.env (already gitignored; see .env.example)
 VITE_CLERK_PUBLISHABLE_KEY=...   # also used as CLERK_PUBLISHABLE_KEY
 CLERK_SECRET_KEY=...             # same Clerk instance as the apps
-VITE_API_URL=http://localhost:8000
 # Dedicated e2e database, never the dev one (see below).
 DATABASE_URL=postgres://postgres:postgres@localhost:5777/engflex_e2e?sslmode=disable
 E2E_CLERK_USER_EMAIL="e2e+clerk_test@…"  # pre-created test user, nothing else works without it
@@ -27,7 +26,7 @@ E2E_CLERK_USER_EMAIL="e2e+clerk_test@…"  # pre-created test user, nothing else
    ```
 
 `DATABASE_URL` must point at a **dedicated e2e database**. Before the Go API
-boots, `e2e/ensure-e2e-db.mjs` (chained onto the API's `webServer.command`)
+boots, `ensure-e2e-db.mjs` (chained onto the API's `webServer.command`)
 creates it if missing and migrates it, and the config points the server at
 it via derived `DB_*` vars. It has to live in the webServer command and not
 in a setup hook: Playwright starts webServers *before* every setup hook, and
@@ -47,7 +46,7 @@ exactly the stale-schema failure that bit the first run (`relation
 ## Run
 
 ```sh
-cd apps/web
+cd tests/e2e
 pnpm test:e2e            # headless, boots Go API + vite automatically
 pnpm test:e2e:headed     # headed browser (debugging)
 pnpm test:e2e:live       # live engine + fake mic (Analyze flow)
@@ -61,7 +60,7 @@ them afterwards; nothing else in the database is touched.
 
 ## Live suites (`playwright.live.config.ts`, `playwright.recovery.config.ts`)
 
-Two live suites, one shared stack (`e2e/live-stack.ts`) with dedicated ports
+Two live suites, one shared stack (`live-stack.ts`) with dedicated ports
 (API 8010, web 3010, engine 7861) and `reuseExistingServer: false`
 everywhere: a dev server on 8000 carries its own `VOICE_SERVICE_URL` and would
 silently make the run prove nothing. Extra prerequisites: `apps/voice/.env`
@@ -133,7 +132,7 @@ structurally (group ordinal == DB position) instead of positionally.
 
 ## Debugging a live failure
 
-`e2e/live-boundaries.mjs <run-log> <conversation-id>` prints one verdict per
+`live-boundaries.mjs <run-log> <conversation-id>` prints one verdict per
 pipeline boundary from the run's combined log plus the DB:
 
 ```text

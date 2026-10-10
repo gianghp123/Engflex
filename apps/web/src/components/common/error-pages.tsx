@@ -1,3 +1,5 @@
+import * as Sentry from "@sentry/tanstackstart-react";
+import { useEffect } from "react";
 import { ErrorComponent } from "#/components/common/error-component";
 import { Button } from "#/components/ui/button";
 import { m } from "#/paraglide/messages";
@@ -18,11 +20,16 @@ export function RouteNotFound() {
 
 /** Route error boundary fallback (unexpected render/query failures). */
 export function RouteErrorFallback({
+	error,
 	reset,
 }: {
 	error: unknown;
 	reset: () => void;
 }) {
+	useEffect(() => {
+		Sentry.captureException(error);
+	}, [error]);
+
 	return (
 		<ErrorComponent
 			badge={m["errors.server.badge"]()}

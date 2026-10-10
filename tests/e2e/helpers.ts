@@ -6,7 +6,7 @@ const API_BASE = `http://localhost:${process.env.E2E_API_PORT ?? 8001}`;
 
 function mustEnv(name: string): string {
 	const value = process.env[name];
-	if (!value) throw new Error(`e2e: ${name} must be set (see e2e/README.md)`);
+	if (!value) throw new Error(`e2e: ${name} must be set (see README.md)`);
 	return value;
 }
 
@@ -24,7 +24,7 @@ export async function clerkUserId(): Promise<string> {
 	const user = found.data[0];
 	if (!user) {
 		throw new Error(
-			`e2e: no Clerk user with email ${email} (create it in the Clerk dashboard, see e2e/README.md)`,
+			`e2e: no Clerk user with email ${email} (create it in the Clerk dashboard, see README.md)`,
 		);
 	}
 	cachedUserId = user.id;

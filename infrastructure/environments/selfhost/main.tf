@@ -70,13 +70,18 @@ module "api_app" {
     MINIO_BUCKET        = "lesson-audio"
     MEDIA_BASE_URL      = local.minio_url
     CLERK_SECRET_KEY    = var.clerk_secret_key
-    CORS_ORIGINS        = local.web_url
+    # Comma-joined list: the web frontend, plus the API origin itself so
+    # Swagger UI try-it-out (served at /swagger on this same origin) and any
+    # direct-browser API calls are explicitly allowed; extend via
+    # var.cors_extra_origins without touching this block.
+    CORS_ORIGINS = join(",", concat([local.web_url, local.api_url], var.cors_extra_origins))
     # Trust the Coolify proxy network for X-Forwarded-For so the IP-keyed
     # limiter buckets by real client IP (both v4 and v6 subnets).
     RATE_LIMIT_TRUSTED_PROXIES = "10.0.1.0/24,fdf6:8678:91f4::/64"
     LLM_API_KEY                = var.llm_api_key
     LLM_BASE_URL               = var.llm_base_url
     LLM_MODEL                  = var.llm_model
+    SENTRY_DSN                 = module.sentry.dsns["api"]
     VOICE_SERVICE_URL          = "http://engflex-voice:7860"
     VOICE_INTERNAL_SECRET      = var.voice_internal_secret
     VOICE_MAX_DURATION_SEC     = "300"
@@ -103,6 +108,7 @@ module "web_app" {
   environment_variables = {
     VITE_API_URL               = "${local.api_url}/api/v1"
     VITE_CLERK_PUBLISHABLE_KEY = var.clerk_publishable_key
+    VITE_SENTRY_DSN            = module.sentry.dsns["web"]
     CLERK_SECRET_KEY           = var.clerk_secret_key
   }
 }
@@ -125,6 +131,7 @@ module "voice_app" {
     LLM_API_KEY      = var.llm_api_key
     LLM_BASE_URL     = var.llm_base_url
     LLM_MODEL        = var.llm_model
+    SENTRY_DSN       = module.sentry.dsns["voice"]
     TTS_API_KEY      = var.tts_api_key
     VOICE_MODEL      = var.voice_model
     MALE_VOICE_ID    = var.male_voice_id
@@ -163,4 +170,21 @@ module "minio" {
   minio_host    = local.minio_host
   root_user     = var.minio_root_user
   root_password = var.minio_root_password
+}
+
+# Sentry projects + DSNs for the three instrumented services. The DSNs feed
+# the app env maps above; the -production suffix is this deployment's
+# environment — a future staging env passes its own environment value
+# without renaming existing projects.
+module "sentry" {
+  source       = "../../modules/sentry"
+  organization = var.sentry_organization
+  team         = var.sentry_team
+  environment  = "production"
+
+  projects = {
+    api   = { name = "EngFlex API", slug = "engflex-api", platform = "go" }
+    web   = { name = "EngFlex Web", slug = "engflex-web", platform = "javascript-react" }
+    voice = { name = "EngFlex Voice", slug = "engflex-voice", platform = "python" }
+  }
 }

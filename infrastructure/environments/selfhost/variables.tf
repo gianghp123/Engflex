@@ -104,3 +104,27 @@ variable "turn_secret" {
   type      = string
   sensitive = true
 }
+
+# Extra origins appended to the API's CORS_ORIGINS list (which always
+# includes the web frontend and the API origin itself for Swagger UI).
+variable "cors_extra_origins" {
+  type    = list(string)
+  default = []
+}
+
+# Sentry provisioning (jianyuan/sentry provider): the stack creates its own
+# projects and client keys. The auth token is an org-scoped
+# internal-integration token kept in the gitignored terraform.tfvars; the
+# organization must exist, the team is created by the module.
+variable "sentry_organization" {
+  type = string
+}
+
+variable "sentry_team" {
+  type = string
+}
+
+variable "sentry_auth_token" {
+  type      = string
+  sensitive = true
+}
