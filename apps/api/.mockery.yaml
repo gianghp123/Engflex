@@ -22,3 +22,10 @@ packages:
       filename: "mock_{{.InterfaceName}}.go"
       pkgname: "mocks"
       template: testify
+  engflex-api/internal/clerkusers:
+    config:
+      all: true
+      dir: "internal/clerkusers/mocks"
+      filename: "mock_{{.InterfaceName}}.go"
+      pkgname: "mocks"
+      template: testify

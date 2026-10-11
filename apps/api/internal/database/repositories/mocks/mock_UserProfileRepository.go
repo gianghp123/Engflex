@@ -5,6 +5,8 @@
 package mocks
 
 import (
+	"context"
+	"engflex-api/internal/database/models"
 	"engflex-api/internal/database/repositories"
 
 	mock "github.com/stretchr/testify/mock"
@@ -45,6 +47,74 @@ type MockUserProfileRepository_Expecter struct {
 
 func (_m *MockUserProfileRepository) EXPECT() *MockUserProfileRepository_Expecter {
 	return &MockUserProfileRepository_Expecter{mock: &_m.Mock}
+}
+
+// GetByUserID provides a mock function for the type MockUserProfileRepository
+func (_mock *MockUserProfileRepository) GetByUserID(ctx context.Context, userID string) (*models.UserProfile, error) {
+	ret := _mock.Called(ctx, userID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetByUserID")
+	}
+
+	var r0 *models.UserProfile
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) (*models.UserProfile, error)); ok {
+		return returnFunc(ctx, userID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) *models.UserProfile); ok {
+		r0 = returnFunc(ctx, userID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.UserProfile)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = returnFunc(ctx, userID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockUserProfileRepository_GetByUserID_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetByUserID'
+type MockUserProfileRepository_GetByUserID_Call struct {
+	*mock.Call
+}
+
+// GetByUserID is a helper method to define mock.On call
+//   - ctx context.Context
+//   - userID string
+func (_e *MockUserProfileRepository_Expecter) GetByUserID(ctx any, userID any) *MockUserProfileRepository_GetByUserID_Call {
+	return &MockUserProfileRepository_GetByUserID_Call{Call: _e.mock.On("GetByUserID", ctx, userID)}
+}
+
+func (_c *MockUserProfileRepository_GetByUserID_Call) Run(run func(ctx context.Context, userID string)) *MockUserProfileRepository_GetByUserID_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockUserProfileRepository_GetByUserID_Call) Return(userProfile *models.UserProfile, err error) *MockUserProfileRepository_GetByUserID_Call {
+	_c.Call.Return(userProfile, err)
+	return _c
+}
+
+func (_c *MockUserProfileRepository_GetByUserID_Call) RunAndReturn(run func(ctx context.Context, userID string) (*models.UserProfile, error)) *MockUserProfileRepository_GetByUserID_Call {
+	_c.Call.Return(run)
+	return _c
 }
 
 // WithTx provides a mock function for the type MockUserProfileRepository

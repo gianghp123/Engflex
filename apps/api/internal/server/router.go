@@ -18,6 +18,7 @@ import (
 	_ "engflex-api/docs"
 	"engflex-api/internal/modules/conversations"
 	"engflex-api/internal/modules/lessons"
+	"engflex-api/internal/modules/profiles"
 	"engflex-api/internal/modules/scenarios"
 	"engflex-api/internal/modules/videos"
 	"engflex-api/internal/modules/vocabulary"
@@ -25,8 +26,7 @@ import (
 )
 
 // NewRouter builds the Gin engine with shared middleware and module routes.
-// Add domain modules here as they are implemented:
-// profiles.RegisterRoutes(v1, db), contents.RegisterRoutes(v1, db), ...
+// Add domain modules here as they are implemented: contents.RegisterRoutes(v1, db), ...
 func NewRouter(db *gorm.DB, cfg config.Config) *gin.Engine {
 	r := gin.New()
 	r.Use(middleware.RequestID(), middleware.RequestLogger(), middleware.Recovery())
@@ -146,6 +146,7 @@ func NewRouter(db *gorm.DB, cfg config.Config) *gin.Engine {
 	scenarios.RegisterRoutes(v1, db)
 	videos.RegisterRoutes(v1, db)
 	vocabulary.RegisterRoutes(v1, db)
+	profiles.RegisterRoutes(v1, db)
 
 	return r
 }
