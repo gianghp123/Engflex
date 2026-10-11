@@ -2,6 +2,7 @@
 # Generate URL-safe passwords: openssl rand -hex 24
 #coolify_token          = ""
 #server_uuid            = ""
+#git_repository         = "your-git-repo"
 #server_ip              = "192.168.1.50"
 #db_password            = ""
 #redis_password         = ""

@@ -10,6 +10,10 @@ terraform {
       source  = "jianyuan/sentry"
       version = "~> 0.15.0"
     }
+    cloudflare = {
+      source  = "cloudflare/cloudflare"
+      version = ">= 5.8.2"
+    }
   }
 
   backend "local" {}
@@ -24,4 +28,8 @@ provider "coolify" {
 # Stored only in the gitignored terraform.tfvars.
 provider "sentry" {
   token = var.sentry_auth_token
+}
+
+provider "cloudflare" {
+  api_token = var.cloudflare_token
 }

@@ -70,6 +70,21 @@ output "minio_uuid" {
   value = module.minio.uuid
 }
 
+output "cloudflared_uuid" {
+  description = "Coolify cloudflared service UUID (empty when cloudflare_enabled = false)"
+  value       = var.cloudflare_enabled ? module.tunnel[0].uuid : ""
+}
+
+output "tunnel_hostname" {
+  description = "Public hostname routed through the tunnel (empty when disabled)"
+  value       = var.cloudflare_enabled ? module.tunnel[0].hostname : ""
+}
+
+output "tunnel_id" {
+  description = "Cloudflare tunnel ID (empty when disabled; used by destroy polling)"
+  value       = var.cloudflare_enabled ? module.tunnel[0].tunnel_id : ""
+}
+
 output "minio_host" {
   value = local.minio_host
 }

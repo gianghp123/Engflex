@@ -4,7 +4,7 @@ locals {
   web_host   = "engflex-web.${local.ip_dashed}.sslip.io"
   minio_host = "engflex-minio.${local.ip_dashed}.sslip.io"
 
-  # Flipped to https in Task 14; internal container traffic stays http by intent.
+  # internal container traffic stays http by intent.
   api_url   = "https://${local.api_host}"
   web_url   = "https://${local.web_host}"
   minio_url = "https://${local.minio_host}"
@@ -35,10 +35,11 @@ module "redis" {
 }
 
 module "api_app" {
-  source       = "../../modules/application"
-  name         = "engflex-api"
-  project_uuid = coolify_project.engflex.uuid
-  server_uuid  = var.server_uuid
+  source         = "../../modules/application"
+  name           = "engflex-api"
+  project_uuid   = coolify_project.engflex.uuid
+  server_uuid    = var.server_uuid
+  git_repository = var.git_repository
 
   # Repo-root context: dockerfile_location is repo-relative.
   base_directory      = "/"
@@ -51,66 +52,32 @@ module "api_app" {
 
   domains           = [local.api_url]
   health_check_path = "/health"
+  instant_deploy    = false
 
-  environment_variables = {
-    DATABASE_URL = module.postgres.internal_url
-    # The Go app reads DB_* (config/database.go), never DATABASE_URL — send
-    # both so the contract the binary actually honors is populated.
-    DB_HOST             = module.postgres.uuid
-    DB_PORT             = "5432"
-    DB_USER             = var.db_user
-    DB_PASSWORD         = var.db_password
-    DB_NAME             = var.db_name
-    DB_SSLMODE          = "disable"
-    REDIS_URL           = module.redis.internal_url
-    REDIS_KEY_PREFIX    = "engflex"
-    MINIO_ENDPOINT      = "http://minio:9000"
-    MINIO_ROOT_USER     = var.minio_root_user
-    MINIO_ROOT_PASSWORD = var.minio_root_password
-    MINIO_BUCKET        = "lesson-audio"
-    MEDIA_BASE_URL      = local.minio_url
-    CLERK_SECRET_KEY    = var.clerk_secret_key
-    # Comma-joined list: the web frontend, plus the API origin itself so
-    # Swagger UI try-it-out (served at /swagger on this same origin) and any
-    # direct-browser API calls are explicitly allowed; extend via
-    # var.cors_extra_origins without touching this block.
-    CORS_ORIGINS = join(",", concat([local.web_url, local.api_url], var.cors_extra_origins))
-    # Trust the Coolify proxy network for X-Forwarded-For so the IP-keyed
-    # limiter buckets by real client IP (both v4 and v6 subnets).
-    RATE_LIMIT_TRUSTED_PROXIES = "10.0.1.0/24,fdf6:8678:91f4::/64"
-    LLM_API_KEY                = var.llm_api_key
-    LLM_BASE_URL               = var.llm_base_url
-    LLM_MODEL                  = var.llm_model
-    SENTRY_DSN                 = module.sentry.dsns["api"]
-    VOICE_SERVICE_URL          = "http://engflex-voice:7860"
-    VOICE_INTERNAL_SECRET      = var.voice_internal_secret
-    VOICE_MAX_DURATION_SEC     = "300"
-    PRONOUNCE_SERVICE_URL      = "http://engflex-pronounce:8000"
-    PRONOUNCE_TIMEOUT_MS       = "120000"
-    APP_ENV                    = "production"
-    LOG_FORMAT                 = "json"
-  }
+  environment_variables = {}
 }
 
 module "web_app" {
-  source       = "../../modules/application"
-  name         = "engflex-web"
-  project_uuid = coolify_project.engflex.uuid
-  server_uuid  = var.server_uuid
+  source         = "../../modules/application"
+  name           = "engflex-web"
+  project_uuid   = coolify_project.engflex.uuid
+  server_uuid    = var.server_uuid
+  git_repository = var.git_repository
 
   base_directory      = "/"
   dockerfile_location = "/apps/web/Dockerfile"
   ports_exposes       = "3000"
 
-  domains           = [local.web_url]
+  domains           = concat([local.web_url], var.cloudflare_enabled ? ["https://${module.tunnel[0].hostname}"] : [])
   health_check_path = "/"
+  instant_deploy    = false
 
-  environment_variables = {
-    VITE_API_URL               = "${local.api_url}/api/v1"
-    VITE_CLERK_PUBLISHABLE_KEY = var.clerk_publishable_key
-    VITE_SENTRY_DSN            = module.sentry.dsns["web"]
-    CLERK_SECRET_KEY           = var.clerk_secret_key
-  }
+  # Tunnel (web-only front door): the tunnel delivers plain HTTP to the
+  # proxy, so the https redirect must stay off while enabled — otherwise
+  # origin 301s loop into TOO_MANY_REDIRECTS (Coolify guide step 5).
+  # Direct https:// sslip access keeps working (TLS still terminates).
+  is_force_https_enabled = !var.cloudflare_enabled
+  environment_variables  = {}
 }
 
 module "voice_app" {
@@ -118,33 +85,17 @@ module "voice_app" {
   name                    = "engflex-voice"
   project_uuid            = coolify_project.engflex.uuid
   server_uuid             = var.server_uuid
+  git_repository          = var.git_repository
   build_pack              = "dockercompose"
   base_directory          = "/"
   docker_compose_location = "/infrastructure/voice/compose.yaml"
   ports_exposes           = "7860"
   domains                 = []
   health_check_path       = "/status"
-  environment_variables = {
-    API_URL          = "http://engflex-api:8000"
-    INTERNAL_SECRET  = var.voice_internal_secret
-    STT_API_KEY      = var.stt_api_key
-    LLM_API_KEY      = var.llm_api_key
-    LLM_BASE_URL     = var.llm_base_url
-    LLM_MODEL        = var.llm_model
-    SENTRY_DSN       = module.sentry.dsns["voice"]
-    TTS_API_KEY      = var.tts_api_key
-    VOICE_MODEL      = var.voice_model
-    MALE_VOICE_ID    = var.male_voice_id
-    FEMALE_VOICE_ID  = var.female_voice_id
-    MAX_DURATION_SEC = "300"
-    IDLE_TIMEOUT_SEC = "300"
-    PIPECAT_ICE_SERVERS = jsonencode([
-      { urls = ["stun:stun.l.google.com:19302"] },
-      { urls = ["turn:${var.server_ip}:3478"], username = "engflex", credential = var.turn_secret },
-    ])
-    SERVER_IP   = var.server_ip
-    TURN_SECRET = var.turn_secret
-  }
+  instant_deploy          = false
+  # Bulk-managed env (see ledger 2026-10-10): TF owns no per-key rows;
+  # values go in via PATCH bulk, deploy.sh triggers the rollout.
+  environment_variables = {}
 }
 
 module "pronounce_app" {
@@ -152,11 +103,13 @@ module "pronounce_app" {
   name                = "engflex-pronounce"
   project_uuid        = coolify_project.engflex.uuid
   server_uuid         = var.server_uuid
+  git_repository      = var.git_repository
   base_directory      = "/"
   dockerfile_location = "/infrastructure/pronounce/Dockerfile"
   ports_exposes       = "8000"
   domains             = []
   health_check_path   = "/health"
+  instant_deploy      = false
   # Stable internal DNS on the shared coolify network (same rule as api).
   network_aliases       = "engflex-pronounce"
   environment_variables = {}
@@ -170,6 +123,26 @@ module "minio" {
   minio_host    = local.minio_host
   root_user     = var.minio_root_user
   root_password = var.minio_root_password
+}
+
+# Cloudflare Tunnel in front of the Coolify proxy (all-resource pattern).
+# Disabled by default — set cloudflare_enabled = true plus zone vars once
+# DNS is on Cloudflare. deploy.sh triggers the agent's first boot AFTER
+# the token env exists (instant_deploy = false in the module).
+module "tunnel" {
+  count                  = var.cloudflare_enabled ? 1 : 0
+  source                 = "../../modules/tunnel"
+  name                   = "engflex-cloudflared"
+  project_uuid           = coolify_project.engflex.uuid
+  server_uuid            = var.server_uuid
+  instant_deploy         = false
+  cloudflare_tunnel_name = var.cloudflare_tunnel_name
+  cloudflare_account_id  = var.cloudflare_account_id
+  cloudflare_email       = var.cloudflare_email
+  cloudflare_token       = var.cloudflare_token
+  cloudflare_zone_id     = var.cloudflare_zone_id
+  cloudflare_zone        = var.cloudflare_zone
+  app_name               = var.cloudflare_app_name
 }
 
 # Sentry projects + DSNs for the three instrumented services. The DSNs feed

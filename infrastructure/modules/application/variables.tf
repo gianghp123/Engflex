@@ -12,8 +12,7 @@ variable "server_uuid" {
 
 variable "git_repository" {
   type = string
-  # Local dumb-HTTP git mirror on this machine (its `main` = the working
-  # snapshot); GitHub push intentionally avoided — see the SDD ledger.
+  # Overridden per environment (see environments/*/terraform.tfvars).
   default = "http://engflex-git.192-168-1-10.sslip.io:9419/engflex.git"
 }
 
@@ -72,4 +71,10 @@ variable "environment_variables" {
   type      = map(string)
   default   = {}
   sensitive = true
+}
+
+variable "instant_deploy" {
+  description = "Boot immediately on creation (default false: deploy.sh triggers explicitly)"
+  type        = bool
+  default     = false
 }

@@ -27,6 +27,8 @@ import { Route as AppLessonsSlugPracticeRouteImport } from './routes/_app/lesson
 import { Route as AppVoiceRoomConversationIdRouteImport } from './routes/_app/voice/room/$conversationId'
 import { Route as AppVoiceScenariosIndexRouteImport } from './routes/_app/voice/scenarios/index'
 import { Route as AppVoiceScenariosScenarioIdRouteImport } from './routes/_app/voice/scenarios/$scenarioId'
+import { Route as ApiVoiceConversationIdOfferRouteImport } from './routes/api/voice/$conversationId/offer'
+import { Route as ApiVoiceConversationIdStartRouteImport } from './routes/api/voice/$conversationId/start'
 
 const AppRouteRoute = AppRouteRouteImport.update({
   id: '/_app',
@@ -119,6 +121,18 @@ const AppVoiceScenariosScenarioIdRoute =
     path: '/voice/scenarios/$scenarioId',
     getParentRoute: () => AppRouteRoute,
   } as any)
+const ApiVoiceConversationIdOfferRoute =
+  ApiVoiceConversationIdOfferRouteImport.update({
+    id: '/api/voice/$conversationId/offer',
+    path: '/api/voice/$conversationId/offer',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiVoiceConversationIdStartRoute =
+  ApiVoiceConversationIdStartRouteImport.update({
+    id: '/api/voice/$conversationId/start',
+    path: '/api/voice/$conversationId/start',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
@@ -136,6 +150,8 @@ export interface FileRoutesByFullPath {
   '/lessons/$slug/practice': typeof AppLessonsSlugPracticeRoute
   '/voice/room/$conversationId': typeof AppVoiceRoomConversationIdRoute
   '/voice/scenarios/$scenarioId': typeof AppVoiceScenariosScenarioIdRoute
+  '/api/voice/$conversationId/offer': typeof ApiVoiceConversationIdOfferRoute
+  '/api/voice/$conversationId/start': typeof ApiVoiceConversationIdStartRoute
   '/lessons/$slug/': typeof AppLessonsSlugIndexRoute
   '/voice/scenarios/': typeof AppVoiceScenariosIndexRoute
 }
@@ -155,6 +171,8 @@ export interface FileRoutesByTo {
   '/lessons/$slug/practice': typeof AppLessonsSlugPracticeRoute
   '/voice/room/$conversationId': typeof AppVoiceRoomConversationIdRoute
   '/voice/scenarios/$scenarioId': typeof AppVoiceScenariosScenarioIdRoute
+  '/api/voice/$conversationId/offer': typeof ApiVoiceConversationIdOfferRoute
+  '/api/voice/$conversationId/start': typeof ApiVoiceConversationIdStartRoute
   '/lessons/$slug': typeof AppLessonsSlugIndexRoute
   '/voice/scenarios': typeof AppVoiceScenariosIndexRoute
 }
@@ -176,6 +194,8 @@ export interface FileRoutesById {
   '/_app/lessons/$slug/practice': typeof AppLessonsSlugPracticeRoute
   '/_app/voice/room/$conversationId': typeof AppVoiceRoomConversationIdRoute
   '/_app/voice/scenarios/$scenarioId': typeof AppVoiceScenariosScenarioIdRoute
+  '/api/voice/$conversationId/offer': typeof ApiVoiceConversationIdOfferRoute
+  '/api/voice/$conversationId/start': typeof ApiVoiceConversationIdStartRoute
   '/_app/lessons/$slug/': typeof AppLessonsSlugIndexRoute
   '/_app/voice/scenarios/': typeof AppVoiceScenariosIndexRoute
 }
@@ -197,6 +217,8 @@ export interface FileRouteTypes {
     | '/lessons/$slug/practice'
     | '/voice/room/$conversationId'
     | '/voice/scenarios/$scenarioId'
+    | '/api/voice/$conversationId/offer'
+    | '/api/voice/$conversationId/start'
     | '/lessons/$slug/'
     | '/voice/scenarios/'
   fileRoutesByTo: FileRoutesByTo
@@ -216,6 +238,8 @@ export interface FileRouteTypes {
     | '/lessons/$slug/practice'
     | '/voice/room/$conversationId'
     | '/voice/scenarios/$scenarioId'
+    | '/api/voice/$conversationId/offer'
+    | '/api/voice/$conversationId/start'
     | '/lessons/$slug'
     | '/voice/scenarios'
   id:
@@ -236,6 +260,8 @@ export interface FileRouteTypes {
     | '/_app/lessons/$slug/practice'
     | '/_app/voice/room/$conversationId'
     | '/_app/voice/scenarios/$scenarioId'
+    | '/api/voice/$conversationId/offer'
+    | '/api/voice/$conversationId/start'
     | '/_app/lessons/$slug/'
     | '/_app/voice/scenarios/'
   fileRoutesById: FileRoutesById
@@ -247,6 +273,8 @@ export interface RootRouteChildren {
   OnboardingRoute: typeof OnboardingRoute
   SignInSplatRoute: typeof SignInSplatRoute
   SignUpSplatRoute: typeof SignUpSplatRoute
+  ApiVoiceConversationIdOfferRoute: typeof ApiVoiceConversationIdOfferRoute
+  ApiVoiceConversationIdStartRoute: typeof ApiVoiceConversationIdStartRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -377,6 +405,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppVoiceScenariosScenarioIdRouteImport
       parentRoute: typeof AppRouteRoute
     }
+    '/api/voice/$conversationId/offer': {
+      id: '/api/voice/$conversationId/offer'
+      path: '/api/voice/$conversationId/offer'
+      fullPath: '/api/voice/$conversationId/offer'
+      preLoaderRoute: typeof ApiVoiceConversationIdOfferRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/voice/$conversationId/start': {
+      id: '/api/voice/$conversationId/start'
+      path: '/api/voice/$conversationId/start'
+      fullPath: '/api/voice/$conversationId/start'
+      preLoaderRoute: typeof ApiVoiceConversationIdStartRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -421,6 +463,8 @@ const rootRouteChildren: RootRouteChildren = {
   OnboardingRoute: OnboardingRoute,
   SignInSplatRoute: SignInSplatRoute,
   SignUpSplatRoute: SignUpSplatRoute,
+  ApiVoiceConversationIdOfferRoute: ApiVoiceConversationIdOfferRoute,
+  ApiVoiceConversationIdStartRoute: ApiVoiceConversationIdStartRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -9,7 +9,14 @@ import "@tanstack/react-start/server-only";
 import { auth } from "@clerk/tanstack-react-start/server";
 import type { ApiResponse } from "@engflex/contracts";
 import { getRequestIP } from "@tanstack/react-start/server";
-import { API_URL, type ProxyRequest, type ProxyResult } from "./api-base.ts";
+import { API_INTERNAL_URL_FALLBACK } from "#/app/api-routes";
+import type { ProxyRequest, ProxyResult } from "./api-base.ts";
+
+// Server-side API base: internal plain-HTTP service address. The browser
+// never uses this (voice signaling goes same-origin, everything else rides
+// serverFn).
+const SERVER_API_URL =
+	process.env.API_INTERNAL_URL ?? API_INTERNAL_URL_FALLBACK;
 
 /**
  * Direct call to the API from the server. When the request asks for
@@ -38,7 +45,7 @@ export async function fetchApiServer(req: ProxyRequest): Promise<ProxyResult> {
 	// in RATE_LIMIT_TRUSTED_PROXIES, so a spoofed header is inert.
 	const clientIP = getRequestIP();
 	const isForm = req.body instanceof FormData;
-	const res = await fetch(`${API_URL}${req.path}`, {
+	const res = await fetch(`${SERVER_API_URL}${req.path}`, {
 		method: req.method,
 		headers: {
 			...(isForm ? {} : { "Content-Type": "application/json" }),

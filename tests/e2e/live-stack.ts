@@ -156,10 +156,9 @@ export function defineLiveConfig({
 				reuseExistingServer: false,
 				timeout: 120_000,
 				env: {
-					// API_URL is the api client base, which already carries
-					// the /api/v1 prefix (see .env.local) — routes are
-					// appended to it.
-					VITE_API_URL: `http://localhost:${API_PORT}/api/v1`,
+					// Server-side API base (already carries the /api/v1 prefix).
+					// The browser talks same-origin, so no VITE_ var is needed.
+					API_INTERNAL_URL: `http://localhost:${API_PORT}/api/v1`,
 				},
 			},
 		],

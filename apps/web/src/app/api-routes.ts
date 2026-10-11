@@ -57,3 +57,11 @@ export const API_ROUTES = {
 			`/lesson-activities/${activityId}/pronounce`,
 	},
 } as const;
+
+/**
+ * Server-side API base fallback for local dev (no Coolify env). The
+ * production value comes from the `API_INTERNAL_URL` runtime env (bulk);
+ * this literal lives here — the backend-URLs module, exempt from the
+ * hardcoded-route guard — so services never spell an origin themselves.
+ */
+export const API_INTERNAL_URL_FALLBACK = "http://localhost:8000/api/v1";

@@ -75,7 +75,7 @@ export default defineConfig({
 		{ name: "global setup", testMatch: /global\.setup\.ts/ },
 		{
 			name: "voice",
-			testMatch: /voice-(room|detail)\.spec\.ts/,
+			testMatch: /voice-(room|detail|signal)\.spec\.ts/,
 			dependencies: ["global setup"],
 			use: {
 				...devices["Desktop Chrome"],
@@ -114,11 +114,10 @@ export default defineConfig({
 			reuseExistingServer: false,
 			timeout: 120_000,
 			env: {
-				// API_URL is the api client base and already carries the
-				// /api/v1 prefix (see .env.local); routes are appended to it.
-				// Set here so the dev server cannot fall back to the 8000 in
-				// .env.local while this stack runs on 8001.
-				VITE_API_URL: `http://localhost:${API_PORT}/api/v1`,
+				// Server-side API base, already carrying the /api/v1 prefix.
+				// The browser talks same-origin (no VITE_ var); this only
+				// feeds the web server runtime.
+				API_INTERNAL_URL: `http://localhost:${API_PORT}/api/v1`,
 			},
 		},
 	],

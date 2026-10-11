@@ -50,9 +50,14 @@ echo "== ensure pronounce artifact (frozen image) =="
 bash "$REPO_ROOT/infrastructure/scripts/ensure-pronounce-image.sh"
 
 echo "== trigger Coolify deploys =="
+# Single rollout owner (2026-10-11): neither bulk nor instant boots roll
+# out — only a deploy recreates containers. Boot != rollout.
 VOICE_UUID="$(tf output -raw voice_app_uuid)"
 PRONOUNCE_UUID="$(tf output -raw pronounce_app_uuid)"
-for UUID in "$API_UUID" "$WEB_UUID" "$VOICE_UUID" "$PRONOUNCE_UUID"; do
+MINIO_UUID="$(tf output -raw minio_uuid)"
+CLOUDFLARED_UUID="$(tf output -raw cloudflared_uuid)"
+for UUID in "$API_UUID" "$WEB_UUID" "$VOICE_UUID" "$PRONOUNCE_UUID" "$MINIO_UUID" "$CLOUDFLARED_UUID"; do
+  [ -z "$UUID" ] && continue # empty = cloudflare_enabled=false, nothing to trigger
   if ! curl -fsS -X POST "$COOLIFY/api/v1/deploy?uuid=$UUID" \
       -H "Authorization: Bearer $TOKEN" >/dev/null; then
     echo "ERROR: deploy trigger failed for app $UUID" >&2
@@ -65,7 +70,10 @@ echo "== health =="
 poll() { # $1=url $2=label $3=deadline_sec (default 900)
   local url="$1" label="$2" deadline_sec="${3:-900}"
   local deadline=$((SECONDS + deadline_sec))
-  until curl -fsS --max-time 5 -o /dev/null "$url"; do
+  # --cacert: traefik serves mkcert certs (Task 14); plain curl fails
+  # verify (60) since the mkcert root isn't in the system store.
+  local cacert="$HOME/.local/share/mkcert/rootCA.pem"
+  until curl -fsS --max-time 5 --cacert "$cacert" -o /dev/null "$url"; do
     if [ "$SECONDS" -ge "$deadline" ]; then
       echo "ERROR: TIMEOUT after ${deadline_sec}s waiting for $label ($url)" >&2
       exit 1

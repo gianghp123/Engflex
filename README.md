@@ -303,8 +303,10 @@ cp apps/web/.env.example apps/web/.env
 Fill in the keys: Clerk (api + web — the API refuses to boot without
 `CLERK_SECRET_KEY`), and LLM/STT/TTS (api scoring + voice engine). Keep
 `INTERNAL_SECRET` identical in api and voice; the `.env.example` files ship the
-same dev value. The web app talks to `http://localhost:8000` by default;
-override with `VITE_API_URL` if the API runs elsewhere.
+same dev value. The web server talks to `http://localhost:8000/api/v1` by
+default; override with `API_INTERNAL_URL` if the API runs elsewhere. The
+browser never addresses the API directly — all calls (including voice
+signaling) are same-origin through the web server.
 
 ### 4. Database + migrations
 

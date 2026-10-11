@@ -25,7 +25,10 @@ resource "coolify_application" "this" {
   health_check_scheme  = "http"
 
   # Deploys trigger via make deploy (deploy API), not on config apply.
-  instant_deploy = false
+  # instant_deploy stays false (single rollout owner = deploy.sh trigger
+  # loop; instant=true caused duplicate deploys + the 2026-10-11 voice
+  # coturn port race).
+  instant_deploy = var.instant_deploy
 }
 
 # for_each runs over nonsensitive() because the map is sensitive; values are
