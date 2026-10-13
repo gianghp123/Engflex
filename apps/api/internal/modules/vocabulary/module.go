@@ -25,10 +25,11 @@ func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB) {
 	itemSvc := services.NewVocabularyDeckItemService(repositories.NewVocabularyDeckItemRepository(db), repositories.NewVocabularyDeckRepository(db))
 	itemCtl := controllers.NewVocabularyDeckItemController(itemSvc)
 
-	dictSvc := services.NewVocabularyItemService(repositories.NewVocabularyItemRepository(db))
+	itemRepo := repositories.NewVocabularyItemRepository(db)
+	dictSvc := services.NewVocabularyItemService(itemRepo)
 	dictCtl := controllers.NewVocabularyItemController(dictSvc)
 
-	stateSvc := services.NewUserVocabularyService(repositories.NewUserVocabularyRepository(db))
+	stateSvc := services.NewUserVocabularyService(repositories.NewUserVocabularyRepository(db), itemRepo)
 	stateCtl := controllers.NewUserVocabularyController(stateSvc)
 
 	c := rg.Group("/vocabulary-categories")
@@ -42,6 +43,8 @@ func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB) {
 	d.GET("", middleware.RequireAuth(), deckCtl.List)
 	d.GET("/:id", middleware.RequireAuth(), deckCtl.GetByID)
 	d.POST("", middleware.RequireAuth(), deckCtl.Create)
+	// Update/Delete serve both owners (their own deck) and admins (system
+	// decks) — the service enforces which, so no RequireAdmin here.
 	d.PUT("/:id", middleware.RequireAuth(), deckCtl.Update)
 	d.DELETE("/:id", middleware.RequireAuth(), deckCtl.Delete)
 
@@ -56,9 +59,17 @@ func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB) {
 	v.GET("", middleware.RequireAuth(), dictCtl.List)
 	v.GET("/:id", middleware.RequireAuth(), dictCtl.GetByID)
 	v.POST("", middleware.RequireAuth(), dictCtl.Create)
+	// Update/Delete only ever touch admin-curated entries (service-enforced:
+	// CreatedByUserID must be nil), so these are admin-gated outright.
+	v.PUT("/:id", middleware.RequireAuth(), middleware.RequireAdmin(), dictCtl.Update)
+	v.DELETE("/:id", middleware.RequireAuth(), middleware.RequireAdmin(), dictCtl.Delete)
 
 	u := rg.Group("/user-vocabulary")
 	u.GET("", middleware.RequireAuth(), stateCtl.List)
 	u.POST("", middleware.RequireAuth(), stateCtl.Save)
 	u.DELETE("/:itemId", middleware.RequireAuth(), stateCtl.Unsave)
+
+	admin := rg.Group("/admin")
+	admin.POST("/vocabulary-decks", middleware.RequireAuth(), middleware.RequireAdmin(), deckCtl.CreateSystemDeck)
+	admin.POST("/vocabulary-items", middleware.RequireAuth(), middleware.RequireAdmin(), dictCtl.CreateSystemEntry)
 }

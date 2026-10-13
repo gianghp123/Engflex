@@ -18,6 +18,7 @@ type VocabularyItem struct {
 	CEFR            enums.CEFR              `gorm:"column:cefr;not null" json:"cefr"`
 	Domain          *enums.VocabularyDomain `gorm:"column:domain" json:"domain"`
 	CreatedByUserID *string                 `json:"createdByUserId"`
+	Status          enums.PublishStatus     `gorm:"not null;default:draft" json:"status"`
 	Details         VocabularyDetails       `gorm:"type:jsonb;not null;default:'{}'" json:"details"`
 	CreatedAt       time.Time               `gorm:"autoCreateTime" json:"createdAt"`
 	UpdatedAt       time.Time               `gorm:"autoUpdateTime" json:"updatedAt"`

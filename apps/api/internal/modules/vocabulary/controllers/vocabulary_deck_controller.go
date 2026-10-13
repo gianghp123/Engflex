@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"engflex-api/internal/common"
+	"engflex-api/internal/common/enums"
 	"engflex-api/internal/modules/vocabulary/dtos/requests"
 	"engflex-api/internal/modules/vocabulary/dtos/responses"
 	"engflex-api/internal/modules/vocabulary/services"
@@ -49,7 +50,7 @@ func (h *VocabularyDeckController) List(c *gin.Context) {
 // @Success      200 {object} common.ApiResponse{data=responses.VocabularyDeckDetail}
 // @Router       /vocabulary-decks/{id} [get]
 func (h *VocabularyDeckController) GetByID(c *gin.Context) {
-	m, err := h.decks.GetDetail(c.Request.Context(), middleware.UserID(c), c.Param("id"))
+	m, err := h.decks.GetDetail(c.Request.Context(), middleware.UserID(c), c.Param("id"), middleware.Role(c) == enums.UserRoleAdmin)
 	if err != nil {
 		common.Fail(c, err)
 		return
@@ -100,7 +101,7 @@ func (h *VocabularyDeckController) Update(c *gin.Context) {
 		common.Fail(c, common.BadRequest(err.Error()))
 		return
 	}
-	m, err := h.decks.Update(c.Request.Context(), middleware.UserID(c), c.Param("id"), req)
+	m, err := h.decks.Update(c.Request.Context(), middleware.UserID(c), c.Param("id"), middleware.Role(c) == enums.UserRoleAdmin, req)
 	if err != nil {
 		common.Fail(c, err)
 		return
@@ -119,9 +120,34 @@ func (h *VocabularyDeckController) Update(c *gin.Context) {
 // @Success      200 {object} common.ApiResponse
 // @Router       /vocabulary-decks/{id} [delete]
 func (h *VocabularyDeckController) Delete(c *gin.Context) {
-	if err := h.decks.Delete(c.Request.Context(), middleware.UserID(c), c.Param("id")); err != nil {
+	if err := h.decks.Delete(c.Request.Context(), middleware.UserID(c), c.Param("id"), middleware.Role(c) == enums.UserRoleAdmin); err != nil {
 		common.Fail(c, err)
 		return
 	}
 	common.OK(c, "vocabulary deck deleted", nil)
+}
+
+// CreateSystemDeck godoc
+// @Summary      Create a system-curated vocabulary deck (admin)
+// @Tags         vocabulary-decks
+// @Security     BearerAuth
+// @Accept       json
+// @Produce      json
+// @Param        request body requests.CreateVocabularyDeck true "deck payload"
+// @Success      201 {object} common.ApiResponse{data=responses.VocabularyDeckDetail}
+// @Router       /admin/vocabulary-decks [post]
+func (h *VocabularyDeckController) CreateSystemDeck(c *gin.Context) {
+	var req requests.CreateVocabularyDeck
+	if err := c.ShouldBindJSON(&req); err != nil {
+		common.Fail(c, common.BadRequest(err.Error()))
+		return
+	}
+	m, err := h.decks.CreateSystemDeck(c.Request.Context(), middleware.UserID(c), req)
+	if err != nil {
+		common.Fail(c, err)
+		return
+	}
+	var dto responses.VocabularyDeckDetail
+	_ = utils.Map(&dto, m)
+	common.Created(c, "system vocabulary deck created", dto)
 }

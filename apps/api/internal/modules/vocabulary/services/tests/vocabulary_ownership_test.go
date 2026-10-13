@@ -14,12 +14,11 @@ import (
 )
 
 func TestVocabularyDeckItemService_ListByDeck_ForeignDeck(t *testing.T) {
-	deckID := "11111111-1111-1111-1111-111111111111"
 	owner := "user_1"
 	other := "user_9"
 	deckRepo := mocks.NewMockVocabularyDeckRepository(t)
 	deckRepo.On("GetByID", mock.Anything, deckID).
-		Return(&models.VocabularyDeck{ID: deckID, UserID: &owner, Name: "Core"}, nil)
+		Return(&models.VocabularyDeck{ID: deckID, UserID: owner, Name: "Core"}, nil)
 	itemRepo := mocks.NewMockVocabularyDeckItemRepository(t)
 	svc := services.NewVocabularyDeckItemService(itemRepo, deckRepo)
 

@@ -21,12 +21,15 @@ type UserVocabularyService interface {
 }
 
 type userVocabularyService struct {
-	repo repositories.UserVocabularyRepository
+	repo  repositories.UserVocabularyRepository
+	items repositories.VocabularyItemRepository
 }
 
-// NewUserVocabularyService builds the service over the repository interface.
-func NewUserVocabularyService(repo repositories.UserVocabularyRepository) UserVocabularyService {
-	return &userVocabularyService{repo: repo}
+// NewUserVocabularyService builds the service over both repository
+// interfaces: items is needed to gate Save on the referenced item's
+// publish status (SRS must never pick up a draft entry).
+func NewUserVocabularyService(repo repositories.UserVocabularyRepository, items repositories.VocabularyItemRepository) UserVocabularyService {
+	return &userVocabularyService{repo: repo, items: items}
 }
 
 func (s *userVocabularyService) ListByUser(ctx context.Context, userID string, limit, offset int) ([]*models.UserVocabulary, error) {
@@ -40,8 +43,21 @@ func (s *userVocabularyService) ListByUser(ctx context.Context, userID string, l
 	return items, nil
 }
 
-// Save stores per-user state idempotently via Upsert.
+// Save stores per-user state idempotently via Upsert. SRS must only ever
+// pick up published words: a draft entry is rejected here even though the
+// item id itself is valid, so a half-reviewed dictionary entry can never
+// reach a learner's deck through the save path.
 func (s *userVocabularyService) Save(ctx context.Context, userID string, req requests.SaveUserVocabulary) (*models.UserVocabulary, error) {
+	item, err := s.items.GetByID(ctx, req.ItemID)
+	if err != nil {
+		appErr := common.FromDBError(err, "vocabulary item")
+		logger.Report(ctx, "get vocabulary item for save failed", appErr, "itemID", req.ItemID)
+		return nil, appErr
+	}
+	if item.Status != enums.PublishStatusPublished {
+		return nil, common.UnprocessableEntity("word is not published yet")
+	}
+
 	u := &models.UserVocabulary{UserID: userID}
 	if err := utils.Map(u, req); err != nil {
 		logger.Report(ctx, "map save user vocabulary failed", err)

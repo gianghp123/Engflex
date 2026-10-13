@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"engflex-api/internal/common"
+	"engflex-api/internal/common/enums"
 	"engflex-api/internal/modules/vocabulary/dtos/requests"
 	"engflex-api/internal/modules/vocabulary/dtos/responses"
 	"engflex-api/internal/modules/vocabulary/services"
@@ -30,7 +31,7 @@ func NewVocabularyItemController(items services.VocabularyItemService) *Vocabula
 // @Router       /vocabulary-items [get]
 func (h *VocabularyItemController) List(c *gin.Context) {
 	page, pageSize := utils.ParsePagination(c)
-	items, total, err := h.items.List(c.Request.Context(), pageSize, utils.Offset(page, pageSize))
+	items, total, err := h.items.List(c.Request.Context(), pageSize, utils.Offset(page, pageSize), middleware.Role(c) == enums.UserRoleAdmin)
 	if err != nil {
 		common.Fail(c, err)
 		return
@@ -49,7 +50,7 @@ func (h *VocabularyItemController) List(c *gin.Context) {
 // @Success      200 {object} common.ApiResponse{data=responses.VocabularyItem}
 // @Router       /vocabulary-items/{id} [get]
 func (h *VocabularyItemController) GetByID(c *gin.Context) {
-	m, err := h.items.GetByID(c.Request.Context(), c.Param("id"))
+	m, err := h.items.GetByID(c.Request.Context(), c.Param("id"), middleware.Role(c) == enums.UserRoleAdmin)
 	if err != nil {
 		common.Fail(c, err)
 		return
@@ -82,4 +83,71 @@ func (h *VocabularyItemController) Create(c *gin.Context) {
 	var dto responses.VocabularyItem
 	_ = utils.Map(&dto, m)
 	common.Created(c, "vocabulary item created", dto)
+}
+
+// CreateSystemEntry godoc
+// @Summary      Add a shared dictionary entry (admin)
+// @Tags         vocabulary-items
+// @Security     BearerAuth
+// @Accept       json
+// @Produce      json
+// @Param        request body requests.CreateVocabularyItem true "word payload"
+// @Success      201 {object} common.ApiResponse{data=responses.VocabularyItem}
+// @Router       /admin/vocabulary-items [post]
+func (h *VocabularyItemController) CreateSystemEntry(c *gin.Context) {
+	var req requests.CreateVocabularyItem
+	if err := c.ShouldBindJSON(&req); err != nil {
+		common.Fail(c, common.BadRequest(err.Error()))
+		return
+	}
+	m, err := h.items.CreateSystemEntry(c.Request.Context(), req)
+	if err != nil {
+		common.Fail(c, err)
+		return
+	}
+	var dto responses.VocabularyItem
+	_ = utils.Map(&dto, m)
+	common.Created(c, "vocabulary item created", dto)
+}
+
+// Update godoc
+// @Summary      Update a shared dictionary entry (admin)
+// @Tags         vocabulary-items
+// @Security     BearerAuth
+// @Accept       json
+// @Produce      json
+// @Param        id path string true "item id"
+// @Param        request body requests.UpdateVocabularyItem true "update payload"
+// @Success      200 {object} common.ApiResponse{data=responses.VocabularyItem}
+// @Router       /vocabulary-items/{id} [put]
+func (h *VocabularyItemController) Update(c *gin.Context) {
+	var req requests.UpdateVocabularyItem
+	if err := c.ShouldBindJSON(&req); err != nil {
+		common.Fail(c, common.BadRequest(err.Error()))
+		return
+	}
+	m, err := h.items.Update(c.Request.Context(), c.Param("id"), req)
+	if err != nil {
+		common.Fail(c, err)
+		return
+	}
+	var dto responses.VocabularyItem
+	_ = utils.Map(&dto, m)
+	common.OK(c, "vocabulary item updated", dto)
+}
+
+// Delete godoc
+// @Summary      Delete a shared dictionary entry (admin)
+// @Tags         vocabulary-items
+// @Security     BearerAuth
+// @Produce      json
+// @Param        id path string true "item id"
+// @Success      200 {object} common.ApiResponse
+// @Router       /vocabulary-items/{id} [delete]
+func (h *VocabularyItemController) Delete(c *gin.Context) {
+	if err := h.items.Delete(c.Request.Context(), c.Param("id")); err != nil {
+		common.Fail(c, err)
+		return
+	}
+	common.OK(c, "vocabulary item deleted", nil)
 }

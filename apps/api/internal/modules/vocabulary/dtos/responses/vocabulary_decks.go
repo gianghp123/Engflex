@@ -1,6 +1,10 @@
 package responses
 
-import "time"
+import (
+	"time"
+
+	"engflex-api/internal/common/enums"
+)
 
 // VocabularyDeckDetail is the GET /vocabulary-decks/:id shape: deck header
 // plus its category. Items page separately via /vocabulary-deck-items.
@@ -12,6 +16,7 @@ type VocabularyDeckDetail struct {
 	ThumbnailURL string                      `json:"thumbnailUrl"`
 	Level        string                      `json:"level"`
 	IsDefault    bool                        `json:"isDefault"`
+	Status       enums.PublishStatus         `json:"status"`
 	Category     *VocabularyCategoryResponse `json:"category"`
 	CreatedAt    time.Time                   `json:"createdAt"`
 	UpdatedAt    time.Time                   `json:"updatedAt"`

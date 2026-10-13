@@ -15,16 +15,15 @@ import (
 )
 
 func TestVocabularyDeckService_Update_PreservesCategoryWhenOmitted(t *testing.T) {
-	deckID := "11111111-1111-1111-1111-111111111111"
 	owner := "user_1"
 	catID := "22222222-2222-2222-2222-222222222222"
 	repo := mocks.NewMockVocabularyDeckRepository(t)
 	repo.On("GetByID", mock.Anything, deckID).
-		Return(&models.VocabularyDeck{ID: deckID, UserID: &owner, CategoryID: &catID, Name: "Core"}, nil)
+		Return(&models.VocabularyDeck{ID: deckID, UserID: owner, CategoryID: &catID, Name: "Core"}, nil)
 	repo.On("Update", mock.Anything, mock.Anything).Return(nil)
 	svc := services.NewVocabularyDeckService(repo)
 
-	got, err := svc.Update(context.Background(), owner, deckID, requests.UpdateVocabularyDeck{})
+	got, err := svc.Update(context.Background(), owner, deckID, false, requests.UpdateVocabularyDeck{})
 
 	require.NoError(t, err)
 	require.NotNil(t, got.CategoryID)

@@ -43,7 +43,7 @@ func (s *vocabularyDeckItemService) requireOwner(ctx context.Context, userID, de
 		logger.Report(ctx, "deck lookup for ownership failed", appErr, "deckID", deckID)
 		return appErr
 	}
-	if d.UserID == nil || *d.UserID != userID {
+	if d.UserID != userID {
 		return common.Forbidden("not your deck")
 	}
 	return nil

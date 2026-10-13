@@ -61,6 +61,7 @@ type VocabularyItem struct {
 	CEFR         enums.CEFR              `json:"cefr"`
 	Domain       *enums.VocabularyDomain `json:"domain"`
 	Definition   string                  `json:"definition"`
+	Status       enums.PublishStatus     `json:"status"`
 	Details      *VocabularyDetails      `json:"details"`
 	UserState    *UserVocabularyState    `json:"userState"`
 }

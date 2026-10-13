@@ -16,12 +16,11 @@ import (
 )
 
 func TestVocabularyDeckItemService_Create_UnknownDeckNamesDeck(t *testing.T) {
-	deckID := "11111111-1111-1111-1111-111111111111"
 	owner := "user_1"
 	itemRepo := mocks.NewMockVocabularyDeckItemRepository(t)
 	deckRepo := mocks.NewMockVocabularyDeckRepository(t)
 	deckRepo.On("GetByID", mock.Anything, deckID).
-		Return(&models.VocabularyDeck{ID: deckID, UserID: &owner}, nil)
+		Return(&models.VocabularyDeck{ID: deckID, UserID: owner}, nil)
 	itemRepo.On("Create", mock.Anything, mock.Anything).
 		Return(&pgconn.PgError{Code: "23503"})
 	svc := services.NewVocabularyDeckItemService(itemRepo, deckRepo)

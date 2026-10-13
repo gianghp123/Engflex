@@ -3,6 +3,7 @@ package repositories
 import (
 	"context"
 
+	"engflex-api/internal/common/enums"
 	"engflex-api/internal/database/models"
 
 	"gorm.io/gorm"
@@ -37,9 +38,15 @@ func (r *vocabularyDeckRepository) WithTx(tx *gorm.DB) VocabularyDeckRepository 
 	return &vocabularyDeckRepository{db: tx}
 }
 
+// visibleToUser scopes decks the caller may see: everything they own, plus
+// published system decks (IsDefault) curated by admin for every learner.
+func visibleToUser(db *gorm.DB, userID string) *gorm.DB {
+	return db.Where("user_id = ? OR (is_default = true AND status = ?)", userID, enums.PublishStatusPublished)
+}
+
 func (r *vocabularyDeckRepository) ListByUser(ctx context.Context, userID string, limit, offset int) ([]*models.VocabularyDeck, error) {
 	var out []*models.VocabularyDeck
-	if err := r.db.WithContext(ctx).Where("user_id = ?", userID).Order("created_at DESC").Limit(limit).Offset(offset).Find(&out).Error; err != nil {
+	if err := visibleToUser(r.db.WithContext(ctx), userID).Order("created_at DESC").Limit(limit).Offset(offset).Find(&out).Error; err != nil {
 		return nil, err
 	}
 	return out, nil
@@ -47,7 +54,7 @@ func (r *vocabularyDeckRepository) ListByUser(ctx context.Context, userID string
 
 func (r *vocabularyDeckRepository) CountByUser(ctx context.Context, userID string) (int64, error) {
 	var n int64
-	if err := r.db.WithContext(ctx).Model(&models.VocabularyDeck{}).Where("user_id = ?", userID).Count(&n).Error; err != nil {
+	if err := visibleToUser(r.db.WithContext(ctx).Model(&models.VocabularyDeck{}), userID).Count(&n).Error; err != nil {
 		return 0, err
 	}
 	return n, nil
