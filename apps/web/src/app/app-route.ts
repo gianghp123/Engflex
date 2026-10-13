@@ -17,6 +17,8 @@ export const APP_ROUTES = {
 		SCENARIOS: "/voice/scenarios",
 		SCENARIO: "/voice/scenarios/$scenarioId",
 		ROOM: "/voice/room/$conversationId",
+		SIGNAL_START: "/api/voice/$conversationId/start",
+		SIGNAL_OFFER: "/api/voice/$conversationId/offer",
 	},
 	/**
 	 * Clerk's catch-all pages. The file routes are `/sign-in/$` splats, so a

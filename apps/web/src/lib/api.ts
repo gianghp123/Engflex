@@ -10,14 +10,9 @@
 import type { Pagination } from "@engflex/contracts";
 import { createServerFn } from "@tanstack/react-start";
 import { fetchApiServer } from "./api.server.ts";
-import {
-	API_URL,
-	type ProxyRequest,
-	type ProxyResult,
-	withQuery,
-} from "./api-base.ts";
+import { type ProxyRequest, type ProxyResult, withQuery } from "./api-base.ts";
 
-export { API_URL, withQuery };
+export { withQuery };
 
 export class ApiError extends Error {
 	status: number;

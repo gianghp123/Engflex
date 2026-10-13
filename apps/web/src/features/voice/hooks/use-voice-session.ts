@@ -1,8 +1,7 @@
 import type { ConversationSession } from "@engflex/contracts";
 import { useEffect, useRef, useState } from "react";
-import { API_ROUTES } from "#/app/api-routes";
+import { APP_ROUTES } from "#/app/app-route";
 import { useConversation, useEndConversation } from "#/features/voice/queries";
-import { API_URL } from "#/lib/api";
 import { authToken } from "#/lib/auth-token";
 
 /**
@@ -48,7 +47,10 @@ export function useVoiceSession(
 	}, []);
 
 	const startBotParams = {
-		endpoint: `${API_URL}${API_ROUTES.CONVERSATIONS.START(conversationId)}`,
+		endpoint: APP_ROUTES.VOICE.SIGNAL_START.replace(
+			"$conversationId",
+			conversationId,
+		),
 		// Null until the token resolves; the room renders a skeleton until
 		// `ready`, so this is never sent without headers.
 		headers: authHeaders ?? undefined,
@@ -59,7 +61,10 @@ export function useVoiceSession(
 			?.data;
 		return {
 			webrtcRequestParams: {
-				endpoint: `${API_URL}${API_ROUTES.CONVERSATIONS.OFFER(conversationId)}`,
+				endpoint: APP_ROUTES.VOICE.SIGNAL_OFFER.replace(
+					"$conversationId",
+					conversationId,
+				),
 				headers: authHeaders ?? undefined,
 			},
 			iceConfig: data?.iceConfig

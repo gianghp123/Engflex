@@ -3,14 +3,17 @@ package main
 import (
 	"log/slog"
 	"os"
+	"time"
 
 	"github.com/clerk/clerk-sdk-go/v2"
+	"github.com/getsentry/sentry-go"
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 
 	"engflex-api/config"
 	"engflex-api/internal/logger"
+	"engflex-api/internal/observability"
 	"engflex-api/internal/server"
 )
 
@@ -34,6 +37,16 @@ func main() {
 
 	// Install the structured logger before anything else logs.
 	slog.SetDefault(logger.New(cfg.Log.Level, cfg.Log.Format))
+
+	sentryEnabled, err := observability.Init(cfg.Sentry)
+	if err != nil {
+		slog.Warn("sentry disabled: init failed", "error", err)
+	} else if sentryEnabled {
+		defer sentry.Flush(2 * time.Second)
+		slog.Info("sentry enabled", "environment", cfg.Sentry.Environment)
+	} else {
+		slog.Info("sentry disabled: no DSN")
+	}
 
 	// Gin's debug output is development noise.
 	if cfg.Server.Env != "development" {

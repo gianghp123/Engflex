@@ -1,0 +1,85 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main, dev]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  api:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/api
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: apps/api/go.mod
+          cache-dependency-path: apps/api/go.sum
+      - name: gofmt
+        run: test -z "$(gofmt -l internal/)"
+      - run: go vet ./...
+      - run: go test ./... -count=1
+
+  voice:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/voice
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6 # uv cache enabled by default; Python comes from pyproject requires-python
+      - run: uv run ruff check src tests
+      - run: uv run pytest -q
+
+  web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12.4.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter web compile:messages
+      - run: pnpm --filter web check
+      - run: pnpm --filter web typecheck
+      - run: pnpm --filter web check:conventions
+      - run: pnpm --filter web build
+
+  contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: apps/api/go.mod
+          cache-dependency-path: apps/api/go.sum
+      - run: go install github.com/gzuidhof/tygo@latest
+      - run: make contracts
+        working-directory: apps/api
+      - name: no drift
+        run: git diff --exit-code packages/contracts
+
+  terraform:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+      - run: terraform fmt -check -recursive infrastructure/
+      - run: terraform init -backend=false
+        working-directory: infrastructure/environments/selfhost
+      - run: terraform validate
+        working-directory: infrastructure/environments/selfhost

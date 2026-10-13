@@ -8,6 +8,8 @@ import (
 
 	"github.com/clerk/clerk-sdk-go/v2"
 	clerkhttp "github.com/clerk/clerk-sdk-go/v2/http"
+	"github.com/getsentry/sentry-go"
+	sentrygin "github.com/getsentry/sentry-go/gin"
 	"github.com/gin-gonic/gin"
 
 	"engflex-api/internal/common"
@@ -86,6 +88,12 @@ func RequireAuth() gin.HandlerFunc {
 		}
 		c.Set(userIDKey, claims.Subject)
 		c.Set(roleKey, roleFromClaims(claims.Custom))
+		// Attribute Sentry events to the caller. Nil-guarded like RequestID:
+		// no hub without the Sentry middleware, and Fail-closed Role stays
+		// untouched — this is telemetry, not authorization.
+		if hub := sentrygin.GetHubFromContext(c); hub != nil {
+			hub.Scope().SetUser(sentry.User{ID: claims.Subject})
+		}
 		// Stamp user_id on downstream logs (services, request logger).
 		c.Request = c.Request.WithContext(
 			logger.WithUserID(c.Request.Context(), claims.Subject),

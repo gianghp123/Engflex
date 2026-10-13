@@ -3,10 +3,6 @@
 // (`api.server.ts`).
 import type { ApiResponse } from "@engflex/contracts";
 
-const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
-
-export { API_URL };
-
 /** A request as it crosses the serverFn boundary: an API-relative path (the
  *  validators in `api.ts` reject anything else), the HTTP method, a JSON
  *  string or multipart body, and whether the caller wants the session

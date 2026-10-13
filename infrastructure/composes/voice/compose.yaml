@@ -1,0 +1,55 @@
+services:
+  voice:
+    # Repo-root context: the Dockerfile's COPY paths are repo-relative.
+    # `context: .` (not `../..`) is REQUIRED: Coolify invokes compose with
+    # --project-directory=<clone root>, under which relative build paths
+    # resolve from the project directory, so `../..` becomes `/` and the
+    # build dies with `lstat /apps` (verified via `compose config` + local
+    # rebuild in both shapes). Local builds must therefore also pass
+    # --project-directory <repo root> (or run with an equivalent project
+    # dir); a bare `-f infrastructure/composes/voice/compose.yaml` resolves
+    # `.` to infrastructure/composes/voice and will NOT build.
+    build:
+      context: .
+      dockerfile: apps/voice/Dockerfile
+    # No published ports: signaling is Go-proxied (internal-only) and media
+    # relays through coturn below. The voice container needs UDP *egress* only.
+    environment:
+      - API_URL=${API_URL}
+      - INTERNAL_SECRET=${INTERNAL_SECRET}
+      - STT_API_KEY=${STT_API_KEY}
+      - LLM_API_KEY=${LLM_API_KEY}
+      - LLM_BASE_URL=${LLM_BASE_URL}
+      - LLM_MODEL=${LLM_MODEL}
+      - TTS_API_KEY=${TTS_API_KEY}
+      - VOICE_MODEL=${VOICE_MODEL}
+      - MALE_VOICE_ID=${MALE_VOICE_ID}
+      - FEMALE_VOICE_ID=${FEMALE_VOICE_ID}
+      - MAX_DURATION_SEC=${MAX_DURATION_SEC:-300}
+      - IDLE_TIMEOUT_SEC=${IDLE_TIMEOUT_SEC:-300}
+      - PIPECAT_ICE_SERVERS=${PIPECAT_ICE_SERVERS}
+    restart: unless-stopped
+    # Join the shared coolify network under a stable alias: same-project
+    # containers (api, deploy.sh probes) reach voice at engflex-voice:7860.
+    # The per-app compose network alone is invisible from `coolify`.
+    networks:
+      coolify:
+        aliases:
+          - engflex-voice
+    # Curl-based healthcheck so Coolify can mark the container healthy
+    # (python-slim ships curl via the Dockerfile; Coolify execs it inside).
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:7860/status"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 30s
+
+  # NOTE: the coturn relay was removed — direct P2P wins on capable LANs
+  # and ExpressTurn relays remote/restricted networks, so no self-hosted
+  # relay remains. Voice is a single container; the fixed published-UDP
+  # surface (and its recreate race class) is gone.
+
+networks:
+  coolify:
+    external: true
