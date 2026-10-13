@@ -23,17 +23,6 @@ services:
       - traefik.http.middlewares.engflex-ip-limit.ratelimit.burst=20
       - traefik.http.middlewares.engflex-ip-limit.ratelimit.sourcecriterion.requestheadername=CF-Connecting-IP
       - coolify.traefik.middlewares=engflex-ip-limit
-      # Explicit LAN router (merge test): if custom traefik.* router labels
-      # coexist with generated ones, this gzip-only router serves LAN while
-      # the generated router carries the limiter. If generation vanishes
-      # instead (replace semantics like standard apps), LAN 404s and the
-      # compose path is declared unfit for mixed routing.
-      - traefik.http.routers.staging-lan-test.rule=Host(`engflex-web-staging.192-168-1-10.sslip.io`) && PathPrefix(`/`)
-      - traefik.http.routers.staging-lan-test.priority=1000
-      - traefik.http.routers.staging-lan-test.entrypoints=http
-      - traefik.http.routers.staging-lan-test.middlewares=gzip
-      - traefik.http.routers.staging-lan-test.service=staging-lan-test
-      - traefik.http.services.staging-lan-test.loadbalancer.server.port=3000
     networks:
       coolify:
         aliases:
