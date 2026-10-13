@@ -152,11 +152,8 @@ module "web_app" {
   docker_compose_location = "/infrastructure/composes/web/compose.yaml"
   ports_exposes           = local.apps.web.port
 
-  # No `domains`: rejected for compose apps until docker_compose_raw populates.
-  # Step A (this change): strategy move, domainless rebuild. Step B adds the
-  # docker_compose_domains mapping. No custom_labels: compose labels carry
-  # the limiter; custom payloads replace generation on standard apps.
-  health_check_path = "/"
+  docker_compose_domains = jsonencode([{ name = "web", domain = join(",", concat([local.web_url], var.cloudflare_enabled ? ["https://${module.tunnel[0].hostname}"] : [])) }])
+  health_check_path      = "/"
 
   # Tunnel (web-only front door): the tunnel delivers plain HTTP to the
   # proxy, so the https redirect stays off — otherwise origin 301s loop
@@ -234,39 +231,6 @@ module "pronounce_app" {
   network_aliases       = "engflex-pronounce"
   environment_variables = {}
   deploy_commit         = data.external.origin_head.result.sha
-}
-
-# TEMPORARY EXPERIMENT (compose + shorthand test — delete after verdict):
-# staging clone of web on the compose strategy. Prod web is untouched.
-module "web_staging" {
-  source         = "../../modules/application"
-  name           = "engflex-web-staging"
-  project_uuid   = coolify_project.engflex.uuid
-  server_uuid    = var.server_uuid
-  git_repository = var.git_repository
-  # Experiment branch (pushed to origin so Coolify can clone it); prod apps
-  # stay on var.git_branch. Delete with the staging block after verdict.
-  git_branch              = "experiment/sandbox"
-  build_pack              = "dockercompose"
-  base_directory          = "/"
-  docker_compose_location = "/infrastructure/web-staging/compose.yaml"
-  ports_exposes           = local.apps.web.port
-  # No `domains`: Coolify rejects it for compose apps until docker_compose_raw
-  # populates (post-first-deploy). Stage 1 creates domainless; stage 2 adds
-  # docker_compose_domains below.
-  docker_compose_domains = jsonencode([{ name = "web-staging", domain = "http://engflex-web-staging.${local.ip_dashed}.sslip.io" }])
-  health_check_path      = "/"
-  is_force_https_enabled = false
-  environment_variables = {
-    API_INTERNAL_URL           = "http://${local.apps.api.name}:${local.apps.api.port}/api/v1"
-    MEDIA_INTERNAL_ENDPOINT    = "http://${local.minio_net.host}:${local.minio_net.port}"
-    MEDIA_BUCKET               = local.minio_net.bucket
-    VITE_CLERK_PUBLISHABLE_KEY = var.clerk_publishable_key
-    VITE_SENTRY_DSN            = module.sentry.dsns["web"]
-    CLERK_SECRET_KEY           = var.clerk_secret_key
-  }
-  deploy_commit      = data.external.origin_head.result.sha
-  deployment_timeout = "15m"
 }
 
 module "minio" {

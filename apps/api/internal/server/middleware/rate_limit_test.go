@@ -258,3 +258,84 @@ func TestBypassRateLimitForPrefix(t *testing.T) {
 		})
 	}
 }
+
+func TestRateLimitKeyPrefersCFHeader(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	tests := []struct {
+		name       string
+		remoteAddr string
+		cfHeader   string
+		xff        string
+		wantKey    string
+	}{
+		{name: "cf header wins over client ip", remoteAddr: "10.0.1.9:1234", cfHeader: "203.0.113.7", xff: "198.51.100.3", wantKey: "203.0.113.7"},
+		{name: "cf header trimmed", remoteAddr: "10.0.1.9:1234", cfHeader: "  203.0.113.7  ", wantKey: "203.0.113.7"},
+		{name: "empty cf falls back to client ip", remoteAddr: "10.0.1.9:1234", cfHeader: "   ", xff: "198.51.100.3", wantKey: "198.51.100.3"},
+		{name: "absent cf falls back to client ip", remoteAddr: "10.0.1.9:1234", xff: "198.51.100.3", wantKey: "198.51.100.3"},
+		{name: "no headers falls back to remote addr", remoteAddr: "192.168.1.50:1234", wantKey: "192.168.1.50"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r := gin.New()
+			require.NoError(t, middleware.ApplyProxyTrust(r, []string{"10.0.0.0/8"}))
+			var got string
+			r.GET("/whoami", func(c *gin.Context) {
+				got = middleware.RateLimitKey(c)
+				c.Status(http.StatusOK)
+			})
+			req := httptest.NewRequest(http.MethodGet, "/whoami", nil)
+			req.RemoteAddr = tt.remoteAddr
+			if tt.cfHeader != "" {
+				req.Header.Set("CF-Connecting-IP", tt.cfHeader)
+			}
+			if tt.xff != "" {
+				req.Header.Set("X-Forwarded-For", tt.xff)
+			}
+			rec := httptest.NewRecorder()
+			r.ServeHTTP(rec, req)
+			require.Equal(t, http.StatusOK, rec.Code)
+			assert.Equal(t, tt.wantKey, got)
+		})
+	}
+}
+
+func TestRateLimitBucketsByCFHeader(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	newBucket := func(t *testing.T) gin.HandlerFunc {
+		h, err := middleware.NewInMemoryRateLimitMiddleware("2-M")
+		require.NoError(t, err)
+		return h
+	}
+	t.Run("same cf shares one bucket across remote addrs", func(t *testing.T) {
+		r := gin.New()
+		r.GET("/ping", newBucket(t), func(c *gin.Context) { c.Status(http.StatusOK) })
+		var last int
+		for i := 0; i < 3; i++ {
+			rec := httptest.NewRecorder()
+			req := httptest.NewRequest(http.MethodGet, "/ping", nil)
+			req.RemoteAddr = "10.0.1.9:1234"
+			req.Header.Set("CF-Connecting-IP", "203.0.113.7")
+			r.ServeHTTP(rec, req)
+			last = rec.Code
+		}
+		assert.Equal(t, http.StatusTooManyRequests, last)
+	})
+	t.Run("distinct cf values bucket separately", func(t *testing.T) {
+		r := gin.New()
+		r.GET("/ping", newBucket(t), func(c *gin.Context) { c.Status(http.StatusOK) })
+		for i := 0; i < 2; i++ {
+			rec := httptest.NewRecorder()
+			req := httptest.NewRequest(http.MethodGet, "/ping", nil)
+			req.RemoteAddr = "10.0.1.9:1234"
+			req.Header.Set("CF-Connecting-IP", "203.0.113.7")
+			r.ServeHTTP(rec, req)
+			require.Equal(t, http.StatusOK, rec.Code)
+		}
+		rec := httptest.NewRecorder()
+		req := httptest.NewRequest(http.MethodGet, "/ping", nil)
+		req.RemoteAddr = "10.0.1.9:1234"
+		req.Header.Set("CF-Connecting-IP", "203.0.113.99")
+		r.ServeHTTP(rec, req)
+		assert.Equal(t, http.StatusOK, rec.Code)
+	})
+}
