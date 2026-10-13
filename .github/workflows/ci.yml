@@ -25,6 +25,10 @@ jobs:
         with:
           go-version-file: apps/api/go.mod
           cache-dependency-path: apps/api/go.sum
+      - name: swagger docs (gitignored, generated like Dockerfile)
+        run: |
+          go install github.com/swaggo/swag/cmd/swag@v1.16.6
+          make swagger
       - name: gofmt
         run: test -z "$(gofmt -l internal/)"
       - run: go vet ./...
