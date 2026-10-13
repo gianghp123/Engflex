@@ -17,8 +17,8 @@ variable "git_repository" {
 }
 
 variable "git_branch" {
-  type    = string
-  default = "main"
+  description = "Git branch Coolify checks out (set per environment)"
+  type        = string
 }
 
 variable "build_pack" {
@@ -50,7 +50,7 @@ variable "domains" {
   default = []
 }
 
-# Flipped to true in Task 14 (https via Traefik); call sites use the default.
+# call sites use the default.
 variable "is_force_https_enabled" {
   type    = bool
   default = true
@@ -61,7 +61,7 @@ variable "health_check_path" {
 }
 
 # Stable DNS name for this app on the shared `coolify` network
-# (resource-name resolution was disproven live on this instance).
+# (explicit alias: bare resource names do not resolve there).
 variable "network_aliases" {
   type    = string
   default = null
@@ -74,7 +74,18 @@ variable "environment_variables" {
 }
 
 variable "instant_deploy" {
-  description = "Boot immediately on creation (default false: deploy.sh triggers explicitly)"
+  description = "Boot immediately on creation (default false: TF-owned deployments roll out)"
   type        = bool
   default     = false
+}
+
+variable "deploy_commit" {
+  description = "Origin HEAD of the branch Coolify checks out; a move redeploys (code rollout)"
+  type        = string
+}
+
+variable "deployment_timeout" {
+  description = "wait_for_completion ceiling per app (cold voice builds exceeded 10m)"
+  type        = string
+  default     = "15m"
 }

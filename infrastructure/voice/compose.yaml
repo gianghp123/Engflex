@@ -45,24 +45,10 @@ services:
       retries: 6
       start_period: 30s
 
-  coturn:
-    image: coturn/coturn:4.6
-    # Narrow relay range for the LAN pilot; coturn owns the fixed published
-    # UDP surface. STUN + TURN are advertised to both peers; direct candidates
-    # still win when they work (media degrades gracefully).
-    command: >
-      --realm=engflex.local
-      --lt-cred-mech
-      --user=engflex:${TURN_SECRET}
-      --fingerprint
-      --no-cli
-      --min-port=49160 --max-port=49200
-      --external-ip=${SERVER_IP}
-    ports:
-      - "3478:3478/udp"
-      - "3478:3478/tcp"
-      - "49160-49200:49160-49200/udp"
-    restart: unless-stopped
+  # NOTE: the coturn relay was removed — direct P2P wins on capable LANs
+  # and ExpressTurn relays remote/restricted networks, so no self-hosted
+  # relay remains. Voice is a single container; the fixed published-UDP
+  # surface (and its recreate race class) is gone.
 
 networks:
   coolify:

@@ -22,6 +22,7 @@ import { Route as AppVocabularyIndexRouteImport } from './routes/_app/vocabulary
 import { Route as AppVocabularyItemIdRouteImport } from './routes/_app/vocabulary/$itemId'
 import { Route as AppVoiceIndexRouteImport } from './routes/_app/voice/index'
 import { Route as AppVoicePreviewRouteImport } from './routes/_app/voice/preview'
+import { Route as ApiMediaSplatRouteImport } from './routes/api/media/$'
 import { Route as AppLessonsSlugIndexRouteImport } from './routes/_app/lessons/$slug/index'
 import { Route as AppLessonsSlugPracticeRouteImport } from './routes/_app/lessons/$slug/practice'
 import { Route as AppVoiceRoomConversationIdRouteImport } from './routes/_app/voice/room/$conversationId'
@@ -94,6 +95,11 @@ const AppVoicePreviewRoute = AppVoicePreviewRouteImport.update({
   path: '/voice/preview',
   getParentRoute: () => AppRouteRoute,
 } as any)
+const ApiMediaSplatRoute = ApiMediaSplatRouteImport.update({
+  id: '/api/media/$',
+  path: '/api/media/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AppLessonsSlugIndexRoute = AppLessonsSlugIndexRouteImport.update({
   id: '/lessons/$slug/',
   path: '/lessons/$slug/',
@@ -144,6 +150,7 @@ export interface FileRoutesByFullPath {
   '/sign-up/$': typeof SignUpSplatRoute
   '/vocabulary/$itemId': typeof AppVocabularyItemIdRoute
   '/voice/preview': typeof AppVoicePreviewRoute
+  '/api/media/$': typeof ApiMediaSplatRoute
   '/lessons/': typeof AppLessonsIndexRoute
   '/vocabulary/': typeof AppVocabularyIndexRoute
   '/voice/': typeof AppVoiceIndexRoute
@@ -165,6 +172,7 @@ export interface FileRoutesByTo {
   '/': typeof AppIndexRoute
   '/vocabulary/$itemId': typeof AppVocabularyItemIdRoute
   '/voice/preview': typeof AppVoicePreviewRoute
+  '/api/media/$': typeof ApiMediaSplatRoute
   '/lessons': typeof AppLessonsIndexRoute
   '/vocabulary': typeof AppVocabularyIndexRoute
   '/voice': typeof AppVoiceIndexRoute
@@ -188,6 +196,7 @@ export interface FileRoutesById {
   '/_app/': typeof AppIndexRoute
   '/_app/vocabulary/$itemId': typeof AppVocabularyItemIdRoute
   '/_app/voice/preview': typeof AppVoicePreviewRoute
+  '/api/media/$': typeof ApiMediaSplatRoute
   '/_app/lessons/': typeof AppLessonsIndexRoute
   '/_app/vocabulary/': typeof AppVocabularyIndexRoute
   '/_app/voice/': typeof AppVoiceIndexRoute
@@ -211,6 +220,7 @@ export interface FileRouteTypes {
     | '/sign-up/$'
     | '/vocabulary/$itemId'
     | '/voice/preview'
+    | '/api/media/$'
     | '/lessons/'
     | '/vocabulary/'
     | '/voice/'
@@ -232,6 +242,7 @@ export interface FileRouteTypes {
     | '/'
     | '/vocabulary/$itemId'
     | '/voice/preview'
+    | '/api/media/$'
     | '/lessons'
     | '/vocabulary'
     | '/voice'
@@ -254,6 +265,7 @@ export interface FileRouteTypes {
     | '/_app/'
     | '/_app/vocabulary/$itemId'
     | '/_app/voice/preview'
+    | '/api/media/$'
     | '/_app/lessons/'
     | '/_app/vocabulary/'
     | '/_app/voice/'
@@ -273,6 +285,7 @@ export interface RootRouteChildren {
   OnboardingRoute: typeof OnboardingRoute
   SignInSplatRoute: typeof SignInSplatRoute
   SignUpSplatRoute: typeof SignUpSplatRoute
+  ApiMediaSplatRoute: typeof ApiMediaSplatRoute
   ApiVoiceConversationIdOfferRoute: typeof ApiVoiceConversationIdOfferRoute
   ApiVoiceConversationIdStartRoute: typeof ApiVoiceConversationIdStartRoute
 }
@@ -370,6 +383,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppVoicePreviewRouteImport
       parentRoute: typeof AppRouteRoute
     }
+    '/api/media/$': {
+      id: '/api/media/$'
+      path: '/api/media/$'
+      fullPath: '/api/media/$'
+      preLoaderRoute: typeof ApiMediaSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_app/lessons/$slug/': {
       id: '/_app/lessons/$slug/'
       path: '/lessons/$slug'
@@ -463,6 +483,7 @@ const rootRouteChildren: RootRouteChildren = {
   OnboardingRoute: OnboardingRoute,
   SignInSplatRoute: SignInSplatRoute,
   SignUpSplatRoute: SignUpSplatRoute,
+  ApiMediaSplatRoute: ApiMediaSplatRoute,
   ApiVoiceConversationIdOfferRoute: ApiVoiceConversationIdOfferRoute,
   ApiVoiceConversationIdStartRoute: ApiVoiceConversationIdStartRoute,
 }

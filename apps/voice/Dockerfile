@@ -13,10 +13,15 @@ ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 UV_COMPILE_BYTECODE=1
 WORKDIR /app
 
 COPY apps/voice/pyproject.toml apps/voice/uv.lock ./
-RUN uv sync --frozen --no-dev --no-install-project
+# BuildKit cache mount: uv downloads/rebuilt wheels survive even when this
+# layer misses (post-cleanup rebuilds), so a cache-miss reinstall costs
+# minutes, not the ~11 min cold download observed 2026-10-11.
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --frozen --no-dev --no-install-project
 
 COPY apps/voice/src ./src
-RUN uv sync --frozen --no-dev
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --frozen --no-dev
 
 EXPOSE 7860
 CMD ["uv", "run", "src/bot.py", "-t", "webrtc", "--host", "0.0.0.0", "--port", "7860"]

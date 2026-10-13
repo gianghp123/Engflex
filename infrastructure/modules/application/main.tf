@@ -24,24 +24,43 @@ resource "coolify_application" "this" {
   health_check_path    = var.health_check_path
   health_check_scheme  = "http"
 
-  # Deploys trigger via make deploy (deploy API), not on config apply.
-  # instant_deploy stays false (single rollout owner = deploy.sh trigger
-  # loop; instant=true caused duplicate deploys + the 2026-10-11 voice
-  # coturn port race).
+  # Rollout is TF-owned (coolify_deployment.this below): instant stays false.
+  # instant=true + any trigger = duplicate deploys (two rollout owners race).
   instant_deploy = var.instant_deploy
 }
 
-# for_each runs over nonsensitive() because the map is sensitive; values are
-# still read from the sensitive map so secrecy is preserved. Both flags are
-# true so VITE_* bake into the image build and secrets reach runtime.
-# Invariant: env vars are injected at build AND runtime, so Dockerfile ARGs
-# must only ever reference public values (VITE_*) — never declare a secret
-# ARG (it would bake the secret into an image layer).
-resource "coolify_environment_variable" "this" {
-  for_each         = nonsensitive(var.environment_variables)
+# Bulk upsert owns values: POST-per-key 409s on birth placeholders, so no
+# per-key coolify_environment_variable exists here.
+# Count-gated: the API 400s on empty data, so apps without env (pronounce)
+# get zero bulk resources instead of an empty PATCH.
+resource "coolify_envs_bulk" "this" {
+  count         = length(var.environment_variables) > 0 ? 1 : 0
+  resource_type = "application"
+  resource_uuid = coolify_application.this.uuid
+  variables     = var.environment_variables
+}
+
+# Declarative rollout: replaced (exactly one deployment) when the app, its
+# env, or the origin commit moves; anything else = no-op. depends_on orders
+# bulk rows before the deploy (kills the instant-vs-bulk race structurally);
+# replace_triggered_by is same-module-legal for both (cross-module refs are
+# rejected by core). Services roll out via coolify_resource_action in their
+# own modules.
+resource "coolify_deployment" "this" {
   application_uuid = coolify_application.this.uuid
-  key              = each.key
-  value            = var.environment_variables[each.key]
-  is_build         = true
-  is_runtime       = true
+  triggers = {
+    commit = var.deploy_commit
+    env    = sha256(jsonencode(var.environment_variables))
+  }
+  depends_on          = [coolify_envs_bulk.this]
+  wait_for_completion = true
+  timeouts            = { create = var.deployment_timeout }
+
+  lifecycle {
+    # App-structural changes only: replace_triggered_by cannot reference a
+    # zero-count resource, so env-driven replacement rides triggers.env
+    # (same map the bulk writes — always in sync). Manual out-of-TF row edits are the only uncovered vector
+    # (accepted: bulk is TF-owned, nothing else writes these rows).
+    replace_triggered_by = [coolify_application.this]
+  }
 }

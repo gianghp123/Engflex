@@ -15,11 +15,13 @@ variable "minio_host" {
   type = string
 }
 
-variable "root_user" {
-  type = string
-}
-
 variable "root_password" {
   type      = string
   sensitive = true
+}
+
+variable "environment_variables" {
+  description = "Service env map, applied via bulk upsert (no per-key resources: birth placeholders 409 POSTs)"
+  type        = map(string)
+  default     = {}
 }

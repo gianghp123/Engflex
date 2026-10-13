@@ -6,13 +6,12 @@
 # (127.0.0.1:5000/minio:latest — quay.io/Hub are not anonymously pullable;
 # see the SDD ledger). The service joins the shared `coolify` network with
 # the `minio` alias so same-project containers reach it at http://minio:9000
-# (resource-name DNS was disproven live on this instance). NOTE: heredoc
+# (bare resource names do not resolve on this network). NOTE: heredoc
 # `$VAR`/`{{project.VAR}}` stay literal in HCL (only `${` interpolates), so
 # the references reach Coolify intact — and deliberately so: values live in
-# project-shared vars (../environments/selfhost/shared.tf), because Coolify
-# pre-creates per-resource keys for every $VAR ref at service birth and any
-# TF-declared env resource for the same key then 409s forever (post-mortem
-# 2026-10-10). No per-resource coolify_environment_variable may exist for
+# project-level env (Coolify pre-creates per-resource keys for every $VAR
+# ref at service birth; any TF-declared env resource for the same key then
+# 409s forever). No per-resource coolify_environment_variable may exist for
 # keys referenced in this compose. Ever.
 resource "coolify_service" "this" {
   name               = var.name
@@ -43,24 +42,28 @@ resource "coolify_service" "this" {
       coolify:
         external: true
   EOT
-  urls               = [{ name = "minio", url = "https://${var.minio_host}" }]
-  # Kept true: Coolify 4.4.6 answers 400 to PATCHing this service, so the
-  # flag cannot be flipped on a live service (tried 2026-10-10). Fresh
-  # deploys therefore still instant-boot with placeholder rows first —
-  # adopt-once via adopt-service-envs.sh remains the flow (proven 4x).
-  instant_deploy     = true
+  urls               = [{ name = "minio", url = "http://${var.minio_host}" }]
+  # Kept true: Coolify answers 400 to PATCHing this service, so the flag
+  # cannot be flipped on a live service. Fresh deploys therefore still
+  # instant-boot with placeholder rows first; the bulk upsert adopts the
+  # real values right after.
+  instant_deploy = true
 }
 
-# EXPERIMENT 2026-10-10 (whole-stack no-trigger test): the 4 env resources
-# (root_user, server_url, browser_redirect, root_password) are removed;
-# values go in via service-bulk (birth placeholders 409 POSTs, bulk
-# upserts). Restore from git when the verdict lands.
+# Bulk upsert owns service env values (same rule as apps: no per-key
+# resources). Rollout owner is the action below: any env change replaces it
+# and Coolify restarts the service. On birth it fires `start` alongside the
+# instant self-boot — start is idempotent (one healthy container per birth).
+resource "coolify_envs_bulk" "this" {
+  resource_type = "service"
+  resource_uuid = coolify_service.this.uuid
+  variables     = var.environment_variables
+}
 
-# NOTE (final rule 2026-10-10, voice prod incident): per-resource TF
-# resources are PRIMARY for every key this compose references. A shared-var
-# experiment ({{project.*}} refs + zero per-resource rows) booted with EMPTY
-# creds in prod: auto-reborn NULL local rows shadow shared refs at deploy
-# (local wins even when NULL; shared serves only with zero locals present).
-# Fresh deploys still 409 on these two keys (platform pre-creates them) —
-# adopt once via infrastructure/scripts/adopt-service-envs.sh, values then
-# stick across redeploys (proven). shared.tf minio keys stay as spare.
+resource "coolify_resource_action" "boot" {
+  action        = "start"
+  resource_type = "service"
+  resource_uuid = coolify_service.this.uuid
+  triggers      = { env = sha256(jsonencode(var.environment_variables)) }
+  depends_on    = [coolify_service.this, coolify_envs_bulk.this]
+}

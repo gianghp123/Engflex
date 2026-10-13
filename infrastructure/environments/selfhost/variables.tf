@@ -13,7 +13,12 @@ variable "server_uuid" {
 }
 
 variable "git_repository" {
-  description = "Git source Coolify clones (per environment; retired the local mirror 2026-10-10)"
+  description = "Git source Coolify clones (per environment)"
+  type        = string
+}
+
+variable "git_branch" {
+  description = "Git branch Coolify checks out for all apps (override per deploy via terraform.tfvars)"
   type        = string
 }
 
@@ -105,9 +110,15 @@ variable "female_voice_id" {
   type = string
 }
 
-variable "turn_secret" {
-  type      = string
-  sensitive = true
+variable "expressturn_username" {
+  description = "ExpressTurn account/username for the shared remote relay"
+  type        = string
+}
+
+variable "expressturn_credential" {
+  description = "ExpressTurn TURN credential (shared free tier; rotate via dashboard)"
+  type        = string
+  sensitive   = true
 }
 
 # Extra origins appended to the API's CORS_ORIGINS list (which always

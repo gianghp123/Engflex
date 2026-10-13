@@ -3,6 +3,7 @@
 #coolify_token          = ""
 #server_uuid            = ""
 #git_repository         = "your-git-repo"
+#git_branch              = "main"
 #server_ip              = "192.168.1.50"
 #db_password            = ""
 #redis_password         = ""
@@ -18,7 +19,10 @@
 #voice_model     = ""
 #male_voice_id   = ""
 #female_voice_id = ""
-#turn_secret     = ""
+# Remote TURN relay (ExpressTurn free tier; shared demo creds work for pilot,
+# rotate to a private account when serious).
+#expressturn_username   = ""
+#expressturn_credential = ""
 #cors_extra_origins = [] # e.g. ["https://extra.example"]
 # Sentry provisioning (org must exist; the team is created by the module).
 # Auth token = Sentry internal-integration token (org-scoped, team/project write).

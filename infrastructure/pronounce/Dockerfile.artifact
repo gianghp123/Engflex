@@ -19,7 +19,7 @@ RUN git clone --depth 1 --branch v0.3.0 https://github.com/Halleck45/OpenPronoun
 RUN pip install torch --index-url https://download.pytorch.org/whl/cpu
 # Upstream v0.3.0's Dockerfile `pip install ".[app]"` cannot resolve
 # against current PyPI — pip backtracks through every uvicorn release
-# and fails (uvicorn>=0.23 unpinned; verified 2026-10-08). Pin
+# and fails (uvicorn>=0.23 unpinned). Pin
 # uvicorn[standard] below 0.31 to keep the resolution tractable.
 RUN pip install ".[app]" "uvicorn[standard]<0.31"
 

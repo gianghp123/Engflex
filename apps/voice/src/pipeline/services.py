@@ -58,7 +58,9 @@ def build_llm(
             model=settings.llm_model,
             extra=extra,
             max_tokens=200,
-            system_instruction=build_system_prompt(level or "B1", persona=persona, scenario=scenario),
+            system_instruction=build_system_prompt(
+                level or "B1", persona=persona, scenario=scenario
+            ),
         ),
         default_headers=headers,
         metrics=get_metrics(),
@@ -67,10 +69,12 @@ def build_llm(
 
 def build_tts(persona: PersonaBody | None = None) -> TTSService:
     # Hosted TTS: VOICE_MODEL is the synthesis model, the voice identity is
-    # selected by persona gender (MALE_VOICE_ID / FEMALE_VOICE_ID), falling
-    # back to VOICE_ID and then the provider default. Nothing here names a
-    # vendor, so pointing at a different engine is a config change.
-    voice: str | None = settings.voice_id or None
+    # selected by persona gender (MALE_VOICE_ID / FEMALE_VOICE_ID). Sessions
+    # without a usable gender (freetalk has no persona) default to the female
+    # voice — never the provider default: reference_id=None lets Fish pick a
+    # voice per connection, which flips gender audibly on reconnects. Nothing here names a vendor, so pointing at a different
+    # engine is a config change.
+    voice: str | None = settings.female_voice_id or settings.voice_id or None
     gender = (persona.gender if persona else "").strip().lower()
     if gender == "male" and settings.male_voice_id:
         voice = settings.male_voice_id

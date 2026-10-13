@@ -53,18 +53,18 @@ resource "cloudflare_zero_trust_access_policy" "allow_emails" {
   ]
 }
 
-resource "cloudflare_zero_trust_access_application" "this" {
-  account_id = var.cloudflare_account_id
-  type       = "self_hosted"
-  name       = "Access application for ${var.app_name}.${var.cloudflare_zone}"
-  domain     = "${var.app_name}.${var.cloudflare_zone}"
-  policies = [
-    {
-      id         = cloudflare_zero_trust_access_policy.allow_emails.id
-      precedence = 1
-    }
-  ]
-}
+# resource "cloudflare_zero_trust_access_application" "this" {
+#   account_id = var.cloudflare_account_id
+#   type       = "self_hosted"
+#   name       = "Access application for ${var.app_name}.${var.cloudflare_zone}"
+#   domain     = "${var.app_name}.${var.cloudflare_zone}"
+#   policies = [
+#     {
+#       id         = cloudflare_zero_trust_access_policy.allow_emails.id
+#       precedence = 1
+#     }
+#   ]
+# }
 
 resource "coolify_service" "this" {
   name               = var.name
@@ -80,10 +80,10 @@ resource "coolify_service" "this" {
         command: tunnel --no-autoupdate run
         environment:
           # Dollar-ref reads the LOCAL row (bulk-filled). Project-refs read
-          # ONLY shared vars (proven 2026-10-10: with shared.tf deleted the
-          # container got a 35-char fallback instead of the real token) —
-          # the two ref forms never mix. No TF env resource for this key
-          # (birth placeholder 409s POSTs); values go in via service-bulk.
+          # ONLY project-level vars — the two ref forms never mix (mixing
+          # yields a fallback token instead of the real one). No TF env
+          # resource for this key (birth placeholder 409s POSTs); values go
+          # in via service-bulk.
           - 'TUNNEL_TOKEN=$${CLOUDFLARE_TUNNEL_TOKEN}'
         healthcheck:
           test: ["CMD", "cloudflared", "--version"]
@@ -91,13 +91,29 @@ resource "coolify_service" "this" {
           timeout: 20s
           retries: 10
   EOT
-  # Single rollout owner is deploy.sh (post-apply trigger); instant stays
-  # false so a fresh apply does exactly one deploy per resource.
+  # Rollout owner is the action below; instant stays false so a fresh apply
+  # boots the agent exactly once, after the token env exists (never races it).
   instant_deploy = var.instant_deploy
 }
 
-# SHARED-ONLY: the token lives in shared.tf
-# (coolify_shared_environment_variable.tunnel_token) and compose reads
-# {{project.CLOUDFLARE_TUNNEL_TOKEN}} — zero per-resource rows by design
-# (scratch lifecycle 2026-10-10: {{}}-only services birth no rows at any
-# stage). No coolify_environment_variable may exist for this key. Ever.
+# Bulk upsert owns the agent token (same rule as apps: no per-key
+# resources). The value reads the data source DIRECTLY, not the module
+# output — same bytes, no self-dependency cycle.
+resource "coolify_envs_bulk" "this" {
+  resource_type = "service"
+  resource_uuid = coolify_service.this.uuid
+  variables = {
+    CLOUDFLARE_TUNNEL_TOKEN = data.cloudflare_zero_trust_tunnel_cloudflared_token.this.token
+  }
+}
+
+# Rollout owner. `start` fires on birth — after the bulk above, so the token
+# exists — and re-fires on token change. `start` materializes
+# never-deployed services (it booted the first agent from nothing).
+resource "coolify_resource_action" "boot" {
+  action        = "start"
+  resource_type = "service"
+  resource_uuid = coolify_service.this.uuid
+  triggers      = { token = sha256(data.cloudflare_zero_trust_tunnel_cloudflared_token.this.token) }
+  depends_on    = [coolify_service.this, coolify_envs_bulk.this]
+}
