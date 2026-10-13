@@ -23,12 +23,13 @@ import (
 // LessonActivityController exposes ordered lesson parts.
 type LessonActivityController struct {
 	activities services.LessonActivityService
+	audio      services.AudioSynthesisService
 	media      config.MediaConfig
 }
 
-// NewLessonActivityController wires the controller to the service.
-func NewLessonActivityController(activities services.LessonActivityService, media config.MediaConfig) *LessonActivityController {
-	return &LessonActivityController{activities: activities, media: media}
+// NewLessonActivityController wires the controller to the services.
+func NewLessonActivityController(activities services.LessonActivityService, audio services.AudioSynthesisService, media config.MediaConfig) *LessonActivityController {
+	return &LessonActivityController{activities: activities, audio: audio, media: media}
 }
 
 // List godoc
@@ -221,4 +222,20 @@ func (h *LessonActivityController) ScoreWriting(c *gin.Context) {
 		return
 	}
 	common.OK(c, "writing scored", res)
+}
+
+// SynthesizeAudio godoc
+// @Summary      Generate and upload this activity's listening/speaking audio (admin)
+// @Tags         lesson-activities
+// @Security     BearerAuth
+// @Produce      json
+// @Param        id path string true "activity id"
+// @Success      200 {object} common.ApiResponse
+// @Router       /lesson-activities/{id}/synthesize-audio [post]
+func (h *LessonActivityController) SynthesizeAudio(c *gin.Context) {
+	if err := h.audio.SynthesizeForActivity(c.Request.Context(), c.Param("id")); err != nil {
+		common.Fail(c, err)
+		return
+	}
+	common.OK(c, "audio synthesized", nil)
 }

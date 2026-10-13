@@ -86,17 +86,26 @@ def validate_speaking(cfg: dict) -> list[str]:
     return errs
 
 
-async def main(dry_run: bool) -> None:
+async def main(dry_run: bool, activity_id: str | None) -> None:
     load_env()
     import psycopg
 
     with psycopg.connect(db_url()) as conn:
-        rows = conn.execute(
-            "SELECT id, type, config FROM lesson_activities "
-            "WHERE type IN ('listening','speaking') ORDER BY id"
-        ).fetchall()
+        if activity_id:
+            rows = conn.execute(
+                "SELECT id, type, config FROM lesson_activities "
+                "WHERE type IN ('listening','speaking') AND id = %s",
+                (activity_id,),
+            ).fetchall()
+        else:
+            rows = conn.execute(
+                "SELECT id, type, config FROM lesson_activities "
+                "WHERE type IN ('listening','speaking') ORDER BY id"
+            ).fetchall()
 
     if not rows:
+        if activity_id:
+            sys.exit(f"activity {activity_id}: not found, or not type listening/speaking")
         sys.exit("no listening/speaking activities found — run migrations first")
 
     uploads: list[tuple[str, bytes]] = []
@@ -142,5 +151,6 @@ async def main(dry_run: bool) -> None:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--dry-run", action="store_true", help="validate configs, list uploads, no synthesis")
+    parser.add_argument("--activity-id", default=None, help="synthesize only this lesson_activities.id (default: all)")
     args = parser.parse_args()
-    asyncio.run(main(args.dry_run))
+    asyncio.run(main(args.dry_run, args.activity_id))

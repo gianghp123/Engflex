@@ -35,7 +35,8 @@ func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB, voiceCfg config.VoiceConfi
 		llm.NewHTTPLLMClient(llmCfg),
 		repositories.NewAttemptRepository(db),
 	)
-	activityCtl := controllers.NewLessonActivityController(activitySvc, media)
+	audioSvc := services.NewAudioSynthesisService(services.ExecRunner{})
+	activityCtl := controllers.NewLessonActivityController(activitySvc, audioSvc, media)
 
 	bookmarkSvc := services.NewLessonBookmarkService(repositories.NewLessonBookmarkRepository(db))
 	bookmarkCtl := controllers.NewLessonBookmarkController(bookmarkSvc)
@@ -57,6 +58,7 @@ func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB, voiceCfg config.VoiceConfi
 	}
 	la.POST("/:id/pronounce", append(strict, middleware.RequireAuth(), activityCtl.Pronounce)...)
 	la.POST("/:id/score", append(strict, middleware.RequireAuth(), activityCtl.ScoreWriting)...)
+	la.POST("/:id/synthesize-audio", middleware.RequireAuth(), middleware.RequireAdmin(), activityCtl.SynthesizeAudio)
 
 	lb := rg.Group("/lesson-bookmarks")
 	lb.GET("", middleware.RequireAuth(), bookmarkCtl.List)
