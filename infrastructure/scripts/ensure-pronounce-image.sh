@@ -1,19 +1,19 @@
 #!/usr/bin/env bash
 # Ensure the frozen OpenPronounce artifact exists in the local registry and
 # matches the current recipe. Builds and pushes it on first use or whenever
-# infrastructure/pronounce/Dockerfile.artifact changes.
+# infrastructure/composes/pronounce/Dockerfile.artifact changes.
 #   --force       build+push unconditionally
 #   --check-only  report what would happen, never build
 # Env overrides (used by tests): RECIPE_FILE, BUILD_CONTEXT, ARTIFACT_TAG.
 # NOTE: keep the ARTIFACT_TAG default in sync with the FROM tag in
-# infrastructure/pronounce/Dockerfile (stub). The recipe hash covers
+# infrastructure/composes/pronounce/Dockerfile (stub). The recipe hash covers
 # Dockerfile.artifact only — the recipe must stay self-contained (no COPY
 # from the build context) for the hash to remain a complete change detector.
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-RECIPE_FILE="${RECIPE_FILE:-$REPO_ROOT/infrastructure/pronounce/Dockerfile.artifact}"
-BUILD_CONTEXT="${BUILD_CONTEXT:-$REPO_ROOT/infrastructure/pronounce}"
+RECIPE_FILE="${RECIPE_FILE:-$REPO_ROOT/infrastructure/composes/pronounce/Dockerfile.artifact}"
+BUILD_CONTEXT="${BUILD_CONTEXT:-$REPO_ROOT/infrastructure/composes/pronounce}"
 ARTIFACT_TAG="${ARTIFACT_TAG:-127.0.0.1:5000/engflex-pronounce:v0.3.0}"
 
 FORCE=0

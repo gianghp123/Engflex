@@ -40,18 +40,18 @@ resource "cloudflare_zero_trust_tunnel_cloudflared_config" "this" {
 
 # Access gate in front of the hostname (drop these two resources if the
 # app should be public like the Coolify walkthrough).
-resource "cloudflare_zero_trust_access_policy" "allow_emails" {
-  account_id = var.cloudflare_account_id
-  name       = "Allow email addresses"
-  decision   = "allow"
-  include = [
-    {
-      email = {
-        email = var.cloudflare_email
-      }
-    }
-  ]
-}
+# resource "cloudflare_zero_trust_access_policy" "allow_emails" {
+#   account_id = var.cloudflare_account_id
+#   name       = "Allow email addresses"
+#   decision   = "allow"
+#   include = [
+#     {
+#       email = {
+#         email = var.cloudflare_email
+#       }
+#     }
+#   ]
+# }
 
 # resource "cloudflare_zero_trust_access_application" "this" {
 #   account_id = var.cloudflare_account_id

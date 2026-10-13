@@ -41,6 +41,12 @@ variable "docker_compose_location" {
   default = null
 }
 
+variable "docker_compose_domains" {
+  description = "Compose-service domain map as JSON (Coolify accepts it only after the first deploy populates docker_compose_raw); null omits it"
+  type        = string
+  default     = null
+}
+
 variable "ports_exposes" {
   type = string
 }
@@ -65,6 +71,12 @@ variable "health_check_path" {
 variable "network_aliases" {
   type    = string
   default = null
+}
+
+variable "custom_labels" {
+  description = "Extra Docker labels for the container (e.g. Traefik routers/middlewares); newline-separated key=value lines, omitted when empty"
+  type        = string
+  default     = ""
 }
 
 variable "environment_variables" {

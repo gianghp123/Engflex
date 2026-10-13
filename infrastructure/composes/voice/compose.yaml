@@ -7,8 +7,8 @@ services:
     # build dies with `lstat /apps` (verified via `compose config` + local
     # rebuild in both shapes). Local builds must therefore also pass
     # --project-directory <repo root> (or run with an equivalent project
-    # dir); a bare `-f infrastructure/voice/compose.yaml` resolves `.` to
-    # infrastructure/voice and will NOT build.
+    # dir); a bare `-f infrastructure/composes/voice/compose.yaml` resolves
+    # `.` to infrastructure/composes/voice and will NOT build.
     build:
       context: .
       dockerfile: apps/voice/Dockerfile

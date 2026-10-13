@@ -13,8 +13,10 @@ resource "coolify_application" "this" {
   base_directory          = var.base_directory
   dockerfile_location     = var.build_pack == "dockerfile" ? var.dockerfile_location : null
   docker_compose_location = var.build_pack == "dockercompose" ? var.docker_compose_location : null
+  docker_compose_domains  = var.docker_compose_domains
   ports_exposes           = var.ports_exposes
   custom_network_aliases  = var.network_aliases
+  custom_labels           = var.custom_labels != "" ? var.custom_labels : null
 
   domains                = length(var.domains) > 0 ? join(",", var.domains) : null
   autogenerate_domain    = false
@@ -51,6 +53,7 @@ resource "coolify_deployment" "this" {
   triggers = {
     commit = var.deploy_commit
     env    = sha256(jsonencode(var.environment_variables))
+    labels = sha256(var.custom_labels)
   }
   depends_on          = [coolify_envs_bulk.this]
   wait_for_completion = true
