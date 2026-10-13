@@ -3,7 +3,6 @@ name: CI
 on:
   pull_request:
   push:
-    branches: [main, dev]
   workflow_dispatch:
 
 permissions:
@@ -78,6 +77,15 @@ jobs:
         run: git diff --exit-code packages/contracts
 
   terraform:
+    # Dev/main only: feature branches run api/voice/web/contracts on every
+    # push; terraform validates on push to dev/main, on PRs targeting them,
+    # and on every manual dispatch (explicit trigger means full suite).
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      github.ref_name == 'dev' ||
+      github.ref_name == 'main' ||
+      github.base_ref == 'dev' ||
+      github.base_ref == 'main'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

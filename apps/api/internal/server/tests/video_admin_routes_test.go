@@ -37,7 +37,11 @@ func TestVideoAdminRoutesRequireAuth(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.method+" "+tt.path, func(t *testing.T) {
-			r := server.NewRouter(nil, config.Config{})
+			// Same CORS-construction rule as router_test.go: gin-contrib/cors
+			// panics on an empty allowlist, so pass one origin; these routes
+			// carry no CORS assertions (401 is decided before CORS matters).
+			cfg := config.Config{Cors: config.CorsConfig{AllowedOrigins: []string{"http://localhost:3000"}}}
+			r := server.NewRouter(nil, cfg)
 			w := httptest.NewRecorder()
 			r.ServeHTTP(w, httptest.NewRequest(tt.method, tt.path, nil))
 			assert.Equal(t, http.StatusUnauthorized, w.Code)
