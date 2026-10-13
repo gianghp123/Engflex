@@ -9,6 +9,7 @@ import (
 
 type VideoCategoryRepository interface {
 	List(ctx context.Context, limit, offset int) ([]*models.VideoCategory, error)
+	ListWithPreview(ctx context.Context, previewSize int) ([]*models.VideoCategory, error)
 	GetByID(ctx context.Context, id string) (*models.VideoCategory, error)
 	Create(ctx context.Context, category *models.VideoCategory) error
 	Update(ctx context.Context, category *models.VideoCategory) error
@@ -76,6 +77,20 @@ func (r *videoCategoryRepository) List(ctx context.Context, limit int, offset in
 	query := r.db.WithContext(ctx).Order("id asc")
 	if limit > 0 {
 		query = query.Limit(limit).Offset(offset)
+	}
+	err := query.Find(&categories).Error
+	if err != nil {
+		return nil, err
+	}
+	return categories, nil
+}
+
+func (r *videoCategoryRepository) ListWithPreview(ctx context.Context, previewSize int) ([]*models.VideoCategory, error) {
+		categories := make([]*models.VideoCategory, 0)
+	query := r.db.WithContext(ctx).Select("video_categories.*, (SELECT COUNT(*) FROM video_exercises e WHERE e.category_id = video_categories.id) AS video_count").
+	Order("video_categories.name ASC")
+	if previewSize > 0 {
+		query = query.Limit(previewSize)
 	}
 	err := query.Find(&categories).Error
 	if err != nil {

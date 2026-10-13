@@ -48,6 +48,9 @@
   --ai-coral-tint: #fff1f2;
   --accent-violet: #6c4df0;
   --warning: #ff9e3d;
+  --pro: #c2410c;
+  --pro-border: #ff9e3d;
+  --pro-tint: #fff4e8;
   --cefr-b1: #005499;
   --cefr-b1-bg: #e4f1ff;
   --cefr-b1-border: #a3c9ff;
@@ -102,6 +105,9 @@
   --ai-coral-tint: rgba(255, 77, 77, 0.16);
   --accent-violet: #a5a0ff;
   --warning: #ff9e3d;
+  --pro: #ffb870;
+  --pro-border: #ff9e3d;
+  --pro-tint: rgba(255, 158, 61, 0.12);
   --cefr-b1: #7cc4f5;
   --cefr-b1-bg: rgba(0, 84, 153, 0.35);
   --cefr-b1-border: rgba(124, 196, 245, 0.4);
@@ -163,6 +169,9 @@
   --color-ai-coral-tint: var(--ai-coral-tint);
   --color-accent-violet: var(--accent-violet);
   --color-warning: var(--warning);
+  --color-pro: var(--pro);
+  --color-pro-border: var(--pro-border);
+  --color-pro-tint: var(--pro-tint);
   --color-cefr-b1: var(--cefr-b1);
   --color-cefr-b1-bg: var(--cefr-b1-bg);
   --color-cefr-b1-border: var(--cefr-b1-border);
@@ -267,6 +276,45 @@ pre code {
   border-color: var(--border);
   border-radius: 24px;
   box-shadow: 0 5px 0 var(--border) !important;
+}
+
+@utility surface-card-interactive {
+  --card-edge: var(--border);
+  --card-edge-hover: var(--primary);
+  background-color: var(--card);
+  color: var(--card-foreground);
+  border: 2px solid var(--card-edge);
+  border-radius: 24px;
+  box-shadow: 0 5px 0 var(--card-edge);
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    border-color 160ms ease;
+
+  &:hover {
+    transform: translateY(-3px);
+    border-color: var(--card-edge-hover);
+    box-shadow: 0 8px 0 color-mix(in srgb, var(--card-edge-hover) 45%, var(--card-edge));
+  }
+
+  &:active {
+    transform: translateY(3px);
+    box-shadow: 0 2px 0 var(--card-edge);
+  }
+
+  &:focus-visible {
+    outline: 3px solid var(--ring);
+    outline-offset: 3px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: border-color 160ms ease;
+
+    &:hover,
+    &:active {
+      transform: none;
+    }
+  }
 }
 
 @utility bg-dot-pattern {

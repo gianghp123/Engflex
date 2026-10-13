@@ -1,0 +1,113 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "videos": {
+    "hub": {
+      "title": "Video library",
+      "body": "Watch the video and practice listening sentence by sentence."
+    },
+    "section": {
+      "count": "({count} lessons)",
+      "seeAll": "See all"
+    },
+    "card": {
+      "pro": "PRO",
+      "views": "{count} listens",
+      "duration": "Duration {time}",
+      "source": {
+        "youtube": "Youtube"
+      },
+      "practice": {
+        "dictation": "Dictation",
+        "shadowing": "Shadowing",
+        "done": "{mode}: completed",
+        "todo": "{mode}: not practiced yet"
+      }
+    },
+    "modeDialog": {
+      "title": "Choose a practice mode",
+      "body": "Pick the mode that suits you best",
+      "mode": {
+        "dictation": "Listen & write",
+        "shadowing": "Shadow the speaker"
+      }
+    },
+    "dictation": {
+      "toolbar": {
+        "hideMedia": "Hide media",
+        "showMedia": "Show media",
+        "hideTranscript": "Hide transcript",
+        "showTranscript": "Show transcript"
+      },
+      "video": {
+        "title": "Video",
+        "time": "Time {time}",
+        "controls": "Controls",
+        "start": "Start",
+        "replay": "Replay"
+      },
+      "level": {
+        "label": "Difficulty",
+        "easy": "Easy",
+        "normal": "Normal",
+        "hard": "Hard"
+      },
+      "answer": {
+        "label": "Type what you hear:",
+        "placeholder": "Type your answer here...",
+        "mic": "Answer by voice"
+      },
+      "hints": {
+        "reveal": "Reveal word {index}",
+        "hide": "Hide word {index}",
+        "note": "Revealed words count as mistakes and lower your score.",
+        "revealAll": "Reveal all words"
+      },
+      "next": "Next"
+    },
+    "practice": {
+      "video": {
+        "play": "Play video"
+      },
+      "player": {
+        "prev": "Previous sentence",
+        "replay": "Replay sentence",
+        "play": "Play sentence",
+        "next": "Next sentence",
+        "speed": "Playback speed {speed}x",
+        "settings": "Settings",
+        "shortcuts": "Keyboard shortcuts"
+      },
+      "transcript": {
+        "title": "Transcript",
+        "progress": "{value}%",
+        "item": "Sentence {index}",
+        "edit": "Edit sentence",
+        "report": "Report a problem"
+      }
+    },
+    "shadowing": {
+      "toolbar": {
+        "hideTranscript": "Hide transcript",
+        "showTranscript": "Show transcript",
+        "view": "View mode",
+        "watch": "Watch",
+        "practice": "Practice",
+        "time": "Time {time}"
+      },
+      "controls": {
+        "autoPause": "Auto pause",
+        "largeVideo": "Large video",
+        "start": "Start"
+      },
+      "record": {
+        "start": "Record",
+        "stop": "Stop recording",
+        "playback": "Play recording"
+      },
+      "transcript": {
+        "phonetic": "IPA",
+        "translation": "Translation"
+      }
+    }
+  }
+}

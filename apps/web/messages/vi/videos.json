@@ -1,0 +1,113 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "videos": {
+    "hub": {
+      "title": "Thư viện video",
+      "body": "Xem video và luyện nghe theo từng câu."
+    },
+    "section": {
+      "count": "({count} bài học)",
+      "seeAll": "Xem tất cả"
+    },
+    "card": {
+      "pro": "PRO",
+      "views": "{count} lượt nghe",
+      "duration": "Thời lượng {time}",
+      "source": {
+        "youtube": "Youtube"
+      },
+      "practice": {
+        "dictation": "Dictation",
+        "shadowing": "Shadowing",
+        "done": "{mode}: đã hoàn thành",
+        "todo": "{mode}: chưa luyện"
+      }
+    },
+    "modeDialog": {
+      "title": "Chọn chế độ học",
+      "body": "Chọn chế độ học phù hợp với bạn nhất",
+      "mode": {
+        "dictation": "Nghe - viết chính tả",
+        "shadowing": "Bắt chước phát âm"
+      }
+    },
+    "dictation": {
+      "toolbar": {
+        "hideMedia": "Ẩn media",
+        "showMedia": "Hiện media",
+        "hideTranscript": "Ẩn transcript",
+        "showTranscript": "Hiện transcript"
+      },
+      "video": {
+        "title": "Video",
+        "time": "Thời gian {time}",
+        "controls": "Điều khiển",
+        "start": "Bắt đầu",
+        "replay": "Phát lại"
+      },
+      "level": {
+        "label": "Độ khó",
+        "easy": "Dễ",
+        "normal": "Vừa",
+        "hard": "Khó"
+      },
+      "answer": {
+        "label": "Gõ những gì bạn nghe được:",
+        "placeholder": "Gõ câu trả lời của bạn ở đây...",
+        "mic": "Nhập bằng giọng nói"
+      },
+      "hints": {
+        "reveal": "Hiện từ {index}",
+        "hide": "Ẩn từ {index}",
+        "note": "Các từ được tiết lộ sẽ bị tính là lỗi và ảnh hưởng đến điểm số của bạn.",
+        "revealAll": "Hiện tất cả từ"
+      },
+      "next": "Tiếp theo"
+    },
+    "practice": {
+      "video": {
+        "play": "Phát video"
+      },
+      "player": {
+        "prev": "Câu trước",
+        "replay": "Nghe lại câu",
+        "play": "Phát câu",
+        "next": "Câu tiếp theo",
+        "speed": "Tốc độ phát {speed}x",
+        "settings": "Cài đặt",
+        "shortcuts": "Phím tắt"
+      },
+      "transcript": {
+        "title": "Bản chép",
+        "progress": "{value}%",
+        "item": "Câu {index}",
+        "edit": "Sửa câu",
+        "report": "Báo lỗi"
+      }
+    },
+    "shadowing": {
+      "toolbar": {
+        "hideTranscript": "Ẩn transcript",
+        "showTranscript": "Hiện transcript",
+        "view": "Chế độ xem",
+        "watch": "Xem",
+        "practice": "Luyện",
+        "time": "Thời gian {time}"
+      },
+      "controls": {
+        "autoPause": "Tự động dừng",
+        "largeVideo": "Video kích thước lớn",
+        "start": "Bắt đầu"
+      },
+      "record": {
+        "start": "Ghi âm",
+        "stop": "Dừng ghi âm",
+        "playback": "Phát lại ghi âm"
+      },
+      "transcript": {
+        "phonetic": "IPA",
+        "translation": "Dịch"
+      }
+    }
+  }
+}

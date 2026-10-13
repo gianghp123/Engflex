@@ -90,3 +90,10 @@ packages:
   - path: "engflex-api/internal/modules/attempts/dtos/responses"
     output_path: "../../packages/contracts/src/attempts-responses.ts"
     fallback_type: "unknown"
+    
+  - path: "engflex-api/internal/modules/videos/dtos/requests"
+    output_path: "../../packages/contracts/src/videos-requests.ts"
+    fallback_type: "unknown"
+  - path: "engflex-api/internal/modules/videos/dtos/responses"
+    output_path: "../../packages/contracts/src/videos-responses.ts"
+    fallback_type: "unknown"
