@@ -5,7 +5,6 @@ import { useBreadcrumbs } from "#/app/breadcrumbs";
 import { MoMascot } from "#/components/common/mo-mascot";
 import { PageLayout } from "#/components/common/page-layout";
 import { TipCard } from "#/components/common/tip-card";
-import { AudioCalibrationBanner } from "#/features/voice/components/mode/audio-calibration-banner";
 import { ModeCard } from "#/features/voice/components/mode/mode-card";
 import { MODE_CARDS } from "#/features/voice/fixtures";
 import { useCreateConversation } from "#/features/voice/queries";
@@ -62,7 +61,6 @@ function VoiceModesPage() {
 				))}
 			</div>
 			<TipCard title={m["voice.tip.title"]()} body={m["voice.tip.body"]()} />
-			<AudioCalibrationBanner />
 		</PageLayout>
 	);
 }

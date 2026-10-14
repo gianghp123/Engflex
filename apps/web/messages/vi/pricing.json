@@ -1,0 +1,55 @@
+{
+	"$schema": "https://inlang.com/schema/inlang-message-format",
+	"pricing": {
+		"meta": {
+			"title": "Bảng giá — Engflex",
+			"description": "Engflex miễn phí để bắt đầu: 18 bài học từ A1 đến C2 với bốn kỹ năng mỗi bài. Gói Plus 199.000₫ mỗi tháng cho 15 tình huống giao tiếp hằng ngày và phần nhận xét sau mỗi cuộc trò chuyện."
+		},
+		"hero": {
+			"title": "Bắt đầu miễn phí.",
+			"body": "Lộ trình bài học miễn phí ở mọi trình độ, A1 đến C2. Gói Plus thêm phần bạn không thể tự làm một mình: trò chuyện với một người bạn luôn đáp lời.",
+			"cta": "Bắt đầu",
+			"ctaSecondary": "Tôi đã có tài khoản"
+		},
+		"plans": {
+			"free": {
+				"name": "Miễn phí",
+				"for": "Học theo từng bài.",
+				"price": "0₫",
+				"period": "cho mọi trình độ",
+				"feature1": "18 bài học từ A1 đến C2, ba bài mỗi trình độ",
+				"feature2": "Đủ bốn bước trong mỗi bài: đọc, nghe, viết, nói",
+				"feature3": "108 câu hỏi, mỗi đáp án đều có giải thích",
+				"feature4": "Phát âm được chấm theo từng từ",
+				"cta": "Bắt đầu miễn phí"
+			},
+			"plus": {
+				"name": "Plus",
+				"for": "Hoặc vào thẳng phần nói.",
+				"price": "199.000₫",
+				"period": "mỗi tháng",
+				"feature1": "Mọi thứ trong gói Miễn phí",
+				"feature2": "Cả 15 tình huống giao tiếp, bảy chủ đề, A1 đến B1",
+				"feature3": "Người bạn giữ nguyên vai trong suốt cuộc trò chuyện",
+				"feature4": "Nhận xét sau mỗi cuộc trò chuyện",
+				"cta": "Bắt đầu"
+			}
+		},
+		"included": {
+			"title": "Dù chọn gói nào cũng vậy.",
+			"body": "Lộ trình bài học giống nhau dù bạn trả phí hay không.",
+			"item1Title": "Bốn bước trong mỗi bài",
+			"item1Body": "đọc, nghe, viết, nói",
+			"item2Title": "108 câu hỏi có giải thích",
+			"item2Body": "mỗi đáp án một lời giải",
+			"item3Title": "Phát âm từng từ một",
+			"item3Body": "âm nào còn lệch"
+		},
+		"closing": {
+			"title": "Bắt đầu từ chỗ bạn đang đứng.",
+			"body": "Miễn phí ở mọi trình độ, từ A1 đến C2.",
+			"cta": "Bắt đầu",
+			"ctaSecondary": "Tôi đã có tài khoản"
+		}
+	}
+}

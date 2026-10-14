@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"context"
+	"time"
 
 	"gorm.io/datatypes"
 	"gorm.io/gorm"
@@ -25,6 +26,12 @@ type ConversationRepository interface {
 	SetSpeechStart(ctx context.Context, id, speechSessionID string, startResponse []byte) (int64, error)
 	SetStatus(ctx context.Context, id string, from, to enums.ConversationStatus) (int64, error)
 	SetEnded(ctx context.Context, id string, durationSec *int) (int64, error)
+	// ListEndedDays returns the distinct UTC dates (YYYY-MM-DD) on which the
+	// caller ended a conversation, at or after since. Progress input.
+	ListEndedDays(ctx context.Context, userID string, since time.Time) ([]string, error)
+	// SumDurationSince returns the caller's total ended-conversation seconds
+	// at or after since. Voice-minutes input.
+	SumDurationSince(ctx context.Context, userID string, since time.Time) (int64, error)
 	WithTx(tx *gorm.DB) ConversationRepository
 }
 
@@ -127,4 +134,24 @@ func (r *conversationRepository) SetEnded(ctx context.Context, id string, durati
 		Where("id = ?", id).
 		Updates(updates)
 	return res.RowsAffected, res.Error
+}
+
+// ListEndedDays returns distinct UTC calendar dates as text, forcing UTC so
+// the result never depends on the server's TimeZone setting.
+func (r *conversationRepository) ListEndedDays(ctx context.Context, userID string, since time.Time) ([]string, error) {
+	var days []string
+	err := r.db.WithContext(ctx).Model(&models.Conversation{}).
+		Select("DISTINCT to_char(ended_at AT TIME ZONE 'UTC', 'YYYY-MM-DD')").
+		Where("user_id = ? AND status = ? AND ended_at >= ?", userID, enums.ConversationStatusEnded, since).
+		Scan(&days).Error
+	return days, err
+}
+
+func (r *conversationRepository) SumDurationSince(ctx context.Context, userID string, since time.Time) (int64, error) {
+	var total int64
+	err := r.db.WithContext(ctx).Model(&models.Conversation{}).
+		Select("COALESCE(SUM(duration_sec), 0)").
+		Where("user_id = ? AND status = ? AND ended_at >= ?", userID, enums.ConversationStatusEnded, since).
+		Scan(&total).Error
+	return total, err
 }

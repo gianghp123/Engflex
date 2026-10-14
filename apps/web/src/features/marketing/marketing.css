@@ -1,0 +1,1210 @@
+/* biome-ignore-all lint/style/noDescendingSpecificity: generated from the approved
+   mockup stylesheet, where source order comes from the design, not from the linter. */
+/* Every marketing page renders the approved mockup's own stylesheet, scoped under
+   `.landing` — the mockup's scope name, kept on purpose (see marketing-shell.tsx) —
+   with every class renamed to an `l-` prefix, so it cannot collide with the app's
+   Tailwind utilities (which already define btn, chip, tile, field…).
+   Compound selectors (.band.white, .ic.a, .chip.xs) rename EVERY class in the
+   chain — renaming only the first silently kills the rule.
+   Source: .superpowers/brainstorm/1213598-1791985320/content/25-full-page-final.html
+   Regenerate rather than hand-edit. */
+
+.landing .l-page {
+	--purple: #6c4df0;
+	--deep: #433095;
+	--ink: #2a2150;
+	--muted: #5e5588;
+	--line: #dcd2ff;
+	--canvas: #f4f0ff;
+	--card: #ffffff;
+	--apricot: #ff9e3d;
+	--amber: #6a3900;
+	--sky: #3d9bff;
+	--skyink: #00386b;
+	--tint-violet: #f2ebff;
+	--tint-mo: #ffe2c5;
+	--tint-peer: #e4f1ff;
+	--inkpad: #2a2150;
+	--inkpad-soft: #ede8ff;
+	--inkpad-line: #443a73;
+	--sh-sm: 0 3px 0 rgba(0, 0, 0, 0.2);
+	--sh-card: 0 5px 0 var(--line);
+	--sh-key: 0 5px 0 var(--deep);
+	font-family: "Quicksand", system-ui, sans-serif;
+	color: var(--ink);
+	font-size: 16px;
+	background-color: var(--canvas);
+	background-image: radial-gradient(#ddd3fb 1.5px, transparent 1.6px);
+	background-size: 24px 24px;
+	border-radius: 16px;
+	overflow: hidden;
+}
+.landing .l-page * {
+	box-sizing: border-box;
+}
+.landing .l-page h1,
+.landing .l-page h2,
+.landing .l-page h3,
+.landing .l-page h4,
+.landing .l-page p,
+.landing .l-page ul,
+.landing .l-page blockquote {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	letter-spacing: -0.01em;
+}
+.landing .l-page h1 {
+	font-size: 44px;
+	line-height: 1.12;
+	font-weight: 700;
+	letter-spacing: -0.025em;
+}
+.landing .l-page h2 {
+	font-size: 26px;
+	line-height: 1.2;
+	font-weight: 700;
+	letter-spacing: -0.02em;
+}
+.landing .l-page h3 {
+	font-size: 19px;
+	line-height: 1.3;
+	font-weight: 700;
+}
+.landing .l-wrap {
+	max-width: 1060px;
+	margin: 0 auto;
+	padding: 0 32px;
+}
+.landing .l-band {
+	position: relative;
+	padding: 68px 0;
+}
+.landing .l-band.l-white {
+	background: var(--card);
+}
+.landing .l-band.l-violet {
+	background: var(--tint-violet);
+}
+.landing .l-eyebrow {
+	font-size: 13px;
+	font-weight: 700;
+	color: var(--muted);
+	margin-bottom: 10px;
+}
+.landing .l-lede {
+	font-size: 16px;
+	font-weight: 600;
+	color: var(--muted);
+	line-height: 1.5;
+}
+.landing .l-ptop {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 16px 32px;
+}
+.landing .l-brand {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-family: "Fredoka", sans-serif;
+	font-weight: 700;
+	font-size: 24px;
+	line-height: 1;
+}
+.landing .l-locale {
+	font-size: 13.5px;
+	font-weight: 700;
+	color: var(--muted);
+	border: 2px solid var(--line);
+	background: #fff;
+	border-radius: 999px;
+	padding: 5px 13px;
+	box-shadow: var(--sh-sm);
+}
+.landing .l-btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	background: var(--purple);
+	color: #fff;
+	font-family: inherit;
+	font-weight: 700;
+	border: 0;
+	border-radius: 16px;
+	padding: 14px 26px;
+	font-size: 16px;
+	box-shadow: var(--sh-key);
+}
+.landing .l-btn.l-light {
+	background: #fff;
+	color: var(--ink);
+	box-shadow: 0 6px 0 rgba(0, 0, 0, 0.4);
+}
+.landing .l-btn.l-link {
+	background: transparent;
+	box-shadow: none;
+	color: var(--deep);
+	text-decoration: underline;
+	text-underline-offset: 4px;
+	padding: 10px 4px;
+}
+.landing .l-btn.l-onpurple {
+	color: #ede8ff;
+}
+.landing .l-chip {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	border: 2px solid var(--line);
+	background: #fff;
+	border-radius: 999px;
+	padding: 4px 12px;
+	font-size: 13.5px;
+	font-weight: 700;
+	color: var(--muted);
+	white-space: nowrap;
+}
+.landing .l-chip.l-xs {
+	font-size: 12.5px;
+	padding: 2px 9px;
+}
+.landing .l-kcard {
+	position: relative;
+	background: var(--card);
+	border: 2px solid var(--line);
+	border-radius: 24px;
+	box-shadow: var(--sh-card);
+}
+.landing .l-stackback {
+	position: absolute;
+	inset: 12px -12px -12px 12px;
+	background: var(--card);
+	border: 2px solid var(--line);
+	border-radius: 24px;
+	box-shadow: var(--sh-card);
+}
+.landing .l-mo-bubble {
+	background: var(--purple);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	position: relative;
+}
+.landing .l-mo-bubble:after {
+	content: "";
+	position: absolute;
+	left: 18px;
+	bottom: -9px;
+	width: 20px;
+	height: 20px;
+	background: var(--purple);
+	border-radius: 0 0 6px 0;
+	transform: rotate(8deg);
+}
+.landing .l-bub {
+	font-size: 14.5px;
+	font-weight: 600;
+	line-height: 1.45;
+	border-radius: 16px;
+	padding: 11px 14px;
+	max-width: 82%;
+}
+.landing .l-fbcard {
+	background: var(--tint-violet);
+	border: 2px solid var(--line);
+	border-radius: 16px;
+	padding: 13px;
+}
+.landing .l-hl {
+	background: rgba(255, 158, 61, 0.45);
+	border-radius: 6px;
+	font-weight: 700;
+	padding: 1px 3px;
+}
+.landing .l-ic {
+	width: 38px;
+	height: 38px;
+	border-radius: 13px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	box-shadow: var(--sh-sm);
+	flex-shrink: 0;
+}
+.landing .l-ic svg {
+	width: 20px;
+	height: 20px;
+	stroke-width: 2.2;
+	fill: none;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+}
+.landing .l-ic.l-p {
+	background: var(--purple);
+	stroke: #fff;
+}
+.landing .l-ic.l-a {
+	background: var(--apricot);
+	stroke: var(--ink);
+}
+.landing .l-ic.l-s {
+	background: var(--sky);
+	stroke: #fff;
+}
+.landing .l-ic.l-w {
+	background: #fff;
+	stroke: var(--purple);
+}
+.landing .l-av {
+	width: 44px;
+	height: 44px;
+	border-radius: 99px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-weight: 700;
+	font-size: 15px;
+	color: #fff;
+	box-shadow: 0 3px 0 rgba(0, 0, 0, 0.18);
+	flex-shrink: 0;
+}
+.landing .l-hero {
+	display: grid;
+	grid-template-columns: 1.02fr 1fr;
+	gap: 52px;
+	align-items: center;
+}
+.landing .l-herocard {
+	position: relative;
+	padding-right: 12px;
+	padding-bottom: 12px;
+}
+.landing .l-mohero {
+	position: relative;
+	z-index: 2;
+	margin-left: 4px;
+	margin-bottom: -30px;
+}
+.landing .l-mo-peek {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	margin-bottom: 22px;
+}
+.landing .l-mo-peek .l-say {
+	background: var(--tint-mo);
+	border: 2px solid #f5c79a;
+	border-radius: 16px;
+	padding: 9px 14px;
+	font-size: 14.5px;
+	font-weight: 700;
+}
+.landing .l-rail {
+	position: relative;
+	padding-top: 6px;
+}
+.landing .l-rail:before {
+	content: "";
+	position: absolute;
+	left: 28px;
+	right: 28px;
+	top: 28px;
+	border-top: 3px dashed var(--line);
+}
+.landing .l-nodes {
+	position: relative;
+	display: grid;
+	grid-template-columns: repeat(6, 1fr);
+	gap: 14px;
+}
+.landing .l-node {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	text-align: center;
+	gap: 10px;
+}
+.landing .l-medal {
+	width: 46px;
+	height: 46px;
+	border-radius: 99px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 15px;
+	font-weight: 700;
+	box-shadow: var(--sh-sm);
+	border: 3px solid var(--card);
+}
+.landing .l-medal.l-a {
+	background: var(--apricot);
+	color: var(--ink);
+}
+.landing .l-medal.l-p {
+	background: var(--purple);
+	color: #fff;
+}
+.landing .l-medal.l-s {
+	background: var(--sky);
+	color: #fff;
+}
+.landing .l-node .l-count {
+	font-size: 12.5px;
+	font-weight: 700;
+	color: var(--muted);
+}
+.landing .l-node .l-lessons {
+	display: flex;
+	flex-direction: column;
+	gap: 5px;
+	align-items: center;
+}
+.landing .l-node .l-lessons span {
+	font-size: 12.5px;
+	font-weight: 600;
+	color: var(--ink);
+	background: #fff;
+	border: 2px solid var(--line);
+	border-radius: 999px;
+	padding: 3px 10px;
+	line-height: 1.3;
+}
+.landing .l-tiles {
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	gap: 14px;
+}
+.landing .l-tile {
+	display: flex;
+	align-items: center;
+	gap: 11px;
+	background: var(--card);
+	border: 2px solid var(--line);
+	border-radius: 18px;
+	box-shadow: var(--sh-card);
+	padding: 12px;
+}
+.landing .l-tile b {
+	display: block;
+	font-size: 15px;
+	font-weight: 700;
+	line-height: 1.25;
+}
+.landing .l-tile small {
+	font-size: 12.5px;
+	font-weight: 600;
+	color: var(--muted);
+}
+.landing .l-tile.l-soon {
+	background: transparent;
+	border-style: dashed;
+	box-shadow: none;
+	justify-content: center;
+}
+.landing .l-tile.l-soon span {
+	font-size: 13.5px;
+	font-weight: 700;
+	color: var(--muted);
+}
+.landing .l-bens {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 20px;
+	align-items: stretch;
+}
+.landing .l-ben {
+	display: flex;
+	flex-direction: column;
+	background: var(--card);
+	border: 2px solid var(--line);
+	border-radius: 24px;
+	box-shadow: var(--sh-card);
+	padding: 22px;
+}
+.landing .l-ben .l-ill {
+	background: var(--canvas);
+	border: 2px dashed var(--line);
+	border-radius: 18px;
+	padding: 18px;
+	margin-bottom: 18px;
+	min-height: 118px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+.landing .l-ben p {
+	font-size: 15px;
+	font-weight: 600;
+	color: var(--muted);
+	line-height: 1.55;
+	margin-top: 10px;
+}
+.landing .l-quotes {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 20px;
+}
+.landing .l-q {
+	background: var(--card);
+	border: 2px solid var(--line);
+	border-radius: 24px;
+	box-shadow: var(--sh-card);
+	padding: 24px;
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+}
+.landing .l-q .l-glyph {
+	font-family: "Fredoka", sans-serif;
+	font-size: 46px;
+	line-height: 0.6;
+	color: var(--apricot);
+}
+.landing .l-q blockquote {
+	font-size: 16px;
+	font-weight: 600;
+	line-height: 1.5;
+}
+.landing .l-who {
+	display: flex;
+	align-items: center;
+	gap: 11px;
+	margin-top: auto;
+}
+.landing .l-who b {
+	display: block;
+	font-size: 14.5px;
+	font-weight: 700;
+}
+.landing .l-who small {
+	font-size: 12.5px;
+	font-weight: 600;
+	color: var(--muted);
+}
+.landing .l-darkside {
+	background: var(--inkpad);
+	position: relative;
+}
+/* ONE dot field for the whole closing ink block, crest included. The mockup
+   drew the crest's dots with an SVG `userSpaceOnUse` pattern inside a viewBox
+   stretched by preserveAspectRatio="none", so their horizontal pitch scaled
+   with the window (24 * width/1200) while the body's stayed a fixed 24px — two
+   grids that only coincided at a 1200px viewport, so the field visibly broke at
+   the seam on every wider screen. This layer spans the crest box and the body
+   from one origin instead, which is why the crest element sits at z-index 0.
+   -172px is the crest's height (130px on small screens, where the overshoot
+   lands on white and stays invisible). */
+.landing .l-darkside:before {
+	content: "";
+	position: absolute;
+	top: -172px;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	z-index: 1;
+	background-image: radial-gradient(
+		rgba(237, 232, 255, 0.1) 1.5px,
+		transparent 1.6px
+	);
+	background-size: 24px 24px;
+	pointer-events: none;
+}
+.landing .l-ctawrap {
+	background: #fff;
+}
+.landing .l-stage {
+	position: relative;
+	height: 152px;
+	margin-bottom: -4px;
+}
+.landing .l-stage .l-debr {
+	position: absolute;
+	z-index: 3;
+}
+.landing .l-hillcrest {
+	position: relative;
+	z-index: 0;
+}
+.landing .l-hillcrest svg {
+	display: block;
+	width: 100%;
+	height: 172px;
+}
+.landing .l-hillbody {
+	position: relative;
+	z-index: 2;
+	text-align: center;
+	padding: 0 32px 44px;
+}
+.landing .l-hillbody h1 {
+	color: #fff;
+	font-size: 46px;
+	line-height: 1.1;
+}
+.landing .l-hillbody .l-lede {
+	color: rgba(237, 232, 255, 0.78);
+	font-size: 17px;
+	font-weight: 600;
+	margin: 16px 0 30px;
+}
+.landing .l-hillbody .l-btn {
+	padding: 16px 34px;
+	font-size: 17px;
+}
+.landing .l-trust {
+	font-size: 14px;
+	font-weight: 700;
+	color: rgba(237, 232, 255, 0.6);
+	margin-top: 22px;
+}
+.landing .l-footgrid {
+	position: relative;
+	z-index: 2;
+	display: grid;
+	grid-template-columns: 1.6fr 1fr 1fr 1fr 1fr;
+	gap: 26px;
+	padding: 8px 32px 40px;
+	max-width: 1060px;
+	margin: 0 auto;
+}
+.landing .l-fcol h4 {
+	font-size: 14px;
+	font-weight: 700;
+	color: #fff;
+	margin: 0 0 14px;
+	letter-spacing: -0.01em;
+}
+.landing .l-fcol ul {
+	display: flex;
+	flex-direction: column;
+	gap: 9px;
+}
+.landing .l-fcol a {
+	font-size: 14px;
+	font-weight: 600;
+	color: rgba(237, 232, 255, 0.78);
+	text-decoration: none;
+}
+.landing .l-fbrand {
+	display: flex;
+	align-items: center;
+	gap: 9px;
+	font-family: "Fredoka", sans-serif;
+	font-weight: 700;
+	font-size: 24px;
+	color: #fff;
+	margin-bottom: 14px;
+}
+.landing .l-fblurb {
+	font-size: 14px;
+	font-weight: 600;
+	line-height: 1.55;
+	color: rgba(237, 232, 255, 0.78);
+	max-width: 30ch;
+	margin-bottom: 18px;
+}
+.landing .l-frow {
+	position: relative;
+	z-index: 2;
+	max-width: 1060px;
+	margin: 0 auto;
+	padding: 18px 32px 30px;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 18px;
+	flex-wrap: wrap;
+	border-top: 1px solid var(--inkpad-line);
+}
+.landing .l-frow span {
+	font-size: 13.5px;
+	font-weight: 600;
+	color: rgba(237, 232, 255, 0.55);
+}
+.landing .l-langpick {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	background: rgba(255, 255, 255, 0.08);
+	border: 2px solid var(--inkpad-line);
+	border-radius: 999px;
+	padding: 7px 16px;
+}
+.landing .l-langpick b {
+	font-size: 14px;
+	font-weight: 700;
+	color: #fff;
+}
+.landing .l-social {
+	display: flex;
+	gap: 10px;
+	margin-top: 16px;
+}
+.landing .l-socialspan {
+	width: 34px;
+	height: 34px;
+	border-radius: 11px;
+	background: rgba(255, 255, 255, 0.1);
+	border: 2px solid var(--inkpad-line);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+@media (max-width: 1040px) {
+	.landing .l-r4h-inner {
+		grid-template-columns: 1fr;
+		gap: 26px;
+	}
+	.landing .l-nodes {
+		grid-template-columns: repeat(3, 1fr);
+	}
+	.landing .l-rail:before {
+		display: none;
+	}
+	.landing .l-tiles {
+		grid-template-columns: repeat(2, 1fr);
+	}
+	.landing .l-quotes {
+		grid-template-columns: 1fr 1fr;
+	}
+	.landing .l-footgrid {
+		grid-template-columns: 1fr 1fr 1fr;
+	}
+}
+@media (max-width: 860px) {
+	.landing .l-bens {
+		grid-template-columns: 1fr;
+	}
+	.landing .l-band {
+		padding: 50px 0;
+	}
+}
+@media (max-width: 720px) {
+	.landing .l-quotes {
+		grid-template-columns: 1fr;
+	}
+	.landing .l-footgrid {
+		grid-template-columns: 1fr 1fr;
+		gap: 22px;
+	}
+	.landing .l-wrap {
+		padding: 0 20px;
+	}
+	.landing .l-ptop {
+		padding: 14px 20px;
+	}
+	.landing .l-hillbody {
+		padding: 0 20px 36px;
+	}
+}
+@media (max-width: 640px) {
+	.landing .l-stage {
+		height: 124px;
+	}
+	.landing .l-stage .l-mid {
+		display: none;
+	}
+	.landing .l-hillbody h1 {
+		font-size: 32px;
+	}
+	.landing .l-hillcrest svg {
+		height: 130px;
+	}
+	.landing .l-r4h-copy h1 {
+		font-size: 31px;
+	}
+	.landing .l-r4h-inner {
+		grid-template-columns: 1fr;
+		padding: 28px 20px 0;
+	}
+	.landing .l-r4h-stage {
+		height: 250px;
+	}
+	.landing .l-nodes {
+		grid-template-columns: repeat(2, 1fr);
+	}
+	.landing .l-tiles {
+		grid-template-columns: 1fr;
+	}
+	.landing .l-mohero svg {
+		width: 104px;
+		height: 104px;
+	}
+}
+.landing .l-r4h {
+	position: relative;
+	background: var(--purple);
+	padding-bottom: 64px;
+}
+.landing .l-r4h:before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background-image: radial-gradient(
+		rgba(255, 255, 255, 0.14) 1.6px,
+		transparent 1.7px
+	);
+	background-size: 24px 24px;
+	pointer-events: none;
+}
+.landing .l-r4h-inner {
+	position: relative;
+	z-index: 2;
+	max-width: 1010px;
+	margin: 0 auto;
+	padding: 40px 32px 0;
+	display: grid;
+	grid-template-columns: 1fr 1.06fr;
+	gap: 26px;
+	align-items: center;
+}
+.landing .l-r4h-copy h1 {
+	color: #fff;
+	font-size: 40px;
+	line-height: 1.1;
+	margin-bottom: 22px;
+}
+.landing .l-r4h-eyebrow {
+	font-size: 12.5px;
+	font-weight: 700;
+	color: #dcd2ff;
+	margin-bottom: 10px;
+}
+.landing .l-r4h-badges {
+	display: flex;
+	gap: 12px;
+	margin-bottom: 24px;
+	flex-wrap: wrap;
+}
+.landing .l-r4h-badge {
+	display: flex;
+	align-items: center;
+	gap: 9px;
+	background: #fff;
+	border-radius: 16px;
+	padding: 11px 14px;
+	box-shadow: 0 5px 0 rgba(0, 0, 0, 0.22);
+}
+.landing .l-r4h-badge b {
+	display: block;
+	font-size: 23px;
+	font-weight: 700;
+	color: var(--purple);
+	line-height: 1;
+}
+.landing .l-r4h-badge small {
+	display: block;
+	font-size: 11.5px;
+	font-weight: 700;
+	color: var(--muted);
+	line-height: 1.3;
+	margin-top: 3px;
+}
+.landing .l-r4h-btn {
+	display: inline-flex;
+	background: #fff;
+	color: var(--ink);
+	font-weight: 700;
+	border-radius: 99px;
+	padding: 14px 30px;
+	font-size: 15px;
+	box-shadow: 0 6px 0 rgba(0, 0, 0, 0.28);
+	text-decoration: none;
+}
+.landing .l-r4h-stage {
+	position: relative;
+	height: 296px;
+}
+.landing .l-r4h-ring {
+	position: absolute;
+	border-radius: 99px;
+	border: 3px solid rgba(255, 255, 255, 0.2);
+}
+.landing .l-r4h-dev {
+	position: absolute;
+	left: 0;
+	bottom: 40px;
+	width: 196px;
+	background: var(--ink);
+	border-radius: 20px;
+	padding: 8px;
+	box-shadow: 0 8px 0 rgba(0, 0, 0, 0.3);
+}
+.landing .l-r4h-dev .l-bar {
+	display: flex;
+	gap: 5px;
+	align-items: center;
+	padding: 0 4px 8px;
+}
+.landing .l-r4h-dev .l-bar i {
+	width: 8px;
+	height: 8px;
+	border-radius: 99px;
+	display: block;
+}
+.landing .l-r4h-dev .l-url {
+	flex: 1;
+	margin-left: 5px;
+	background: rgba(255, 255, 255, 0.15);
+	border-radius: 99px;
+	padding: 3px 10px;
+	font-size: 10px;
+	font-weight: 700;
+	color: #ede8ff;
+	text-align: center;
+}
+.landing .l-r4h-mo {
+	position: absolute;
+	right: 40px;
+	bottom: 4px;
+}
+.landing .l-r4h-bub {
+	position: absolute;
+	right: 4px;
+	top: 2px;
+	background: #fff;
+	color: var(--ink);
+	font-size: 12.5px;
+	font-weight: 700;
+	border-radius: 15px;
+	padding: 9px 13px;
+	box-shadow: 0 4px 0 rgba(0, 0, 0, 0.16);
+}
+.landing .l-r4h-say {
+	position: absolute;
+	right: 172px;
+	bottom: -4px;
+	background: var(--apricot);
+	color: var(--amber);
+	font-size: 12.5px;
+	font-weight: 700;
+	border-radius: 15px;
+	padding: 9px 13px;
+	box-shadow: 0 4px 0 #b96a16;
+}
+.landing .l-r4h-medals {
+	position: relative;
+	z-index: 3;
+	max-width: 1010px;
+	margin: 0 auto;
+	padding: 20px 44px 0;
+	display: flex;
+	justify-content: space-between;
+}
+.landing .l-r4h-medal {
+	width: 30px;
+	height: 30px;
+	border-radius: 99px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 11.5px;
+	font-weight: 700;
+	border: 3px solid rgba(255, 255, 255, 0.9);
+	box-shadow: 0 3px 0 rgba(0, 0, 0, 0.18);
+}
+.landing .l-r4h-medal.l-a {
+	background: var(--apricot);
+	color: var(--amber);
+}
+.landing .l-r4h-medal.l-p {
+	background: #c9beff;
+	color: var(--deep);
+}
+.landing .l-r4h-medal.l-w {
+	background: #fff;
+	color: var(--purple);
+}
+.landing .l-ptop {
+	display: flex;
+	align-items: center;
+	gap: 22px;
+	padding: 14px 32px;
+	background: #fff;
+	position: relative;
+	z-index: 6;
+}
+.landing .l-brand {
+	display: flex;
+	align-items: center;
+	gap: 9px;
+	text-decoration: none;
+	flex-shrink: 0;
+}
+.landing .l-wordmark {
+	font-family: "Fredoka", sans-serif;
+	font-weight: 700;
+	font-size: 20px;
+	line-height: 1;
+	color: var(--ink);
+	transform: translateY(-1px);
+}
+.landing .l-nav {
+	display: flex;
+	gap: 26px;
+	flex: 1;
+	justify-content: center;
+}
+.landing .l-nav a {
+	font-size: 14.5px;
+	font-weight: 700;
+	color: var(--muted);
+	text-decoration: none;
+}
+.landing .l-nav a:hover {
+	color: var(--ink);
+}
+.landing .l-hact {
+	display: flex;
+	align-items: center;
+	gap: 14px;
+	flex-shrink: 0;
+}
+.landing .l-hsignin {
+	font-size: 14.5px;
+	font-weight: 700;
+	color: var(--ink);
+	text-decoration: none;
+}
+.landing .l-hget {
+	background: var(--purple);
+	color: #fff;
+	font-weight: 700;
+	border-radius: 99px;
+	padding: 10px 18px;
+	font-size: 14px;
+	text-decoration: none;
+	box-shadow: 0 4px 0 var(--deep);
+}
+.landing .l-r4h-btn2 {
+	color: #ede8ff;
+	font-weight: 700;
+	font-size: 15px;
+	text-decoration: underline;
+	text-underline-offset: 4px;
+}
+.landing .l-subhead {
+	display: flex;
+	align-items: baseline;
+	gap: 10px;
+	margin: 0 0 14px;
+}
+.landing .l-subhead span {
+	font-size: 16px;
+	font-weight: 700;
+}
+.landing .l-subhead b {
+	font-size: 12.5px;
+	font-weight: 700;
+	color: var(--muted);
+}
+.landing .l-mergediv {
+	border-top: 2px dashed var(--line);
+	margin: 36px 0 30px;
+}
+@media (max-width: 980px) {
+	.landing .l-nav {
+		display: none;
+	}
+}
+@media (max-width: 720px) {
+	.landing .l-hsignin {
+		display: none;
+	}
+}
+
+/* The mockup drew `.l-page` as a device frame; the real page IS the page. */
+.landing .l-page {
+	border: 0;
+	border-radius: 0;
+}
+
+/* Items whose pages do not exist yet: visible, not clickable, explained on hover. */
+.landing .l-pending {
+	font-size: 14px;
+	font-weight: 600;
+	color: rgba(237, 232, 255, 0.45);
+	cursor: default;
+}
+
+/* ---------- pricing plans ----------
+   Hand-written, not from the mockup: the approved mockup had no pricing page.
+   Everything below reuses the mockup's tokens, radii and shadows so the plan
+   cards read as the same material as `.l-ben` next to them. */
+.landing .l-plans {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 20px;
+	align-items: stretch;
+}
+
+.landing .l-plan {
+	display: flex;
+	flex-direction: column;
+	background: var(--card);
+	border: 2px solid var(--line);
+	border-radius: 24px;
+	box-shadow: var(--sh-card);
+	padding: 24px;
+}
+
+/* The plan we are recommending: same card, stronger outline. No "most popular"
+   badge — that is a claim about other people's choices, not a fact we hold. */
+.landing .l-plan.l-featured {
+	border-color: var(--purple);
+	box-shadow: 0 5px 0 var(--purple);
+}
+
+/* Specificity note: `.l-page h2` (0,2,1) would beat a bare `.l-plan-name`, so the
+   plan name's size has to be scoped through the card. */
+.landing .l-plan .l-plan-name {
+	font-size: 19px;
+	font-weight: 700;
+}
+
+.landing .l-plan-for {
+	font-size: 14.5px;
+	font-weight: 600;
+	color: var(--muted);
+	margin-top: 4px;
+}
+
+.landing .l-plan-price {
+	display: flex;
+	align-items: baseline;
+	gap: 8px;
+	flex-wrap: wrap;
+	margin: 16px 0 6px;
+}
+
+/* line-height 1 let the ₫ descender reach into the gap below and collide with the
+   first feature row; 1.15 keeps the line box around the glyph. */
+.landing .l-plan-price b {
+	font-size: 34px;
+	font-weight: 700;
+	letter-spacing: -0.02em;
+	line-height: 1.15;
+}
+
+.landing .l-plan-price span {
+	font-size: 14px;
+	font-weight: 700;
+	color: var(--muted);
+}
+
+.landing .l-plan-list {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	list-style: none;
+	margin: 20px 0 32px;
+	padding: 0;
+}
+
+.landing .l-plan-list li {
+	position: relative;
+	padding-left: 27px;
+	font-size: 15px;
+	font-weight: 600;
+	color: var(--muted);
+	line-height: 1.45;
+}
+
+/* The tick is a tinted dot, not artwork: the mockup's icon set ships inside the
+   generated landing markup and is not importable from here. */
+.landing .l-plan-list li:before {
+	content: "";
+	position: absolute;
+	left: 0;
+	top: 4px;
+	width: 16px;
+	height: 16px;
+	border-radius: 99px;
+	background: var(--tint-violet);
+	border: 2px solid var(--line);
+}
+
+.landing .l-plan.l-featured .l-plan-list li:before {
+	background: var(--purple);
+	border-color: var(--purple);
+}
+
+/* The CTA sits on the bottom edge whether the list above it is long or short. */
+.landing .l-plan .l-btn {
+	margin-top: auto;
+	justify-content: center;
+}
+
+/* Secondary plan's CTA: the primary button's shape, hollow. */
+.landing .l-btn.l-ghost {
+	background: transparent;
+	color: var(--purple);
+	box-shadow:
+		0 5px 0 var(--tint-violet),
+		inset 0 0 0 2px var(--purple);
+}
+
+@media (max-width: 860px) {
+	.landing .l-plans {
+		grid-template-columns: 1fr;
+	}
+}
+
+/* A three-up tile row, for pages where one of four facts was removed — without
+   this the grid would leave an empty fourth cell. The min-width guard matters:
+   `.landing .l-tiles.l-three` outweighs the tiles' own responsive rules, so
+   unguarded it would hold three columns on a phone. */
+@media (min-width: 1041px) {
+	.landing .l-tiles.l-three {
+		grid-template-columns: repeat(3, 1fr);
+	}
+}
+
+/* Current page in the marketing nav. Keyed off `aria-current`, which is what the
+   router sets, so the state is announced to assistive tech and not just tinted —
+   and hover alone cannot be mistaken for it. */
+.landing .l-nav a[aria-current="page"] {
+	position: relative;
+	color: var(--ink);
+}
+
+.landing .l-nav a[aria-current="page"]:after {
+	content: "";
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: -8px;
+	height: 3px;
+	border-radius: 99px;
+	background: var(--purple);
+}
+
+/* Hero with the mascot beside the copy, shared by About and Pricing. The mockup
+   only ever drew single-column marketing heroes — the landing page's own hero has
+   its own two-column treatment inside the purple field — so this is the one shape
+   both new pages use. `minmax(0, 1fr)` keeps a long headline from pushing the
+   mascot column off the row. */
+.landing .l-hero-split {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto;
+	gap: 48px;
+	align-items: center;
+}
+
+.landing .l-hero-mo {
+	display: flex;
+	justify-content: flex-end;
+}
+
+@media (max-width: 860px) {
+	.landing .l-hero-split {
+		grid-template-columns: 1fr;
+		gap: 22px;
+	}
+
+	.landing .l-hero-mo {
+		justify-content: center;
+	}
+}

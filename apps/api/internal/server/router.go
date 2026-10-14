@@ -17,6 +17,7 @@ import (
 
 	"engflex-api/config"
 	_ "engflex-api/docs"
+	"engflex-api/internal/modules/attempts"
 	"engflex-api/internal/modules/conversations"
 	"engflex-api/internal/modules/lessons"
 	"engflex-api/internal/modules/scenarios"
@@ -152,6 +153,7 @@ func NewRouter(db *gorm.DB, cfg config.Config) *gin.Engine {
 	sessionLimiter := buildLimiter("session", cfg.RateLimit.SessionRate, "session")
 	conversations.RegisterRoutes(v1, db, cfg.Voice, sessionLimiter)
 	lessons.RegisterRoutes(v1, db, cfg.Voice, cfg.LLM, cfg.Media, sessionLimiter)
+	attempts.RegisterRoutes(v1, db)
 	scenarios.RegisterRoutes(v1, db)
 	videos.RegisterRoutes(v1, db)
 	vocabulary.RegisterRoutes(v1, db)

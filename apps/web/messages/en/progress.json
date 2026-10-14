@@ -1,6 +1,0 @@
-{
-  "$schema": "https://inlang.com/schema/inlang-message-format",
-  "progress": {
-    "streak": "{count}-day streak"
-  }
-}

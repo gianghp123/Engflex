@@ -20,10 +20,7 @@ export function ScenarioDetailSide({ scenario }: { scenario: Scenario }) {
 					</div>
 					<div className="flex flex-wrap gap-2">
 						{scenario.details.vocab.map((term) => (
-							<span
-								key={term}
-								className="rounded-lg border bg-card px-2.5 py-1 text-xs font-bold text-primary"
-							>
+							<span key={term} className="chip">
 								{term}
 							</span>
 						))}

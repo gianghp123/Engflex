@@ -9,6 +9,7 @@
     "room": {
       "sessionEnded": "This session has ended.",
       "backToScenarios": "Back to scenarios",
+      "chooseMode": "Pick another mode",
       "controls": {
         "spaceHint": "Press Space to toggle the microphone",
         "micMute": "Mute microphone",
@@ -102,6 +103,33 @@
         "transcribing": "Hearing what you said…",
         "recordUnsupported": "Recording is not supported in this browser.",
         "micUnavailable": "Microphone unavailable. Type instead."
+      },
+      "review": {
+        "emptyTitle": "We didn't catch that.",
+        "emptyBody": "The mic was on but no speech came through. Head back and give it another go."
+      },
+      "recap": {
+        "title": "Nice session!",
+        "exchanges": "your turns",
+        "minutes": "minutes",
+        "corrections": "fix-ups"
+      },
+      "scene": {
+        "label": "Just practiced",
+        "freeTitle": "Free talk",
+        "freeBody": "Open sparring, no script."
+      },
+      "survey": {
+        "title": "Help Mo improve your experience",
+        "helpLabel": "How did Mo do?",
+        "yes": "Very helpful",
+        "no": "Not really",
+        "paceLabel": "How did that feel?",
+        "paceSlow": "A bit slow",
+        "paceOk": "Just right",
+        "paceFast": "Too fast",
+        "submit": "Done",
+        "done": "Mo's taking notes!"
       }
     },
     "connection": {
@@ -135,13 +163,6 @@
           "feature2": "CEFR B1 to C1 difficulty calibration"
         }
       }
-    },
-    "calibration": {
-      "title": "Audio input calibrated",
-      "device": "Microphone ready · Looking good!",
-      "ready": "Ready (Default Mic)",
-      "cta": "Test audio",
-      "listening": "Listening…"
     },
     "scenarios": {
       "title": "Select roleplay scenario",

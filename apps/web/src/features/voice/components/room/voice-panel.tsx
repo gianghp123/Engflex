@@ -8,13 +8,6 @@ import type { ReactNode } from "react";
 import { SubmitButton } from "#/components/common/submit-button";
 import { Button } from "#/components/ui/button";
 import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "#/components/ui/card";
-import {
 	Tooltip,
 	TooltipContent,
 	TooltipTrigger,
@@ -52,24 +45,22 @@ function VoicePanelView({
 	timeLeft?: string | null;
 }) {
 	return (
-		<Card className="h-full">
-			<CardHeader>
-				<div className="flex items-start justify-between gap-3">
-					<div>
-						<CardTitle>{title}</CardTitle>
-						<CardDescription>{objective}</CardDescription>
-					</div>
-					<div className="flex items-center gap-3">
-						{timeLeft ? (
-							<span className="text-xs font-medium text-muted-foreground">
-								{timeLeft}
-							</span>
-						) : null}
-						{headerAction}
-					</div>
+		<div className="surface-card flex h-full flex-col gap-6 py-6">
+			<div className="flex items-start justify-between gap-3 px-6">
+				<div className="flex flex-col gap-2">
+					<span className="leading-none font-semibold">{title}</span>
+					<span className="text-sm text-muted-foreground">{objective}</span>
 				</div>
-			</CardHeader>
-			<CardContent className="flex flex-1 flex-col items-center gap-6 pb-6">
+				<div className="flex items-center gap-3">
+					{timeLeft ? (
+						<span className="text-xs font-medium text-muted-foreground">
+							{timeLeft}
+						</span>
+					) : null}
+					{headerAction}
+				</div>
+			</div>
+			<div className="flex flex-1 flex-col items-center gap-6 px-6 pb-6">
 				<div className="flex flex-1 items-center justify-center">
 					<div className="vkui-root flex w-full justify-center">
 						<CircularWaveform
@@ -77,8 +68,6 @@ function VoicePanelView({
 							isThinking={false}
 							sensitivity={1.5}
 							size={240}
-							// color1="#3155ff"
-							// color2="#9db4ff"
 						/>
 					</div>
 				</div>
@@ -103,8 +92,8 @@ function VoicePanelView({
 						<TooltipContent>{m["voice.room.controls.micEnd"]()}</TooltipContent>
 					</Tooltip>
 				</div>
-			</CardContent>
-		</Card>
+			</div>
+		</div>
 	);
 }
 

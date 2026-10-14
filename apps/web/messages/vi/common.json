@@ -27,8 +27,7 @@
       "linkCopied": "Đã sao chép liên kết",
       "clipboardUnavailable": "Không thể sao chép trong trình duyệt này",
       "addedToVocabulary": "Đã thêm vào từ vựng của bạn",
-      "flashcardSoon": "Tính năng flashcard sắp ra mắt",
-      "replayMockOnly": "Xem lại hiện chỉ khả dụng trong bản demo"
+      "flashcardSoon": "Tính năng flashcard sắp ra mắt"
     },
     "a11y": {
       "more": "Xem thêm",
@@ -42,6 +41,10 @@
       "light": "Sáng",
       "dark": "Tối",
       "auto": "Hệ thống"
+    },
+    "dev": {
+      "title": "Đang xây dựng",
+      "body": "Góc này của app vẫn đang làm dở. Bạn quay lại sau nhé!"
     }
   }
 }

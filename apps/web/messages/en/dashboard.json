@@ -3,8 +3,7 @@
   "dashboard": {
     "hero": {
       "greeting": "Good morning",
-      "greetingName": "Good morning, {name}",
-      "subtitle": "Speech performance"
+      "greetingName": "Good morning, {name}"
     },
     "activeLesson": {
       "unitLabel": "Active lesson · Unit 4.2",
@@ -12,50 +11,18 @@
       "continue": "Continue practice"
     },
     "stats": {
-      "fluency": "Overall fluency",
-      "pronunciation": "Pronunciation",
-      "speed": "Speaking speed",
-      "speedUnit": "words / min",
-      "reviewQueue": "Review queue",
-      "highFriction": "{count} high friction",
-      "practice": "Practice"
+      "streak": "Day streak",
+      "voice": "Voice today",
+      "voiceGoal": "{done} / {goal} min",
+      "lessons": "Lessons done"
     },
     "sequence": {
-      "title": "Today's practice sequence",
-      "meta": "{count} modules · Customize schedule →",
-      "duration": "{count} min",
-      "state": {
-        "upNext": "Up next",
-        "queued": "Queued"
-      },
-      "doneScore": "Done ({score}% score)",
-      "dueCount": "{count} due",
-      "cards": {
-        "shadowing": {
-          "kicker": "Shadowing",
-          "title": "Movie-line shadowing",
-          "description": "Copy the rhythm of famous movie lines.",
-          "cta": "Replay"
-        },
-        "dictation": {
-          "kicker": "Dictation · Up next",
-          "title": "Everyday dictation",
-          "description": "Short, useful passages read aloud. Just write what you hear.",
-          "cta": "Start dictation"
-        },
-        "roleplay": {
-          "kicker": "Roleplay simulation",
-          "title": "Daily chit-chat",
-          "description": "Handle contentious points without sounding aggressive or evasive.",
-          "cta": "View scenarios"
-        },
-        "spaced": {
-          "kicker": "Spaced repetition",
-          "title": "Word workout",
-          "description": "Quick-fire recall that makes words stick.",
-          "cta": "Practice"
-        }
-      }
+      "title": "Today's practice sequence"
+    },
+    "zero": {
+      "sequenceTitle": "Up next",
+      "sequenceBody": "Finish a lesson and Mo will line up what to practice next.",
+      "sequenceCta": "Browse lessons"
     },
     "voicePartner": {
       "title": "Spontaneous speaking roleplay",

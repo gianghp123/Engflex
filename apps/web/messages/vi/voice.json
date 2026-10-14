@@ -9,6 +9,7 @@
     "room": {
       "sessionEnded": "Phiên này đã kết thúc.",
       "backToScenarios": "Quay lại các tình huống",
+      "chooseMode": "Chọn chế độ khác",
       "controls": {
         "spaceHint": "Nhấn Space để bật/tắt micrô",
         "micMute": "Tắt micrô",
@@ -102,6 +103,33 @@
         "transcribing": "Đang nghe lại lời bạn...",
         "recordUnsupported": "Trình duyệt này không hỗ trợ ghi âm.",
         "micUnavailable": "Không dùng được micro. Bạn gõ thay nhé."
+      },
+      "review": {
+        "emptyTitle": "Chưa nghe được gì cả.",
+        "emptyBody": "Mic vẫn bật mà chẳng thu được tiếng nào. Quay lại thử thêm lần nữa nhé."
+      },
+      "recap": {
+        "title": "Luyện tốt lắm!",
+        "exchanges": "lượt bạn nói",
+        "minutes": "phút",
+        "corrections": "chỗ cần sửa"
+      },
+      "scene": {
+        "label": "Vừa mới luyện",
+        "freeTitle": "Nói tự do",
+        "freeBody": "Luyện đối đáp mở, không kịch bản sẵn."
+      },
+      "survey": {
+        "title": "Giúp Mo cải thiện trải nghiệm của bạn",
+        "helpLabel": "Mo làm ăn thế nào?",
+        "yes": "Hữu ích lắm",
+        "no": "Chưa ăn thua",
+        "paceLabel": "Bạn cảm thấy nhịp độ sao?",
+        "paceSlow": "Hơi chậm",
+        "paceOk": "Vừa rồi",
+        "paceFast": "Hơi nhanh",
+        "submit": "Xong",
+        "done": "Mo ghi chép đây!"
       }
     },
     "connection": {
@@ -135,13 +163,6 @@
           "feature2": "Hiệu chỉnh độ khó CEFR B1 đến C1"
         }
       }
-    },
-    "calibration": {
-      "title": "Đã hiệu chỉnh micrô",
-      "device": "Mic đã sẵn sàng · Ngon lành!",
-      "ready": "Sẵn sàng (Mic mặc định)",
-      "cta": "Kiểm tra âm thanh",
-      "listening": "Đang nghe…"
     },
     "scenarios": {
       "title": "Chọn tình huống đóng vai",

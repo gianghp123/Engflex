@@ -27,8 +27,7 @@
       "linkCopied": "Link copied",
       "clipboardUnavailable": "Clipboard unavailable in this browser",
       "addedToVocabulary": "Added to your vocabulary",
-      "flashcardSoon": "Flashcard drill coming soon",
-      "replayMockOnly": "Replay is mock-only for now"
+      "flashcardSoon": "Flashcard drill coming soon"
     },
     "a11y": {
       "more": "More",
@@ -42,6 +41,10 @@
       "light": "Light",
       "dark": "Dark",
       "auto": "System"
+    },
+    "dev": {
+      "title": "Under construction",
+      "body": "This corner of the app is still being built. Check back soon!"
     }
   }
 }

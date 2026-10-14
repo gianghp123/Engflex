@@ -24,7 +24,6 @@ import {
 	SidebarMenuButton,
 	SidebarMenuItem,
 } from "#/components/ui/sidebar";
-import { PROGRESS_SUMMARY } from "#/features/attempts/fixtures";
 import { profileStore } from "#/features/profiles/store";
 import { m } from "#/paraglide/messages";
 
@@ -183,9 +182,6 @@ function SidebarUserCard() {
 			<div className="flex min-w-0 flex-col leading-tight group-data-[collapsible=icon]:hidden">
 				<span className="truncate text-[13px] font-bold text-card-foreground">
 					{name}
-				</span>
-				<span className="truncate text-[11px] font-medium text-muted-foreground">
-					{m["progress.streak"]({ count: PROGRESS_SUMMARY.streakDays })}
 				</span>
 			</div>
 			<Badge

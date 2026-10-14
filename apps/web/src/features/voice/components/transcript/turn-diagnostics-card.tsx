@@ -6,6 +6,7 @@ import type {
 import { cn } from "cn";
 import { ArrowRight, Lightbulb, RefreshCw } from "lucide-react";
 import { SubmitButton } from "#/components/common/submit-button";
+import { Badge } from "#/components/ui/badge";
 import { m } from "#/paraglide/messages";
 
 const SPAN_TONE: Record<SpanStatus, string> = {
@@ -177,9 +178,7 @@ export function TurnDiagnosticsCard({
 	return (
 		<div
 			className={
-				framed
-					? "flex flex-col gap-4 rounded-xl border bg-card p-4"
-					: "flex flex-col gap-4"
+				framed ? "surface-card flex flex-col gap-4 p-4" : "flex flex-col gap-4"
 			}
 		>
 			<div className="flex items-center justify-between gap-2">
@@ -191,18 +190,17 @@ export function TurnDiagnosticsCard({
 				</div>
 				<SubmitButton
 					type="button"
-					variant="ghost"
+					variant="outline"
 					size="sm"
 					pending={pending}
 					loadingLabel={m["voice.room.transcript.analyzing"]()}
 					onClick={onReanalyze}
-					className="bg-primary/10 text-primary hover:bg-primary/15 hover:text-primary"
 				>
 					<RefreshCw data-icon="inline-start" />
 					{m["voice.room.transcript.reanalyze"]()}
 				</SubmitButton>
 			</div>
-			<div className="flex flex-col gap-0.5 rounded-xl bg-muted p-4 shadow">
+			<div className="flex flex-col gap-0.5 rounded-xl border-2 border-border bg-muted p-4">
 				<span className="text-xs text-primary">
 					{m["voice.room.feedback.utterance"]()}
 				</span>
@@ -214,15 +212,13 @@ export function TurnDiagnosticsCard({
 			{feedback.spans.map((span) => (
 				<div
 					key={`${span.text}-${span.occurrence}`}
-					className="flex flex-col gap-0.5 rounded-xl bg-muted p-4 shadow"
+					className="flex flex-col gap-0.5 rounded-xl border-2 border-border bg-muted p-4"
 				>
 					<div className="flex justify-between">
 						<span className="text-xs text-primary">
 							{m["voice.room.feedback.grammarCorrection"]()}
 						</span>
-						<span className="rounded-md border border-border bg-muted px-1.5 py-0.5 text-[11px]">
-							{spanStatusLabel[span.status]}
-						</span>
+						<Badge variant="outline">{spanStatusLabel[span.status]}</Badge>
 					</div>
 					<div className="flex flex-wrap items-center gap-2">
 						<span className="text-sm text-ai-coral line-through opacity-85">
@@ -238,7 +234,7 @@ export function TurnDiagnosticsCard({
 			))}
 
 			{showRepair ? (
-				<div className="flex flex-col gap-2 rounded-xl bg-accuracy-tint/50 p-4 shadow">
+				<div className="flex flex-col gap-2 rounded-xl border-2 border-border bg-accuracy-tint/50 p-4">
 					<div className="flex items-center justify-between">
 						<span className="text-xs font-medium text-accuracy">
 							{m["voice.room.feedback.directRepair"]()}
@@ -253,15 +249,13 @@ export function TurnDiagnosticsCard({
 				</div>
 			) : null}
 
-			<div className="flex items-start gap-2 rounded-xl bg-muted p-4 shadow">
+			<div className="flex items-start gap-2 rounded-xl border-2 border-border bg-muted p-4">
 				<div className="flex flex-col gap-0.5 w-full">
 					<div className="flex items-center gap-2 justify-between">
 						<span className="text-xs font-semibold text-accent-violet">
 							{m["voice.room.feedback.topic.coherence"]()}
 						</span>
-						<span className="rounded-md border border-border bg-muted px-1.5 py-0.5 text-[11px]">
-							{relevanceLabel}
-						</span>
+						<Badge variant="outline">{relevanceLabel}</Badge>
 					</div>
 					{feedback.relevance.reason ? (
 						<p className="text-sm">{feedback.relevance.reason}</p>
@@ -284,11 +278,11 @@ export function TurnDiagnosticsCard({
 						{alternatives.map((alt) => (
 							<div
 								key={alt.kind}
-								className="flex flex-col gap-1.5 rounded-xl border bg-card p-4 shadow-sm"
+								className="surface-card flex flex-col gap-1.5 p-4"
 							>
-								<span className="rounded-md border border-primary bg-muted/10 px-1.5 py-0.5 text-[11px] text-primary self-start">
+								<Badge variant="outline" className="text-primary self-start">
 									{alt.kind}
-								</span>
+								</Badge>
 								<span className="text-sm font-semibold text-foreground">
 									“{alt.text}”
 								</span>
@@ -304,8 +298,8 @@ export function TurnDiagnosticsCard({
 			) : null}
 
 			<div className="flex items-center gap-2">
-				<div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-					<Lightbulb size={17} className="text-primary" />
+				<div className="tile bg-secondary text-primary">
+					<Lightbulb size={17} />
 				</div>
 				<p className="text-sm">
 					<span className="font-semibold text-foreground">

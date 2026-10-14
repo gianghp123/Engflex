@@ -1,0 +1,55 @@
+{
+	"$schema": "https://inlang.com/schema/inlang-message-format",
+	"pricing": {
+		"meta": {
+			"title": "Pricing — Engflex",
+			"description": "Engflex is free to start: 18 lessons from A1 to C2 with four skills each. Plus is 199,000₫ a month for the 15 everyday roleplays and feedback after each conversation."
+		},
+		"hero": {
+			"title": "Start free.",
+			"body": "The lesson path is free at every level, A1 to C2. Plus adds the part you cannot do on your own: talking with a partner who answers.",
+			"cta": "Get started",
+			"ctaSecondary": "I already have an account"
+		},
+		"plans": {
+			"free": {
+				"name": "Free",
+				"for": "Work through a lesson.",
+				"price": "0₫",
+				"period": "for every level",
+				"feature1": "18 lessons from A1 to C2, three at every level",
+				"feature2": "All four steps in every lesson: read it, hear it, write it, say it",
+				"feature3": "108 questions with an explanation for each answer",
+				"feature4": "Pronunciation marked word by word",
+				"cta": "Start free"
+			},
+			"plus": {
+				"name": "Plus",
+				"for": "Or talk it through.",
+				"price": "199,000₫",
+				"period": "per month",
+				"feature1": "Everything in Free",
+				"feature2": "All 15 everyday roleplays, seven topics, A1 to B1",
+				"feature3": "A partner who stays in character",
+				"feature4": "Feedback after each conversation",
+				"cta": "Get started"
+			}
+		},
+		"included": {
+			"title": "The same either way.",
+			"body": "The lesson path is the same whether you pay or not.",
+			"item1Title": "Four steps in every lesson",
+			"item1Body": "read it, hear it, write it, say it",
+			"item2Title": "108 explained questions",
+			"item2Body": "an explanation for each answer",
+			"item3Title": "Pronunciation, word by word",
+			"item3Body": "which sounds slipped"
+		},
+		"closing": {
+			"title": "Start where you are.",
+			"body": "Free at every level, from A1 to C2.",
+			"cta": "Get started",
+			"ctaSecondary": "I already have an account"
+		}
+	}
+}

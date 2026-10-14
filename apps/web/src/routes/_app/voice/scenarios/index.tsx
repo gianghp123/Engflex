@@ -171,7 +171,7 @@ function ScenariosPage() {
 				<section key={topicEntry.id} className="flex flex-col gap-4">
 					<div className="flex items-center justify-between gap-3">
 						<div className="flex min-w-0 items-center gap-3">
-							<span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-[12px] bg-primary text-sm font-bold text-primary-foreground shadow-edge-primary-xs">
+							<span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-sm bg-primary text-sm font-bold text-primary-foreground shadow-edge-primary-xs">
 								{topics.findIndex((t) => t.id === topicEntry.id) + 1}
 							</span>
 							<h2 className="truncate text-lg font-bold text-foreground">

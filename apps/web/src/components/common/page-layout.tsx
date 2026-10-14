@@ -42,7 +42,8 @@ export interface PageHeroSpec {
  * The app's one two-pane split: main work area (7) + side panel (5), stacked
  * below `lg`. Every activity page pairs its material with the interaction it
  * drives through this component so the reading rhythm never shifts between
- * reading/listening/writing/speaking.
+ * reading/listening/writing/speaking. Cells stretch to the row height so a
+ * sticky aside (`lg:sticky`) can anchor beside taller main content.
  */
 export function PageSplit({
 	main,
@@ -52,7 +53,7 @@ export function PageSplit({
 	aside: ReactNode;
 }) {
 	return (
-		<div className="grid items-start gap-4 lg:grid-cols-12">
+		<div className="grid items-stretch gap-4 lg:grid-cols-12">
 			<div className="lg:col-span-7">{main}</div>
 			<div className="lg:col-span-5">{aside}</div>
 		</div>

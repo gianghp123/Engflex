@@ -56,6 +56,9 @@ export const API_ROUTES = {
 		PRONOUNCE: (activityId: ApiId) =>
 			`/lesson-activities/${activityId}/pronounce`,
 	},
+	PROGRESS: {
+		SUMMARY: "/progress",
+	},
 } as const;
 
 /**

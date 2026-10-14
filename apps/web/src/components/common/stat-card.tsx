@@ -1,6 +1,8 @@
 import { cn } from "cn";
 import type { LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
+import { CardShell } from "#/components/common/card-shell";
+import { Skeleton } from "#/components/ui/skeleton";
 
 const TONE_STROKE = {
 	primary: "stroke-primary",
@@ -49,6 +51,7 @@ export function StatCard({
 	tone = "primary",
 	ringValue,
 	className,
+	pending = false,
 }: {
 	label: string;
 	icon?: LucideIcon;
@@ -57,13 +60,28 @@ export function StatCard({
 	tone?: keyof typeof TONE_STROKE;
 	ringValue?: number;
 	className?: string;
+	pending?: boolean;
 }) {
-	return (
-		<div
-			className={cn(
-				"surface-card flex items-center justify-between gap-3 p-4",
-				className,
+	const hasRing = typeof ringValue === "number";
+	const skeleton = (
+		<>
+			<div className="flex min-w-0 flex-col gap-1">
+				<Skeleton className="h-3 w-20" />
+				<Skeleton className="h-7 w-12" />
+				{hasRing ? <Skeleton className="h-3 w-16" /> : null}
+			</div>
+			{hasRing ? (
+				<Skeleton className="size-16 rounded-full" />
+			) : (
+				<Skeleton className="size-9 rounded-lg" />
 			)}
+		</>
+	);
+	return (
+		<CardShell
+			pending={pending}
+			skeleton={skeleton}
+			className={cn("flex items-center justify-between gap-3 p-4", className)}
 		>
 			<div className="flex min-w-0 flex-col gap-1">
 				<span className="text-[11px] font-semibold text-muted-foreground">
@@ -74,7 +92,7 @@ export function StatCard({
 					<span className="text-xs text-muted-foreground">{footer}</span>
 				) : null}
 			</div>
-			{typeof ringValue === "number" ? (
+			{hasRing ? (
 				<ProgressRing value={ringValue} tone={tone} />
 			) : Icon ? (
 				<span
@@ -88,6 +106,6 @@ export function StatCard({
 					<Icon className="size-5" />
 				</span>
 			) : null}
-		</div>
+		</CardShell>
 	);
 }

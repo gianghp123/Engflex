@@ -1,8 +1,65 @@
 {
-  "$schema": "https://inlang.com/schema/inlang-message-format",
-  "about": {
-    "crumb": "Giới thiệu",
-    "title": "Nói tiếng Anh mỗi ngày.",
-    "body": "Engflex biến vài phút mỗi ngày thành giờ luyện nói thật. Nghe rồi đọc hoặc chép lại, sau đó trò chuyện với bạn AI hiểu cách bạn nói. Độ lưu loát, phát âm và tốc độ được chấm theo từng kỹ năng, để bạn luôn biết nên luyện gì tiếp."
-  }
+	"$schema": "https://inlang.com/schema/inlang-message-format",
+	"about": {
+		"crumb": "Giới thiệu",
+		"meta": {
+			"title": "Giới thiệu Engflex — luyện tiếng Anh cho mọi trình độ",
+			"description": "Vì sao Engflex xoay quanh việc nói: lộ trình A1–C2, 18 bài học với bốn kỹ năng mỗi bài, và 15 tình huống giao tiếp hằng ngày cùng một người bạn luôn đáp lời."
+		},
+		"hero": {
+			"title": "Nói tiếng Anh mỗi ngày.",
+			"body": "Engflex biến vài phút mỗi ngày thành giờ luyện nói. Đọc, nghe, viết, rồi nói — sau đó trò chuyện với một người bạn luôn đáp lời.",
+			"cta": "Bắt đầu",
+			"ctaSecondary": "Tôi đã có tài khoản"
+		},
+		"problem": {
+			"eyebrow": "Vì sao chúng tôi làm điều này",
+			"title": "Đọc không phải phần khó.",
+			"body": "Bạn có thể đọc tiếng Anh nhiều năm mà vẫn đứng hình khi phải nói. Engflex giữ lại phần đọc và nghe bạn đã làm, và thêm phần thường bị bỏ qua: nói thành tiếng, với một người bạn luôn đáp lời và không rời khỏi tình huống."
+		},
+		"path": {
+			"eyebrow": "Lộ trình",
+			"title": "Một lộ trình, A1 đến C2.",
+			"body": "18 bài học, ba bài mỗi trình độ, và cùng bốn bước trong mỗi bài. Nhịp học không đổi — chỉ có nội dung là khó dần lên.",
+			"lessonsPerLevel": "3 bài học",
+			"stepsLabel": "Trong mỗi bài",
+			"stepsMeta": "bốn bước, mọi trình độ",
+			"stepReadTitle": "Đọc",
+			"stepReadBody": "Một đoạn ngắn dựng tình huống và những từ bạn cần.",
+			"stepHearTitle": "Nghe",
+			"stepHearBody": "Nghe lại đoạn đó, rồi đọc theo.",
+			"stepWriteTitle": "Viết",
+			"stepWriteBody": "Trả lời bằng lời của bạn — chấm theo một email mẫu.",
+			"stepSayTitle": "Nói",
+			"stepSayBody": "Đọc một câu thành tiếng và nhận điểm phát âm theo từng từ."
+		},
+		"talking": {
+			"eyebrow": "Trò chuyện",
+			"title": "Hoặc vào thẳng phần nói.",
+			"body": "15 tình huống giao tiếp hằng ngày trong bảy chủ đề, A1 đến B1. Người bạn đồng hành giữ nguyên vai từ đầu đến cuối.",
+			"cardRoleplayTitle": "Người bạn giữ nguyên vai",
+			"cardRoleplayBody": "15 tình huống trong bảy chủ đề, từ A1 đến B1: gọi món, mua sắm, du lịch, chuyện phiếm.",
+			"cardAnswersTitle": "Câu trả lời được chấm",
+			"cardAnswersBody": "108 câu hỏi chấm theo đáp án, mỗi câu kèm giải thích, và phần viết chấm theo một email mẫu.",
+			"cardPronunciationTitle": "Phát âm, từng từ một",
+			"cardPronunciationBody": "Đọc một câu vào mic. Mô hình âm học chấm từng từ và chỉ ra âm nào còn lệch."
+		},
+		"expect": {
+			"eyebrow": "Bạn nhận được gì",
+			"title": "Đúng ngay từ bài đầu tiên.",
+			"body": "Phần nói cùng người bạn hiện tới B1; lộ trình bài học đi tới C2.",
+			"timeTitle": "Vài phút mỗi ngày",
+			"timeBody": "cả nhịp học chỉ có vậy",
+			"levelsTitle": "Bài học ở mọi trình độ",
+			"levelsBody": "A1 đến C2, ba bài mỗi mức",
+			"roleplayTitle": "Trò chuyện tới B1",
+			"roleplayBody": "A1 đến B1 hiện tại"
+		},
+		"closing": {
+			"title": "Bắt đầu từ chỗ bạn đang đứng.",
+			"body": "A1 đến C2 — bắt đầu từ đâu cũng được.",
+			"cta": "Bắt đầu",
+			"ctaSecondary": "Tôi đã có tài khoản"
+		}
+	}
 }

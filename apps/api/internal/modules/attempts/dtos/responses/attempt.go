@@ -21,14 +21,13 @@ type Attempt struct {
 	CreatedAt   time.Time           `json:"createdAt"`
 }
 
-// ProgressSummary is the dashboard rollup, composed later by services from
-// attempts (streak, minutes, voice metrics) and user_vocabulary (due count).
-type ProgressSummary struct {
-	StreakDays       int `json:"streakDays"`
-	TodayMinutes     int `json:"todayMinutes"`
-	DailyGoalMinutes int `json:"dailyGoalMinutes"`
-	FluencyPct       int `json:"fluencyPct"`
-	PronunciationPct int `json:"pronunciationPct"`
-	WPM              int `json:"wpm"`
-	DueVocabulary    int `json:"dueVocabulary"`
+// Progress is the measurable-only dashboard rollup. Fluency, pronunciation,
+// WPM and due-vocabulary are deliberately absent: no scoring source exists,
+// and due-vocabulary waits on the vocabulary feature. They return when their
+// sources do — never as fabricated numbers.
+type Progress struct {
+	StreakDays        int `json:"streakDays"`
+	VoiceMinutesToday int `json:"voiceMinutesToday"`
+	DailyGoalMinutes  int `json:"dailyGoalMinutes"`
+	LessonsCompleted  int `json:"lessonsCompleted"`
 }

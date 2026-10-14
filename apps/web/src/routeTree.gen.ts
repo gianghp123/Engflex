@@ -9,12 +9,14 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppRouteRouteImport } from './routes/_app/route'
+import { Route as AboutRouteImport } from './routes/about'
 import { Route as ErrorRouteImport } from './routes/error'
 import { Route as NotFoundRouteImport } from './routes/not-found'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
-import { Route as AppIndexRouteImport } from './routes/_app/index'
-import { Route as AppAboutRouteImport } from './routes/_app/about'
+import { Route as PricingRouteImport } from './routes/pricing'
+import { Route as AppHomeRouteImport } from './routes/_app/home'
 import { Route as SignInSplatRouteImport } from './routes/sign-in.$'
 import { Route as SignUpSplatRouteImport } from './routes/sign-up.$'
 import { Route as AppLessonsIndexRouteImport } from './routes/_app/lessons/index'
@@ -31,8 +33,18 @@ import { Route as AppVoiceScenariosScenarioIdRouteImport } from './routes/_app/v
 import { Route as ApiVoiceConversationIdOfferRouteImport } from './routes/api/voice/$conversationId/offer'
 import { Route as ApiVoiceConversationIdStartRouteImport } from './routes/api/voice/$conversationId/start'
 
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AppRouteRoute = AppRouteRouteImport.update({
   id: '/_app',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AboutRoute = AboutRouteImport.update({
+  id: '/about',
+  path: '/about',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ErrorRoute = ErrorRouteImport.update({
@@ -50,14 +62,14 @@ const OnboardingRoute = OnboardingRouteImport.update({
   path: '/onboarding',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AppIndexRoute = AppIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => AppRouteRoute,
+const PricingRoute = PricingRouteImport.update({
+  id: '/pricing',
+  path: '/pricing',
+  getParentRoute: () => rootRouteImport,
 } as any)
-const AppAboutRoute = AppAboutRouteImport.update({
-  id: '/about',
-  path: '/about',
+const AppHomeRoute = AppHomeRouteImport.update({
+  id: '/home',
+  path: '/home',
   getParentRoute: () => AppRouteRoute,
 } as any)
 const SignInSplatRoute = SignInSplatRouteImport.update({
@@ -141,11 +153,13 @@ const ApiVoiceConversationIdStartRoute =
   } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof AppIndexRoute
+  '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/error': typeof ErrorRoute
   '/not-found': typeof NotFoundRoute
   '/onboarding': typeof OnboardingRoute
-  '/about': typeof AppAboutRoute
+  '/pricing': typeof PricingRoute
+  '/home': typeof AppHomeRoute
   '/sign-in/$': typeof SignInSplatRoute
   '/sign-up/$': typeof SignUpSplatRoute
   '/vocabulary/$itemId': typeof AppVocabularyItemIdRoute
@@ -163,13 +177,15 @@ export interface FileRoutesByFullPath {
   '/voice/scenarios/': typeof AppVoiceScenariosIndexRoute
 }
 export interface FileRoutesByTo {
+  '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/error': typeof ErrorRoute
   '/not-found': typeof NotFoundRoute
   '/onboarding': typeof OnboardingRoute
-  '/about': typeof AppAboutRoute
+  '/pricing': typeof PricingRoute
+  '/home': typeof AppHomeRoute
   '/sign-in/$': typeof SignInSplatRoute
   '/sign-up/$': typeof SignUpSplatRoute
-  '/': typeof AppIndexRoute
   '/vocabulary/$itemId': typeof AppVocabularyItemIdRoute
   '/voice/preview': typeof AppVoicePreviewRoute
   '/api/media/$': typeof ApiMediaSplatRoute
@@ -186,14 +202,16 @@ export interface FileRoutesByTo {
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
   '/_app': typeof AppRouteRouteWithChildren
+  '/about': typeof AboutRoute
   '/error': typeof ErrorRoute
   '/not-found': typeof NotFoundRoute
   '/onboarding': typeof OnboardingRoute
-  '/_app/about': typeof AppAboutRoute
+  '/pricing': typeof PricingRoute
+  '/_app/home': typeof AppHomeRoute
   '/sign-in/$': typeof SignInSplatRoute
   '/sign-up/$': typeof SignUpSplatRoute
-  '/_app/': typeof AppIndexRoute
   '/_app/vocabulary/$itemId': typeof AppVocabularyItemIdRoute
   '/_app/voice/preview': typeof AppVoicePreviewRoute
   '/api/media/$': typeof ApiMediaSplatRoute
@@ -212,10 +230,12 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/about'
     | '/error'
     | '/not-found'
     | '/onboarding'
-    | '/about'
+    | '/pricing'
+    | '/home'
     | '/sign-in/$'
     | '/sign-up/$'
     | '/vocabulary/$itemId'
@@ -233,13 +253,15 @@ export interface FileRouteTypes {
     | '/voice/scenarios/'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/'
+    | '/about'
     | '/error'
     | '/not-found'
     | '/onboarding'
-    | '/about'
+    | '/pricing'
+    | '/home'
     | '/sign-in/$'
     | '/sign-up/$'
-    | '/'
     | '/vocabulary/$itemId'
     | '/voice/preview'
     | '/api/media/$'
@@ -255,14 +277,16 @@ export interface FileRouteTypes {
     | '/voice/scenarios'
   id:
     | '__root__'
+    | '/'
     | '/_app'
+    | '/about'
     | '/error'
     | '/not-found'
     | '/onboarding'
-    | '/_app/about'
+    | '/pricing'
+    | '/_app/home'
     | '/sign-in/$'
     | '/sign-up/$'
-    | '/_app/'
     | '/_app/vocabulary/$itemId'
     | '/_app/voice/preview'
     | '/api/media/$'
@@ -279,10 +303,13 @@ export interface FileRouteTypes {
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
+  IndexRoute: typeof IndexRoute
   AppRouteRoute: typeof AppRouteRouteWithChildren
+  AboutRoute: typeof AboutRoute
   ErrorRoute: typeof ErrorRoute
   NotFoundRoute: typeof NotFoundRoute
   OnboardingRoute: typeof OnboardingRoute
+  PricingRoute: typeof PricingRoute
   SignInSplatRoute: typeof SignInSplatRoute
   SignUpSplatRoute: typeof SignUpSplatRoute
   ApiMediaSplatRoute: typeof ApiMediaSplatRoute
@@ -292,11 +319,25 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_app': {
       id: '/_app'
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof AppRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/about': {
+      id: '/about'
+      path: '/about'
+      fullPath: '/about'
+      preLoaderRoute: typeof AboutRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/error': {
@@ -320,18 +361,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OnboardingRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_app/': {
-      id: '/_app/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof AppIndexRouteImport
-      parentRoute: typeof AppRouteRoute
+    '/pricing': {
+      id: '/pricing'
+      path: '/pricing'
+      fullPath: '/pricing'
+      preLoaderRoute: typeof PricingRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_app/about': {
-      id: '/_app/about'
-      path: '/about'
-      fullPath: '/about'
-      preLoaderRoute: typeof AppAboutRouteImport
+    '/_app/home': {
+      id: '/_app/home'
+      path: '/home'
+      fullPath: '/home'
+      preLoaderRoute: typeof AppHomeRouteImport
       parentRoute: typeof AppRouteRoute
     }
     '/sign-in/$': {
@@ -443,8 +484,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AppRouteRouteChildren {
-  AppAboutRoute: typeof AppAboutRoute
-  AppIndexRoute: typeof AppIndexRoute
+  AppHomeRoute: typeof AppHomeRoute
   AppVocabularyItemIdRoute: typeof AppVocabularyItemIdRoute
   AppVoicePreviewRoute: typeof AppVoicePreviewRoute
   AppLessonsIndexRoute: typeof AppLessonsIndexRoute
@@ -458,8 +498,7 @@ interface AppRouteRouteChildren {
 }
 
 const AppRouteRouteChildren: AppRouteRouteChildren = {
-  AppAboutRoute: AppAboutRoute,
-  AppIndexRoute: AppIndexRoute,
+  AppHomeRoute: AppHomeRoute,
   AppVocabularyItemIdRoute: AppVocabularyItemIdRoute,
   AppVoicePreviewRoute: AppVoicePreviewRoute,
   AppLessonsIndexRoute: AppLessonsIndexRoute,
@@ -477,10 +516,13 @@ const AppRouteRouteWithChildren = AppRouteRoute._addFileChildren(
 )
 
 const rootRouteChildren: RootRouteChildren = {
+  IndexRoute: IndexRoute,
   AppRouteRoute: AppRouteRouteWithChildren,
+  AboutRoute: AboutRoute,
   ErrorRoute: ErrorRoute,
   NotFoundRoute: NotFoundRoute,
   OnboardingRoute: OnboardingRoute,
+  PricingRoute: PricingRoute,
   SignInSplatRoute: SignInSplatRoute,
   SignUpSplatRoute: SignUpSplatRoute,
   ApiMediaSplatRoute: ApiMediaSplatRoute,
