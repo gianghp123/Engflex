@@ -32,6 +32,8 @@ vendor/
 .env
 !.env.example
 
+client_secret*.json
+
 # --- Databases / local data ---
 *.db
 *.sqlite

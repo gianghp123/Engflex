@@ -8,8 +8,8 @@
       "nextQuestion": "Next question"
     },
     "hub": {
-      "title": "Executive lesson hub",
-      "moBody": "15 to 25 minutes of intentional speaking, listening, and technical debate every day.",
+      "title": "Lesson hub",
+      "moBody": "15–25 minutes a day: a little speaking, listening, and everyday chit-chat. Small steps, big wins!",
       "inFlight": "In flight",
       "overall": "Overall section completion",
       "resume": "Resume {unit}",
@@ -29,7 +29,7 @@
       "coach": "Coach Mo",
       "steady": "Steady speed",
       "calmTip": "Mo's calm tip",
-      "calmQuote": "Take a breath between sentences. Rushing doesn't make code deploy faster.",
+      "calmQuote": "Take a breath between sentences. Slow and clear always wins.",
       "startLesson": "Start lesson (Part {number}: {part})",
       "saved": "Saved",
       "saveLater": "Save for later",

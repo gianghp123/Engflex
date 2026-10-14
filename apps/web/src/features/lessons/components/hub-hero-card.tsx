@@ -90,23 +90,9 @@ export function HubHeroCard({
 				</div>
 			</div>
 			<div className="flex shrink-0 items-center justify-center">
-				<div
-					className="relative hidden items-center justify-center rounded-full bg-accent sm:flex"
-					style={{
-						width: 112,
-						height: 112,
-						boxShadow: "0 3px 0 var(--border)",
-					}}
-				>
+				<div className="relative hidden size-[112px] items-center justify-center rounded-full bg-accent shadow-edge-sm sm:flex">
 					<MoMascot variant="wave" size={80} />
-					<span
-						className="absolute -top-1 -right-1 px-2 py-0.5 text-[11px] font-bold text-foreground"
-						style={{
-							background: "#ffe2c5",
-							borderRadius: 9999,
-							boxShadow: "0 2px 0 var(--border)",
-						}}
-					>
+					<span className="absolute -top-1 -right-1 rounded-full bg-tip-bg px-2 py-0.5 text-[11px] font-bold text-tip-ink shadow-edge-xs">
 						{m["lessons.hub.paced"]()}
 					</span>
 				</div>

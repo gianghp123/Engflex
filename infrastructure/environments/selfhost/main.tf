@@ -48,6 +48,11 @@ locals {
   voice_limits         = { max_duration_sec = "300", idle_timeout_sec = "300" }
   pronounce_timeout_ms = "120000"
 
+  # Request throttling budgets (apps/api RATE_LIMIT_*): ulule/limiter rates.
+  # Opt-in by design — an unset rate means no limiter — so prod must declare
+  # them explicitly rather than inherit a code default.
+  rate_limit = { global = "300-M", session = "30-M" }
+
   sentry_projects = {
     api   = { name = "EngFlex API", slug = local.apps.api.name, platform = "go" }
     web   = { name = "EngFlex Web", slug = local.apps.web.name, platform = "javascript-react" }
@@ -123,6 +128,8 @@ module "api_app" {
     MINIO_BUCKET               = local.minio_net.bucket
     CLERK_SECRET_KEY           = var.clerk_secret_key
     CORS_ORIGINS               = join(",", [local.web_url, local.api_url])
+    RATE_LIMIT_GLOBAL          = local.rate_limit.global
+    RATE_LIMIT_SESSION         = local.rate_limit.session
     RATE_LIMIT_TRUSTED_PROXIES = local.network.trusted_proxies
     LLM_API_KEY                = var.llm_api_key
     LLM_BASE_URL               = var.llm_base_url

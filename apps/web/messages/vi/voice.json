@@ -126,26 +126,26 @@
         },
         "structured": {
           "badge": "Chế độ 02 · Mô phỏng có cấu trúc",
-          "title": "Tình huống đóng vai điều hành",
-          "description": "Mô phỏng công sở áp lực cao với nhân vật đối tác chân thực. Luyện phản biện sprint, bảo vệ thiết kế hệ thống, đàm phán lương và thuyết trình điều hành.",
+          "title": "Đóng vai đời thường",
+          "description": "Luyện những tình huống ngoài đời thật với nhân vật y như thật — gọi món, hỏi đường, tán gẫu.",
           "meta": "Gồm 4 nhóm chính · 12 tình huống",
           "cta": "Khám phá tình huống",
-          "feature0": "12 nhân vật & tình huống điều hành chọn lọc",
-          "feature1": "Chuẩn hóa phát âm & nâng cấp cách diễn đạt",
+          "feature0": "12 nhân vật & tình huống gần gũi",
+          "feature1": "Sửa phát âm & cách nói tự nhiên",
           "feature2": "Hiệu chỉnh độ khó CEFR B1 đến C1"
         }
       }
     },
     "calibration": {
       "title": "Đã hiệu chỉnh micrô",
-      "device": "Micrô MacBook Pro · Đã phát hiện độ nhạy tối ưu",
+      "device": "Mic đã sẵn sàng · Ngon lành!",
       "ready": "Sẵn sàng (Mic mặc định)",
       "cta": "Kiểm tra âm thanh",
       "listening": "Đang nghe…"
     },
     "scenarios": {
       "title": "Chọn tình huống đóng vai",
-      "subtitle": "Chọn chủ đề trọng tâm và tình huống để luyện hội thoại chuyên nghiệp chân thực với phản hồi âm thanh tức thì.",
+      "subtitle": "Chọn chủ đề và tình huống để luyện nói như ngoài đời thật, có nhận xét ngay.",
       "filter": {
         "search": "Tìm tình huống"
       },
@@ -191,7 +191,7 @@
     },
     "tip": {
       "title": "Mẹo của Mo",
-      "body": "Khi bảo vệ kiến trúc dưới áp lực, hãy nói chậm lại 10%. Vội vàng nghe có vẻ defensive; ngắt nhịp điềm tĩnh thể hiện sự chắc chắn."
+      "body": "Thấy mình nói vội quá? Chậm lại một nhịp. Ngắt nghỉ đúng chỗ là nghe tự tin hẳn."
     }
   }
 }

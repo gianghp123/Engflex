@@ -2,7 +2,7 @@
   "$schema": "https://inlang.com/schema/inlang-message-format",
   "about": {
     "crumb": "About",
-    "title": "Speak English at work, every day.",
-    "body": "Engflex turns the meetings you already have — standups, architecture reviews, sprint retros — into short daily speaking drills. Read or dictate the passage, then spar with an AI partner that adapts to your phrasing. Fluency, pronunciation and speed are tracked per skill, so you always know what to practise next."
+    "title": "Speak English every day.",
+    "body": "Engflex turns a few minutes a day into real speaking practice. Listen or read, then chat with an AI partner that adapts to you. Fluency, pronunciation, and speed are tracked per skill, so you always know what to try next."
   }
 }

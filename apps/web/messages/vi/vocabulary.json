@@ -3,8 +3,8 @@
   "vocabulary": {
     "detail": {
       "saveNote": "Lưu ghi chú",
-      "contextsTitle": "Bối cảnh kỹ thuật thực tế",
-      "collocationsTitle": "Các cụm từ kỹ thuật thiết yếu",
+      "contextsTitle": "Ví dụ ngoài đời thật",
+      "collocationsTitle": "Cụm từ hay đi với nhau",
       "morphologyTitle": "Cấu tạo & nguồn gốc từ",
       "origin": "Nguồn gốc",
       "acousticTitle": "Phân tích âm thanh",
@@ -32,9 +32,9 @@
     },
     "hub": {
       "title": "Thư viện từ vựng",
-      "subtitle": "Ôn thuật ngữ kỹ thuật, quản lý cụm từ bạn tự thêm và theo dõi mức độ ghi nhớ.",
-      "emptyTitle": "Không có thuật ngữ nào khớp bộ lọc",
-      "showing": "Hiển thị {shown}/{total} thẻ thuật ngữ",
+      "subtitle": "Ôn lại từ của bạn, giữ từ bạn tự thêm, càng học càng nhớ lâu.",
+      "emptyTitle": "Không tìm thấy từ nào hợp bộ lọc",
+      "showing": "Đang xem {shown}/{total} thẻ từ",
       "reviewNow": "Ôn ngay",
       "masteredOf": "{done} trên {total} đã thuộc"
     },
@@ -46,15 +46,15 @@
       "customSub": "Ghi chú của bạn"
     },
     "filter": {
-      "search": "Tìm thuật ngữ",
+      "search": "Tìm từ…",
       "source": {
         "all": "Tất cả từ vựng",
         "lesson": "Từ bài học",
         "conversation": "Từ hội thoại AI",
         "manual": "Tùy chỉnh"
       },
-      "domainLabel": "Lĩnh vực:",
-      "domainAll": "Mọi lĩnh vực",
+      "domainLabel": "Chủ đề:",
+      "domainAll": "Tất cả chủ đề",
       "domain": {
         "backendDb": "Backend & CSDL",
         "distributedSystems": "Hệ phân tán",
@@ -82,14 +82,14 @@
     },
     "addWord": {
       "button": "Thêm từ tùy chỉnh",
-      "title": "Thêm cụm từ kỹ thuật tùy chỉnh",
+      "title": "Thêm từ của bạn",
       "description": "Lưu vào danh sách cá nhân của bạn.",
       "termLabel": "Từ hoặc cụm từ",
       "cefrLabel": "Cấp độ CEFR",
       "cefrOptions": {
-        "b1": "B1 (Giao tiếp)",
-        "b2": "B2 (Kỹ thuật)",
-        "c1": "C1 (Kiến trúc)"
+        "b1": "B1",
+        "b2": "B2",
+        "c1": "C1"
       },
       "posLabel": "Từ loại",
       "definitionLabel": "Định nghĩa",
@@ -101,7 +101,7 @@
       "title": "Bộ thẻ ôn tập hằng ngày",
       "subtitle": "Thuật toán lặp lại ngắt quãng",
       "dueBadge": "{count} mục đến hạn",
-      "body": "Tự kiểm tra bằng các gợi ý kỹ thuật khó giúp bạn ghi nhớ từ vựng và bật ra khi nói.",
+      "body": "Tự đố mình bằng gợi ý khó để nhớ từ lâu, lúc nói bật ra ngay.",
       "dueToday": "Đến hạn hôm nay",
       "overdue": "Quá hạn",
       "start": "Bắt đầu luyện flashcard ({count} thẻ)"
@@ -109,7 +109,7 @@
     "recent": {
       "title": "Từ bạn mới thêm",
       "viewAll": "Xem tất cả ({count})",
-      "body": "Các thuật ngữ bạn ghi lại trong cuộc họp, tài liệu thiết kế và đánh giá kiến trúc."
+      "body": "Những từ bạn nhặt được lúc đọc sách, xem phim hay trò chuyện."
     }
   }
 }

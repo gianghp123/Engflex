@@ -3,8 +3,8 @@
   "vocabulary": {
     "detail": {
       "saveNote": "Save note",
-      "contextsTitle": "Real engineering contexts",
-      "collocationsTitle": "Essential engineering collocations",
+      "contextsTitle": "Real-life examples",
+      "collocationsTitle": "Words that go together",
       "morphologyTitle": "Word morphology & forms",
       "origin": "Origin",
       "acousticTitle": "Acoustic breakdown",
@@ -32,9 +32,9 @@
     },
     "hub": {
       "title": "Vocabulary studio",
-      "subtitle": "Review technical terminology, manage custom engineering phrases, and track active recall retention.",
-      "emptyTitle": "No term matches current filters",
-      "showing": "Showing {shown} of {total} terminology cards",
+      "subtitle": "Review your words, keep the ones you add, and watch them stick.",
+      "emptyTitle": "No words match your filters",
+      "showing": "Showing {shown} of {total} word cards",
       "reviewNow": "Review now",
       "masteredOf": "{done} of {total} mastered"
     },
@@ -46,15 +46,15 @@
       "customSub": "User-created notes"
     },
     "filter": {
-      "search": "Search terminology",
+      "search": "Search words",
       "source": {
         "all": "All vocabulary",
         "lesson": "From lessons",
         "conversation": "From AI sparring",
         "manual": "Custom"
       },
-      "domainLabel": "Domain:",
-      "domainAll": "All domains",
+      "domainLabel": "Topic:",
+      "domainAll": "All topics",
       "domain": {
         "backendDb": "Backend & DB",
         "distributedSystems": "Distributed systems",
@@ -82,14 +82,14 @@
     },
     "addWord": {
       "button": "Add custom word",
-      "title": "Add custom engineering phrase",
+      "title": "Add your own words",
       "description": "Saved to your personal list with a Custom source.",
       "termLabel": "Term or phrase",
       "cefrLabel": "CEFR tier",
       "cefrOptions": {
-        "b1": "B1 (Operational)",
-        "b2": "B2 (Technical)",
-        "c1": "C1 (Architectural)"
+        "b1": "B1",
+        "b2": "B2",
+        "c1": "C1"
       },
       "posLabel": "Part of speech",
       "definitionLabel": "Definition",
@@ -101,7 +101,7 @@
       "title": "Daily active recall deck",
       "subtitle": "Spaced interval algorithm",
       "dueBadge": "{count} due",
-      "body": "Testing yourself with high-stakes technical cues locks vocabulary into involuntary active speech memory.",
+      "body": "Quizzing yourself with tricky hints locks words in — so they pop out when you speak.",
       "dueToday": "Due today",
       "overdue": "Overdue",
       "start": "Start flashcard drill ({count} cards)"
@@ -109,7 +109,7 @@
     "recent": {
       "title": "Recent custom additions",
       "viewAll": "View all ({count})",
-      "body": "Terms you captured during meetings, design documents, and architecture reviews."
+      "body": "Words you picked up from books, shows, and conversations."
     }
   }
 }

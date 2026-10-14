@@ -33,26 +33,26 @@
       "cards": {
         "shadowing": {
           "kicker": "Nhại giọng",
-          "title": "Nhịp diễn thuyết công nghệ",
-          "description": "Bắt nhịp với các buổi ra mắt sản phẩm và demo kỹ thuật.",
+          "title": "Nhại giọng phim",
+          "description": "Nói theo nhịp những câu thoại phim nổi tiếng.",
           "cta": "Xem lại"
         },
         "dictation": {
           "kicker": "Nghe chép · Tiếp theo",
-          "title": "Ôn tóm tắt điều hành",
-          "description": "Các bản tóm tắt kỹ thuật phức tạp cùng biên bản quyết định kiến trúc.",
+          "title": "Nghe chép mỗi ngày",
+          "description": "Nghe đoạn ngắn rồi chép lại những gì bạn nghe được.",
           "cta": "Bắt đầu nghe chép"
         },
         "roleplay": {
           "kicker": "Mô phỏng đóng vai",
-          "title": "Tranh luận đánh đổi trong retro sprint",
+          "title": "Tán gẫu mỗi ngày",
           "description": "Xử lý điểm gây tranh cãi mà không gay gắt hay lảng tránh.",
           "cta": "Xem tình huống"
         },
         "spaced": {
           "kicker": "Lặp lại ngắt quãng",
-          "title": "Từ vựng sprint & kỹ thuật",
-          "description": "Củng cố phản xạ dùng thuật ngữ sprint khi nói.",
+          "title": "Luyện từ vựng",
+          "description": "Ôn chớp nhoáng để từ nào cũng nhớ lâu.",
           "cta": "Luyện tập"
         }
       }

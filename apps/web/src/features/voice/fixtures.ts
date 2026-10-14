@@ -57,21 +57,21 @@ export const REVIEW_MOCK_TURNS: Turn[] = [
 		id: "mock-turn-2",
 		position: 2,
 		role: "user",
-		text: "I want to practice talking about my last sprint review.",
+		text: "I want to practice ordering coffee.",
 		wasInterrupted: false,
 		feedback: {
 			payload: {
-				corrected: "I want to practice talking about my last sprint review.",
+				corrected: "I want to practice ordering coffee.",
 				spans: [],
 				relevance: { status: "relevant", reason: undefined },
 				alternatives: {
 					language: {
-						text: "I want to practice discussing my last sprint review.",
-						reason: "A stronger verb than “talk about”.",
+						text: "I'd like to practice ordering coffee.",
+						reason: "“I'd like to” sounds more natural than “I want to”.",
 					},
 					contextual: undefined,
 				},
-				tip: "Good opener — try a stronger verb than “talk about”.",
+				tip: "Good opener — “I'd like to” sounds a little more polite.",
 			},
 		},
 		createdAt: "2026-09-26T15:00:12Z",

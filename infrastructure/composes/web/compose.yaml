@@ -20,9 +20,15 @@ services:
       - VITE_SENTRY_DSN=${VITE_SENTRY_DSN}
       - CLERK_SECRET_KEY=${CLERK_SECRET_KEY}
     labels:
-      - traefik.http.middlewares.engflex-ip-limit.ratelimit.average=60
+      # Edge IP limiter (Coolify shorthand — Traefik applies it to every
+      # route and has no path exclusion). Sized for a cold client load: the
+      # SSR document + serverFn RPCs + cache-miss chunks burst ~30 requests
+      # before the module graph settles, so the old 60/20 429'd first visits.
+      # Coolify's own documented example is average=100/burst=50; 300/100
+      # keeps an edge safety net without throttling a normal page load.
+      - traefik.http.middlewares.engflex-ip-limit.ratelimit.average=300
       - traefik.http.middlewares.engflex-ip-limit.ratelimit.period=1m
-      - traefik.http.middlewares.engflex-ip-limit.ratelimit.burst=20
+      - traefik.http.middlewares.engflex-ip-limit.ratelimit.burst=100
       - traefik.http.middlewares.engflex-ip-limit.ratelimit.sourcecriterion.requestheadername=CF-Connecting-IP
       - coolify.traefik.middlewares=engflex-ip-limit
     networks:

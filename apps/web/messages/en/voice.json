@@ -126,26 +126,26 @@
         },
         "structured": {
           "badge": "Mode 02 · Structured simulation",
-          "title": "Executive roleplay scenarios",
-          "description": "High-stakes workplace simulations with realistic partner personas. Practice sprint pushbacks, system architecture defenses, salary negotiations, and executive presentations.",
+          "title": "Everyday roleplays",
+          "description": "Practice real-life moments with characters that feel real — ordering food, asking for directions, making small talk.",
           "meta": "Available: 4 core tracks · 12 scenarios",
           "cta": "Explore scenarios",
-          "feature0": "12 curated executive personas & scenarios",
-          "feature1": "Phoneme parity & executive phrase upgrades",
+          "feature0": "12 everyday characters & scenes",
+          "feature1": "Pronunciation polish & natural phrases",
           "feature2": "CEFR B1 to C1 difficulty calibration"
         }
       }
     },
     "calibration": {
       "title": "Audio input calibrated",
-      "device": "MacBook Pro Microphone · Optimal sensitivity detected",
+      "device": "Microphone ready · Looking good!",
       "ready": "Ready (Default Mic)",
       "cta": "Test audio",
       "listening": "Listening…"
     },
     "scenarios": {
       "title": "Select roleplay scenario",
-      "subtitle": "Pick a focused topic and scenario to practice authentic professional dialogue with instant acoustic feedback.",
+      "subtitle": "Pick a topic and scene to practice real everyday conversations — with instant feedback.",
       "filter": {
         "search": "Search scenarios"
       },
@@ -191,7 +191,7 @@
     },
     "tip": {
       "title": "Mo’s tip",
-      "body": "When defending architecture under pressure, slow down by 10%. Rushing sounds defensive; measured pauses convey authority."
+      "body": "Feeling rushed? Slow down a touch. Little pauses make you sound calm and confident."
     }
   }
 }

@@ -100,11 +100,13 @@ func NewRouter(db *gorm.DB, cfg config.Config) *gin.Engine {
 	})
 
 	v1 := r.Group("/api/v1")
-	// buildLimiter selects the Redis store when REDIS_URL is set (shared
-	// buckets across replicas) and falls back to the in-memory store
+	// buildLimiter declares a limiter only when the scope has a rate: an
+	// unset or empty RATE_LIMIT_* means "no limiter", never a hidden default.
+	// When a rate is set it selects the Redis store if REDIS_URL is present
+	// (shared buckets across replicas) and falls back to the in-memory store
 	// otherwise. Any failure degrades loudly but never blocks boot.
 	buildLimiter := func(kind, rate, prefix string) gin.HandlerFunc {
-		if !cfg.RateLimit.Enabled {
+		if strings.TrimSpace(rate) == "" {
 			return nil
 		}
 		if cfg.Redis.URL == "" {

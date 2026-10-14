@@ -60,42 +60,51 @@
   --cefr-c1: #433095;
   --cefr-c1-bg: #ece4ff;
   --cefr-c1-border: #c9beff;
+
+  /* Tip + nav-tile tokens (hex lives here once; components use the vars) */
+  --tip-bg: #ffe2c5;
+  --tip-ink: #2a2150;
+  --tip-partner-bg: #e4f1ff;
+  --nav-home: #6c4df0;
+  --nav-lessons: #ea580c;
+  --nav-voice: #2563eb;
+  --nav-vocab: #059669;
 }
 
 .dark {
-  --background: #1d1342;
+  --background: #140d33;
   --foreground: #f4f0ff;
-  --card: #2a2150;
+  --card: #1f1749;
   --card-foreground: #f4f0ff;
-  --popover: #2a2150;
+  --popover: #1f1749;
   --popover-foreground: #f4f0ff;
-  --primary: #6c4df0;
+  --primary: #8a73ff;
   --primary-foreground: #ffffff;
   --secondary: #ff9e3d;
   --secondary-foreground: #2a2150;
-  --muted: #322958;
-  --muted-foreground: #c9beff;
-  --accent: #322958;
+  --muted: #2a2159;
+  --muted-foreground: #bdb2f0;
+  --accent: #2a2159;
   --accent-foreground: #f4f0ff;
   --destructive: #ff7a7a;
   --destructive-foreground: #2a2150;
-  --border: #433095;
-  --input: #433095;
+  --border: #3a2d7a;
+  --input: #3a2d7a;
   --ring: #3d9bff;
   --chart-1: oklch(0.488 0.243 264.376);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: #1d1342;
+  --radius: 1rem;
+  --sidebar: #0f0a27;
   --sidebar-foreground: #ede8ff;
   --sidebar-primary: #6c4df0;
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: rgba(255, 255, 255, 0.16);
   --sidebar-accent-foreground: #f4f0ff;
-  --sidebar-border: #433095;
+  --sidebar-border: #2d2266;
   --sidebar-ring: #3d9bff;
-
   --accuracy: #7cc4f5;
   --accuracy-tint: rgba(61, 155, 255, 0.16);
   --ai-coral: #ff7a7a;
@@ -114,6 +123,16 @@
   --cefr-c1: #c4b5fd;
   --cefr-c1-bg: rgba(67, 48, 149, 0.45);
   --cefr-c1-border: rgba(196, 181, 253, 0.4);
+
+  /* Same as light: tip bubbles keep their peach/blue fill in dark mode,
+     matching the PageHero bubble behaviour below. */
+  --tip-bg: #ffe2c5;
+  --tip-ink: #2a2150;
+  --tip-partner-bg: #e4f1ff;
+  --nav-home: #6c4df0;
+  --nav-lessons: #ea580c;
+  --nav-voice: #2563eb;
+  --nav-vocab: #059669;
 }
 
 @theme inline {
@@ -175,6 +194,13 @@
   --color-cefr-c1: var(--cefr-c1);
   --color-cefr-c1-bg: var(--cefr-c1-bg);
   --color-cefr-c1-border: var(--cefr-c1-border);
+  --color-tip-bg: var(--tip-bg);
+  --color-tip-ink: var(--tip-ink);
+  --color-tip-partner-bg: var(--tip-partner-bg);
+  --color-nav-home: var(--nav-home);
+  --color-nav-lessons: var(--nav-lessons);
+  --color-nav-voice: var(--nav-voice);
+  --color-nav-vocab: var(--nav-vocab);
 }
 
 html,
@@ -259,6 +285,41 @@ pre code {
    @utility keeps them in the utilities layer so they win ties against
    shadcn cva classes (verified via computed-style probe). */
 
+/* House shadow language — read before touching any shadow:
+   hard offset blocks (`0 Npx 0`, zero blur), never Tailwind's blurred
+   `shadow-sm/md/lg` (soft grey blur, wrong look — it would silently
+   re-skin every card and button). The offset color is always a token:
+   `var(--border)` on card/tip surfaces, `var(--sidebar-border)` on primary
+   fills. Arbitrary classes like `shadow-[0_5px_0_var(--border)]` are this
+   same language spelled in class form — do NOT "simplify" them to
+   `shadow-sm`. */
+@utility shadow-edge {
+  box-shadow: 0 5px 0 var(--border);
+}
+@utility shadow-edge-md {
+  box-shadow: 0 4px 0 var(--border);
+}
+@utility shadow-edge-sm {
+  box-shadow: 0 3px 0 var(--border);
+}
+@utility shadow-edge-xs {
+  box-shadow: 0 2px 0 var(--border);
+}
+@utility shadow-edge-primary {
+  box-shadow: 0 5px 0 var(--sidebar-border);
+}
+@utility shadow-edge-primary-md {
+  box-shadow: 0 4px 0 var(--sidebar-border);
+}
+@utility shadow-edge-primary-sm {
+  box-shadow: 0 3px 0 var(--sidebar-border);
+}
+@utility shadow-edge-primary-xs {
+  box-shadow: 0 2px 0 var(--sidebar-border);
+}
+@utility shadow-edge-neutral-sm {
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.2);
+}
 @utility surface-card {
   background: var(--card);
   color: var(--card-foreground);
@@ -271,10 +332,8 @@ pre code {
 
 @utility bg-dot-pattern {
   background-color: var(--background);
-  background-image: radial-gradient(
-    color-mix(in srgb, var(--primary) 16%, transparent) 1.5px,
-    transparent 1.6px
-  );
+  background-image: radial-gradient(color-mix(in srgb, var(--primary) 16%, transparent) 1.5px,
+      transparent 1.6px);
   background-size: 22px 22px;
 }
 
@@ -321,10 +380,10 @@ pre code {
      later in the cascade than @utility rules. Without it a default-variant
      button on a card renders white-on-white. */
   color: var(--primary-foreground) !important;
-  box-shadow: 0 5px 0 #433095 !important;
+  box-shadow: 0 5px 0 var(--sidebar-border) !important;
 
   &:active {
-    box-shadow: 0 2px 0 #433095;
+    box-shadow: 0 2px 0 var(--sidebar-border);
   }
 }
 
@@ -433,18 +492,18 @@ pre code {
 }
 
 @utility bubble-own {
-  background: #ffe2c5;
-  color: #2a2150;
+  background: var(--tip-bg);
+  color: var(--tip-ink);
 }
 
 @utility bubble-partner {
-  background: #e4f1ff;
-  color: #2a2150;
+  background: var(--tip-partner-bg);
+  color: var(--tip-ink);
 }
 
 .dark .bubble-own,
 .dark .bubble-partner {
-  color: #2a2150;
+  color: var(--tip-ink);
 }
 
 @utility stat-display {

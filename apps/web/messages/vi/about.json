@@ -2,7 +2,7 @@
   "$schema": "https://inlang.com/schema/inlang-message-format",
   "about": {
     "crumb": "Giới thiệu",
-    "title": "Luyện nói tiếng Anh trong công việc, mỗi ngày.",
-    "body": "Engflex biến những cuộc họp bạn vốn đã tham dự — họp standup, review kiến trúc, retro sprint — thành các bài luyện nói ngắn mỗi ngày. Đọc hoặc chép lại đoạn văn, rồi đấu tập với một đối tác AI thích nghi theo cách bạn diễn đạt. Độ trôi chảy, phát âm và tốc độ được theo dõi theo từng kỹ năng, để bạn luôn biết nên luyện gì tiếp theo."
+    "title": "Nói tiếng Anh mỗi ngày.",
+    "body": "Engflex biến vài phút mỗi ngày thành giờ luyện nói thật. Nghe rồi đọc hoặc chép lại, sau đó trò chuyện với bạn AI hiểu cách bạn nói. Độ lưu loát, phát âm và tốc độ được chấm theo từng kỹ năng, để bạn luôn biết nên luyện gì tiếp."
   }
 }

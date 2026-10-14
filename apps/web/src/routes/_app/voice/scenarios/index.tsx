@@ -27,7 +27,15 @@ export const Route = createFileRoute("/_app/voice/scenarios/")({
 	component: ScenariosPage,
 });
 
-const LEVELS: Array<"all" | ScenarioDifficulty> = ["all", "B1+", "B2", "C1"];
+const LEVELS: Array<"all" | ScenarioDifficulty> = [
+	"all",
+	"A1",
+	"A2",
+	"B1",
+	"B1+",
+	"B2",
+	"C1",
+];
 
 function levelLabel(level: (typeof LEVELS)[number]): string {
 	if (level === "all") return m["voice.scenarios.level.any"]();
@@ -163,10 +171,7 @@ function ScenariosPage() {
 				<section key={topicEntry.id} className="flex flex-col gap-4">
 					<div className="flex items-center justify-between gap-3">
 						<div className="flex min-w-0 items-center gap-3">
-							<span
-								className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-[12px] bg-primary text-sm font-bold text-primary-foreground"
-								style={{ boxShadow: "0 2px 0 #433095" }}
-							>
+							<span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-[12px] bg-primary text-sm font-bold text-primary-foreground shadow-edge-primary-xs">
 								{topics.findIndex((t) => t.id === topicEntry.id) + 1}
 							</span>
 							<h2 className="truncate text-lg font-bold text-foreground">

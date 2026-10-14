@@ -33,26 +33,26 @@
       "cards": {
         "shadowing": {
           "kicker": "Shadowing",
-          "title": "Tech keynote speech cadence",
-          "description": "Matched pace with product launches and engineering demos.",
+          "title": "Movie-line shadowing",
+          "description": "Copy the rhythm of famous movie lines.",
           "cta": "Replay"
         },
         "dictation": {
           "kicker": "Dictation · Up next",
-          "title": "Executive summary review",
-          "description": "Complex technical summaries with architectural decision records.",
+          "title": "Everyday dictation",
+          "description": "Short, useful passages read aloud. Just write what you hear.",
           "cta": "Start dictation"
         },
         "roleplay": {
           "kicker": "Roleplay simulation",
-          "title": "Sprint retro debate trade-offs",
+          "title": "Daily chit-chat",
           "description": "Handle contentious points without sounding aggressive or evasive.",
           "cta": "View scenarios"
         },
         "spaced": {
           "kicker": "Spaced repetition",
-          "title": "Sprint & engineering lexicon",
-          "description": "Strengthen active vocal recall for velocity and blocker terminology.",
+          "title": "Word workout",
+          "description": "Quick-fire recall that makes words stick.",
           "cta": "Practice"
         }
       }

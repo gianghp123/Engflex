@@ -46,14 +46,7 @@ export function AudioPlayer({
 
 	if (failed) {
 		return (
-			<div
-				className="flex flex-col gap-2 p-4"
-				style={{
-					background: "var(--accent)",
-					borderRadius: 16,
-					boxShadow: "0 3px 0 var(--border)",
-				}}
-			>
+			<div className="flex flex-col gap-2 rounded-[16px] bg-accent p-4 shadow-edge-sm">
 				<p role="alert" className="text-sm font-medium text-ai-coral">
 					{m["lessons.listening.audioFailed"]()}
 				</p>
@@ -62,14 +55,7 @@ export function AudioPlayer({
 	}
 
 	return (
-		<div
-			className="flex flex-col gap-2 p-4"
-			style={{
-				background: "var(--accent)",
-				borderRadius: 16,
-				boxShadow: "0 3px 0 var(--border)",
-			}}
-		>
+		<div className="flex flex-col gap-2 rounded-[16px] bg-accent p-4 shadow-edge-sm">
 			{/* biome-ignore lint/a11y/useMediaCaption: dialogue audio only — the full transcript renders as text in ListeningBriefCard beside this player. */}
 			<audio
 				ref={ref}
