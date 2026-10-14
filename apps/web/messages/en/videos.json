@@ -3,7 +3,12 @@
   "videos": {
     "hub": {
       "title": "Video library",
-      "body": "Watch the video and practice listening sentence by sentence."
+      "body": "Watch the video and practice listening sentence by sentence.",
+      "empty": {
+        "title": "No videos yet",
+        "body": "The video library is being stocked. Check back soon."
+      },
+      "loading": "Loading video library"
     },
     "section": {
       "count": "({count} lessons)",
@@ -107,6 +112,20 @@
       "transcript": {
         "phonetic": "IPA",
         "translation": "Translation"
+      }
+    },
+    "category": {
+      "back": "Back to topics",
+      "total": "Total lessons: {count}",
+      "filter": {
+        "title": "Filters",
+        "search": "Search lessons...",
+        "level": "Difficulty",
+        "levelAll": "All levels"
+      },
+      "empty": {
+        "title": "No videos found",
+        "body": "Try another keyword or difficulty."
       }
     }
   }

@@ -3,7 +3,12 @@
   "videos": {
     "hub": {
       "title": "Thư viện video",
-      "body": "Xem video và luyện nghe theo từng câu."
+      "body": "Xem video và luyện nghe theo từng câu.",
+      "empty": {
+        "title": "Chưa có video nào",
+        "body": "Thư viện video đang được cập nhật. Bạn quay lại sau nhé."
+      },
+      "loading": "Đang tải thư viện video"
     },
     "section": {
       "count": "({count} bài học)",
@@ -107,6 +112,20 @@
       "transcript": {
         "phonetic": "IPA",
         "translation": "Dịch"
+      }
+    },
+    "category": {
+      "back": "Quay lại chủ đề",
+      "total": "Tổng số bài học: {count}",
+      "filter": {
+        "title": "Bộ lọc",
+        "search": "Tìm kiếm bài học...",
+        "level": "Độ khó",
+        "levelAll": "Tất cả độ khó"
+      },
+      "empty": {
+        "title": "Không tìm thấy video",
+        "body": "Thử từ khóa khác hoặc chọn độ khó khác."
       }
     }
   }

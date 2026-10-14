@@ -271,3 +271,7 @@ export function getVideoById(id: string): Video | undefined {
 		})),
 	};
 }
+
+export function getVideoSectionBySlug(slug: string): VideoSection | undefined {
+	return VIDEO_SECTIONS.find((section) => section.category.slug === slug);
+}

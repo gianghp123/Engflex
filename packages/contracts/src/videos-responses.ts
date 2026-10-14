@@ -10,6 +10,13 @@ export interface VideoCategoryResponse {
   createdAt: string /* RFC3339 */;
   updatedAt: string /* RFC3339 */;
 }
+export interface VideoCategoryPreview {
+  id: string;
+  slug: string;
+  name: string;
+  videoCount: number /* int64 */;
+  videos: VideoExerciseResponse[];
+}
 
 //////////
 // source: video_exercise.go

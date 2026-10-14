@@ -23,6 +23,7 @@ export const APP_ROUTES = {
 		DETAIL: "/videos/$videoId",
 		DICTATION: "/videos/$videoId/dictation",
 		SHADOWING: "/videos/$videoId/shadowing",
+		CATEGORY: "/videos/categories/$categorySlug",
 	},
 	/**
 	 * Clerk's catch-all pages. The file routes are `/sign-in/$` splats, so a

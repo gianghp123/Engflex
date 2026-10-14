@@ -20,6 +20,13 @@ export const TextMaxLength = 10000;
  * well under 500 turns; the cap is a guard, not a limit.
  */
 export const MaxTurnsPerBatch = 500;
+/**
+ * Videos per category on the video hub. The HTTP query requires previewK
+ * in 1..VideoPreviewMax (guarded by videos limits_test.go); the default
+ * only covers internal callers that pass nothing.
+ */
+export const VideoPreviewDefault = 4;
+export const VideoPreviewMax = 32;
 
 //////////
 // source: list.go

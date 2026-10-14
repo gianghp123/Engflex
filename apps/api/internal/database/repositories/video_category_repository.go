@@ -9,7 +9,7 @@ import (
 
 type VideoCategoryRepository interface {
 	List(ctx context.Context, limit, offset int) ([]*models.VideoCategory, error)
-	ListWithPreview(ctx context.Context, previewSize int) ([]*models.VideoCategory, error)
+	ListWithPreview(ctx context.Context, previewK int) ([]*models.VideoCategory, error)
 	GetByID(ctx context.Context, id string) (*models.VideoCategory, error)
 	Create(ctx context.Context, category *models.VideoCategory) error
 	Update(ctx context.Context, category *models.VideoCategory) error
@@ -85,16 +85,47 @@ func (r *videoCategoryRepository) List(ctx context.Context, limit int, offset in
 	return categories, nil
 }
 
-func (r *videoCategoryRepository) ListWithPreview(ctx context.Context, previewSize int) ([]*models.VideoCategory, error) {
-		categories := make([]*models.VideoCategory, 0)
-	query := r.db.WithContext(ctx).Select("video_categories.*, (SELECT COUNT(*) FROM video_exercises e WHERE e.category_id = video_categories.id) AS video_count").
-	Order("video_categories.name ASC")
-	if previewSize > 0 {
-		query = query.Limit(previewSize)
-	}
-	err := query.Find(&categories).Error
-	if err != nil {
+func (r *videoCategoryRepository) ListWithPreview(ctx context.Context, previewK int) ([]*models.VideoCategory, error) {
+	const rankedVideoIDs = `
+		SELECT ranked.id FROM (
+			SELECT e.id,
+				ROW_NUMBER() OVER (PARTITION BY e.category_id ORDER BY e.created_at DESC, e.id ASC) AS rn
+			FROM video_exercises e
+		) AS ranked WHERE ranked.rn <= ?`
+	categories := make([]*models.VideoCategory, 0)
+	if err := r.db.WithContext(ctx).
+		Select("video_categories.*, (SELECT COUNT(*) FROM video_exercises e WHERE e.category_id = video_categories.id) AS video_count").
+		Order("video_categories.name ASC").
+		Find(&categories).Error; err != nil {
 		return nil, err
+	}
+	if len(categories) == 0 {
+		return categories, nil
+	}
+
+	ids := make([]string, 0, len(categories))
+	byID := make(map[string]*models.VideoCategory, len(categories))
+	for _, c := range categories {
+		ids = append(ids, c.ID)
+		byID[c.ID] = c
+	}
+
+	var videos []*models.VideoExercise
+	if err := r.db.WithContext(ctx).
+		Where("video_exercises.category_id IN ?", ids).
+		Where("video_exercises.id IN ("+rankedVideoIDs+")", previewK).
+		Order("video_exercises.created_at DESC, video_exercises.id ASC").
+		Find(&videos).Error; err != nil {
+		return nil, err
+	}
+
+	for _, v := range videos {
+		if v.CategoryID == nil {
+			continue
+		}
+		if c := byID[*v.CategoryID]; c != nil {
+			c.Videos = append(c.Videos, v)
+		}
 	}
 	return categories, nil
 }

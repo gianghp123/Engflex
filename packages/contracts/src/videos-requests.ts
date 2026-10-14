@@ -11,6 +11,9 @@ export interface UpdateVideoCategory {
   slug: string;
   name: string;
 }
+export interface PreviewVideoCategories {
+  previewK: number /* int */;
+}
 
 //////////
 // source: video_exercise.go
