@@ -11,10 +11,6 @@ import { m } from "#/paraglide/messages";
 
 export type PracticeMode = "dictation" | "shadowing";
 
-/**
- * "Choose a practice mode" dialog opened from a video card. UI only: the
- * chosen mode is reported through `onSelect`, the caller decides what to do.
- */
 export function PracticeModeDialog({
 	open,
 	onOpenChange,

@@ -1,5 +1,7 @@
+import { useNavigate } from "@tanstack/react-router";
 import { cn } from "cn";
 import { useState } from "react";
+import { APP_ROUTES } from "#/app/app-route";
 import type { Video } from "#/features/videos/types";
 import { m } from "#/paraglide/messages";
 import { PracticeChip } from "./practice-chip";
@@ -14,6 +16,25 @@ export function VideoCard({
 	onSelectMode?: (mode: PracticeMode) => void;
 }) {
 	const [open, setOpen] = useState(false);
+	const navigate = useNavigate();
+	const handleSelectMode = (mode: PracticeMode) => {
+		setOpen(false);
+		if (onSelectMode) {
+			onSelectMode(mode);
+			return;
+		}
+		if (mode === "dictation") {
+			void navigate({
+				to: APP_ROUTES.VIDEOS.DICTATION,
+				params: { videoId: video.id },
+			});
+		} else if (mode === "shadowing") {
+			void navigate({
+				to: APP_ROUTES.VIDEOS.SHADOWING,
+				params: { videoId: video.id },
+			});
+		}
+	};
 	return (
 		<>
 			<article
@@ -56,7 +77,7 @@ export function VideoCard({
 			<PracticeModeDialog
 				open={open}
 				onOpenChange={setOpen}
-				onSelect={onSelectMode}
+				onSelect={handleSelectMode}
 			/>
 		</>
 	);

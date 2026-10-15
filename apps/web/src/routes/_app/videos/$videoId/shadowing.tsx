@@ -13,15 +13,17 @@ import { ToggleGroup, ToggleGroupItem } from "#/components/ui/toggle-group";
 import { ShadowingPanel } from "#/features/videos/components/shadowing/shadowing-panel";
 import { TranscriptPanel } from "#/features/videos/components/transcript-panel";
 import { pairWords } from "#/features/videos/dictation";
-import { getVideoById } from "#/features/videos/fixtures";
 import { formatDuration } from "#/features/videos/format";
 import { m } from "#/paraglide/messages";
+import { videoDetailQueryOptions } from "#/features/videos/queries";
 
 export const Route = createFileRoute("/_app/videos/$videoId/shadowing")({
-	loader: ({ params: { videoId } }) => {
-		const video = getVideoById(videoId);
-		if (!video) throw notFound();
-		return video;
+	loader: async ({context: {queryClient} ,params: { videoId } }) => {
+		try {
+			return await queryClient.query(videoDetailQueryOptions(videoId))
+		} catch (error) {
+			throw notFound();
+		}
 	},
 	component: ShadowingPage,
 });
@@ -40,7 +42,6 @@ function ShadowingPage() {
 	const video = Route.useLoaderData();
 	const transcripts = video.transcripts ?? [];
 
-	// UI-only state: playback, recording and scoring are wired by the caller.
 	const [view, setView] = useState<View>("practice");
 	const [showTranscript, setShowTranscript] = useState(true);
 	const [showPhonetic, setShowPhonetic] = useState(false);

@@ -3,7 +3,6 @@ import { Link } from "@tanstack/react-router";
 import { ChevronRight } from "lucide-react";
 import { APP_ROUTES } from "#/app/app-route";
 import { Button } from "#/components/ui/button";
-import type { VideoSection as VideoSectionData } from "#/features/videos/types";
 import { m } from "#/paraglide/messages";
 import { VideoCard } from "./video-card";
 export function VideoSection({ section }: { section: VideoCategoryPreview }) {

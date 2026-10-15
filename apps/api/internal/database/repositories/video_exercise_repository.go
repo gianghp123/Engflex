@@ -44,9 +44,11 @@ func filterVideoExercises(q *gorm.DB, categoryID *string, cefr *enums.CEFR, sear
 	return q
 }
 
+const exerciseCategorySelect = "video_exercises.*, \"Category\".id AS \"Category__id\", \"Category\".slug AS \"Category__slug\", \"Category\".name AS \"Category__name\", \"Category\".created_at AS \"Category__created_at\", \"Category\".updated_at AS \"Category__updated_at\""
+
 func (r *videoExerciseRepository) List(ctx context.Context, categoryID *string, cefr *enums.CEFR, search string, limit, offset int) ([]*models.VideoExercise, error) {
 	lessons := make([]*models.VideoExercise, 0)
-	query := filterVideoExercises(r.db.WithContext(ctx).Joins("Category"), categoryID, cefr, search).
+	query := filterVideoExercises(r.db.WithContext(ctx).Joins("Category").Select(exerciseCategorySelect), categoryID, cefr, search).
 		Order("video_exercises.created_at DESC, video_exercises.id ASC")
 	if limit > 0 {
 		query = query.Limit(limit).Offset(offset)
@@ -57,7 +59,6 @@ func (r *videoExerciseRepository) List(ctx context.Context, categoryID *string, 
 	}
 	return lessons, nil
 }
-
 
 func (r *videoExerciseRepository) GetByID(ctx context.Context, id string) (*models.VideoExercise, error) {
 	var lesson models.VideoExercise
@@ -77,7 +78,7 @@ func (r *videoExerciseRepository) GetDetail(ctx context.Context, id string) (*mo
 		return nil, err
 	}
 	var lesson models.VideoExercise
-	if err := r.db.WithContext(ctx).Joins("Category").First(&lesson, "video_exercises.id = ?", id).Error; err != nil {
+	if err := r.db.WithContext(ctx).Joins("Category").Select(exerciseCategorySelect).First(&lesson, "video_exercises.id = ?", id).Error; err != nil {
 		return nil, err
 	}
 	transcripts := make([]*models.VideoTranscript, 0)

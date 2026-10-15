@@ -11,19 +11,28 @@ import { DictationPanel } from "#/features/videos/components/dictation/dictation
 import { VideoPanel } from "#/features/videos/components/dictation/video-panel";
 import { TranscriptPanel } from "#/features/videos/components/transcript-panel";
 import { type DictationLevel, splitWords } from "#/features/videos/dictation";
-import { getVideoById } from "#/features/videos/fixtures";
 import { m } from "#/paraglide/messages";
-
+import { videoDetailQueryOptions } from "#/features/videos/queries";
+import { VideoHubSkeleton } from "#/features/videos/components/video-hub-skeleton";
 export const Route = createFileRoute("/_app/videos/$videoId/dictation")({
-	loader: ({ params: { videoId } }) => {
-		const video = getVideoById(videoId);
-		if (!video) throw notFound();
-		return video;
+	loader: async ({ context: { queryClient }, params : {videoId}}) => {
+		try {
+			return await queryClient.query(videoDetailQueryOptions(videoId));
+		} catch {
+			throw notFound();
+		}
 	},
+	pendingComponent: DictationPending,
 	component: DictationPage,
 });
 
-/** Column template per visible-pane combination (media, transcript). */
+function DictationPending(){
+	return (
+		<PageLayout>
+			<VideoHubSkeleton/>
+		</PageLayout>
+	)
+}
 const GRID = {
 	both: "xl:grid-cols-[minmax(0,6fr)_minmax(0,5fr)_minmax(0,3.5fr)]",
 	media: "xl:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]",
@@ -35,7 +44,6 @@ function DictationPage() {
 	const video = Route.useLoaderData();
 	const transcripts = video.transcripts ?? [];
 
-	// UI-only state: playback, checking and scoring are wired by the caller.
 	const [showMedia, setShowMedia] = useState(true);
 	const [showTranscript, setShowTranscript] = useState(true);
 	const [level, setLevel] = useState<DictationLevel>("hard");
