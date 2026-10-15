@@ -14,7 +14,8 @@
       "clear": "Clear",
       "retry": "Try again",
       "backHome": "Back to home",
-      "copy": "Copy"
+      "copy": "Copy",
+      "save": "Save"
     },
     "audio": {
       "playPronunciation": "Play pronunciation",
@@ -26,8 +27,7 @@
       "copiedClipboard": "Copied to clipboard",
       "linkCopied": "Link copied",
       "clipboardUnavailable": "Clipboard unavailable in this browser",
-      "addedToVocabulary": "Added to your vocabulary",
-      "flashcardSoon": "Flashcard drill coming soon"
+      "addedToVocabulary": "Added to your vocabulary"
     },
     "a11y": {
       "more": "More",

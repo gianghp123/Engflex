@@ -1,9 +1,9 @@
 import type {
 	CEFR,
-	VocabularyDomain,
 	VocabularySort,
 	VocabularySource,
 } from "@engflex/contracts";
+import { CEFR_VALUES, VOCABULARY_SOURCE_VALUES } from "@engflex/contracts";
 import { cn } from "cn";
 import { Search } from "lucide-react";
 import { Kbd } from "#/components/common/kbd";
@@ -15,6 +15,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "#/components/ui/select";
+import { enumOptions } from "#/lib/enum-options";
 import { m } from "#/paraglide/messages";
 
 const SORT_MESSAGES: Record<VocabularySort, () => string> = {
@@ -24,19 +25,10 @@ const SORT_MESSAGES: Record<VocabularySort, () => string> = {
 	interval: () => m["vocabulary.filter.sort.interval"](),
 };
 
-const DOMAIN_MESSAGES: Record<VocabularyDomain, () => string> = {
-	backend_db: () => m["vocabulary.filter.domain.backendDb"](),
-	distributed_systems: () => m["vocabulary.filter.domain.distributedSystems"](),
-	devops_cloud: () => m["vocabulary.filter.domain.devopsCloud"](),
-	frontend_ui: () => m["vocabulary.filter.domain.frontendUi"](),
-	ai_ml: () => m["vocabulary.filter.domain.aiMl"](),
-};
-
 export interface VocabFilters {
 	search: string;
 	sort: VocabularySort;
 	source: "all" | VocabularySource;
-	domain: "all" | VocabularyDomain;
 	cefr: "all" | CEFR;
 }
 
@@ -44,31 +36,22 @@ export const DEFAULT_VOCAB_FILTERS: VocabFilters = {
 	search: "",
 	sort: "recent",
 	source: "all",
-	domain: "all",
 	cefr: "all",
 };
 
-const SOURCE_TABS: Array<{
-	value: VocabFilters["source"];
-	label: () => string;
-}> = [
-	{ value: "all", label: () => m["vocabulary.filter.source.all"]() },
-	{ value: "lesson", label: () => m["vocabulary.filter.source.lesson"]() },
-	{
-		value: "conversation",
-		label: () => m["vocabulary.filter.source.conversation"](),
-	},
-	{ value: "manual", label: () => m["vocabulary.filter.source.manual"]() },
+const SOURCE_TABS = [
+	{ value: "all" as const, label: () => m["vocabulary.filter.source.all"]() },
+	...enumOptions(VOCABULARY_SOURCE_VALUES, {
+		lesson: () => m["vocabulary.filter.source.lesson"](),
+		conversation: () => m["vocabulary.filter.source.conversation"](),
+		video: () => m["vocabulary.filter.source.video"](),
+		manual: () => m["vocabulary.filter.source.manual"](),
+	}),
 ];
 
-const CEFR_OPTIONS: Array<{
-	value: VocabFilters["cefr"];
-	label: string | (() => string);
-}> = [
-	{ value: "all", label: () => m["vocabulary.filter.cefrAll"]() },
-	{ value: "B1", label: "B1" },
-	{ value: "B2", label: "B2" },
-	{ value: "C1", label: "C1" },
+const CEFR_OPTIONS = [
+	{ value: "all" as const, label: () => m["vocabulary.filter.cefrAll"]() },
+	...enumOptions(CEFR_VALUES),
 ];
 
 export function VocabFilterBar({
@@ -134,37 +117,6 @@ export function VocabFilterBar({
 
 			<div className="flex flex-wrap items-center gap-2">
 				<span className="text-[11px] font-semibold text-muted-foreground">
-					{m["vocabulary.filter.domainLabel"]()}
-				</span>
-				<button
-					type="button"
-					onClick={() => onChange({ ...filters, domain: "all" })}
-					className={cn(
-						"chip px-2.5 py-1 text-[11px] transition",
-						filters.domain === "all" ? "chip-selected" : "hover:border-primary",
-					)}
-				>
-					{m["vocabulary.filter.domainAll"]()}
-				</button>
-				{(Object.keys(DOMAIN_MESSAGES) as VocabularyDomain[]).map((domain) => (
-					<button
-						key={domain}
-						type="button"
-						onClick={() => onChange({ ...filters, domain })}
-						className={cn(
-							"chip px-2.5 py-1 text-[11px] transition",
-							filters.domain === domain
-								? "chip-selected"
-								: "hover:border-primary",
-						)}
-					>
-						{DOMAIN_MESSAGES[domain]()}
-					</button>
-				))}
-			</div>
-
-			<div className="flex flex-wrap items-center gap-2">
-				<span className="text-[11px] font-semibold text-muted-foreground">
 					{m["vocabulary.filter.cefrLabel"]()}
 				</span>
 				{CEFR_OPTIONS.map((option) => (
@@ -179,7 +131,7 @@ export function VocabFilterBar({
 								: "hover:border-primary",
 						)}
 					>
-						{typeof option.label === "function" ? option.label() : option.label}
+						{option.label()}
 					</button>
 				))}
 			</div>

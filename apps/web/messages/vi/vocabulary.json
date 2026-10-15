@@ -1,6 +1,50 @@
 {
   "$schema": "https://inlang.com/schema/inlang-message-format",
   "vocabulary": {
+    "deck": {
+      "back": "Bộ thẻ của tôi",
+      "itemCount": "{count} từ trong bộ thẻ này",
+      "emptyTitle": "Bộ thẻ này chưa có từ nào",
+      "edit": "Sửa",
+      "editTitle": "Sửa bộ thẻ",
+      "editDescription": "Đổi tên hoặc cập nhật mô tả.",
+      "updated": "Đã cập nhật bộ thẻ",
+      "updateFailed": "Không cập nhật được bộ thẻ. Hãy thử lại.",
+      "delete": "Xóa",
+      "deleteTitle": "Xóa bộ thẻ này?",
+      "deleteBody": "Bộ thẻ sẽ bị xóa; các từ vẫn còn trong thư viện của bạn.",
+      "deleted": "Đã xóa bộ thẻ",
+      "deleteFailed": "Không xóa được bộ thẻ. Hãy thử lại.",
+      "addFromLibrary": "Thêm từ trong thư viện",
+      "pickerDescription": "Chọn từ đã có trong danh sách của bạn.",
+      "pickerSearch": "Tìm trong từ của tôi",
+      "pickerEmpty": "Không còn gì để thêm — mọi từ đã có trong bộ thẻ này.",
+      "pickerFailed": "Không tải được danh sách từ. Hãy thử lại.",
+      "added": "Đã thêm vào bộ thẻ",
+      "addFailed": "Không thêm được từ đó. Hãy thử lại.",
+      "remove": "Bỏ ra",
+      "removed": "Đã bỏ khỏi bộ thẻ",
+      "removeFailed": "Không bỏ được từ đó. Hãy thử lại."
+    },
+    "decks": {
+      "title": "Bộ thẻ của tôi",
+      "new": "Bộ thẻ mới",
+      "allWords": "Tất cả từ",
+      "seeDeck": "Xem bộ thẻ",
+      "wordCount": "{count} từ",
+      "wordCountMore": "{count}+ từ",
+      "sectionEmpty": "Bộ thẻ này chưa có từ nào.",
+      "emptyTitle": "Chưa có bộ thẻ nào",
+      "emptyBody": "Tạo một bộ thẻ để nhóm những từ bạn muốn học cùng nhau.",
+      "createTitle": "Tạo bộ thẻ",
+      "createDescription": "Đặt tên trước, thêm từ lúc nào cũng được.",
+      "nameLabel": "Tên",
+      "descriptionLabel": "Mô tả",
+      "create": "Tạo bộ thẻ",
+      "created": "Đã tạo bộ thẻ",
+      "createFailed": "Không tạo được bộ thẻ. Hãy thử lại.",
+      "required": "Cần có tên bộ thẻ."
+    },
     "detail": {
       "saveNote": "Lưu ghi chú",
       "contextsTitle": "Ví dụ ngoài đời thật",
@@ -15,7 +59,8 @@
       "addedOn": "Đã thêm {date}",
       "noNote": "Chưa có ghi chú.",
       "editNote": "Sửa ghi chú",
-      "deleteNote": "Xóa ghi chú"
+      "deleteNote": "Xóa ghi chú",
+      "noteFailed": "Không lưu được ghi chú. Hãy thử lại."
     },
     "card": {
       "listenUs": "Nghe phát âm (Mỹ)",
@@ -28,7 +73,8 @@
       "mastered": "Đã thuộc",
       "markAsMastered": "Đánh dấu đã thuộc",
       "share": "Chia sẻ",
-      "fullDefinition": "Định nghĩa đầy đủ"
+      "fullDefinition": "Định nghĩa đầy đủ",
+      "masteredFailed": "Không cập nhật được trạng thái thuộc. Hãy thử lại."
     },
     "hub": {
       "title": "Thư viện từ vựng",
@@ -41,9 +87,13 @@
     "stats": {
       "mastered": "Từ đã thuộc",
       "needsReview": "Cần ôn",
-      "needsReviewSub": "{count} từ đến hạn hôm nay",
+      "needsReviewSub": "từ đến hạn hôm nay",
       "custom": "Từ tự thêm",
-      "customSub": "Ghi chú của bạn"
+      "customSub": "Ghi chú của bạn",
+      "savedToday": "Đã lưu hôm nay",
+      "savedTodaySub": "Số từ bạn thêm hôm nay",
+      "decks": "Bộ thẻ",
+      "decksSub": "Các bộ từ của bạn"
     },
     "filter": {
       "search": "Tìm từ…",
@@ -51,16 +101,8 @@
         "all": "Tất cả từ vựng",
         "lesson": "Từ bài học",
         "conversation": "Từ hội thoại AI",
+        "video": "Từ video",
         "manual": "Tùy chỉnh"
-      },
-      "domainLabel": "Chủ đề:",
-      "domainAll": "Tất cả chủ đề",
-      "domain": {
-        "backendDb": "Backend & CSDL",
-        "distributedSystems": "Hệ phân tán",
-        "devopsCloud": "DevOps & Cloud",
-        "frontendUi": "Frontend & UI",
-        "aiMl": "AI & Học máy"
       },
       "cefrLabel": "CEFR:",
       "cefrAll": "Tất cả",
@@ -74,42 +116,44 @@
     "source": {
       "lesson": "Từ bài học",
       "conversation": "Từ hội thoại AI",
+      "video": "Từ video",
       "manual": "Tùy chỉnh"
     },
     "sourceLine": {
       "lesson": "Từ bài học: {id}",
       "note": "Ghi chú: {id}"
     },
+    "pos": {
+      "noun": "Danh từ",
+      "verb": "Động từ",
+      "adjective": "Tính từ",
+      "adverb": "Trạng từ",
+      "pronoun": "Đại từ",
+      "preposition": "Giới từ",
+      "conjunction": "Liên từ",
+      "interjection": "Thán từ",
+      "determiner": "Hạn định từ",
+      "phrase": "Cụm từ",
+      "idiom": "Thành ngữ",
+      "phrasalVerb": "Cụm động từ"
+    },
     "addWord": {
-      "button": "Thêm từ tùy chỉnh",
-      "title": "Thêm từ của bạn",
-      "description": "Lưu vào danh sách cá nhân của bạn.",
+      "button": "Thêm từ",
+      "title": "Thêm một từ",
+      "description": "Lưu vào danh sách cá nhân dưới dạng từ tự thêm.",
+      "tabs": {
+        "word": "Thêm từ"
+      },
+      "alreadyInLibrary": "Đã có trong danh sách của bạn — khi lưu sẽ dùng lại từ này.",
       "termLabel": "Từ hoặc cụm từ",
       "cefrLabel": "Cấp độ CEFR",
-      "cefrOptions": {
-        "b1": "B1",
-        "b2": "B2",
-        "c1": "C1"
-      },
+      "cefrPlaceholder": "Chọn cấp độ",
       "posLabel": "Từ loại",
       "definitionLabel": "Định nghĩa",
       "exampleLabel": "Câu ví dụ / ngữ cảnh",
       "save": "Lưu vào từ vựng",
-      "required": "Từ và định nghĩa là bắt buộc."
-    },
-    "recall": {
-      "title": "Bộ thẻ ôn tập hằng ngày",
-      "subtitle": "Thuật toán lặp lại ngắt quãng",
-      "dueBadge": "{count} mục đến hạn",
-      "body": "Tự đố mình bằng gợi ý khó để nhớ từ lâu, lúc nói bật ra ngay.",
-      "dueToday": "Đến hạn hôm nay",
-      "overdue": "Quá hạn",
-      "start": "Bắt đầu luyện flashcard ({count} thẻ)"
-    },
-    "recent": {
-      "title": "Từ bạn mới thêm",
-      "viewAll": "Xem tất cả ({count})",
-      "body": "Những từ bạn nhặt được lúc đọc sách, xem phim hay trò chuyện."
+      "required": "Từ, định nghĩa và cấp độ CEFR là bắt buộc.",
+      "failed": "Không lưu được từ này. Hãy thử lại."
     }
   }
 }

@@ -1,178 +1,162 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useStore } from "@tanstack/react-store";
-import { LibraryBig, Pencil } from "lucide-react";
-import { useState } from "react";
+import { APP_ROUTES } from "#/app/app-route";
 import { useBreadcrumbs } from "#/app/breadcrumbs";
-import { EmptyList } from "#/components/common/empty-list";
 import { MoMascot } from "#/components/common/mo-mascot";
 import { PageLayout } from "#/components/common/page-layout";
 import { ProgressBar } from "#/components/common/progress-bar";
-import { Button } from "#/components/ui/button";
-import { AddWordDialog } from "#/features/vocabulary/components/add-word-dialog";
-import { VocabCard } from "#/features/vocabulary/components/vocab-card";
+import { StatCard } from "#/components/common/stat-card";
+import { DeckSection } from "#/features/vocabulary/components/deck-section";
+import { NewDeckDialog } from "#/features/vocabulary/components/new-deck-dialog";
 import {
-	DEFAULT_VOCAB_FILTERS,
-	VocabFilterBar,
-	type VocabFilters,
-} from "#/features/vocabulary/components/vocab-filter-bar";
-import { VOCABULARY_STATS } from "#/features/vocabulary/fixtures";
+  CardSkeletons,
+  masteryPct,
+} from "#/features/vocabulary/components/word-grid";
+import { startOfLocalDay } from "#/features/vocabulary/dates";
 import {
-	getVocabularyItems,
-	vocabularyStore,
-} from "#/features/vocabulary/store";
+  decksQueryOptions,
+  useDecks,
+  useVocabularyStats,
+} from "#/features/vocabulary/queries";
 import { m } from "#/paraglide/messages";
+import type { VocabularyStats } from "@engflex/contracts";
+import { createFileRoute, Link } from "@tanstack/react-router";
+
+const PREVIEW_K = 6;
+
+/**
+ * The reader's local midnight, RFC3339. "Saved today" is *their* day, so the
+ * browser owns the day boundary and the API counts within it.
+ */
+function localDayStart(): string {
+  return startOfLocalDay().toISOString();
+}
 
 export const Route = createFileRoute("/_app/vocabulary/")({
-	component: VocabularyPage,
+  // Only the decks are prefetched: the stats query is keyed by the reader's
+  // local day, which the server cannot know, so the client owns that read.
+  loader: async ({ context: { queryClient } }) => {
+    await queryClient.query(decksQueryOptions(PREVIEW_K));
+  },
+  component: VocabularyDecksPage,
 });
 
-function VocabularyPage() {
-	useBreadcrumbs([{ label: m["nav.item.vocabulary"]() }]);
-	const [filters, setFilters] = useState<VocabFilters>(DEFAULT_VOCAB_FILTERS);
-	useStore(vocabularyStore); // subscribe to mastered/note/add changes
+/** The landing's three cards: mastery, today's activity, and the decks. */
+function LandingStats({
+  stats,
+  deckCount,
+  pending,
+}: {
+  stats: VocabularyStats;
+  deckCount: number;
+  pending: boolean;
+}) {
+  if (pending) return <CardSkeletons count={3} />;
+  const pct = masteryPct(stats);
+  return (
+    <div className="grid gap-4 md:grid-cols-3">
+      <StatCard
+        title={m["vocabulary.stats.mastered"]()}
+        value={`${pct}%`}
+        size="lg"
+      >
+        <ProgressBar value={pct} tone="accuracy" />
+        <span className="text-xs font-medium text-muted-foreground">
+          {m["vocabulary.hub.masteredOf"]({
+            done: stats.mastered,
+            total: stats.totalSaved,
+          })}
+        </span>
+      </StatCard>
+      <StatCard
+        title={m["vocabulary.stats.savedToday"]()}
+        value={stats.savedToday}
+      >
+        <span className="text-xs font-medium text-muted-foreground">
+          {m["vocabulary.stats.savedTodaySub"]()}
+        </span>
+      </StatCard>
+      <StatCard
+        title={m["vocabulary.stats.decks"]()}
+        value={deckCount}
+      >
+        <span className="text-xs font-medium text-muted-foreground">
+          {m["vocabulary.stats.decksSub"]()}
+        </span>
+        <div className="mt-auto">
+          <NewDeckDialog />
+        </div>
+      </StatCard>
+    </div>
+  );
+}
 
-	const items = getVocabularyItems();
-	const masteryPct = Math.round(
-		(VOCABULARY_STATS.mastered / VOCABULARY_STATS.totalSaved) * 100,
-	);
+function VocabularyDecksPage() {
+  useBreadcrumbs([{ label: m["nav.item.vocabulary"]() }]);
+  const dayStart = localDayStart();
+  const decks = useDecks(PREVIEW_K);
+  const stats = useVocabularyStats(dayStart);
+  if (decks.isError) throw decks.error;
+  if (stats.isError) throw stats.error;
+  const pending = decks.isPending || stats.isPending;
 
-	const visible = items.filter((item) => {
-		if (filters.search.trim()) {
-			const haystack = `${item.term} ${item.definition}`.toLowerCase();
-			if (!haystack.includes(filters.search.trim().toLowerCase())) return false;
-		}
-		if (item.cefr !== filters.cefr && filters.cefr !== "all") return false;
-		if (item.domain !== filters.domain && filters.domain !== "all")
-			return false;
-		if (
-			item.userState?.sourceType !== filters.source &&
-			filters.source !== "all"
-		)
-			return false;
-		return true;
-	});
+  const rows = decks.data?.items ?? [];
+  const deckCount = decks.data?.pagination.total ?? rows.length;
+  const vocabularyStats = stats.data ?? {
+    totalSaved: 0,
+    mastered: 0,
+    needsReview: 0,
+    customAdditions: 0,
+    dueToday: 0,
+    savedToday: 0,
+  };
 
-	const sorted = [...visible];
-	if (filters.sort === "alphabetical") {
-		sorted.sort((a, b) => a.term.localeCompare(b.term));
-	} else if (filters.sort === "mastery") {
-		sorted.sort(
-			(a, b) =>
-				Number(b.userState?.mastered ?? false) -
-				Number(a.userState?.mastered ?? false),
-		);
-	} else if (filters.sort === "interval") {
-		sorted.sort((a, b) =>
-			(a.userState?.srsDueAt ?? "9999").localeCompare(
-				b.userState?.srsDueAt ?? "9999",
-			),
-		);
-	}
+  return (
+    <PageLayout
+      hero={{
+        icon: <MoMascot variant="open" size={84} />,
+        title: m["vocabulary.hub.title"](),
+        description: m["vocabulary.hub.subtitle"](),
+      }}
+    >
+      <LandingStats
+        stats={vocabularyStats}
+        deckCount={deckCount}
+        pending={pending}
+      />
 
-	return (
-		<PageLayout
-			hero={{
-				icon: <MoMascot variant="open" size={84} />,
-				title: m["vocabulary.hub.title"](),
-				description: m["vocabulary.hub.subtitle"](),
-			}}
-		>
-			<div className="grid gap-4 md:grid-cols-3">
-				<div className="surface-card flex flex-col gap-2 p-5">
-					<span className="text-[11px] font-bold text-muted-foreground">
-						{m["vocabulary.stats.mastered"]()}
-					</span>
-					<span className="stat-display">{masteryPct}%</span>
-					<ProgressBar value={masteryPct} tone="accuracy" />
-					<span className="text-xs font-medium text-muted-foreground">
-						{m["vocabulary.hub.masteredOf"]({
-							done: VOCABULARY_STATS.mastered,
-							total: VOCABULARY_STATS.totalSaved,
-						})}
-					</span>
-				</div>
-				<div className="surface-card flex flex-col gap-2 p-5">
-					<span className="inline-flex items-center gap-1 text-[11px] font-bold text-muted-foreground">
-						{m["vocabulary.stats.needsReview"]()}
-						<span className="size-1.5 rounded-full bg-secondary" />
-					</span>
-					<span className="text-2xl font-bold text-foreground">
-						{VOCABULARY_STATS.dueToday}{" "}
-						<span className="text-sm font-medium text-muted-foreground">
-							{m["vocabulary.stats.needsReviewSub"]({
-								count: VOCABULARY_STATS.dueToday,
-							})}
-						</span>
-					</span>
-					<div className="mt-auto">
-						<Button
-							type="button"
-							variant="outline"
-							size="sm"
-							className="btn btn-outline"
-							onClick={() =>
-								setFilters((current) => ({ ...current, sort: "interval" }))
-							}
-						>
-							{m["vocabulary.hub.reviewNow"]()}
-						</Button>
-					</div>
-				</div>
-				<div className="surface-card flex flex-col gap-2 p-5">
-					<span className="inline-flex items-center gap-1 text-[11px] font-bold text-muted-foreground">
-						<LibraryBig className="size-3.5" />
-						{m["vocabulary.stats.custom"]()}
-					</span>
-					<span className="text-2xl font-bold text-foreground">
-						{VOCABULARY_STATS.customAdditions}
-					</span>
-					<span className="text-xs font-medium text-muted-foreground">
-						{m["vocabulary.stats.customSub"]()}
-					</span>
-					<span className="tile mt-auto bg-secondary text-secondary-foreground">
-						<Pencil className="size-5" />
-					</span>
-				</div>
-			</div>
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="text-lg font-extrabold tracking-tight">
+          {m["vocabulary.decks.title"]()}
+        </h2>
+        <Link
+          to={APP_ROUTES.VOCABULARY.WORDS.LIST}
+          className="text-sm font-bold text-primary hover:underline"
+        >
+          {m["vocabulary.decks.allWords"]()}
+        </Link>
+      </div>
 
-			<VocabFilterBar filters={filters} onChange={setFilters} />
-
-			{sorted.length === 0 ? (
-				<EmptyList
-					title={m["vocabulary.hub.emptyTitle"]()}
-					onReset={() => setFilters(DEFAULT_VOCAB_FILTERS)}
-				/>
-			) : (
-				<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-					{sorted.map((item) => (
-						<VocabCard key={item.id} item={item} />
-					))}
-				</div>
-			)}
-
-			<p className="text-xs font-medium text-muted-foreground">
-				{m["vocabulary.hub.showing"]({
-					shown: sorted.length,
-					total: VOCABULARY_STATS.totalSaved,
-				})}
-			</p>
-
-			<section className="surface-card flex flex-col gap-4 p-5 md:flex-row md:items-center">
-				<span className="inline-flex h-16 w-16 shrink-0 items-center justify-center rounded-[13px] bg-secondary shadow-edge-neutral-sm">
-					<MoMascot variant="wave" size={52} />
-				</span>
-				<div className="min-w-0 flex-1">
-					<h2 className="text-lg font-bold text-foreground">
-						{m["vocabulary.addWord.title"]()}
-					</h2>
-					<p className="text-[15px] font-medium text-muted-foreground">
-						{m["vocabulary.addWord.description"]()}
-					</p>
-				</div>
-				<div className="[&_button]:btn [&_button]:btn-primary">
-					<AddWordDialog />
-				</div>
-			</section>
-		</PageLayout>
-	);
+      {pending ? (
+        <CardSkeletons count={3} />
+      ) : rows.length === 0 ? (
+        <div className="surface-card flex flex-col items-center gap-3 p-8 text-center">
+          <MoMascot variant="confused" size={72} />
+          <h3 className="text-lg font-bold text-foreground">
+            {m["vocabulary.decks.emptyTitle"]()}
+          </h3>
+          <p className="max-w-md text-sm font-medium text-muted-foreground">
+            {m["vocabulary.decks.emptyBody"]()}
+          </p>
+        </div>
+      ) : (
+        rows.map((deck, index) => (
+          <DeckSection
+            key={deck.id}
+            deck={deck}
+            index={index}
+            previewK={PREVIEW_K}
+          />
+        ))
+      )}
+    </PageLayout>
+  );
 }

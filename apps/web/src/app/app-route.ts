@@ -22,8 +22,18 @@ export const APP_ROUTES = {
 		PRACTICE: "/lessons/$slug/practice",
 	},
 	VOCABULARY: {
-		LIST: "/vocabulary",
-		DETAIL: "/vocabulary/$itemId",
+		/** My decks — the section's landing. */
+		DECKS: {
+			LIST: "/vocabulary",
+			DETAIL: "/vocabulary/decks/$deckId",
+			/** A word opened from a deck: the deck stays in the URL so back works. */
+			WORD: "/vocabulary/decks/$deckId/words/$itemId",
+		},
+		/** The flat word grid and one word's detail. */
+		WORDS: {
+			LIST: "/vocabulary/words",
+			DETAIL: "/vocabulary/words/$itemId",
+		},
 	},
 	VOICE: {
 		LIST: "/voice",

@@ -1,8 +1,10 @@
 import { Pencil, Trash2 } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
+import { SubmitButton } from "#/components/common/submit-button";
 import { Button } from "#/components/ui/button";
 import { Textarea } from "#/components/ui/textarea";
-import { saveNote } from "#/features/vocabulary/store";
+import { usePatchVocabulary } from "#/features/vocabulary/queries";
 import { m } from "#/paraglide/messages";
 import { getLocale } from "#/paraglide/runtime";
 
@@ -24,6 +26,26 @@ export function PersonalNoteCard({
 }) {
 	const [editing, setEditing] = useState(false);
 	const [draft, setDraft] = useState(note ?? "");
+	const patch = usePatchVocabulary();
+
+	function save() {
+		patch.mutate(
+			{ itemId, patch: { note: draft } },
+			{
+				onSuccess: () => setEditing(false),
+				onError: () => toast.error(m["vocabulary.detail.noteFailed"]()),
+			},
+		);
+	}
+
+	function clear() {
+		patch.mutate(
+			{ itemId, patch: { note: "" } },
+			{
+				onError: () => toast.error(m["vocabulary.detail.noteFailed"]()),
+			},
+		);
+	}
 
 	return (
 		<section className="flex flex-col gap-3 rounded-xl border bg-card p-5">
@@ -55,16 +77,14 @@ export function PersonalNoteCard({
 						>
 							{m["common.actions.cancel"]()}
 						</Button>
-						<Button
+						<SubmitButton
 							type="button"
 							size="sm"
-							onClick={() => {
-								saveNote(itemId, draft);
-								setEditing(false);
-							}}
+							pending={patch.isPending}
+							onClick={save}
 						>
 							{m["vocabulary.detail.saveNote"]()}
-						</Button>
+						</SubmitButton>
 					</div>
 				</div>
 			) : (
@@ -85,15 +105,16 @@ export function PersonalNoteCard({
 							<Pencil data-icon="inline-start" />
 							{m["vocabulary.detail.editNote"]()}
 						</Button>
-						<Button
+						<SubmitButton
 							type="button"
 							variant="ghost"
 							size="sm"
-							onClick={() => saveNote(itemId, "")}
+							pending={patch.isPending}
+							onClick={clear}
 						>
 							<Trash2 data-icon="inline-start" />
 							{m["vocabulary.detail.deleteNote"]()}
-						</Button>
+						</SubmitButton>
 					</div>
 				</>
 			)}

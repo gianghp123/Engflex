@@ -19,8 +19,22 @@ export const API_ROUTES = {
 		BY_ID: (id: ApiId) => `/attempts/${id}`,
 	},
 	VOCABULARY: {
-		LIST: "/vocabulary",
-		BY_ID: (id: ApiId) => `/vocabulary/${id}`,
+		ITEMS: {
+			LIST: "/vocabulary-items",
+			BY_ID: (id: ApiId) => `/vocabulary-items/${id}`,
+		},
+		LIBRARY: {
+			LIST: "/user-vocabulary",
+			STATS: "/user-vocabulary/stats",
+			ADD: "/user-vocabulary/words",
+			BY_ID: (itemId: ApiId) => `/user-vocabulary/${itemId}`,
+		},
+		DECKS: {
+			LIST: "/vocabulary-decks",
+			BY_ID: (id: ApiId) => `/vocabulary-decks/${id}`,
+			ITEMS: "/vocabulary-deck-items",
+			ITEM_BY_ID: (id: ApiId) => `/vocabulary-deck-items/${id}`,
+		},
 	},
 	PERSONAS: {
 		LIST: "/personas",

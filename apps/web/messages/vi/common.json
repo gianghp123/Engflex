@@ -14,7 +14,8 @@
       "clear": "Xóa",
       "retry": "Thử lại",
       "backHome": "Về trang chủ",
-      "copy": "Sao chép"
+      "copy": "Sao chép",
+      "save": "Lưu"
     },
     "audio": {
       "playPronunciation": "Nghe phát âm",
@@ -26,8 +27,7 @@
       "copiedClipboard": "Đã sao chép",
       "linkCopied": "Đã sao chép liên kết",
       "clipboardUnavailable": "Không thể sao chép trong trình duyệt này",
-      "addedToVocabulary": "Đã thêm vào từ vựng của bạn",
-      "flashcardSoon": "Tính năng flashcard sắp ra mắt"
+      "addedToVocabulary": "Đã thêm vào từ vựng của bạn"
     },
     "a11y": {
       "more": "Xem thêm",

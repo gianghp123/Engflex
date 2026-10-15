@@ -209,6 +209,13 @@ body,
   min-height: 100%;
 }
 
+html {
+  /* Reserve the scrollbar gutter so the content width — and therefore chip
+     wrapping and card height — never shifts when a scrollbar appears or
+     disappears as the page height crosses the viewport. */
+  scrollbar-gutter: stable;
+}
+
 body {
   margin: 0;
   color: var(--foreground);
@@ -576,5 +583,66 @@ pre code {
   body {
     background-color: var(--background);
     color: var(--foreground);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   The shadcn primitives the house language never reached.
+
+   `surface-card` (and `btn` before it) is where the app's card chrome lives:
+   white surface, 2px border, 24px radius, and the hard `0 5px 0` offset shadow.
+   The modal primitives kept their shadcn defaults — `bg-background`, which is
+   the *page* colour (lavender), a 1px border, radius 16px, and the soft
+   `shadow-lg` — so on a dotted lavender page every modal read as a different
+   product floating above it.
+
+   Deliberately unlayered: Tailwind's utilities sit in `@layer utilities`, and
+   unlayered rules outrank layered ones, so this needs neither `!important` nor
+   a className at every call site.
+
+   Chrome only — background, border, radius, shadow. It never sets padding,
+   width, height or overflow, because call sites legitimately own those
+   (`p-6 sm:max-w-xl sm:p-7`, `max-h-[…] overflow-y-auto sm:max-w-2xl`), and it
+   leaves `dialog-overlay` alone so modal and sheet overlays stay consistent.
+--------------------------------------------------------------------------- */
+[data-slot="dialog-content"],
+[data-slot="alert-dialog-content"] {
+  background: var(--card);
+  border: 2px solid var(--border);
+  border-radius: 24px;
+  box-shadow: 0 5px 0 var(--border);
+}
+
+/* Every heading in the app is bold; shadcn ships modal titles at 600. */
+[data-slot="dialog-title"],
+[data-slot="alert-dialog-title"] {
+  font-weight: 800;
+  letter-spacing: -0.025em;
+}
+
+/* ---------------------------------------------------------------------------
+   The modal scroll lock vs the reserved scrollbar gutter.
+
+   Radix's lock (react-remove-scroll) hides the viewport scrollbar and
+   "compensates" by writing a body margin equal to `window.innerWidth -
+   documentElement.clientWidth` (react-remove-scroll-bar's getGapWidth). That
+   measurement cannot tell a real scrollbar from a *reserved* one, and `html`
+   above already reserves it with `scrollbar-gutter: stable` — so the lock takes
+   that space a second time and every page narrows by the scrollbar width each
+   time a dialog, select or sheet opens. Radix knows: see primitives
+   discussion #1100 and issue #1925, whose accepted workaround is this rule.
+
+   `@supports` keeps the compensation in engines without scrollbar-gutter, where
+   it is the only thing standing between you and the same shift. The element
+   selector is deliberate: the library appends its own `!important` rule to
+   <head> at runtime, after this stylesheet, so matching it on specificity is
+   not enough — `html body[…]` outranks `body[…]`.
+--------------------------------------------------------------------------- */
+@supports (scrollbar-gutter: stable) {
+  html body[data-scroll-locked] {
+    margin-right: 0 !important;
+    padding-right: 0 !important;
+    /* Nothing should offset a fixed element by a gap that was never taken. */
+    --removed-body-scroll-bar-size: 0px !important;
   }
 }

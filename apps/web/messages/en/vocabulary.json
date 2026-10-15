@@ -1,6 +1,50 @@
 {
   "$schema": "https://inlang.com/schema/inlang-message-format",
   "vocabulary": {
+    "deck": {
+      "back": "My decks",
+      "itemCount": "{count} words in this deck",
+      "emptyTitle": "No words in this deck yet",
+      "edit": "Edit",
+      "editTitle": "Edit deck",
+      "editDescription": "Rename it or update its description.",
+      "updated": "Deck updated",
+      "updateFailed": "Couldn't update that deck. Please try again.",
+      "delete": "Delete",
+      "deleteTitle": "Delete this deck?",
+      "deleteBody": "The deck is removed; the words stay in your library.",
+      "deleted": "Deck deleted",
+      "deleteFailed": "Couldn't delete that deck. Please try again.",
+      "addFromLibrary": "Add from my words",
+      "pickerDescription": "Pick from words already in your library.",
+      "pickerSearch": "Search my words",
+      "pickerEmpty": "Nothing left to add — every word is already in this deck.",
+      "pickerFailed": "Couldn't load your words. Please try again.",
+      "added": "Added to deck",
+      "addFailed": "Couldn't add that word. Please try again.",
+      "remove": "Remove",
+      "removed": "Removed from deck",
+      "removeFailed": "Couldn't remove that word. Please try again."
+    },
+    "decks": {
+      "title": "My decks",
+      "new": "New deck",
+      "allWords": "All words",
+      "seeDeck": "View deck",
+      "wordCount": "{count} words",
+      "wordCountMore": "{count}+ words",
+      "sectionEmpty": "No words in this deck yet.",
+      "emptyTitle": "No decks yet",
+      "emptyBody": "Create a deck to group the words you want to study together.",
+      "createTitle": "Create a deck",
+      "createDescription": "Give it a name now; add words whenever you like.",
+      "nameLabel": "Name",
+      "descriptionLabel": "Description",
+      "create": "Create deck",
+      "created": "Deck created",
+      "createFailed": "Couldn't create that deck. Please try again.",
+      "required": "A deck name is required."
+    },
     "detail": {
       "saveNote": "Save note",
       "contextsTitle": "Real-life examples",
@@ -15,7 +59,8 @@
       "addedOn": "Added {date}",
       "noNote": "No note yet.",
       "editNote": "Edit note",
-      "deleteNote": "Delete note"
+      "deleteNote": "Delete note",
+      "noteFailed": "Couldn't save your note. Please try again."
     },
     "card": {
       "listenUs": "Listen pronunciation (US)",
@@ -28,7 +73,8 @@
       "mastered": "Mastered",
       "markAsMastered": "Mark as mastered",
       "share": "Share",
-      "fullDefinition": "Full definition"
+      "fullDefinition": "Full definition",
+      "masteredFailed": "Couldn't update mastery. Please try again."
     },
     "hub": {
       "title": "Vocabulary studio",
@@ -41,9 +87,13 @@
     "stats": {
       "mastered": "Mastered words",
       "needsReview": "Needs review",
-      "needsReviewSub": "{count} due today",
+      "needsReviewSub": "due today",
       "custom": "Custom additions",
-      "customSub": "User-created notes"
+      "customSub": "User-created notes",
+      "savedToday": "Saved today",
+      "savedTodaySub": "Words you added today",
+      "decks": "Decks",
+      "decksSub": "Your word collections"
     },
     "filter": {
       "search": "Search words",
@@ -51,16 +101,8 @@
         "all": "All vocabulary",
         "lesson": "From lessons",
         "conversation": "From AI sparring",
+        "video": "From video",
         "manual": "Custom"
-      },
-      "domainLabel": "Topic:",
-      "domainAll": "All topics",
-      "domain": {
-        "backendDb": "Backend & DB",
-        "distributedSystems": "Distributed systems",
-        "devopsCloud": "DevOps & Cloud",
-        "frontendUi": "Frontend & UI",
-        "aiMl": "AI & Machine learning"
       },
       "cefrLabel": "CEFR:",
       "cefrAll": "All",
@@ -74,42 +116,44 @@
     "source": {
       "lesson": "From lesson",
       "conversation": "From AI sparring",
+      "video": "From video",
       "manual": "Custom"
     },
     "sourceLine": {
       "lesson": "From lesson: {id}",
       "note": "Note: {id}"
     },
+    "pos": {
+      "noun": "Noun",
+      "verb": "Verb",
+      "adjective": "Adjective",
+      "adverb": "Adverb",
+      "pronoun": "Pronoun",
+      "preposition": "Preposition",
+      "conjunction": "Conjunction",
+      "interjection": "Interjection",
+      "determiner": "Determiner",
+      "phrase": "Phrase",
+      "idiom": "Idiom",
+      "phrasalVerb": "Phrasal verb"
+    },
     "addWord": {
-      "button": "Add custom word",
-      "title": "Add your own words",
-      "description": "Saved to your personal list with a Custom source.",
+      "button": "Add word",
+      "title": "Add a word",
+      "description": "Saved to your personal list as a custom word.",
+      "tabs": {
+        "word": "Add word"
+      },
+      "alreadyInLibrary": "Already in your words — saving will use your existing entry.",
       "termLabel": "Term or phrase",
       "cefrLabel": "CEFR tier",
-      "cefrOptions": {
-        "b1": "B1",
-        "b2": "B2",
-        "c1": "C1"
-      },
+      "cefrPlaceholder": "Select level",
       "posLabel": "Part of speech",
       "definitionLabel": "Definition",
       "exampleLabel": "Contextual usage / Example sentence",
       "save": "Save to vocabulary",
-      "required": "Term and definition are required."
-    },
-    "recall": {
-      "title": "Daily active recall deck",
-      "subtitle": "Spaced interval algorithm",
-      "dueBadge": "{count} due",
-      "body": "Quizzing yourself with tricky hints locks words in — so they pop out when you speak.",
-      "dueToday": "Due today",
-      "overdue": "Overdue",
-      "start": "Start flashcard drill ({count} cards)"
-    },
-    "recent": {
-      "title": "Recent custom additions",
-      "viewAll": "View all ({count})",
-      "body": "Words you picked up from books, shows, and conversations."
+      "required": "Term, definition, and CEFR level are required.",
+      "failed": "Couldn't save that word. Please try again."
     }
   }
 }

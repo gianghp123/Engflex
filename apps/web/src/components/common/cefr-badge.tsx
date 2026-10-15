@@ -1,15 +1,28 @@
 import type { CEFR, ScenarioDifficulty } from "@engflex/contracts";
 import { cn } from "cn";
 
-/** Token-mapped CEFR chip + level dots; A1/A2/C2 fall back to neutral. */
-const CEFR_STYLES: Record<string, string> = {
+/** Token-mapped CEFR chip + level dots. Total over CEFR | ScenarioDifficulty
+ *  so a new member is a compile error; A1/A2 use the neutral tokens and C2
+ *  reuses the C1 tone (no dedicated tokens exist for them). */
+const CEFR_STYLES: Record<CEFR | ScenarioDifficulty, string> = {
+	A1: "border-border bg-muted text-muted-foreground",
+	A2: "border-border bg-muted text-muted-foreground",
 	B1: "border-cefr-b1-border bg-cefr-b1-bg text-cefr-b1",
 	"B1+": "border-cefr-b1p-border bg-cefr-b1p-bg text-cefr-b1p",
 	B2: "border-cefr-b2-border bg-cefr-b2-bg text-cefr-b2",
 	C1: "border-cefr-c1-border bg-cefr-c1-bg text-cefr-c1",
+	C2: "border-cefr-c1-border bg-cefr-c1-bg text-cefr-c1",
 };
 
-const CEFR_DOTS: Record<string, number> = { B1: 0, "B1+": 1, B2: 2, C1: 3 };
+const CEFR_DOTS: Record<CEFR | ScenarioDifficulty, number> = {
+	A1: 0,
+	A2: 0,
+	B1: 0,
+	"B1+": 1,
+	B2: 2,
+	C1: 3,
+	C2: 3,
+};
 
 export function CefrBadge({
 	value,

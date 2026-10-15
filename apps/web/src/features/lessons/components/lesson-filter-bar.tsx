@@ -1,7 +1,9 @@
 import type { CEFR } from "@engflex/contracts";
+import { CEFR_VALUES } from "@engflex/contracts";
 import { cn } from "cn";
 import { Search } from "lucide-react";
 import { Input } from "#/components/ui/input";
+import { enumOptions } from "#/lib/enum-options";
 import { m } from "#/paraglide/messages";
 
 export interface LessonFilters {
@@ -14,14 +16,9 @@ export const DEFAULT_LESSON_FILTERS: LessonFilters = {
 	level: "all",
 };
 
-const LEVEL_PILLS: Array<{
-	value: LessonFilters["level"];
-	label: () => string;
-}> = [
-	{ value: "all", label: () => m["lessons.hub.levelAll"]() },
-	{ value: "B1", label: () => m["lessons.hub.levelB1"]() },
-	{ value: "B2", label: () => m["lessons.hub.levelB2"]() },
-	{ value: "C1", label: () => m["lessons.hub.levelC1"]() },
+const LEVEL_PILLS = [
+	{ value: "all" as const, label: () => m["lessons.hub.levelAll"]() },
+	...enumOptions(CEFR_VALUES),
 ];
 
 export function LessonFilterBar({

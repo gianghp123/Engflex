@@ -5,13 +5,28 @@ import { toast } from "sonner";
 import { AudioButton } from "#/components/common/audio-button";
 import { CefrBadge } from "#/components/common/cefr-badge";
 import { SourcePill } from "#/components/common/source-pill";
+import { SubmitButton } from "#/components/common/submit-button";
 import { Button } from "#/components/ui/button";
-import { toggleMastered } from "#/features/vocabulary/store";
+import { posLabel } from "#/features/vocabulary/components/pos-label";
+import { usePatchVocabulary } from "#/features/vocabulary/queries";
 import { m } from "#/paraglide/messages";
 
 export function WordHeroCard({ item }: { item: VocabularyItem }) {
+	const patch = usePatchVocabulary();
 	const state = item.userState;
 	const mastered = state?.mastered ?? false;
+
+	function toggleMastered() {
+		patch.mutate(
+			{
+				itemId: item.id,
+				patch: { mastered: !(item.userState?.mastered ?? false) },
+			},
+			{
+				onError: () => toast.error(m["vocabulary.card.masteredFailed"]()),
+			},
+		);
+	}
 
 	async function copy(value: string, message: string) {
 		try {
@@ -27,16 +42,18 @@ export function WordHeroCard({ item }: { item: VocabularyItem }) {
 			<div className="flex flex-wrap items-center gap-2">
 				<h1 className="text-2xl font-bold text-foreground">{item.term}</h1>
 				<CefrBadge value={item.cefr} />
-				<span className="chip px-1.5 py-0.5 text-[11px]">
-					{item.partOfSpeech}
-				</span>
+				{item.partOfSpeech ? (
+					<span className="chip px-1.5 py-0.5 text-[11px]">
+						{posLabel(item.partOfSpeech)}
+					</span>
+				) : null}
 				{state ? (
 					<SourcePill source={state.sourceType} suffix={state.sourceId} />
 				) : null}
 			</div>
 
 			<div className="flex flex-wrap items-center gap-2">
-				<span className="chip font-mono text-xs">{item.ipa}</span>
+				<span className="chip font-mono text-xs">{item.details?.ipa}</span>
 				<AudioButton label={m["vocabulary.card.listenUs"]()} />
 				<AudioButton label={m["vocabulary.card.listenUk"]()} />
 			</div>
@@ -46,10 +63,11 @@ export function WordHeroCard({ item }: { item: VocabularyItem }) {
 			</p>
 
 			<div className="flex flex-wrap items-center gap-2 border-t-2 border-border pt-4">
-				<Button
+				<SubmitButton
 					type="button"
 					variant={mastered ? "outline" : "default"}
-					onClick={() => toggleMastered(item.id)}
+					pending={patch.isPending}
+					onClick={toggleMastered}
 					className={cn(
 						"btn",
 						mastered ? "btn-outline" : "btn-primary",
@@ -60,7 +78,7 @@ export function WordHeroCard({ item }: { item: VocabularyItem }) {
 					{mastered
 						? m["vocabulary.card.mastered"]()
 						: m["vocabulary.card.markAsMastered"]()}
-				</Button>
+				</SubmitButton>
 				<Button
 					type="button"
 					variant="ghost"
