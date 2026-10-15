@@ -9,7 +9,7 @@
  */
 export interface Preferences {
   level: Level;
-  primaryGoal: Goal;
+  goals: Goal[];
   dailyCommitmentMin: number /* int */;
   topics: InterestTopic[];
 }

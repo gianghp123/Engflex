@@ -1,34 +1,23 @@
 import type { Goal } from "@engflex/contracts";
-import { cn } from "cn";
 import type { LucideIcon } from "lucide-react";
-import { Button } from "#/components/ui/button";
+import { ToggleGroupItem } from "#/components/ui/toggle-group";
 
 export function GoalChip({
 	value,
 	label,
 	icon: Icon,
-	selected,
-	onSelect,
 }: {
 	value: Goal;
 	label: string;
 	icon: LucideIcon;
-	selected: boolean;
-	onSelect: (value: Goal) => void;
 }) {
 	return (
-		<Button
-			type="button"
-			variant="outline"
-			aria-pressed={selected}
-			onClick={() => onSelect(value)}
-			className={cn(
-				"h-auto flex-col gap-2 px-4 py-3",
-				selected && "border-primary bg-secondary text-primary",
-			)}
+		<ToggleGroupItem
+			value={value}
+			className="h-auto flex-col gap-2 rounded-[14px] border border-border px-4 py-3 text-sm font-semibold data-[state=on]:border-primary data-[state=on]:bg-secondary data-[state=on]:text-secondary-foreground"
 		>
 			<Icon className="size-4" />
 			{label}
-		</Button>
+		</ToggleGroupItem>
 	);
 }

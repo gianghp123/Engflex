@@ -1,4 +1,5 @@
 import type { ScenarioDifficulty } from "@engflex/contracts";
+import { SCENARIO_DIFFICULTY_VALUES } from "@engflex/contracts";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { cn } from "cn";
 import { Search } from "lucide-react";
@@ -27,15 +28,7 @@ export const Route = createFileRoute("/_app/voice/scenarios/")({
 	component: ScenariosPage,
 });
 
-const LEVELS: Array<"all" | ScenarioDifficulty> = [
-	"all",
-	"A1",
-	"A2",
-	"B1",
-	"B1+",
-	"B2",
-	"C1",
-];
+const LEVELS = ["all" as const, ...SCENARIO_DIFFICULTY_VALUES];
 
 function levelLabel(level: (typeof LEVELS)[number]): string {
 	if (level === "all") return m["voice.scenarios.level.any"]();

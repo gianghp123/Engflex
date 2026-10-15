@@ -1,11 +1,12 @@
 {
   "$schema": "https://inlang.com/schema/inlang-message-format",
   "onboarding": {
-    "crumb": "Bắt đầu",
+    "submitError": "Không thể lưu thiết lập của bạn. Vui lòng thử lại.",
     "tagline": "Nền tảng học tiếng Anh",
     "level": {
       "title": "Chọn trình độ của bạn",
       "subtitle": "Engflex điều chỉnh độ trễ hội thoại và độ phức tạp từ vựng dựa trên điểm xuất phát của bạn.",
+      "error": "Hãy chọn trình độ của bạn để tiếp tục.",
       "option": {
         "beginner": {
           "title": "Sơ cấp",
@@ -25,8 +26,9 @@
       }
     },
     "goal": {
-      "title": "Mục tiêu của bạn là gì?",
+      "title": "Bạn hướng tới những mục tiêu nào?",
       "subtitle": "Bài học và hội thoại sẽ xoay quanh những lúc bạn cần tiếng Anh nhất.",
+      "error": "Hãy chọn ít nhất 1 mục tiêu để tiếp tục.",
       "option": {
         "travel": "Du lịch",
         "work": "Công việc & Sự nghiệp",
@@ -72,15 +74,18 @@
         }
       },
       "recommended": "Khuyên dùng",
-      "minutesUnit": "{count} phút"
+      "minutesUnit": "{count} phút",
+      "error": "Hãy chọn thời lượng học mỗi ngày để tiếp tục."
     },
-    "diagnostic": {
-      "percentile": "Khởi đầu ngon lành — đây là ảnh chụp khả năng nói của bạn!",
-      "acceleration": "Thấy tiềm năng bứt phá rồi! Giữ đúng mục tiêu và chủ đề, nói trôi chảy sẽ đến nhanh thôi.",
-      "chartLabel": "Lục giác chẩn đoán âm thanh Engflex",
-      "baseline": "Đã mở khóa mức nền tối ưu",
-      "latency": "Độ trễ hội thoại dự đoán",
-      "clarity": "Độ rõ của giọng nói",
+    "summary": {
+      "title": "Bạn đã sẵn sàng!",
+      "subtitle": "Đây là kế hoạch chúng ta sẽ bám theo.",
+      "level": "Trình độ",
+      "commitment": "Mục tiêu mỗi ngày",
+      "goals": "Mục tiêu",
+      "topics": "Chủ đề",
+      "chartLabel": "Bản xem trước hồ sơ nói",
+      "previewCaption": "Hồ sơ nói của bạn sẽ mở khóa sau buổi luyện nói đầu tiên.",
       "axes": {
         "precision": "CHÍNH XÁC",
         "lexical": "TỪ VỰNG",

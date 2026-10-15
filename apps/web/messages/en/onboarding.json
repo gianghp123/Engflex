@@ -1,11 +1,12 @@
 {
   "$schema": "https://inlang.com/schema/inlang-message-format",
   "onboarding": {
-    "crumb": "Onboarding",
+    "submitError": "We couldn't save your setup. Please try again.",
     "tagline": "English learning platform",
     "level": {
       "title": "Choose your level",
       "subtitle": "Engflex tunes conversational latency and vocabulary complexity based on your baseline.",
+      "error": "Choose your level to continue.",
       "option": {
         "beginner": {
           "title": "Beginner",
@@ -25,8 +26,9 @@
       }
     },
     "goal": {
-      "title": "What's your goal?",
+      "title": "What are your goals?",
       "subtitle": "Lessons and chats shaped around the moments you care about.",
+      "error": "Choose at least one goal to continue.",
       "option": {
         "travel": "Travel",
         "work": "Work & Career",
@@ -72,15 +74,18 @@
         }
       },
       "recommended": "Recommended",
-      "minutesUnit": "{count} min"
+      "minutesUnit": "{count} min",
+      "error": "Choose how much time you can study to continue."
     },
-    "diagnostic": {
-      "percentile": "Great start — here is your speaking snapshot!",
-      "acceleration": "Big potential spotted! Stick with your goals and topics, and your fluency will take off in practice mode.",
-      "chartLabel": "Engflex acoustic diagnostic hexagon",
-      "baseline": "Optimal baseline unlocked",
-      "latency": "Predicted conversational latency",
-      "clarity": "Acoustic clarity confidence",
+    "summary": {
+      "title": "You're all set",
+      "subtitle": "Here's the plan we'll build around.",
+      "level": "Level",
+      "commitment": "Daily goal",
+      "goals": "Goals",
+      "topics": "Topics",
+      "chartLabel": "Speaking profile preview",
+      "previewCaption": "Your speaking snapshot unlocks after your first voice session.",
       "axes": {
         "precision": "PRECISION",
         "lexical": "LEXICAL",

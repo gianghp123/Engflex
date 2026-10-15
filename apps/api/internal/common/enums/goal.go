@@ -1,6 +1,6 @@
 package enums
 
-// Goal is the onboarding primary goal (user_profiles.preferences.primary_goal).
+// Goal is one onboarding goal (user_profiles.preferences.goals[]).
 type Goal string
 
 const (

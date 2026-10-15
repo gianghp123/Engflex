@@ -20,6 +20,7 @@ import (
 	"engflex-api/internal/modules/attempts"
 	"engflex-api/internal/modules/conversations"
 	"engflex-api/internal/modules/lessons"
+	"engflex-api/internal/modules/profiles"
 	"engflex-api/internal/modules/scenarios"
 	"engflex-api/internal/modules/videos"
 	"engflex-api/internal/modules/vocabulary"
@@ -157,6 +158,7 @@ func NewRouter(db *gorm.DB, cfg config.Config) *gin.Engine {
 	scenarios.RegisterRoutes(v1, db)
 	videos.RegisterRoutes(v1, db)
 	vocabulary.RegisterRoutes(v1, db)
+	profiles.RegisterRoutes(v1, db)
 
 	return r
 }

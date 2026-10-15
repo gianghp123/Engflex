@@ -585,17 +585,6 @@ make swagger
 
 Migration changes should be reviewed before deployment. SQL migration files, rather than automatic ORM schema generation, remain the authoritative record of schema changes.
 
-## Security & Limitations
-
-EngFlex depends on external authentication and AI providers, and its development and deployment environments have different requirements.
-
-- **Secret management:** Keep API credentials, Clerk secrets, internal service secrets, Terraform credentials, and production environment files out of version control.
-- **Service authentication:** Configure the API and voice service with matching internal credentials, and verify authentication boundaries before exposing services publicly.
-- **Object storage:** Review bucket policies and anonymous-read settings carefully. Public read access should be limited to assets intentionally published for learners.
-- **External providers:** Voice conversations and generated audio depend on external STT, LLM, and TTS services. Availability, latency, usage limits, and costs depend on the selected providers and models.
-- **Optional pronunciation service:** Pronunciation scoring requires the relevant model service and additional local resources.
-- **Active development:** Features and deployment configuration may change. Check the current application code and environment examples before relying on a particular endpoint or operational behavior.
-
 ## Roadmap
 
 Potential future improvements include:

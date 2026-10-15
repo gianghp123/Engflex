@@ -5,7 +5,7 @@ import { APP_ROUTES } from "#/app/app-route";
 import { useBreadcrumbs } from "#/app/breadcrumbs";
 import { MoMascot } from "#/components/common/mo-mascot";
 import { PageLayout } from "#/components/common/page-layout";
-import { StatCard } from "#/components/common/stat-card";
+import { ProgressRing, StatCard } from "#/components/common/stat-card";
 import { Button } from "#/components/ui/button";
 import {
 	Empty,
@@ -14,6 +14,7 @@ import {
 	EmptyHeader,
 	EmptyTitle,
 } from "#/components/ui/empty";
+import { Skeleton } from "#/components/ui/skeleton";
 import { useProgress } from "#/features/attempts/queries";
 import { ActiveLessonCard } from "#/features/dashboard/components/active-lesson-card";
 import { LiveVoicePartnerCard } from "#/features/dashboard/components/live-voice-partner-card";
@@ -32,6 +33,11 @@ function DashboardPage() {
 	const { user } = useUser();
 	const firstName = user?.firstName;
 	const progress = useProgress();
+	// Computed here, not inside the card: the ring is the caller's widget now.
+	const voiceGoalPct =
+		progress.data && progress.data.dailyGoalMinutes > 0
+			? (progress.data.voiceMinutesToday / progress.data.dailyGoalMinutes) * 100
+			: 0;
 	const today = new Intl.DateTimeFormat(getLocale(), {
 		weekday: "long",
 		day: "numeric",
@@ -60,35 +66,50 @@ function DashboardPage() {
 			{progress.isPending || progress.isSuccess ? (
 				<div className="grid gap-4 sm:grid-cols-3">
 					<StatCard
-						label={m["dashboard.stats.streak"]()}
+						title={m["dashboard.stats.streak"]()}
 						value={progress.data?.streakDays ?? 0}
-						icon={Flame}
+						aside={
+							<span className="tile bg-secondary text-primary">
+								<Flame className="size-5" />
+							</span>
+						}
 						pending={progress.isPending}
 					/>
 					<StatCard
-						label={m["dashboard.stats.voice"]()}
+						title={m["dashboard.stats.voice"]()}
 						value={progress.data?.voiceMinutesToday ?? 0}
-						footer={
-							progress.data
-								? m["dashboard.stats.voiceGoal"]({
-										done: progress.data.voiceMinutesToday,
-										goal: progress.data.dailyGoalMinutes,
-									})
-								: undefined
-						}
-						ringValue={
-							progress.data && progress.data.dailyGoalMinutes > 0
-								? (progress.data.voiceMinutesToday /
-										progress.data.dailyGoalMinutes) *
-									100
-								: 0
+						aside={<ProgressRing value={voiceGoalPct} />}
+						// The ring is 64px where the default placeholder is a 36px
+						// tile, so this card states its own loading shape.
+						skeleton={
+							<>
+								<div className="flex min-w-0 flex-1 flex-col gap-2 self-stretch">
+									<Skeleton className="h-3 w-20" />
+									<Skeleton className="h-7 w-16" />
+									<Skeleton className="h-3 w-24" />
+								</div>
+								<Skeleton className="size-16 rounded-full" />
+							</>
 						}
 						pending={progress.isPending}
-					/>
+					>
+						{progress.data ? (
+							<span className="text-xs text-muted-foreground">
+								{m["dashboard.stats.voiceGoal"]({
+									done: progress.data.voiceMinutesToday,
+									goal: progress.data.dailyGoalMinutes,
+								})}
+							</span>
+						) : null}
+					</StatCard>
 					<StatCard
-						label={m["dashboard.stats.lessons"]()}
+						title={m["dashboard.stats.lessons"]()}
 						value={progress.data?.lessonsCompleted ?? 0}
-						icon={BookOpenText}
+						aside={
+							<span className="tile bg-secondary text-primary">
+								<BookOpenText className="size-5" />
+							</span>
+						}
 						pending={progress.isPending}
 					/>
 				</div>

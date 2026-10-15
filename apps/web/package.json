@@ -19,6 +19,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@clerk/localizations": "^4.23.0",
     "@clerk/tanstack-react-start": "^1.4.21",
     "@engflex/contracts": "link:../../packages/contracts",
     "@faker-js/faker": "^10.3.0",

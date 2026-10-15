@@ -9,7 +9,7 @@
  */
 export interface UpdateProfile {
   level: Level;
-  primaryGoal: Goal;
+  goals: Goal[];
   dailyCommitmentMin: number /* int */;
   topics: InterestTopic[];
 }

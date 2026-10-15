@@ -32,10 +32,7 @@ export function LevelRadioCard({
 				)}
 			>
 				<RadioGroupItem id={id} value={value} className="mt-0.5" />
-				<label
-					htmlFor={id}
-					className="flex min-w-0 cursor-pointer flex-col gap-1"
-				>
+				<label htmlFor={id} className="flex min-w-0 flex-col gap-1">
 					<span className="flex items-center gap-2">
 						<span className="text-sm font-semibold">{title}</span>
 						<span className="rounded-md border border-border bg-muted px-1.5 py-0.5 text-[11px] font-semibold text-muted-foreground">

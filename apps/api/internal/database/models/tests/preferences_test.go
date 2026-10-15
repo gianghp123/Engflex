@@ -15,16 +15,16 @@ func TestPreferencesScan(t *testing.T) {
 		name      string
 		value     any
 		wantLevel enums.Level
-		wantGoal  enums.Goal
+		wantGoals []enums.Goal
 		wantMin   int
 		wantTopic enums.InterestTopic
 		wantEmpty bool
 	}{
 		{
 			name:      "camelCase blob decodes every field",
-			value:     []byte(`{"level":"intermediate","primaryGoal":"work","dailyCommitmentMin":20,"topics":["business","technology"]}`),
+			value:     []byte(`{"level":"intermediate","goals":["work","exams"],"dailyCommitmentMin":20,"topics":["business","technology"]}`),
 			wantLevel: enums.LevelIntermediate,
-			wantGoal:  enums.GoalWork,
+			wantGoals: []enums.Goal{enums.GoalWork, enums.GoalExams},
 			wantMin:   20,
 			wantTopic: enums.InterestTopicBusiness,
 		},
@@ -55,7 +55,7 @@ func TestPreferencesScan(t *testing.T) {
 				return
 			}
 			assert.Equal(t, tt.wantLevel, got.Level)
-			assert.Equal(t, tt.wantGoal, got.PrimaryGoal)
+			assert.Equal(t, tt.wantGoals, got.Goals)
 			assert.Equal(t, tt.wantMin, got.DailyCommitmentMin)
 			require.Len(t, got.Topics, 2)
 			assert.Equal(t, tt.wantTopic, got.Topics[0])
@@ -66,7 +66,7 @@ func TestPreferencesScan(t *testing.T) {
 func TestPreferencesValue(t *testing.T) {
 	in := models.Preferences{
 		Level:              enums.LevelIntermediate,
-		PrimaryGoal:        enums.GoalWork,
+		Goals:              []enums.Goal{enums.GoalWork, enums.GoalExams},
 		DailyCommitmentMin: 20,
 		Topics:             []enums.InterestTopic{enums.InterestTopicBusiness, enums.InterestTopicTechnology},
 	}
@@ -76,7 +76,7 @@ func TestPreferencesValue(t *testing.T) {
 	encoded, ok := raw.([]byte)
 	require.True(t, ok)
 
-	assert.JSONEq(t, `{"level":"intermediate","primaryGoal":"work","dailyCommitmentMin":20,"topics":["business","technology"]}`, string(encoded))
+	assert.JSONEq(t, `{"level":"intermediate","goals":["work","exams"],"dailyCommitmentMin":20,"topics":["business","technology"]}`, string(encoded))
 
 	var back models.Preferences
 	require.NoError(t, back.Scan(encoded))

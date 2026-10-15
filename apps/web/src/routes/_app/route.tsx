@@ -7,9 +7,12 @@ import { getAuthState } from "#/lib/auth-guard";
 
 export const Route = createFileRoute("/_app")({
 	beforeLoad: async () => {
-		const { isAuthenticated } = await getAuthState();
+		const { isAuthenticated, onboardingCompleted } = await getAuthState();
 		if (!isAuthenticated) {
 			throw redirect({ href: APP_ROUTES.AUTH.SIGN_IN });
+		}
+		if (!onboardingCompleted) {
+			throw redirect({ to: APP_ROUTES.ONBOARDING });
 		}
 	},
 	component: AppLayout,

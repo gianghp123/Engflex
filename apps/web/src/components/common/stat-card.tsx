@@ -1,5 +1,4 @@
 import { cn } from "cn";
-import type { LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import { CardShell } from "#/components/common/card-shell";
 import { Skeleton } from "#/components/ui/skeleton";
@@ -10,6 +9,7 @@ const TONE_STROKE = {
 	violet: "stroke-accent-violet",
 } as const;
 
+/** A standalone widget, not a card prop: a caller passes it as `aside`. */
 export function ProgressRing({
 	value,
 	tone = "primary",
@@ -43,69 +43,75 @@ export function ProgressRing({
 	);
 }
 
+/**
+ * The house stat card. Three things are fixed so they cannot drift between
+ * pages — the title's typography, the metric's scale (`size`), and the
+ * `CardShell` pending contract — and everything else belongs to the caller:
+ * `aside` is the right column (ring, icon tile, badge…), `children` is the
+ * body under the metric (bar, caption, CTA…). The frame never switches on what
+ * those widgets are, so it does not grow a prop per caller.
+ */
 export function StatCard({
-	label,
-	icon: Icon,
+	title,
 	value,
-	footer,
-	tone = "primary",
-	ringValue,
-	className,
+	size = "md",
+	aside,
+	children,
+	skeleton,
 	pending = false,
+	className,
 }: {
-	label: string;
-	icon?: LucideIcon;
+	title: ReactNode;
 	value: ReactNode;
-	footer?: ReactNode;
-	tone?: keyof typeof TONE_STROKE;
-	ringValue?: number;
-	className?: string;
+	/** `md` = `text-2xl`; `lg` = `stat-display` (the vocabulary hero number). */
+	size?: "md" | "lg";
+	/** Right column: the frame owns its placement, the caller owns its content. */
+	aside?: ReactNode;
+	/** Body under the metric. A child with `mt-auto` pins itself to the card foot. */
+	children?: ReactNode;
+	/**
+	 * Overrides the placeholder when `aside`/`children` are an unusual shape, so
+	 * the loading frame still matches the loaded one (`CardShell` rule).
+	 */
+	skeleton?: ReactNode;
 	pending?: boolean;
+	className?: string;
 }) {
-	const hasRing = typeof ringValue === "number";
-	const skeleton = (
+	const placeholder = (
 		<>
-			<div className="flex min-w-0 flex-col gap-1">
+			<div className="flex min-w-0 flex-1 flex-col gap-2 self-stretch">
 				<Skeleton className="h-3 w-20" />
-				<Skeleton className="h-7 w-12" />
-				{hasRing ? <Skeleton className="h-3 w-16" /> : null}
+				<Skeleton className={size === "lg" ? "h-9 w-24" : "h-7 w-16"} />
+				{children ? <Skeleton className="h-3 w-24" /> : null}
 			</div>
-			{hasRing ? (
-				<Skeleton className="size-16 rounded-full" />
-			) : (
-				<Skeleton className="size-9 rounded-lg" />
-			)}
+			{aside ? <Skeleton className="size-9 rounded-lg" /> : null}
 		</>
 	);
+
 	return (
 		<CardShell
 			pending={pending}
-			skeleton={skeleton}
-			className={cn("flex items-center justify-between gap-3 p-4", className)}
+			skeleton={skeleton ?? placeholder}
+			className={cn("flex items-center justify-between gap-3 p-5", className)}
 		>
-			<div className="flex min-w-0 flex-col gap-1">
-				<span className="text-[11px] font-semibold text-muted-foreground">
-					{label}
+			{/* `self-stretch` keeps the column full height inside the centred row,
+			    so a `mt-auto` child still lands at the card foot. */}
+			<div className="flex min-w-0 flex-1 flex-col gap-2 self-stretch">
+				<span className="text-[11px] font-bold text-muted-foreground">
+					{title}
 				</span>
-				<span className="text-2xl font-bold text-foreground">{value}</span>
-				{footer ? (
-					<span className="text-xs text-muted-foreground">{footer}</span>
-				) : null}
-			</div>
-			{hasRing ? (
-				<ProgressRing value={ringValue} tone={tone} />
-			) : Icon ? (
 				<span
-					className={cn(
-						"tile",
-						tone === "accuracy" && "bg-accuracy-tint text-accuracy",
-						tone === "violet" && "bg-secondary text-accent-violet",
-						tone === "primary" && "bg-secondary text-primary",
-					)}
+					className={
+						size === "lg"
+							? "stat-display"
+							: "text-2xl font-bold text-foreground"
+					}
 				>
-					<Icon className="size-5" />
+					{value}
 				</span>
-			) : null}
+				{children}
+			</div>
+			{aside ? <div className="flex shrink-0 items-center">{aside}</div> : null}
 		</CardShell>
 	);
 }

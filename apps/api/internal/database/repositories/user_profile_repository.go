@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 
 	"engflex-api/internal/database/models"
 )
@@ -15,6 +16,7 @@ import (
 // methods when a caller appears, not before.
 type UserProfileRepository interface {
 	GetByUserID(ctx context.Context, userID string) (*models.UserProfile, error)
+	Upsert(ctx context.Context, m *models.UserProfile) error
 	WithTx(tx *gorm.DB) UserProfileRepository
 }
 
@@ -40,4 +42,14 @@ func (r *userProfileRepository) GetByUserID(ctx context.Context, userID string) 
 		return nil, err
 	}
 	return &m, nil
+}
+
+// Upsert inserts the profile or updates it in place, keyed by user_id. Only
+// preferences, onboarding_completed_at, and updated_at change on conflict, so
+// a re-submit is idempotent and never duplicates a row or resets created_at.
+func (r *userProfileRepository) Upsert(ctx context.Context, m *models.UserProfile) error {
+	return r.db.WithContext(ctx).Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: "user_id"}},
+		DoUpdates: clause.AssignmentColumns([]string{"preferences", "onboarding_completed_at", "updated_at"}),
+	}).Create(m).Error
 }

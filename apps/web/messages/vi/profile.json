@@ -1,0 +1,15 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "profile": {
+    "menu": {
+      "label": "Hồ sơ đã lưu"
+    },
+    "title": "Hồ sơ của bạn",
+    "subtitle": "Sở thích bạn đã thiết lập khi bắt đầu.",
+    "level": "Trình độ",
+    "goals": "Mục tiêu",
+    "topics": "Chủ đề",
+    "commitment": "Mục tiêu mỗi ngày",
+    "loading": "Đang tải hồ sơ…"
+  }
+}

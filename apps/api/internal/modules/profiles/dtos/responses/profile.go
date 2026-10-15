@@ -10,7 +10,7 @@ import (
 // derived from Level in Go, not stored.
 type Preferences struct {
 	Level              enums.Level           `json:"level"`
-	PrimaryGoal        enums.Goal            `json:"primaryGoal"`
+	Goals              []enums.Goal          `json:"goals"`
 	DailyCommitmentMin int                   `json:"dailyCommitmentMin"`
 	Topics             []enums.InterestTopic `json:"topics"`
 }

@@ -1,0 +1,15 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "profile": {
+    "menu": {
+      "label": "Saved profile"
+    },
+    "title": "Your profile",
+    "subtitle": "The preferences you set during onboarding.",
+    "level": "Level",
+    "goals": "Goals",
+    "topics": "Topics",
+    "commitment": "Daily goal",
+    "loading": "Loading your profile…"
+  }
+}

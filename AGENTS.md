@@ -112,6 +112,11 @@ func (UserProfile) TableName() string { return "user_profiles" }
 - `clerk_user_id text PK` on profile; all `user_id` FKs are Clerk strings.
 - JSON columns (`config`, `score`) as `datatypes.JSON` / custom types.
 - Arrays (`goals`, `skill_tags`, `topic`) as `pq.StringArray` / `text[]`.
+- **A closed set is a Go `enums.*` type + a column with a `CHECK`, never free
+  text inside a jsonb blob.** Display-only *free text* (IPA, transcription) may
+  live in `details`; anything the product enumerates (part of speech, source,
+  status) gets an enum type, a nullable column, and a `CHECK` listing the
+  members — so the DB rejects an unknown member instead of storing it.
 - `time.Time` → RFC3339 string in contracts.
 
 #### Relations: `->` for anything read-only
@@ -445,9 +450,23 @@ Assert with `require.ErrorAs(err, &appErr)` + check `.Status`.
 - Config `<api-dir>/tygo.yaml`; output `<contracts-dir>/src/*.ts`.
 - Commands (from `<api-dir>`): `make contracts` or `tygo generate`.
 - Rules: generated files overwritten — hand code only in
-  `<contracts-dir>/src/index.ts` (barrel). `time.Time` → RFC3339 string.
-  Export only wire DTOs; runtime structs must not leak.
-  `common/errors.go` excluded (`AppError` never crosses).
+  `<contracts-dir>/src/index.ts` (barrel: re-exports, the star-export ambiguity
+  resolutions, and the `declare global` enum aliases).
+  `time.Time` → RFC3339 string. Export only wire DTOs; runtime structs must not
+  leak. `common/errors.go` excluded (`AppError` never crosses).
+- **Enums stay `union` style — never `enum_style: "enum"`.** A TS `enum` is
+  nominal, so a string literal is not assignable to it: switching broke ~15
+  existing sites that assign `"B1"`/`"recent"`/`"lesson"`/`"in_progress"`/
+  `"free_talk"` to enum-typed fields, plus `contracts` `tsc` (spike
+  2026-10-15). `union` keeps the structural string-literal type the app relies on.
+- **Member lists are generated, not hand-written.** `make contracts` runs
+  `packages/contracts/scripts/gen-enum-values.mjs` after `tygo generate`,
+  emitting `enum-values.ts` (`<ENUM>_VALUES` arrays, `as const satisfies readonly
+  Enums.<Enum>[]`) from `enums.ts`. Never hand-write an enum's members in TS.
+- tygo has no cross-package resolution, so each enum needs one `type_mappings`
+  line **and** one `declare global` alias in the barrel (generated files are
+  import-free); a missing alias is a `Cannot find name` error, a missing mapping
+  degrades to `unknown /* pkg.Type */`.
 - Frontend imports types + limit constants from `<contracts-pkg>` only.
 
 ## Web structure (`<web-dir>` — TanStack Start + Router, TanStack Store/Query, Clerk, shadcn/ui, Paraglide i18n)
@@ -465,7 +484,7 @@ Assert with `require.ErrorAs(err, &appErr)` + check `.Status`.
       breadcrumbs.ts              # breadcrumb protocol: staticData specs, targets from APP_ROUTES (labels are thunks)
     assets/topics/*.png
     components/
-      common/                     # Logo, PageHeader, StatCard, CefrBadge, SourcePill, AudioButton, Kbd, ProgressBar, SubmitButton
+      common/                     # Logo, PageHeader, StatCard, CardShell, CefrBadge, SourcePill, AudioButton, Kbd, ProgressBar, SubmitButton
       layout/                     # AppShell, AppSidebar, Topbar, LocaleSwitcher (EN/VI pill)
       ui/*                        # shadcn primitives (a11y copy via common.a11y.*)
     features/<domain>/            # attempts, dashboard, dictation, lessons, onboarding, profiles, reading, vocabulary, voice, writing
@@ -518,6 +537,20 @@ Assert with `require.ErrorAs(err, &appErr)` + check `.Status`.
   Omit `loadingLabel` unless the pending label differs — the default holds
   the label invisible and centers the spinner over it (width frozen),
   needing no new message key.
+- Pending frames: a card whose content waits on a query renders through
+  `components/common/CardShell` — `pending` + a shape-matched `skeleton` set
+  mirroring the loaded layout (no shift when the data lands), or `pending`
+  alone to hold fixed-shape children invisible behind a centered spinner. A
+  block pending inside an already-rendered card holds its own shape with
+  skeletons instead (never a nested shell); never a floating skeleton where a
+  card will land, and a page never `return null` while loading. One exemption:
+  a section that renders nothing when empty anyway (a "recent" preview strip)
+  renders nothing while pending too — skeleton-then-vanish is the worse flash.
+- Enum pickers derive their options from the generated value array:
+  `enumOptions(CEFR_VALUES, LABELS?)` — never a hand-written options array.
+  Codes (CEFR, ScenarioDifficulty) render as the code; prose enums supply a
+  `Record<Enum, () => string>` of labels, so a new member is a compile error
+  until its copy exists, and the picker itself never changes.
 - React effects (`docs/superpowers/rules/react-effects.md` is the authority):
   `useEffect` syncs React with outside-React only — never React state with
   React state. Derive during render, use event handlers for user work, `key`

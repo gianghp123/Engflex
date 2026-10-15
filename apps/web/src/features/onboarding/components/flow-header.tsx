@@ -3,7 +3,7 @@ import { m } from "#/paraglide/messages";
 
 export function FlowHeader() {
 	return (
-		<div className="flex items-center gap-3 border-b p-4">
+		<div className="flex items-center gap-3 p-4">
 			<Logo variant="mark" />
 			<div className="flex flex-col leading-tight">
 				<span className="text-sm font-bold tracking-tight">
