@@ -12,7 +12,6 @@ import (
 type ListVocabulary struct {
 	common.ListParams `tstype:",extends"`
 	Sort              enums.VocabularySort   `form:"sort" json:"sort" binding:"omitempty,oneof=recent mastery alphabetical interval"`
-	Domain            enums.VocabularyDomain `form:"domain" json:"domain" binding:"omitempty,oneof=backend_db distributed_systems devops_cloud frontend_ui ai_ml"`
 	CEFR              enums.CEFR             `form:"cefr" json:"cefr" binding:"omitempty,oneof=A1 A2 B1 B2 C1 C2"`
-	Source            enums.VocabularySource `form:"source" json:"source" binding:"omitempty,oneof=lesson conversation manual"`
+	Source            enums.VocabularySource `form:"source" json:"source" binding:"omitempty,oneof=lesson conversation video manual"`
 }

@@ -7,5 +7,6 @@ type VocabularySource string
 const (
 	VocabularySourceLesson       VocabularySource = "lesson"
 	VocabularySourceConversation VocabularySource = "conversation"
+	VocabularySourceVideo        VocabularySource = "video"
 	VocabularySourceManual       VocabularySource = "manual"
 )

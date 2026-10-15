@@ -12,15 +12,20 @@ import (
 // (jsonb) holds audio, syllables, stress, etymology, contexts, collocations,
 // and word forms.
 type VocabularyItem struct {
-	ID              string                  `gorm:"type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
-	Term            string                  `gorm:"not null" json:"term"`
-	Definition      string                  `gorm:"not null;default:''" json:"definition"`
-	CEFR            enums.CEFR              `gorm:"column:cefr;not null" json:"cefr"`
-	Domain          *enums.VocabularyDomain `gorm:"column:domain" json:"domain"`
-	CreatedByUserID *string                 `json:"createdByUserId"`
-	Details         VocabularyDetails       `gorm:"type:jsonb;not null;default:'{}'" json:"details"`
-	CreatedAt       time.Time               `gorm:"autoCreateTime" json:"createdAt"`
-	UpdatedAt       time.Time               `gorm:"autoUpdateTime" json:"updatedAt"`
+	ID              string                        `gorm:"type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
+	Term            string                        `gorm:"not null" json:"term"`
+	Definition      string                        `gorm:"not null;default:''" json:"definition"`
+	CEFR            enums.CEFR                    `gorm:"column:cefr;not null" json:"cefr"`
+	PartOfSpeech    *enums.VocabularyPartOfSpeech `gorm:"column:part_of_speech" json:"partOfSpeech"`
+	CreatedByUserID *string                       `json:"createdByUserId"`
+	Details         VocabularyDetails             `gorm:"type:jsonb;not null;default:'{}'" json:"details"`
+	CreatedAt       time.Time                     `gorm:"autoCreateTime" json:"createdAt"`
+	UpdatedAt       time.Time                     `gorm:"autoUpdateTime" json:"updatedAt"`
+
+	// UserState is the caller's row over this item, filled by Joins("UserState")
+	// in the hub/catalog reads. Read-only: the tag keeps it out of Create/Update
+	// so a mapped item never auto-inserts a user_vocabulary row.
+	UserState *UserVocabulary `gorm:"->;foreignKey:ItemID;references:ID" json:"userState,omitempty"`
 }
 
 func (VocabularyItem) TableName() string { return "vocabulary_items" }
@@ -48,6 +53,7 @@ type WordForm struct {
 // everything the word-detail screen renders beyond the core columns. It
 // mirrors responses.VocabularyDetails field for field.
 type VocabularyDetails struct {
+	IPA            string              `json:"ipa"`
 	AudioUS        string              `json:"audioUs"`
 	AudioUK        string              `json:"audioUk"`
 	Syllables      string              `json:"syllables"`

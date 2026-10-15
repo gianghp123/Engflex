@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	"strconv"
+
 	"github.com/gin-gonic/gin"
 
 	"engflex-api/internal/common"
@@ -22,15 +24,22 @@ func NewVocabularyDeckController(decks services.VocabularyDeckService) *Vocabula
 }
 
 // List godoc
-// @Summary      List my vocabulary decks
+// @Summary      List my vocabulary decks with a word preview
 // @Tags         vocabulary-decks
 // @Security     BearerAuth
 // @Produce      json
+// @Param        previewK query int false "preview words per deck (default 6, max 12)"
 // @Success      200 {object} common.ApiResponse{data=[]responses.VocabularyDeckDetail}
 // @Router       /vocabulary-decks [get]
 func (h *VocabularyDeckController) List(c *gin.Context) {
+	previewK := 6
+	if raw := c.Query("previewK"); raw != "" {
+		if n, err := strconv.Atoi(raw); err == nil {
+			previewK = n
+		}
+	}
 	page, pageSize := utils.ParsePagination(c)
-	items, total, err := h.decks.ListByUser(c.Request.Context(), middleware.UserID(c), pageSize, utils.Offset(page, pageSize))
+	items, total, err := h.decks.ListVisibleWithPreview(c.Request.Context(), middleware.UserID(c), previewK, pageSize, utils.Offset(page, pageSize))
 	if err != nil {
 		common.Fail(c, err)
 		return

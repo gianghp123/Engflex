@@ -9,14 +9,15 @@ import (
 )
 
 // VocabularyDeckRepository is the DB access layer for the vocabulary_decks table.
-// GetDetail joins the category in one round trip. Items page separately via
-// VocabularyDeckItemRepository.ListByDeck (a deck with many cards must not
-// cartesian-duplicate the parent into a join).
+// Decks are curated (user_id NULL) or private; ListVisible returns both for a
+// caller. GetDetail joins the category in one round trip and attaches Items by
+// a second query (a deck with many cards must not cartesian-duplicate the
+// parent into a join).
 type VocabularyDeckRepository interface {
-	ListByUser(ctx context.Context, userID string, limit, offset int) ([]*models.VocabularyDeck, error)
-	CountByUser(ctx context.Context, userID string) (int64, error)
+	ListVisible(ctx context.Context, userID string, limit, offset int) ([]*models.VocabularyDeck, error)
+	CountVisible(ctx context.Context, userID string) (int64, error)
 	GetByID(ctx context.Context, id string) (*models.VocabularyDeck, error)
-	GetDetail(ctx context.Context, id string) (*models.VocabularyDeck, error)
+	GetDetail(ctx context.Context, userID, id string) (*models.VocabularyDeck, error)
 	Create(ctx context.Context, d *models.VocabularyDeck) error
 	Update(ctx context.Context, d *models.VocabularyDeck) error
 	Delete(ctx context.Context, id string) error
@@ -37,20 +38,22 @@ func (r *vocabularyDeckRepository) WithTx(tx *gorm.DB) VocabularyDeckRepository 
 	return &vocabularyDeckRepository{db: tx}
 }
 
-func (r *vocabularyDeckRepository) ListByUser(ctx context.Context, userID string, limit, offset int) ([]*models.VocabularyDeck, error) {
-	var out []*models.VocabularyDeck
-	if err := r.db.WithContext(ctx).Where("user_id = ?", userID).Order("created_at DESC").Limit(limit).Offset(offset).Find(&out).Error; err != nil {
+func (r *vocabularyDeckRepository) ListVisible(ctx context.Context, userID string, limit, offset int) ([]*models.VocabularyDeck, error) {
+	out := make([]*models.VocabularyDeck, 0)
+	if err := r.db.WithContext(ctx).
+		Where("user_id IS NULL OR user_id = ?", userID).
+		Order("user_id IS NULL desc, created_at DESC").
+		Limit(limit).Offset(offset).Find(&out).Error; err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (r *vocabularyDeckRepository) CountByUser(ctx context.Context, userID string) (int64, error) {
+func (r *vocabularyDeckRepository) CountVisible(ctx context.Context, userID string) (int64, error) {
 	var n int64
-	if err := r.db.WithContext(ctx).Model(&models.VocabularyDeck{}).Where("user_id = ?", userID).Count(&n).Error; err != nil {
-		return 0, err
-	}
-	return n, nil
+	err := r.db.WithContext(ctx).Model(&models.VocabularyDeck{}).
+		Where("user_id IS NULL OR user_id = ?", userID).Count(&n).Error
+	return n, err
 }
 
 func (r *vocabularyDeckRepository) GetByID(ctx context.Context, id string) (*models.VocabularyDeck, error) {
@@ -64,7 +67,7 @@ func (r *vocabularyDeckRepository) GetByID(ctx context.Context, id string) (*mod
 	return &m, nil
 }
 
-func (r *vocabularyDeckRepository) GetDetail(ctx context.Context, id string) (*models.VocabularyDeck, error) {
+func (r *vocabularyDeckRepository) GetDetail(ctx context.Context, userID, id string) (*models.VocabularyDeck, error) {
 	if _, err := parseID(id, "id"); err != nil {
 		return nil, err
 	}
@@ -72,6 +75,23 @@ func (r *vocabularyDeckRepository) GetDetail(ctx context.Context, id string) (*m
 	if err := r.db.WithContext(ctx).Joins("Category").First(&m, "vocabulary_decks.id = ?", id).Error; err != nil {
 		return nil, err
 	}
+	// Has-many: a Joins("Items") would cartesian-duplicate the deck row.
+	// Second constant query, attached in Go — same shape as
+	// VideoExerciseRepository.GetDetail attaching Transcripts. The caller's
+	// review state rides on each item (attachUserState), so the deck page can
+	// show mastery and due counts instead of zeros.
+	items := make([]*models.VocabularyDeckItem, 0)
+	if err := r.db.WithContext(ctx).
+		Joins("Item").
+		Where("vocabulary_deck_items.deck_id = ?", id).
+		Order("vocabulary_deck_items.sequence asc, vocabulary_deck_items.created_at asc").
+		Find(&items).Error; err != nil {
+		return nil, err
+	}
+	if err := attachUserState(ctx, r.db, userID, items); err != nil {
+		return nil, err
+	}
+	m.Items = items
 	return &m, nil
 }
 

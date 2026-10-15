@@ -50,8 +50,8 @@ func (_m *MockVocabularyItemRepository) EXPECT() *MockVocabularyItemRepository_E
 }
 
 // Count provides a mock function for the type MockVocabularyItemRepository
-func (_mock *MockVocabularyItemRepository) Count(ctx context.Context) (int64, error) {
-	ret := _mock.Called(ctx)
+func (_mock *MockVocabularyItemRepository) Count(ctx context.Context, userID string, f repositories.VocabularyItemFilter) (int64, error) {
+	ret := _mock.Called(ctx, userID, f)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Count")
@@ -59,16 +59,16 @@ func (_mock *MockVocabularyItemRepository) Count(ctx context.Context) (int64, er
 
 	var r0 int64
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context) (int64, error)); ok {
-		return returnFunc(ctx)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, repositories.VocabularyItemFilter) (int64, error)); ok {
+		return returnFunc(ctx, userID, f)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context) int64); ok {
-		r0 = returnFunc(ctx)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, repositories.VocabularyItemFilter) int64); ok {
+		r0 = returnFunc(ctx, userID, f)
 	} else {
 		r0 = ret.Get(0).(int64)
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context) error); ok {
-		r1 = returnFunc(ctx)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, repositories.VocabularyItemFilter) error); ok {
+		r1 = returnFunc(ctx, userID, f)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -82,18 +82,30 @@ type MockVocabularyItemRepository_Count_Call struct {
 
 // Count is a helper method to define mock.On call
 //   - ctx context.Context
-func (_e *MockVocabularyItemRepository_Expecter) Count(ctx any) *MockVocabularyItemRepository_Count_Call {
-	return &MockVocabularyItemRepository_Count_Call{Call: _e.mock.On("Count", ctx)}
+//   - userID string
+//   - f repositories.VocabularyItemFilter
+func (_e *MockVocabularyItemRepository_Expecter) Count(ctx any, userID any, f any) *MockVocabularyItemRepository_Count_Call {
+	return &MockVocabularyItemRepository_Count_Call{Call: _e.mock.On("Count", ctx, userID, f)}
 }
 
-func (_c *MockVocabularyItemRepository_Count_Call) Run(run func(ctx context.Context)) *MockVocabularyItemRepository_Count_Call {
+func (_c *MockVocabularyItemRepository_Count_Call) Run(run func(ctx context.Context, userID string, f repositories.VocabularyItemFilter)) *MockVocabularyItemRepository_Count_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 repositories.VocabularyItemFilter
+		if args[2] != nil {
+			arg2 = args[2].(repositories.VocabularyItemFilter)
+		}
 		run(
 			arg0,
+			arg1,
+			arg2,
 		)
 	})
 	return _c
@@ -104,7 +116,145 @@ func (_c *MockVocabularyItemRepository_Count_Call) Return(n int64, err error) *M
 	return _c
 }
 
-func (_c *MockVocabularyItemRepository_Count_Call) RunAndReturn(run func(ctx context.Context) (int64, error)) *MockVocabularyItemRepository_Count_Call {
+func (_c *MockVocabularyItemRepository_Count_Call) RunAndReturn(run func(ctx context.Context, userID string, f repositories.VocabularyItemFilter) (int64, error)) *MockVocabularyItemRepository_Count_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// CountPrivate provides a mock function for the type MockVocabularyItemRepository
+func (_mock *MockVocabularyItemRepository) CountPrivate(ctx context.Context, userID string) (int64, error) {
+	ret := _mock.Called(ctx, userID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CountPrivate")
+	}
+
+	var r0 int64
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) (int64, error)); ok {
+		return returnFunc(ctx, userID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) int64); ok {
+		r0 = returnFunc(ctx, userID)
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = returnFunc(ctx, userID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockVocabularyItemRepository_CountPrivate_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CountPrivate'
+type MockVocabularyItemRepository_CountPrivate_Call struct {
+	*mock.Call
+}
+
+// CountPrivate is a helper method to define mock.On call
+//   - ctx context.Context
+//   - userID string
+func (_e *MockVocabularyItemRepository_Expecter) CountPrivate(ctx any, userID any) *MockVocabularyItemRepository_CountPrivate_Call {
+	return &MockVocabularyItemRepository_CountPrivate_Call{Call: _e.mock.On("CountPrivate", ctx, userID)}
+}
+
+func (_c *MockVocabularyItemRepository_CountPrivate_Call) Run(run func(ctx context.Context, userID string)) *MockVocabularyItemRepository_CountPrivate_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockVocabularyItemRepository_CountPrivate_Call) Return(n int64, err error) *MockVocabularyItemRepository_CountPrivate_Call {
+	_c.Call.Return(n, err)
+	return _c
+}
+
+func (_c *MockVocabularyItemRepository_CountPrivate_Call) RunAndReturn(run func(ctx context.Context, userID string) (int64, error)) *MockVocabularyItemRepository_CountPrivate_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// CountSaved provides a mock function for the type MockVocabularyItemRepository
+func (_mock *MockVocabularyItemRepository) CountSaved(ctx context.Context, userID string, f repositories.VocabularyItemFilter) (int64, error) {
+	ret := _mock.Called(ctx, userID, f)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CountSaved")
+	}
+
+	var r0 int64
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, repositories.VocabularyItemFilter) (int64, error)); ok {
+		return returnFunc(ctx, userID, f)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, repositories.VocabularyItemFilter) int64); ok {
+		r0 = returnFunc(ctx, userID, f)
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, repositories.VocabularyItemFilter) error); ok {
+		r1 = returnFunc(ctx, userID, f)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockVocabularyItemRepository_CountSaved_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CountSaved'
+type MockVocabularyItemRepository_CountSaved_Call struct {
+	*mock.Call
+}
+
+// CountSaved is a helper method to define mock.On call
+//   - ctx context.Context
+//   - userID string
+//   - f repositories.VocabularyItemFilter
+func (_e *MockVocabularyItemRepository_Expecter) CountSaved(ctx any, userID any, f any) *MockVocabularyItemRepository_CountSaved_Call {
+	return &MockVocabularyItemRepository_CountSaved_Call{Call: _e.mock.On("CountSaved", ctx, userID, f)}
+}
+
+func (_c *MockVocabularyItemRepository_CountSaved_Call) Run(run func(ctx context.Context, userID string, f repositories.VocabularyItemFilter)) *MockVocabularyItemRepository_CountSaved_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 repositories.VocabularyItemFilter
+		if args[2] != nil {
+			arg2 = args[2].(repositories.VocabularyItemFilter)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockVocabularyItemRepository_CountSaved_Call) Return(n int64, err error) *MockVocabularyItemRepository_CountSaved_Call {
+	_c.Call.Return(n, err)
+	return _c
+}
+
+func (_c *MockVocabularyItemRepository_CountSaved_Call) RunAndReturn(run func(ctx context.Context, userID string, f repositories.VocabularyItemFilter) (int64, error)) *MockVocabularyItemRepository_CountSaved_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -167,8 +317,8 @@ func (_c *MockVocabularyItemRepository_Create_Call) RunAndReturn(run func(ctx co
 }
 
 // GetByID provides a mock function for the type MockVocabularyItemRepository
-func (_mock *MockVocabularyItemRepository) GetByID(ctx context.Context, id string) (*models.VocabularyItem, error) {
-	ret := _mock.Called(ctx, id)
+func (_mock *MockVocabularyItemRepository) GetByID(ctx context.Context, userID string, id string) (*models.VocabularyItem, error) {
+	ret := _mock.Called(ctx, userID, id)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetByID")
@@ -176,18 +326,18 @@ func (_mock *MockVocabularyItemRepository) GetByID(ctx context.Context, id strin
 
 	var r0 *models.VocabularyItem
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string) (*models.VocabularyItem, error)); ok {
-		return returnFunc(ctx, id)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string) (*models.VocabularyItem, error)); ok {
+		return returnFunc(ctx, userID, id)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string) *models.VocabularyItem); ok {
-		r0 = returnFunc(ctx, id)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string) *models.VocabularyItem); ok {
+		r0 = returnFunc(ctx, userID, id)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*models.VocabularyItem)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, string) error); ok {
-		r1 = returnFunc(ctx, id)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, string) error); ok {
+		r1 = returnFunc(ctx, userID, id)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -201,12 +351,13 @@ type MockVocabularyItemRepository_GetByID_Call struct {
 
 // GetByID is a helper method to define mock.On call
 //   - ctx context.Context
+//   - userID string
 //   - id string
-func (_e *MockVocabularyItemRepository_Expecter) GetByID(ctx any, id any) *MockVocabularyItemRepository_GetByID_Call {
-	return &MockVocabularyItemRepository_GetByID_Call{Call: _e.mock.On("GetByID", ctx, id)}
+func (_e *MockVocabularyItemRepository_Expecter) GetByID(ctx any, userID any, id any) *MockVocabularyItemRepository_GetByID_Call {
+	return &MockVocabularyItemRepository_GetByID_Call{Call: _e.mock.On("GetByID", ctx, userID, id)}
 }
 
-func (_c *MockVocabularyItemRepository_GetByID_Call) Run(run func(ctx context.Context, id string)) *MockVocabularyItemRepository_GetByID_Call {
+func (_c *MockVocabularyItemRepository_GetByID_Call) Run(run func(ctx context.Context, userID string, id string)) *MockVocabularyItemRepository_GetByID_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -216,9 +367,14 @@ func (_c *MockVocabularyItemRepository_GetByID_Call) Run(run func(ctx context.Co
 		if args[1] != nil {
 			arg1 = args[1].(string)
 		}
+		var arg2 string
+		if args[2] != nil {
+			arg2 = args[2].(string)
+		}
 		run(
 			arg0,
 			arg1,
+			arg2,
 		)
 	})
 	return _c
@@ -229,14 +385,88 @@ func (_c *MockVocabularyItemRepository_GetByID_Call) Return(vocabularyItem *mode
 	return _c
 }
 
-func (_c *MockVocabularyItemRepository_GetByID_Call) RunAndReturn(run func(ctx context.Context, id string) (*models.VocabularyItem, error)) *MockVocabularyItemRepository_GetByID_Call {
+func (_c *MockVocabularyItemRepository_GetByID_Call) RunAndReturn(run func(ctx context.Context, userID string, id string) (*models.VocabularyItem, error)) *MockVocabularyItemRepository_GetByID_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetPrivateByTermKey provides a mock function for the type MockVocabularyItemRepository
+func (_mock *MockVocabularyItemRepository) GetPrivateByTermKey(ctx context.Context, userID string, termKey string) (*models.VocabularyItem, error) {
+	ret := _mock.Called(ctx, userID, termKey)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetPrivateByTermKey")
+	}
+
+	var r0 *models.VocabularyItem
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string) (*models.VocabularyItem, error)); ok {
+		return returnFunc(ctx, userID, termKey)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string) *models.VocabularyItem); ok {
+		r0 = returnFunc(ctx, userID, termKey)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.VocabularyItem)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, string) error); ok {
+		r1 = returnFunc(ctx, userID, termKey)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockVocabularyItemRepository_GetPrivateByTermKey_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetPrivateByTermKey'
+type MockVocabularyItemRepository_GetPrivateByTermKey_Call struct {
+	*mock.Call
+}
+
+// GetPrivateByTermKey is a helper method to define mock.On call
+//   - ctx context.Context
+//   - userID string
+//   - termKey string
+func (_e *MockVocabularyItemRepository_Expecter) GetPrivateByTermKey(ctx any, userID any, termKey any) *MockVocabularyItemRepository_GetPrivateByTermKey_Call {
+	return &MockVocabularyItemRepository_GetPrivateByTermKey_Call{Call: _e.mock.On("GetPrivateByTermKey", ctx, userID, termKey)}
+}
+
+func (_c *MockVocabularyItemRepository_GetPrivateByTermKey_Call) Run(run func(ctx context.Context, userID string, termKey string)) *MockVocabularyItemRepository_GetPrivateByTermKey_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 string
+		if args[2] != nil {
+			arg2 = args[2].(string)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockVocabularyItemRepository_GetPrivateByTermKey_Call) Return(vocabularyItem *models.VocabularyItem, err error) *MockVocabularyItemRepository_GetPrivateByTermKey_Call {
+	_c.Call.Return(vocabularyItem, err)
+	return _c
+}
+
+func (_c *MockVocabularyItemRepository_GetPrivateByTermKey_Call) RunAndReturn(run func(ctx context.Context, userID string, termKey string) (*models.VocabularyItem, error)) *MockVocabularyItemRepository_GetPrivateByTermKey_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // List provides a mock function for the type MockVocabularyItemRepository
-func (_mock *MockVocabularyItemRepository) List(ctx context.Context, limit int, offset int) ([]*models.VocabularyItem, error) {
-	ret := _mock.Called(ctx, limit, offset)
+func (_mock *MockVocabularyItemRepository) List(ctx context.Context, userID string, f repositories.VocabularyItemFilter) ([]*models.VocabularyItem, error) {
+	ret := _mock.Called(ctx, userID, f)
 
 	if len(ret) == 0 {
 		panic("no return value specified for List")
@@ -244,18 +474,18 @@ func (_mock *MockVocabularyItemRepository) List(ctx context.Context, limit int, 
 
 	var r0 []*models.VocabularyItem
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, int, int) ([]*models.VocabularyItem, error)); ok {
-		return returnFunc(ctx, limit, offset)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, repositories.VocabularyItemFilter) ([]*models.VocabularyItem, error)); ok {
+		return returnFunc(ctx, userID, f)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, int, int) []*models.VocabularyItem); ok {
-		r0 = returnFunc(ctx, limit, offset)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, repositories.VocabularyItemFilter) []*models.VocabularyItem); ok {
+		r0 = returnFunc(ctx, userID, f)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*models.VocabularyItem)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, int, int) error); ok {
-		r1 = returnFunc(ctx, limit, offset)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, repositories.VocabularyItemFilter) error); ok {
+		r1 = returnFunc(ctx, userID, f)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -269,25 +499,25 @@ type MockVocabularyItemRepository_List_Call struct {
 
 // List is a helper method to define mock.On call
 //   - ctx context.Context
-//   - limit int
-//   - offset int
-func (_e *MockVocabularyItemRepository_Expecter) List(ctx any, limit any, offset any) *MockVocabularyItemRepository_List_Call {
-	return &MockVocabularyItemRepository_List_Call{Call: _e.mock.On("List", ctx, limit, offset)}
+//   - userID string
+//   - f repositories.VocabularyItemFilter
+func (_e *MockVocabularyItemRepository_Expecter) List(ctx any, userID any, f any) *MockVocabularyItemRepository_List_Call {
+	return &MockVocabularyItemRepository_List_Call{Call: _e.mock.On("List", ctx, userID, f)}
 }
 
-func (_c *MockVocabularyItemRepository_List_Call) Run(run func(ctx context.Context, limit int, offset int)) *MockVocabularyItemRepository_List_Call {
+func (_c *MockVocabularyItemRepository_List_Call) Run(run func(ctx context.Context, userID string, f repositories.VocabularyItemFilter)) *MockVocabularyItemRepository_List_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 int
+		var arg1 string
 		if args[1] != nil {
-			arg1 = args[1].(int)
+			arg1 = args[1].(string)
 		}
-		var arg2 int
+		var arg2 repositories.VocabularyItemFilter
 		if args[2] != nil {
-			arg2 = args[2].(int)
+			arg2 = args[2].(repositories.VocabularyItemFilter)
 		}
 		run(
 			arg0,
@@ -303,7 +533,81 @@ func (_c *MockVocabularyItemRepository_List_Call) Return(vocabularyItems []*mode
 	return _c
 }
 
-func (_c *MockVocabularyItemRepository_List_Call) RunAndReturn(run func(ctx context.Context, limit int, offset int) ([]*models.VocabularyItem, error)) *MockVocabularyItemRepository_List_Call {
+func (_c *MockVocabularyItemRepository_List_Call) RunAndReturn(run func(ctx context.Context, userID string, f repositories.VocabularyItemFilter) ([]*models.VocabularyItem, error)) *MockVocabularyItemRepository_List_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// ListSaved provides a mock function for the type MockVocabularyItemRepository
+func (_mock *MockVocabularyItemRepository) ListSaved(ctx context.Context, userID string, f repositories.VocabularyItemFilter) ([]*models.VocabularyItem, error) {
+	ret := _mock.Called(ctx, userID, f)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ListSaved")
+	}
+
+	var r0 []*models.VocabularyItem
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, repositories.VocabularyItemFilter) ([]*models.VocabularyItem, error)); ok {
+		return returnFunc(ctx, userID, f)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, repositories.VocabularyItemFilter) []*models.VocabularyItem); ok {
+		r0 = returnFunc(ctx, userID, f)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.VocabularyItem)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, repositories.VocabularyItemFilter) error); ok {
+		r1 = returnFunc(ctx, userID, f)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockVocabularyItemRepository_ListSaved_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ListSaved'
+type MockVocabularyItemRepository_ListSaved_Call struct {
+	*mock.Call
+}
+
+// ListSaved is a helper method to define mock.On call
+//   - ctx context.Context
+//   - userID string
+//   - f repositories.VocabularyItemFilter
+func (_e *MockVocabularyItemRepository_Expecter) ListSaved(ctx any, userID any, f any) *MockVocabularyItemRepository_ListSaved_Call {
+	return &MockVocabularyItemRepository_ListSaved_Call{Call: _e.mock.On("ListSaved", ctx, userID, f)}
+}
+
+func (_c *MockVocabularyItemRepository_ListSaved_Call) Run(run func(ctx context.Context, userID string, f repositories.VocabularyItemFilter)) *MockVocabularyItemRepository_ListSaved_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 repositories.VocabularyItemFilter
+		if args[2] != nil {
+			arg2 = args[2].(repositories.VocabularyItemFilter)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockVocabularyItemRepository_ListSaved_Call) Return(vocabularyItems []*models.VocabularyItem, err error) *MockVocabularyItemRepository_ListSaved_Call {
+	_c.Call.Return(vocabularyItems, err)
+	return _c
+}
+
+func (_c *MockVocabularyItemRepository_ListSaved_Call) RunAndReturn(run func(ctx context.Context, userID string, f repositories.VocabularyItemFilter) ([]*models.VocabularyItem, error)) *MockVocabularyItemRepository_ListSaved_Call {
 	_c.Call.Return(run)
 	return _c
 }

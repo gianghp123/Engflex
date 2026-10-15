@@ -3,29 +3,28 @@ package responses
 import "time"
 
 // VocabularyDeckDetail is the GET /vocabulary-decks/:id shape: deck header
-// plus its category. Items page separately via /vocabulary-deck-items.
+// plus its category and rows.
 type VocabularyDeckDetail struct {
-	ID           string                      `json:"id"`
-	CategoryID   *string                     `json:"categoryId"`
-	Name         string                      `json:"name"`
-	Description  string                      `json:"description"`
-	ThumbnailURL string                      `json:"thumbnailUrl"`
-	Level        string                      `json:"level"`
-	IsDefault    bool                        `json:"isDefault"`
-	Category     *VocabularyCategoryResponse `json:"category"`
-	CreatedAt    time.Time                   `json:"createdAt"`
-	UpdatedAt    time.Time                   `json:"updatedAt"`
+	ID           string                       `json:"id"`
+	UserID       *string                      `json:"userId"`
+	CategoryID   *string                      `json:"categoryId"`
+	Name         string                       `json:"name"`
+	Description  string                       `json:"description"`
+	ThumbnailURL string                       `json:"thumbnailUrl"`
+	Level        string                       `json:"level"`
+	Category     *VocabularyCategoryResponse  `json:"category"`
+	Items        []VocabularyDeckItemResponse `json:"items,omitempty"`
+	CreatedAt    time.Time                    `json:"createdAt"`
+	UpdatedAt    time.Time                    `json:"updatedAt"`
 }
 
-// VocabularyDeckItemResponse is one flashcard row.
+// VocabularyDeckItemResponse is one flashcard row with its entry attached.
 type VocabularyDeckItemResponse struct {
-	ID                string  `json:"id"`
-	DeckID            string  `json:"deckId"`
-	VideoExerciseID   *string `json:"videoExerciseId"`
-	VideoTranscriptID *string `json:"videoTranscriptId"`
-	Phrase            string  `json:"phrase"`
-	NormalizedPhrase  string  `json:"normalizedPhrase"`
-	Meaning           string  `json:"meaning"`
-	ExampleSentence   string  `json:"exampleSentence"`
-	Note              string  `json:"note"`
+	ID              string          `json:"id"`
+	DeckID          string          `json:"deckId"`
+	ItemID          string          `json:"itemId"`
+	Sequence        int             `json:"sequence"`
+	ExampleSentence string          `json:"exampleSentence"`
+	Note            string          `json:"note"`
+	Item            *VocabularyItem `json:"item,omitempty"`
 }

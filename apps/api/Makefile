@@ -34,6 +34,7 @@ mocks:
 # regenerate TypeScript contracts in packages/contracts (see tygo.yaml)
 contracts:
 	@tygo generate
+	@node ../../packages/contracts/scripts/gen-enum-values.mjs
 
 # regenerate swagger docs in docs/ (served at /swagger/*any)
 swagger:

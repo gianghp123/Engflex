@@ -163,6 +163,80 @@ func (_c *MockVocabularyDeckItemRepository_Delete_Call) RunAndReturn(run func(ct
 	return _c
 }
 
+// GetByDeckAndItem provides a mock function for the type MockVocabularyDeckItemRepository
+func (_mock *MockVocabularyDeckItemRepository) GetByDeckAndItem(ctx context.Context, deckID string, itemID string) (*models.VocabularyDeckItem, error) {
+	ret := _mock.Called(ctx, deckID, itemID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetByDeckAndItem")
+	}
+
+	var r0 *models.VocabularyDeckItem
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string) (*models.VocabularyDeckItem, error)); ok {
+		return returnFunc(ctx, deckID, itemID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string) *models.VocabularyDeckItem); ok {
+		r0 = returnFunc(ctx, deckID, itemID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.VocabularyDeckItem)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, string) error); ok {
+		r1 = returnFunc(ctx, deckID, itemID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockVocabularyDeckItemRepository_GetByDeckAndItem_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetByDeckAndItem'
+type MockVocabularyDeckItemRepository_GetByDeckAndItem_Call struct {
+	*mock.Call
+}
+
+// GetByDeckAndItem is a helper method to define mock.On call
+//   - ctx context.Context
+//   - deckID string
+//   - itemID string
+func (_e *MockVocabularyDeckItemRepository_Expecter) GetByDeckAndItem(ctx any, deckID any, itemID any) *MockVocabularyDeckItemRepository_GetByDeckAndItem_Call {
+	return &MockVocabularyDeckItemRepository_GetByDeckAndItem_Call{Call: _e.mock.On("GetByDeckAndItem", ctx, deckID, itemID)}
+}
+
+func (_c *MockVocabularyDeckItemRepository_GetByDeckAndItem_Call) Run(run func(ctx context.Context, deckID string, itemID string)) *MockVocabularyDeckItemRepository_GetByDeckAndItem_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 string
+		if args[2] != nil {
+			arg2 = args[2].(string)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockVocabularyDeckItemRepository_GetByDeckAndItem_Call) Return(vocabularyDeckItem *models.VocabularyDeckItem, err error) *MockVocabularyDeckItemRepository_GetByDeckAndItem_Call {
+	_c.Call.Return(vocabularyDeckItem, err)
+	return _c
+}
+
+func (_c *MockVocabularyDeckItemRepository_GetByDeckAndItem_Call) RunAndReturn(run func(ctx context.Context, deckID string, itemID string) (*models.VocabularyDeckItem, error)) *MockVocabularyDeckItemRepository_GetByDeckAndItem_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetByID provides a mock function for the type MockVocabularyDeckItemRepository
 func (_mock *MockVocabularyDeckItemRepository) GetByID(ctx context.Context, id string) (*models.VocabularyDeckItem, error) {
 	ret := _mock.Called(ctx, id)
@@ -232,8 +306,8 @@ func (_c *MockVocabularyDeckItemRepository_GetByID_Call) RunAndReturn(run func(c
 }
 
 // ListByDeck provides a mock function for the type MockVocabularyDeckItemRepository
-func (_mock *MockVocabularyDeckItemRepository) ListByDeck(ctx context.Context, deckID string) ([]*models.VocabularyDeckItem, error) {
-	ret := _mock.Called(ctx, deckID)
+func (_mock *MockVocabularyDeckItemRepository) ListByDeck(ctx context.Context, userID string, deckID string) ([]*models.VocabularyDeckItem, error) {
+	ret := _mock.Called(ctx, userID, deckID)
 
 	if len(ret) == 0 {
 		panic("no return value specified for ListByDeck")
@@ -241,18 +315,18 @@ func (_mock *MockVocabularyDeckItemRepository) ListByDeck(ctx context.Context, d
 
 	var r0 []*models.VocabularyDeckItem
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string) ([]*models.VocabularyDeckItem, error)); ok {
-		return returnFunc(ctx, deckID)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string) ([]*models.VocabularyDeckItem, error)); ok {
+		return returnFunc(ctx, userID, deckID)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string) []*models.VocabularyDeckItem); ok {
-		r0 = returnFunc(ctx, deckID)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string) []*models.VocabularyDeckItem); ok {
+		r0 = returnFunc(ctx, userID, deckID)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*models.VocabularyDeckItem)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, string) error); ok {
-		r1 = returnFunc(ctx, deckID)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, string) error); ok {
+		r1 = returnFunc(ctx, userID, deckID)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -266,12 +340,13 @@ type MockVocabularyDeckItemRepository_ListByDeck_Call struct {
 
 // ListByDeck is a helper method to define mock.On call
 //   - ctx context.Context
+//   - userID string
 //   - deckID string
-func (_e *MockVocabularyDeckItemRepository_Expecter) ListByDeck(ctx any, deckID any) *MockVocabularyDeckItemRepository_ListByDeck_Call {
-	return &MockVocabularyDeckItemRepository_ListByDeck_Call{Call: _e.mock.On("ListByDeck", ctx, deckID)}
+func (_e *MockVocabularyDeckItemRepository_Expecter) ListByDeck(ctx any, userID any, deckID any) *MockVocabularyDeckItemRepository_ListByDeck_Call {
+	return &MockVocabularyDeckItemRepository_ListByDeck_Call{Call: _e.mock.On("ListByDeck", ctx, userID, deckID)}
 }
 
-func (_c *MockVocabularyDeckItemRepository_ListByDeck_Call) Run(run func(ctx context.Context, deckID string)) *MockVocabularyDeckItemRepository_ListByDeck_Call {
+func (_c *MockVocabularyDeckItemRepository_ListByDeck_Call) Run(run func(ctx context.Context, userID string, deckID string)) *MockVocabularyDeckItemRepository_ListByDeck_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -281,9 +356,14 @@ func (_c *MockVocabularyDeckItemRepository_ListByDeck_Call) Run(run func(ctx con
 		if args[1] != nil {
 			arg1 = args[1].(string)
 		}
+		var arg2 string
+		if args[2] != nil {
+			arg2 = args[2].(string)
+		}
 		run(
 			arg0,
 			arg1,
+			arg2,
 		)
 	})
 	return _c
@@ -294,7 +374,87 @@ func (_c *MockVocabularyDeckItemRepository_ListByDeck_Call) Return(vocabularyDec
 	return _c
 }
 
-func (_c *MockVocabularyDeckItemRepository_ListByDeck_Call) RunAndReturn(run func(ctx context.Context, deckID string) ([]*models.VocabularyDeckItem, error)) *MockVocabularyDeckItemRepository_ListByDeck_Call {
+func (_c *MockVocabularyDeckItemRepository_ListByDeck_Call) RunAndReturn(run func(ctx context.Context, userID string, deckID string) ([]*models.VocabularyDeckItem, error)) *MockVocabularyDeckItemRepository_ListByDeck_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// ListPreviewByDeckIDs provides a mock function for the type MockVocabularyDeckItemRepository
+func (_mock *MockVocabularyDeckItemRepository) ListPreviewByDeckIDs(ctx context.Context, userID string, deckIDs []string, previewK int) ([]*models.VocabularyDeckItem, error) {
+	ret := _mock.Called(ctx, userID, deckIDs, previewK)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ListPreviewByDeckIDs")
+	}
+
+	var r0 []*models.VocabularyDeckItem
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, []string, int) ([]*models.VocabularyDeckItem, error)); ok {
+		return returnFunc(ctx, userID, deckIDs, previewK)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, []string, int) []*models.VocabularyDeckItem); ok {
+		r0 = returnFunc(ctx, userID, deckIDs, previewK)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.VocabularyDeckItem)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, []string, int) error); ok {
+		r1 = returnFunc(ctx, userID, deckIDs, previewK)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockVocabularyDeckItemRepository_ListPreviewByDeckIDs_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ListPreviewByDeckIDs'
+type MockVocabularyDeckItemRepository_ListPreviewByDeckIDs_Call struct {
+	*mock.Call
+}
+
+// ListPreviewByDeckIDs is a helper method to define mock.On call
+//   - ctx context.Context
+//   - userID string
+//   - deckIDs []string
+//   - previewK int
+func (_e *MockVocabularyDeckItemRepository_Expecter) ListPreviewByDeckIDs(ctx any, userID any, deckIDs any, previewK any) *MockVocabularyDeckItemRepository_ListPreviewByDeckIDs_Call {
+	return &MockVocabularyDeckItemRepository_ListPreviewByDeckIDs_Call{Call: _e.mock.On("ListPreviewByDeckIDs", ctx, userID, deckIDs, previewK)}
+}
+
+func (_c *MockVocabularyDeckItemRepository_ListPreviewByDeckIDs_Call) Run(run func(ctx context.Context, userID string, deckIDs []string, previewK int)) *MockVocabularyDeckItemRepository_ListPreviewByDeckIDs_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 []string
+		if args[2] != nil {
+			arg2 = args[2].([]string)
+		}
+		var arg3 int
+		if args[3] != nil {
+			arg3 = args[3].(int)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+		)
+	})
+	return _c
+}
+
+func (_c *MockVocabularyDeckItemRepository_ListPreviewByDeckIDs_Call) Return(vocabularyDeckItems []*models.VocabularyDeckItem, err error) *MockVocabularyDeckItemRepository_ListPreviewByDeckIDs_Call {
+	_c.Call.Return(vocabularyDeckItems, err)
+	return _c
+}
+
+func (_c *MockVocabularyDeckItemRepository_ListPreviewByDeckIDs_Call) RunAndReturn(run func(ctx context.Context, userID string, deckIDs []string, previewK int) ([]*models.VocabularyDeckItem, error)) *MockVocabularyDeckItemRepository_ListPreviewByDeckIDs_Call {
 	_c.Call.Return(run)
 	return _c
 }

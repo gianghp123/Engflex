@@ -23,9 +23,9 @@ type_mappings:
   "enums.Level": "Level"
   "enums.ScenarioDifficulty": "ScenarioDifficulty"
   "enums.TurnRole": "TurnRole"
-  "enums.VocabularyDomain": "VocabularyDomain"
   "enums.VocabularySort": "VocabularySort"
   "enums.VocabularySource": "VocabularySource"
+  "enums.VocabularyPartOfSpeech": "VocabularyPartOfSpeech"
   "enums.SpanStatus": "SpanStatus"
   "enums.RelevanceStatus": "RelevanceStatus"
   # embedded by list request DTOs tagged `tstype:",extends"`

@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -22,7 +23,7 @@ func TestVocabularyDeckService_Update_Forbidden(t *testing.T) {
 	deckID := "11111111-1111-1111-1111-111111111111"
 	mockRepo := mocks.NewMockVocabularyDeckRepository(t)
 	mockRepo.On("GetByID", mock.Anything, deckID).Return(&models.VocabularyDeck{ID: deckID, UserID: &owner, Name: "Core"}, nil)
-	svc := services.NewVocabularyDeckService(mockRepo)
+	svc := services.NewVocabularyDeckService(mockRepo, mocks.NewMockVocabularyDeckItemRepository(t))
 
 	res, err := svc.Update(context.Background(), other, deckID, requests.UpdateVocabularyDeck{})
 
@@ -30,17 +31,15 @@ func TestVocabularyDeckService_Update_Forbidden(t *testing.T) {
 	assert.Nil(t, res)
 }
 
-func TestVocabularyDeckItemService_ListByDeck_EmptyReturns200(t *testing.T) {
+func TestVocabularyDeckItemService_List_EmptyReturns200(t *testing.T) {
 	deckID := "11111111-1111-1111-1111-111111111111"
 	owner := "user_1"
-	itemRepo := mocks.NewMockVocabularyDeckItemRepository(t)
-	deckRepo := mocks.NewMockVocabularyDeckRepository(t)
+	svc, itemRepo, deckRepo, _ := setupDeckItem(t)
 	deckRepo.On("GetByID", mock.Anything, deckID).
 		Return(&models.VocabularyDeck{ID: deckID, UserID: &owner}, nil)
-	itemRepo.On("ListByDeck", mock.Anything, deckID).Return(make([]*models.VocabularyDeckItem, 0), nil)
-	svc := services.NewVocabularyDeckItemService(itemRepo, deckRepo)
+	itemRepo.On("ListByDeck", mock.Anything, owner, deckID).Return(make([]*models.VocabularyDeckItem, 0), nil)
 
-	res, err := svc.ListByDeck(context.Background(), owner, deckID)
+	res, err := svc.List(context.Background(), owner, deckID)
 
 	require.NoError(t, err)
 	require.NotNil(t, res)
@@ -48,12 +47,13 @@ func TestVocabularyDeckItemService_ListByDeck_EmptyReturns200(t *testing.T) {
 }
 
 func TestVocabularyDeckItemService_Create_BadDeckID(t *testing.T) {
-	itemRepo := mocks.NewMockVocabularyDeckItemRepository(t)
-	deckRepo := mocks.NewMockVocabularyDeckRepository(t)
+	svc, _, deckRepo, _ := setupDeckItem(t)
 	deckRepo.On("GetByID", mock.Anything, mock.Anything).Return(nil, &common.InvalidIDError{Name: "deckId"})
-	svc := services.NewVocabularyDeckItemService(itemRepo, deckRepo)
 
-	res, err := svc.Create(context.Background(), "user_1", requests.CreateVocabularyDeckItem{DeckID: "11111111-1111-1111-1111-111111111111", Phrase: "hello", Meaning: "xin chao"})
+	res, err := svc.Create(context.Background(), "user_1", requests.CreateVocabularyDeckItem{
+		DeckID: "11111111-1111-1111-1111-111111111111",
+		ItemID: "22222222-2222-2222-2222-222222222222",
+	})
 
 	requireAppError(t, err, http.StatusBadRequest)
 	assert.Nil(t, res)
@@ -64,9 +64,12 @@ func TestUserVocabularyService_Save_Idempotent(t *testing.T) {
 	itemID := "11111111-1111-1111-1111-111111111111"
 	row := &models.UserVocabulary{UserID: userID, ItemID: itemID}
 	repo := mocks.NewMockUserVocabularyRepository(t)
-	repo.On("Upsert", mock.Anything, mock.Anything).Return(nil)
+	// Re-saving hits the Upsert conflict path; mastered is untouched when omitted.
+	repo.On("Upsert", mock.Anything, mock.Anything, false).Return(nil)
 	repo.On("Get", mock.Anything, userID, itemID).Return(row, nil)
-	svc := services.NewUserVocabularyService(repo)
+	entries := mocks.NewMockVocabularyItemRepository(t)
+	entries.On("GetByID", mock.Anything, userID, itemID).Return(&models.VocabularyItem{ID: itemID, Term: "bank"}, nil)
+	svc := services.NewUserVocabularyService(repo, entries)
 
 	for i := 0; i < 2; i++ {
 		got, err := svc.Save(context.Background(), userID, requests.SaveUserVocabulary{ItemID: itemID, SourceType: "manual"})
@@ -77,11 +80,43 @@ func TestUserVocabularyService_Save_Idempotent(t *testing.T) {
 
 func TestUserVocabularyService_Save_BadItemID(t *testing.T) {
 	repo := mocks.NewMockUserVocabularyRepository(t)
-	repo.On("Upsert", mock.Anything, mock.Anything).Return(&common.InvalidIDError{Name: "itemId"})
-	svc := services.NewUserVocabularyService(repo)
+	repo.On("Upsert", mock.Anything, mock.Anything, false).Return(&common.InvalidIDError{Name: "itemId"})
+	entries := mocks.NewMockVocabularyItemRepository(t)
+	entries.On("GetByID", mock.Anything, "user_1", "11111111-1111-1111-1111-111111111111").
+		Return(&models.VocabularyItem{ID: "11111111-1111-1111-1111-111111111111", Term: "bank"}, nil)
+	svc := services.NewUserVocabularyService(repo, entries)
 
 	res, err := svc.Save(context.Background(), "user_1", requests.SaveUserVocabulary{ItemID: "11111111-1111-1111-1111-111111111111", SourceType: "manual"})
 
 	requireAppError(t, err, http.StatusBadRequest)
 	assert.Nil(t, res)
+}
+
+func TestVocabularyItemService_Create_Conflict(t *testing.T) {
+	tests := []struct {
+		name      string
+		createErr error
+		status    int
+	}{
+		{"duplicate term conflicts", &pgconn.PgError{Code: "23505"}, http.StatusConflict},
+		{"first insert succeeds", nil, 0},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			repo := mocks.NewMockVocabularyItemRepository(t)
+			repo.On("Create", mock.Anything, mock.Anything).Return(tt.createErr)
+			svc := services.NewVocabularyItemService(repo, mocks.NewMockUserVocabularyRepository(t), mocks.NewMockVocabularyDeckRepository(t), mocks.NewMockVocabularyDeckItemRepository(t))
+
+			got, err := svc.Create(context.Background(), "user_1", requests.CreateVocabularyItem{Term: "bank", CEFR: "B1"})
+
+			if tt.status == 0 {
+				require.NoError(t, err)
+				require.NotNil(t, got)
+			} else {
+				requireAppError(t, err, tt.status)
+				assert.Nil(t, got)
+			}
+		})
+	}
 }

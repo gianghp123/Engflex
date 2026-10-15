@@ -35,7 +35,7 @@ func (h *VocabularyDeckItemController) List(c *gin.Context) {
 		common.Fail(c, common.BadRequest("deckId is required"))
 		return
 	}
-	items, err := h.items.ListByDeck(c.Request.Context(), middleware.UserID(c), deckID)
+	items, err := h.items.List(c.Request.Context(), middleware.UserID(c), deckID)
 	if err != nil {
 		common.Fail(c, err)
 		return

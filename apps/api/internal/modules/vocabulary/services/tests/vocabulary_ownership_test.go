@@ -9,23 +9,39 @@ import (
 	"github.com/stretchr/testify/mock"
 
 	"engflex-api/internal/database/models"
-	"engflex-api/internal/database/repositories/mocks"
-	"engflex-api/internal/modules/vocabulary/services"
 )
 
-func TestVocabularyDeckItemService_ListByDeck_ForeignDeck(t *testing.T) {
-	deckID := "11111111-1111-1111-1111-111111111111"
+func TestVocabularyDeckItemService_List_ForeignDeck(t *testing.T) {
 	owner := "user_1"
-	other := "user_9"
-	deckRepo := mocks.NewMockVocabularyDeckRepository(t)
-	deckRepo.On("GetByID", mock.Anything, deckID).
-		Return(&models.VocabularyDeck{ID: deckID, UserID: &owner, Name: "Core"}, nil)
-	itemRepo := mocks.NewMockVocabularyDeckItemRepository(t)
-	svc := services.NewVocabularyDeckItemService(itemRepo, deckRepo)
+	tests := []struct {
+		name    string
+		deck    *models.VocabularyDeck
+		message string
+	}{
+		{
+			name:    "curated deck is read-only",
+			deck:    &models.VocabularyDeck{ID: "11111111-1111-1111-1111-111111111111", UserID: nil, Name: "TOEIC 600"},
+			message: "curated deck is read-only",
+		},
+		{
+			name:    "foreign private deck is forbidden",
+			deck:    &models.VocabularyDeck{ID: "11111111-1111-1111-1111-111111111111", UserID: &owner, Name: "Core"},
+			message: "not your deck",
+		},
+	}
 
-	res, err := svc.ListByDeck(context.Background(), other, deckID)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			deckID := "11111111-1111-1111-1111-111111111111"
+			svc, itemRepo, deckRepo, _ := setupDeckItem(t)
+			deckRepo.On("GetByID", mock.Anything, deckID).Return(tt.deck, nil)
 
-	requireAppError(t, err, http.StatusForbidden)
-	assert.Nil(t, res)
-	itemRepo.AssertNotCalled(t, "ListByDeck", mock.Anything, mock.Anything)
+			res, err := svc.List(context.Background(), "user_9", deckID)
+
+			appErr := requireAppError(t, err, http.StatusForbidden)
+			assert.Equal(t, tt.message, appErr.Message)
+			assert.Nil(t, res)
+			itemRepo.AssertNotCalled(t, "ListByDeck", mock.Anything, mock.Anything)
+		})
+	}
 }

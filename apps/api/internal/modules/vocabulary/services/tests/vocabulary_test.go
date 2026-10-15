@@ -13,8 +13,17 @@ import (
 func setupDeck(t *testing.T) (services.VocabularyDeckService, *mocks.MockVocabularyDeckRepository) {
 	t.Helper()
 	mockRepo := mocks.NewMockVocabularyDeckRepository(t)
-	svc := services.NewVocabularyDeckService(mockRepo)
+	svc := services.NewVocabularyDeckService(mockRepo, mocks.NewMockVocabularyDeckItemRepository(t))
 	return svc, mockRepo
+}
+
+func setupDeckItem(t *testing.T) (services.VocabularyDeckItemService, *mocks.MockVocabularyDeckItemRepository, *mocks.MockVocabularyDeckRepository, *mocks.MockVocabularyItemRepository) {
+	t.Helper()
+	itemRepo := mocks.NewMockVocabularyDeckItemRepository(t)
+	deckRepo := mocks.NewMockVocabularyDeckRepository(t)
+	entryRepo := mocks.NewMockVocabularyItemRepository(t)
+	svc := services.NewVocabularyDeckItemService(itemRepo, deckRepo, entryRepo)
+	return svc, itemRepo, deckRepo, entryRepo
 }
 
 func requireAppError(t *testing.T, err error, expectedStatus int) *common.AppError {

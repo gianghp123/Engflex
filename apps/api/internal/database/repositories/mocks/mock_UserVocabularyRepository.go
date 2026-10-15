@@ -8,6 +8,7 @@ import (
 	"context"
 	"engflex-api/internal/database/models"
 	"engflex-api/internal/database/repositories"
+	"time"
 
 	mock "github.com/stretchr/testify/mock"
 	"gorm.io/gorm"
@@ -47,6 +48,288 @@ type MockUserVocabularyRepository_Expecter struct {
 
 func (_m *MockUserVocabularyRepository) EXPECT() *MockUserVocabularyRepository_Expecter {
 	return &MockUserVocabularyRepository_Expecter{mock: &_m.Mock}
+}
+
+// CountByUser provides a mock function for the type MockUserVocabularyRepository
+func (_mock *MockUserVocabularyRepository) CountByUser(ctx context.Context, userID string) (int64, error) {
+	ret := _mock.Called(ctx, userID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CountByUser")
+	}
+
+	var r0 int64
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) (int64, error)); ok {
+		return returnFunc(ctx, userID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) int64); ok {
+		r0 = returnFunc(ctx, userID)
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = returnFunc(ctx, userID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockUserVocabularyRepository_CountByUser_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CountByUser'
+type MockUserVocabularyRepository_CountByUser_Call struct {
+	*mock.Call
+}
+
+// CountByUser is a helper method to define mock.On call
+//   - ctx context.Context
+//   - userID string
+func (_e *MockUserVocabularyRepository_Expecter) CountByUser(ctx any, userID any) *MockUserVocabularyRepository_CountByUser_Call {
+	return &MockUserVocabularyRepository_CountByUser_Call{Call: _e.mock.On("CountByUser", ctx, userID)}
+}
+
+func (_c *MockUserVocabularyRepository_CountByUser_Call) Run(run func(ctx context.Context, userID string)) *MockUserVocabularyRepository_CountByUser_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockUserVocabularyRepository_CountByUser_Call) Return(n int64, err error) *MockUserVocabularyRepository_CountByUser_Call {
+	_c.Call.Return(n, err)
+	return _c
+}
+
+func (_c *MockUserVocabularyRepository_CountByUser_Call) RunAndReturn(run func(ctx context.Context, userID string) (int64, error)) *MockUserVocabularyRepository_CountByUser_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// CountDue provides a mock function for the type MockUserVocabularyRepository
+func (_mock *MockUserVocabularyRepository) CountDue(ctx context.Context, userID string, now time.Time) (int64, error) {
+	ret := _mock.Called(ctx, userID, now)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CountDue")
+	}
+
+	var r0 int64
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, time.Time) (int64, error)); ok {
+		return returnFunc(ctx, userID, now)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, time.Time) int64); ok {
+		r0 = returnFunc(ctx, userID, now)
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, time.Time) error); ok {
+		r1 = returnFunc(ctx, userID, now)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockUserVocabularyRepository_CountDue_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CountDue'
+type MockUserVocabularyRepository_CountDue_Call struct {
+	*mock.Call
+}
+
+// CountDue is a helper method to define mock.On call
+//   - ctx context.Context
+//   - userID string
+//   - now time.Time
+func (_e *MockUserVocabularyRepository_Expecter) CountDue(ctx any, userID any, now any) *MockUserVocabularyRepository_CountDue_Call {
+	return &MockUserVocabularyRepository_CountDue_Call{Call: _e.mock.On("CountDue", ctx, userID, now)}
+}
+
+func (_c *MockUserVocabularyRepository_CountDue_Call) Run(run func(ctx context.Context, userID string, now time.Time)) *MockUserVocabularyRepository_CountDue_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 time.Time
+		if args[2] != nil {
+			arg2 = args[2].(time.Time)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockUserVocabularyRepository_CountDue_Call) Return(n int64, err error) *MockUserVocabularyRepository_CountDue_Call {
+	_c.Call.Return(n, err)
+	return _c
+}
+
+func (_c *MockUserVocabularyRepository_CountDue_Call) RunAndReturn(run func(ctx context.Context, userID string, now time.Time) (int64, error)) *MockUserVocabularyRepository_CountDue_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// CountMastered provides a mock function for the type MockUserVocabularyRepository
+func (_mock *MockUserVocabularyRepository) CountMastered(ctx context.Context, userID string) (int64, error) {
+	ret := _mock.Called(ctx, userID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CountMastered")
+	}
+
+	var r0 int64
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) (int64, error)); ok {
+		return returnFunc(ctx, userID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) int64); ok {
+		r0 = returnFunc(ctx, userID)
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = returnFunc(ctx, userID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockUserVocabularyRepository_CountMastered_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CountMastered'
+type MockUserVocabularyRepository_CountMastered_Call struct {
+	*mock.Call
+}
+
+// CountMastered is a helper method to define mock.On call
+//   - ctx context.Context
+//   - userID string
+func (_e *MockUserVocabularyRepository_Expecter) CountMastered(ctx any, userID any) *MockUserVocabularyRepository_CountMastered_Call {
+	return &MockUserVocabularyRepository_CountMastered_Call{Call: _e.mock.On("CountMastered", ctx, userID)}
+}
+
+func (_c *MockUserVocabularyRepository_CountMastered_Call) Run(run func(ctx context.Context, userID string)) *MockUserVocabularyRepository_CountMastered_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockUserVocabularyRepository_CountMastered_Call) Return(n int64, err error) *MockUserVocabularyRepository_CountMastered_Call {
+	_c.Call.Return(n, err)
+	return _c
+}
+
+func (_c *MockUserVocabularyRepository_CountMastered_Call) RunAndReturn(run func(ctx context.Context, userID string) (int64, error)) *MockUserVocabularyRepository_CountMastered_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// CountSavedBetween provides a mock function for the type MockUserVocabularyRepository
+func (_mock *MockUserVocabularyRepository) CountSavedBetween(ctx context.Context, userID string, from time.Time, to time.Time) (int64, error) {
+	ret := _mock.Called(ctx, userID, from, to)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CountSavedBetween")
+	}
+
+	var r0 int64
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, time.Time, time.Time) (int64, error)); ok {
+		return returnFunc(ctx, userID, from, to)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, time.Time, time.Time) int64); ok {
+		r0 = returnFunc(ctx, userID, from, to)
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, time.Time, time.Time) error); ok {
+		r1 = returnFunc(ctx, userID, from, to)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockUserVocabularyRepository_CountSavedBetween_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CountSavedBetween'
+type MockUserVocabularyRepository_CountSavedBetween_Call struct {
+	*mock.Call
+}
+
+// CountSavedBetween is a helper method to define mock.On call
+//   - ctx context.Context
+//   - userID string
+//   - from time.Time
+//   - to time.Time
+func (_e *MockUserVocabularyRepository_Expecter) CountSavedBetween(ctx any, userID any, from any, to any) *MockUserVocabularyRepository_CountSavedBetween_Call {
+	return &MockUserVocabularyRepository_CountSavedBetween_Call{Call: _e.mock.On("CountSavedBetween", ctx, userID, from, to)}
+}
+
+func (_c *MockUserVocabularyRepository_CountSavedBetween_Call) Run(run func(ctx context.Context, userID string, from time.Time, to time.Time)) *MockUserVocabularyRepository_CountSavedBetween_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 time.Time
+		if args[2] != nil {
+			arg2 = args[2].(time.Time)
+		}
+		var arg3 time.Time
+		if args[3] != nil {
+			arg3 = args[3].(time.Time)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+		)
+	})
+	return _c
+}
+
+func (_c *MockUserVocabularyRepository_CountSavedBetween_Call) Return(n int64, err error) *MockUserVocabularyRepository_CountSavedBetween_Call {
+	_c.Call.Return(n, err)
+	return _c
+}
+
+func (_c *MockUserVocabularyRepository_CountSavedBetween_Call) RunAndReturn(run func(ctx context.Context, userID string, from time.Time, to time.Time) (int64, error)) *MockUserVocabularyRepository_CountSavedBetween_Call {
+	_c.Call.Return(run)
+	return _c
 }
 
 // Delete provides a mock function for the type MockUserVocabularyRepository
@@ -186,49 +469,39 @@ func (_c *MockUserVocabularyRepository_Get_Call) RunAndReturn(run func(ctx conte
 	return _c
 }
 
-// ListByUser provides a mock function for the type MockUserVocabularyRepository
-func (_mock *MockUserVocabularyRepository) ListByUser(ctx context.Context, userID string, limit int, offset int) ([]*models.UserVocabulary, error) {
-	ret := _mock.Called(ctx, userID, limit, offset)
+// Patch provides a mock function for the type MockUserVocabularyRepository
+func (_mock *MockUserVocabularyRepository) Patch(ctx context.Context, userID string, itemID string, mastered *bool, note *string) error {
+	ret := _mock.Called(ctx, userID, itemID, mastered, note)
 
 	if len(ret) == 0 {
-		panic("no return value specified for ListByUser")
+		panic("no return value specified for Patch")
 	}
 
-	var r0 []*models.UserVocabulary
-	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, int, int) ([]*models.UserVocabulary, error)); ok {
-		return returnFunc(ctx, userID, limit, offset)
-	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, int, int) []*models.UserVocabulary); ok {
-		r0 = returnFunc(ctx, userID, limit, offset)
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string, *bool, *string) error); ok {
+		r0 = returnFunc(ctx, userID, itemID, mastered, note)
 	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*models.UserVocabulary)
-		}
+		r0 = ret.Error(0)
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, string, int, int) error); ok {
-		r1 = returnFunc(ctx, userID, limit, offset)
-	} else {
-		r1 = ret.Error(1)
-	}
-	return r0, r1
+	return r0
 }
 
-// MockUserVocabularyRepository_ListByUser_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ListByUser'
-type MockUserVocabularyRepository_ListByUser_Call struct {
+// MockUserVocabularyRepository_Patch_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Patch'
+type MockUserVocabularyRepository_Patch_Call struct {
 	*mock.Call
 }
 
-// ListByUser is a helper method to define mock.On call
+// Patch is a helper method to define mock.On call
 //   - ctx context.Context
 //   - userID string
-//   - limit int
-//   - offset int
-func (_e *MockUserVocabularyRepository_Expecter) ListByUser(ctx any, userID any, limit any, offset any) *MockUserVocabularyRepository_ListByUser_Call {
-	return &MockUserVocabularyRepository_ListByUser_Call{Call: _e.mock.On("ListByUser", ctx, userID, limit, offset)}
+//   - itemID string
+//   - mastered *bool
+//   - note *string
+func (_e *MockUserVocabularyRepository_Expecter) Patch(ctx any, userID any, itemID any, mastered any, note any) *MockUserVocabularyRepository_Patch_Call {
+	return &MockUserVocabularyRepository_Patch_Call{Call: _e.mock.On("Patch", ctx, userID, itemID, mastered, note)}
 }
 
-func (_c *MockUserVocabularyRepository_ListByUser_Call) Run(run func(ctx context.Context, userID string, limit int, offset int)) *MockUserVocabularyRepository_ListByUser_Call {
+func (_c *MockUserVocabularyRepository_Patch_Call) Run(run func(ctx context.Context, userID string, itemID string, mastered *bool, note *string)) *MockUserVocabularyRepository_Patch_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -238,40 +511,45 @@ func (_c *MockUserVocabularyRepository_ListByUser_Call) Run(run func(ctx context
 		if args[1] != nil {
 			arg1 = args[1].(string)
 		}
-		var arg2 int
+		var arg2 string
 		if args[2] != nil {
-			arg2 = args[2].(int)
+			arg2 = args[2].(string)
 		}
-		var arg3 int
+		var arg3 *bool
 		if args[3] != nil {
-			arg3 = args[3].(int)
+			arg3 = args[3].(*bool)
+		}
+		var arg4 *string
+		if args[4] != nil {
+			arg4 = args[4].(*string)
 		}
 		run(
 			arg0,
 			arg1,
 			arg2,
 			arg3,
+			arg4,
 		)
 	})
 	return _c
 }
 
-func (_c *MockUserVocabularyRepository_ListByUser_Call) Return(userVocabularys []*models.UserVocabulary, err error) *MockUserVocabularyRepository_ListByUser_Call {
-	_c.Call.Return(userVocabularys, err)
+func (_c *MockUserVocabularyRepository_Patch_Call) Return(err error) *MockUserVocabularyRepository_Patch_Call {
+	_c.Call.Return(err)
 	return _c
 }
 
-func (_c *MockUserVocabularyRepository_ListByUser_Call) RunAndReturn(run func(ctx context.Context, userID string, limit int, offset int) ([]*models.UserVocabulary, error)) *MockUserVocabularyRepository_ListByUser_Call {
+func (_c *MockUserVocabularyRepository_Patch_Call) RunAndReturn(run func(ctx context.Context, userID string, itemID string, mastered *bool, note *string) error) *MockUserVocabularyRepository_Patch_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
-// Upsert provides a mock function for the type MockUserVocabularyRepository
-func (_mock *MockUserVocabularyRepository) Upsert(ctx context.Context, u *models.UserVocabulary) error {
+// UpdateSchedule provides a mock function for the type MockUserVocabularyRepository
+func (_mock *MockUserVocabularyRepository) UpdateSchedule(ctx context.Context, u *models.UserVocabulary) error {
 	ret := _mock.Called(ctx, u)
 
 	if len(ret) == 0 {
-		panic("no return value specified for Upsert")
+		panic("no return value specified for UpdateSchedule")
 	}
 
 	var r0 error
@@ -283,19 +561,19 @@ func (_mock *MockUserVocabularyRepository) Upsert(ctx context.Context, u *models
 	return r0
 }
 
-// MockUserVocabularyRepository_Upsert_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Upsert'
-type MockUserVocabularyRepository_Upsert_Call struct {
+// MockUserVocabularyRepository_UpdateSchedule_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UpdateSchedule'
+type MockUserVocabularyRepository_UpdateSchedule_Call struct {
 	*mock.Call
 }
 
-// Upsert is a helper method to define mock.On call
+// UpdateSchedule is a helper method to define mock.On call
 //   - ctx context.Context
 //   - u *models.UserVocabulary
-func (_e *MockUserVocabularyRepository_Expecter) Upsert(ctx any, u any) *MockUserVocabularyRepository_Upsert_Call {
-	return &MockUserVocabularyRepository_Upsert_Call{Call: _e.mock.On("Upsert", ctx, u)}
+func (_e *MockUserVocabularyRepository_Expecter) UpdateSchedule(ctx any, u any) *MockUserVocabularyRepository_UpdateSchedule_Call {
+	return &MockUserVocabularyRepository_UpdateSchedule_Call{Call: _e.mock.On("UpdateSchedule", ctx, u)}
 }
 
-func (_c *MockUserVocabularyRepository_Upsert_Call) Run(run func(ctx context.Context, u *models.UserVocabulary)) *MockUserVocabularyRepository_Upsert_Call {
+func (_c *MockUserVocabularyRepository_UpdateSchedule_Call) Run(run func(ctx context.Context, u *models.UserVocabulary)) *MockUserVocabularyRepository_UpdateSchedule_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -313,12 +591,75 @@ func (_c *MockUserVocabularyRepository_Upsert_Call) Run(run func(ctx context.Con
 	return _c
 }
 
+func (_c *MockUserVocabularyRepository_UpdateSchedule_Call) Return(err error) *MockUserVocabularyRepository_UpdateSchedule_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockUserVocabularyRepository_UpdateSchedule_Call) RunAndReturn(run func(ctx context.Context, u *models.UserVocabulary) error) *MockUserVocabularyRepository_UpdateSchedule_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// Upsert provides a mock function for the type MockUserVocabularyRepository
+func (_mock *MockUserVocabularyRepository) Upsert(ctx context.Context, u *models.UserVocabulary, updateMastered bool) error {
+	ret := _mock.Called(ctx, u, updateMastered)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Upsert")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *models.UserVocabulary, bool) error); ok {
+		r0 = returnFunc(ctx, u, updateMastered)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockUserVocabularyRepository_Upsert_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Upsert'
+type MockUserVocabularyRepository_Upsert_Call struct {
+	*mock.Call
+}
+
+// Upsert is a helper method to define mock.On call
+//   - ctx context.Context
+//   - u *models.UserVocabulary
+//   - updateMastered bool
+func (_e *MockUserVocabularyRepository_Expecter) Upsert(ctx any, u any, updateMastered any) *MockUserVocabularyRepository_Upsert_Call {
+	return &MockUserVocabularyRepository_Upsert_Call{Call: _e.mock.On("Upsert", ctx, u, updateMastered)}
+}
+
+func (_c *MockUserVocabularyRepository_Upsert_Call) Run(run func(ctx context.Context, u *models.UserVocabulary, updateMastered bool)) *MockUserVocabularyRepository_Upsert_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 *models.UserVocabulary
+		if args[1] != nil {
+			arg1 = args[1].(*models.UserVocabulary)
+		}
+		var arg2 bool
+		if args[2] != nil {
+			arg2 = args[2].(bool)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
 func (_c *MockUserVocabularyRepository_Upsert_Call) Return(err error) *MockUserVocabularyRepository_Upsert_Call {
 	_c.Call.Return(err)
 	return _c
 }
 
-func (_c *MockUserVocabularyRepository_Upsert_Call) RunAndReturn(run func(ctx context.Context, u *models.UserVocabulary) error) *MockUserVocabularyRepository_Upsert_Call {
+func (_c *MockUserVocabularyRepository_Upsert_Call) RunAndReturn(run func(ctx context.Context, u *models.UserVocabulary, updateMastered bool) error) *MockUserVocabularyRepository_Upsert_Call {
 	_c.Call.Return(run)
 	return _c
 }

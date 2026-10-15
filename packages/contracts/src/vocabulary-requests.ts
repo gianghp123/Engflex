@@ -11,7 +11,6 @@
  */
 export interface ListVocabulary extends ListParams {
   sort: VocabularySort;
-  domain: VocabularyDomain;
   cefr: CEFR;
   source: VocabularySource;
 }
@@ -31,6 +30,55 @@ export interface UpdateVocabularyCategory {
 //////////
 // source: vocabulary_mutations.go
 
+/**
+ * VocabularyDetails is the wire copy of the entry's rich content (tygo cannot
+ * resolve cross-package types).
+ */
+export interface VocabularyDetails {
+  ipa: string;
+  audioUs: string;
+  audioUk: string;
+  syllables: string;
+  stressTip: string;
+  commonSlip: string;
+  longDefinition: string;
+  etymology: string;
+  contexts: VocabularyContext[];
+  collocations: Collocation[];
+  wordForms: WordForm[];
+}
+/**
+ * VocabularyContext is one labeled usage quote.
+ */
+export interface VocabularyContext {
+  label: string;
+  quote: string;
+}
+/**
+ * Collocation is a fixed phrase with its pattern.
+ */
+export interface Collocation {
+  phrase: string;
+  pattern: string;
+  example: string;
+}
+/**
+ * WordForm is one morphology entry.
+ */
+export interface WordForm {
+  formType: string;
+  forms: string[];
+}
+/**
+ * CreateVocabularyItem adds a private (user-owned) dictionary entry.
+ */
+export interface CreateVocabularyItem {
+  term: string;
+  definition: string;
+  cefr: string;
+  partOfSpeech?: string;
+  details?: VocabularyDetails;
+}
 /**
  * CreateVocabularyDeck creates a user-owned flashcard deck.
  */
@@ -52,34 +100,22 @@ export interface UpdateVocabularyDeck {
   level?: string;
 }
 /**
- * CreateVocabularyDeckItem adds one flashcard row to a deck.
+ * CreateVocabularyDeckItem adds one flashcard row to a deck: a reference to
+ * a visible dictionary entry plus per-row presentation.
  */
 export interface CreateVocabularyDeckItem {
   deckId: string;
-  videoExerciseId?: string;
-  videoTranscriptId?: string;
-  phrase: string;
-  meaning: string;
+  itemId: string;
+  sequence: number /* int */;
   exampleSentence: string;
   note: string;
 }
 /**
- * UpdateVocabularyDeckItem edits a flashcard row.
+ * UpdateVocabularyDeckItem edits a flashcard row's presentation.
  */
 export interface UpdateVocabularyDeckItem {
-  phrase?: string;
-  meaning?: string;
   exampleSentence?: string;
   note?: string;
-}
-/**
- * CreateVocabularyItem adds a shared dictionary entry or a custom word.
- */
-export interface CreateVocabularyItem {
-  term: string;
-  definition: string;
-  cefr: string;
-  domain?: string;
 }
 /**
  * SaveUserVocabulary saves per-user state over a shared item (idempotent).
@@ -90,4 +126,40 @@ export interface SaveUserVocabulary {
   sourceId?: string;
   note?: string;
   mastered?: boolean;
+}
+/**
+ * AddUserVocabularyWord adds a word to the caller's library by content: the
+ * server find-or-creates a private dictionary entry (unique per user by
+ * lower(term)) and enrols it. Idempotent — re-adding an existing term
+ * re-enrols it rather than 409ing.
+ */
+export interface AddUserVocabularyWord {
+  term: string;
+  definition: string;
+  cefr: string;
+  partOfSpeech?: string;
+  /**
+   * DeckID optionally enrols the word and drops it straight into one of the
+   * caller's private decks — the deck page's "add a word" path.
+   */
+  deckId?: string;
+  details?: VocabularyDetails;
+}
+/**
+ * PatchUserVocabulary updates one saved word's mutable state. Both fields are
+ * optional pointers: omitted means "leave unchanged", so a PATCH never clears
+ * a note or un-masters a word by accident. An empty body is rejected by the
+ * service.
+ */
+export interface PatchUserVocabulary {
+  mastered?: boolean;
+  note?: string;
+}
+/**
+ * ReviewUserVocabulary grades one review (0 = again … 3 = easy). Grade is a
+ * pointer so that a missing grade fails `required`: with a plain int the zero
+ * value is indistinguishable from "again" and `{}` would bind successfully.
+ */
+export interface ReviewUserVocabulary {
+  grade?: number /* int */;
 }

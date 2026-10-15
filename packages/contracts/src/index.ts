@@ -29,13 +29,14 @@ declare global {
   type TurnRole = Enums.TurnRole;
   type SpanStatus = Enums.SpanStatus;
   type RelevanceStatus = Enums.RelevanceStatus;
-  type VocabularyDomain = Enums.VocabularyDomain;
   type VocabularySort = Enums.VocabularySort;
   type VocabularySource = Enums.VocabularySource;
+  type VocabularyPartOfSpeech = Enums.VocabularyPartOfSpeech;
 }
 
 export * from './common.ts';
 export * from './enums.ts';
+export * from './enum-values.ts';
 export * from './profiles-requests.ts';
 export * from './profiles-responses.ts';
 export * from './lessons-requests.ts';
@@ -58,3 +59,14 @@ export type {
   Prosody,
   ReferencePhone,
 } from './conversations-responses.ts';
+// Both vocabulary requests and responses declare structurally identical
+// VocabularyDetails/VocabularyContext/Collocation/WordForm copies (the
+// request side is a wire copy because tygo cannot resolve cross-package
+// types); an explicit re-export resolves the star-export ambiguity (TS2308).
+// Structural typing keeps both wire copies compatible.
+export type {
+  VocabularyDetails,
+  VocabularyContext,
+  Collocation,
+  WordForm,
+} from './vocabulary-responses.ts';

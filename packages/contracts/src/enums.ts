@@ -120,7 +120,7 @@ export type Gender = typeof GenderMale | typeof GenderFemale;
 // source: goal.go
 
 /**
- * Goal is the onboarding primary goal (user_profiles.preferences.primary_goal).
+ * Goal is one onboarding goal (user_profiles.preferences.goals[]).
  */
 export const GoalTravel = "travel";
 export const GoalWork = "work";
@@ -221,19 +221,25 @@ export const TurnRoleAI = "ai";
 export type TurnRole = typeof TurnRoleUser | typeof TurnRoleAI;
 
 //////////
-// source: vocabulary_domain.go
+// source: vocabulary_part_of_speech.go
 
 /**
- * VocabularyDomain groups technical vocabulary (vocabulary_items.domain).
- * Open set: when a domain is added, extend these constants and the
- * chk_vocabulary_items_domain CHECK together.
+ * VocabularyPartOfSpeech is a word's part of speech
+ * (vocabulary_items.part_of_speech). Display labels are frontend copy.
  */
-export const VocabularyDomainBackendDB = "backend_db";
-export const VocabularyDomainDistributed = "distributed_systems";
-export const VocabularyDomainDevOpsCloud = "devops_cloud";
-export const VocabularyDomainFrontendUI = "frontend_ui";
-export const VocabularyDomainAIML = "ai_ml";
-export type VocabularyDomain = typeof VocabularyDomainBackendDB | typeof VocabularyDomainDistributed | typeof VocabularyDomainDevOpsCloud | typeof VocabularyDomainFrontendUI | typeof VocabularyDomainAIML;
+export const VocabularyPartOfSpeechNoun = "noun";
+export const VocabularyPartOfSpeechVerb = "verb";
+export const VocabularyPartOfSpeechAdjective = "adjective";
+export const VocabularyPartOfSpeechAdverb = "adverb";
+export const VocabularyPartOfSpeechPronoun = "pronoun";
+export const VocabularyPartOfSpeechPreposition = "preposition";
+export const VocabularyPartOfSpeechConjunction = "conjunction";
+export const VocabularyPartOfSpeechInterjection = "interjection";
+export const VocabularyPartOfSpeechDeterminer = "determiner";
+export const VocabularyPartOfSpeechPhrase = "phrase";
+export const VocabularyPartOfSpeechIdiom = "idiom";
+export const VocabularyPartOfSpeechPhrasalVerb = "phrasal_verb";
+export type VocabularyPartOfSpeech = typeof VocabularyPartOfSpeechNoun | typeof VocabularyPartOfSpeechVerb | typeof VocabularyPartOfSpeechAdjective | typeof VocabularyPartOfSpeechAdverb | typeof VocabularyPartOfSpeechPronoun | typeof VocabularyPartOfSpeechPreposition | typeof VocabularyPartOfSpeechConjunction | typeof VocabularyPartOfSpeechInterjection | typeof VocabularyPartOfSpeechDeterminer | typeof VocabularyPartOfSpeechPhrase | typeof VocabularyPartOfSpeechIdiom | typeof VocabularyPartOfSpeechPhrasalVerb;
 
 //////////
 // source: vocabulary_sort.go
@@ -256,5 +262,6 @@ export type VocabularySort = typeof VocabularySortRecent | typeof VocabularySort
  */
 export const VocabularySourceLesson = "lesson";
 export const VocabularySourceConversation = "conversation";
+export const VocabularySourceVideo = "video";
 export const VocabularySourceManual = "manual";
-export type VocabularySource = typeof VocabularySourceLesson | typeof VocabularySourceConversation | typeof VocabularySourceManual;
+export type VocabularySource = typeof VocabularySourceLesson | typeof VocabularySourceConversation | typeof VocabularySourceVideo | typeof VocabularySourceManual;

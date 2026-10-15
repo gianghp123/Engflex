@@ -19,24 +19,27 @@ func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB) {
 	categorySvc := services.NewVocabularyCategoryService(repositories.NewVocabularyCategoryRepository(db))
 	categoryCtl := controllers.NewVocabularyCategoryController(categorySvc)
 
-	deckSvc := services.NewVocabularyDeckService(repositories.NewVocabularyDeckRepository(db))
+	deckSvc := services.NewVocabularyDeckService(repositories.NewVocabularyDeckRepository(db), repositories.NewVocabularyDeckItemRepository(db))
 	deckCtl := controllers.NewVocabularyDeckController(deckSvc)
 
-	itemSvc := services.NewVocabularyDeckItemService(repositories.NewVocabularyDeckItemRepository(db), repositories.NewVocabularyDeckRepository(db))
+	itemRepo := repositories.NewVocabularyItemRepository(db)
+	userRepo := repositories.NewUserVocabularyRepository(db)
+
+	itemSvc := services.NewVocabularyDeckItemService(repositories.NewVocabularyDeckItemRepository(db), repositories.NewVocabularyDeckRepository(db), itemRepo)
 	itemCtl := controllers.NewVocabularyDeckItemController(itemSvc)
 
-	dictSvc := services.NewVocabularyItemService(repositories.NewVocabularyItemRepository(db))
+	dictSvc := services.NewVocabularyItemService(itemRepo, userRepo, repositories.NewVocabularyDeckRepository(db), repositories.NewVocabularyDeckItemRepository(db))
 	dictCtl := controllers.NewVocabularyItemController(dictSvc)
 
-	stateSvc := services.NewUserVocabularyService(repositories.NewUserVocabularyRepository(db))
-	stateCtl := controllers.NewUserVocabularyController(stateSvc)
+	stateSvc := services.NewUserVocabularyService(userRepo, itemRepo)
+	stateCtl := controllers.NewUserVocabularyController(stateSvc, dictSvc)
 
 	c := rg.Group("/vocabulary-categories")
 	c.GET("", middleware.RequireAuth(), categoryCtl.List)
 	c.GET("/:id", middleware.RequireAuth(), categoryCtl.GetByID)
-	c.POST("", middleware.RequireAuth(), categoryCtl.Create)
-	c.PUT("/:id", middleware.RequireAuth(), categoryCtl.Update)
-	c.DELETE("/:id", middleware.RequireAuth(), categoryCtl.Delete)
+	c.POST("", middleware.RequireAuth(), middleware.RequireAdmin(), categoryCtl.Create)
+	c.PUT("/:id", middleware.RequireAuth(), middleware.RequireAdmin(), categoryCtl.Update)
+	c.DELETE("/:id", middleware.RequireAuth(), middleware.RequireAdmin(), categoryCtl.Delete)
 
 	d := rg.Group("/vocabulary-decks")
 	d.GET("", middleware.RequireAuth(), deckCtl.List)
@@ -59,6 +62,10 @@ func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB) {
 
 	u := rg.Group("/user-vocabulary")
 	u.GET("", middleware.RequireAuth(), stateCtl.List)
+	u.GET("/stats", middleware.RequireAuth(), stateCtl.Stats)
 	u.POST("", middleware.RequireAuth(), stateCtl.Save)
+	u.POST("/words", middleware.RequireAuth(), stateCtl.AddWord)
+	u.POST("/:itemId/review", middleware.RequireAuth(), stateCtl.Review)
+	u.PATCH("/:itemId", middleware.RequireAuth(), stateCtl.Patch)
 	u.DELETE("/:itemId", middleware.RequireAuth(), stateCtl.Unsave)
 }
