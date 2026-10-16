@@ -21,6 +21,7 @@ type_mappings:
   "enums.InterestTopic": "InterestTopic"
   "enums.LessonStatus": "LessonStatus"
   "enums.Level": "Level"
+  "enums.PublishStatus": "PublishStatus"
   "enums.ScenarioDifficulty": "ScenarioDifficulty"
   "enums.TurnRole": "TurnRole"
   "enums.VocabularyDomain": "VocabularyDomain"

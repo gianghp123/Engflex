@@ -51,6 +51,7 @@ export const VOCABULARY_ITEMS: VocabularyItem[] = [
 		ipa: "/ˌaɪ.dɛmˈpoʊ.tənt/",
 		partOfSpeech: "adj",
 		cefr: "C1",
+		status: "published",
 		domain: "backend_db",
 		definition:
 			"Denoting an operation or API request that can be applied multiple times without changing the result beyond the initial execution.",
@@ -131,6 +132,7 @@ export const VOCABULARY_ITEMS: VocabularyItem[] = [
 		ipa: "/ˈbækˌprɛʃ.ər/",
 		partOfSpeech: "noun",
 		cefr: "B2",
+		status: "published",
 		domain: "distributed_systems",
 		definition:
 			"The resistance or opposing force exerted opposite to the desired flow of data in a software pipeline when a downstream consumer cannot handle the ingress rate.",
@@ -156,6 +158,7 @@ export const VOCABULARY_ITEMS: VocabularyItem[] = [
 		ipa: "/ˈbɑː.t̬əl.nek/",
 		partOfSpeech: "noun",
 		cefr: "B1",
+		status: "published",
 		domain: "backend_db",
 		definition:
 			"A point of congestion in a production system that occurs when workloads arrive too quickly for the designated computing process to handle.",
@@ -181,6 +184,7 @@ export const VOCABULARY_ITEMS: VocabularyItem[] = [
 		ipa: "/riːˈɛn.trən.si/",
 		partOfSpeech: "noun",
 		cefr: "C1",
+		status: "published",
 		domain: "distributed_systems",
 		definition:
 			"The property of a computer program or routine allowing it to be safely executed concurrently or interrupted and called again before its previous invocation finishes.",
@@ -207,6 +211,7 @@ export const VOCABULARY_ITEMS: VocabularyItem[] = [
 		ipa: "/ˈtreɪd.ɑːf/",
 		partOfSpeech: "noun",
 		cefr: "B1",
+		status: "published",
 		domain: "frontend_ui",
 		definition:
 			"A situational decision that involves diminishing or losing one desirable quality or aspect of a software system in return for gaining qualities in another aspect.",
@@ -232,6 +237,7 @@ export const VOCABULARY_ITEMS: VocabularyItem[] = [
 		ipa: "/kənˈkɜː.ən.si/",
 		partOfSpeech: "noun",
 		cefr: "B2",
+		status: "published",
 		domain: "distributed_systems",
 		definition:
 			"Not parallelism. The composition of independently executing computations.",
@@ -257,6 +263,7 @@ export const VOCABULARY_ITEMS: VocabularyItem[] = [
 		ipa: "/hjʊˈrɪs.tɪks/",
 		partOfSpeech: "noun",
 		cefr: "C1",
+		status: "published",
 		domain: "ai_ml",
 		definition:
 			"Practical rule-of-thumb method not guaranteed to be optimal, but sufficient for immediate goals.",
@@ -282,6 +289,7 @@ export const VOCABULARY_ITEMS: VocabularyItem[] = [
 		ipa: "/fɔːlt ˈtɒl.ər.əns/",
 		partOfSpeech: "noun",
 		cefr: "B1",
+		status: "published",
 		domain: "devops_cloud",
 		definition:
 			"Enabling a system to continue operating properly in the event of the failure of one or more components.",

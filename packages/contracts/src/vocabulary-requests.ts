@@ -32,7 +32,9 @@ export interface UpdateVocabularyCategory {
 // source: vocabulary_mutations.go
 
 /**
- * CreateVocabularyDeck creates a user-owned flashcard deck.
+ * CreateVocabularyDeck creates a flashcard deck (personal via
+ * /vocabulary-decks, or system-curated via the admin endpoint — the service
+ * method called decides which).
  */
 export interface CreateVocabularyDeck {
   categoryId?: string;
@@ -42,7 +44,8 @@ export interface CreateVocabularyDeck {
   level: string;
 }
 /**
- * UpdateVocabularyDeck renames or re-categorises a deck.
+ * UpdateVocabularyDeck renames or re-categorises a deck. Status only takes
+ * effect for a system deck updated by an admin (service-enforced).
  */
 export interface UpdateVocabularyDeck {
   categoryId?: string;
@@ -50,6 +53,7 @@ export interface UpdateVocabularyDeck {
   description?: string;
   thumbnailUrl?: string;
   level?: string;
+  status?: PublishStatus;
 }
 /**
  * CreateVocabularyDeckItem adds one flashcard row to a deck.
@@ -80,6 +84,18 @@ export interface CreateVocabularyItem {
   definition: string;
   cefr: string;
   domain?: string;
+}
+/**
+ * UpdateVocabularyItem edits a shared dictionary entry (admin-only, and
+ * only entries with no CreatedByUserID — a user's custom word stays theirs
+ * to manage, this never touches it).
+ */
+export interface UpdateVocabularyItem {
+  term?: string;
+  definition?: string;
+  cefr?: string;
+  domain?: string;
+  status?: PublishStatus;
 }
 /**
  * SaveUserVocabulary saves per-user state over a shared item (idempotent).

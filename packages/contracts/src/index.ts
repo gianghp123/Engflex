@@ -25,6 +25,7 @@ declare global {
   type LessonStatus = Enums.LessonStatus;
   type Level = Enums.Level;
   type ListParams = Common.ListParams;
+  type PublishStatus = Enums.PublishStatus;
   type ScenarioDifficulty = Enums.ScenarioDifficulty;
   type TurnRole = Enums.TurnRole;
   type SpanStatus = Enums.SpanStatus;

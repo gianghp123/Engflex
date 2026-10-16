@@ -67,6 +67,7 @@ export function addCustomWord(input: AddWordInput): void {
 				partOfSpeech: input.partOfSpeech,
 				cefr: input.cefr,
 				domain: "backend_db",
+				status: "published",
 				definition: input.definition,
 				userState: {
 					itemId: id,

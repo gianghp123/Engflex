@@ -171,6 +171,17 @@ export const LevelAdvanced = "advanced";
 export type Level = typeof LevelBeginner | typeof LevelIntermediate | typeof LevelAdvanced;
 
 //////////
+// source: publish_status.go
+
+/**
+ * PublishStatus gates admin-curated vocabulary content (shared dictionary
+ * entries, system decks) from learner-facing reads and SRS until reviewed.
+ */
+export const PublishStatusDraft = "draft";
+export const PublishStatusPublished = "published";
+export type PublishStatus = typeof PublishStatusDraft | typeof PublishStatusPublished;
+
+//////////
 // source: relevance_status.go
 
 /**

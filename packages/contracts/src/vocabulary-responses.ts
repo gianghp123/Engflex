@@ -65,6 +65,7 @@ export interface VocabularyItem {
   cefr: CEFR;
   domain?: VocabularyDomain;
   definition: string;
+  status: PublishStatus;
   details?: VocabularyDetails;
   userState?: UserVocabularyState;
 }
@@ -107,6 +108,7 @@ export interface VocabularyDeckDetail {
   thumbnailUrl: string;
   level: string;
   isDefault: boolean;
+  status: PublishStatus;
   category?: VocabularyCategoryResponse;
   createdAt: string /* RFC3339 */;
   updatedAt: string /* RFC3339 */;
