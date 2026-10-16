@@ -46,9 +46,18 @@ export const API_ROUTES = {
 		LIST: "/video-categories",
 		BY_ID: (id: ApiId) => `/video-categories/${id}`,
 	},
+	LESSON_SECTIONS: {
+		LIST: "/lesson-sections",
+		BY_ID: (id: ApiId) => `/lesson-sections/${id}`,
+	},
+	LESSON_ACTIVITIES: {
+		LIST: "/lesson-activities",
+		BY_ID: (id: ApiId) => `/lesson-activities/${id}`,
+	},
 	ADMIN: {
 		VOCABULARY_DECKS: "/admin/vocabulary-decks",
 		VOCABULARY_ITEMS: "/admin/vocabulary-items",
+		LESSON_ACTIVITY: (id: ApiId) => `/admin/lesson-activities/${id}`,
 	},
 	PERSONAS: {
 		LIST: "/personas",
