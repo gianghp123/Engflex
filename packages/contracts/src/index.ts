@@ -51,6 +51,8 @@ export * from './videos-requests.ts';
 export * from './videos-responses.ts';
 export * from './attempts-requests.ts';
 export * from './attempts-responses.ts';
+export * from './users-requests.ts';
+export * from './users-responses.ts';
 // Both conversations and lessons responses declare structurally identical
 // MispronouncedWord/PhoneDetail/Prosody/ReferencePhone copies; an explicit
 // re-export resolves the star-export ambiguity (TS2308). Structural typing

@@ -92,6 +92,13 @@ packages:
     output_path: "../../packages/contracts/src/vocabulary-responses.ts"
     fallback_type: "unknown"
 
+  - path: "engflex-api/internal/modules/users/dtos/requests"
+    output_path: "../../packages/contracts/src/users-requests.ts"
+    fallback_type: "unknown"
+  - path: "engflex-api/internal/modules/users/dtos/responses"
+    output_path: "../../packages/contracts/src/users-responses.ts"
+    fallback_type: "unknown"
+
   - path: "engflex-api/internal/modules/attempts/dtos/requests"
     output_path: "../../packages/contracts/src/attempts-requests.ts"
     fallback_type: "unknown"
