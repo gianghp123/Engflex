@@ -6,6 +6,7 @@ import {
 	AudioWaveform,
 	BookmarkCheck,
 	BookOpen,
+	Clapperboard,
 	House,
 	Info,
 } from "lucide-react";
@@ -42,6 +43,12 @@ const NAV_GROUPS = [
 				to: APP_ROUTES.HOME,
 				icon: House,
 				tile: "bg-nav-home",
+			},
+			{
+				title: () => m["nav.item.videos"](),
+				to: APP_ROUTES.VIDEOS.LIST,
+				icon: Clapperboard,
+				tile: "bg-[#db2777]",
 			},
 			{
 				title: () => m["nav.item.lessons"](),

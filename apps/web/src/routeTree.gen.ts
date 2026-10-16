@@ -20,6 +20,7 @@ import { Route as AppHomeRouteImport } from './routes/_app/home'
 import { Route as SignInSplatRouteImport } from './routes/sign-in.$'
 import { Route as SignUpSplatRouteImport } from './routes/sign-up.$'
 import { Route as AppLessonsIndexRouteImport } from './routes/_app/lessons/index'
+import { Route as AppVideosIndexRouteImport } from './routes/_app/videos/index'
 import { Route as AppVocabularyIndexRouteImport } from './routes/_app/vocabulary/index'
 import { Route as AppVocabularyItemIdRouteImport } from './routes/_app/vocabulary/$itemId'
 import { Route as AppVoiceIndexRouteImport } from './routes/_app/voice/index'
@@ -27,6 +28,9 @@ import { Route as AppVoicePreviewRouteImport } from './routes/_app/voice/preview
 import { Route as ApiMediaSplatRouteImport } from './routes/api/media/$'
 import { Route as AppLessonsSlugIndexRouteImport } from './routes/_app/lessons/$slug/index'
 import { Route as AppLessonsSlugPracticeRouteImport } from './routes/_app/lessons/$slug/practice'
+import { Route as AppVideosVideoIdDictationRouteImport } from './routes/_app/videos/$videoId/dictation'
+import { Route as AppVideosVideoIdShadowingRouteImport } from './routes/_app/videos/$videoId/shadowing'
+import { Route as AppVideosCategoriesCategorySlugRouteImport } from './routes/_app/videos/categories/$categorySlug'
 import { Route as AppVoiceRoomConversationIdRouteImport } from './routes/_app/voice/room/$conversationId'
 import { Route as AppVoiceScenariosIndexRouteImport } from './routes/_app/voice/scenarios/index'
 import { Route as AppVoiceScenariosScenarioIdRouteImport } from './routes/_app/voice/scenarios/$scenarioId'
@@ -87,6 +91,11 @@ const AppLessonsIndexRoute = AppLessonsIndexRouteImport.update({
   path: '/lessons/',
   getParentRoute: () => AppRouteRoute,
 } as any)
+const AppVideosIndexRoute = AppVideosIndexRouteImport.update({
+  id: '/videos/',
+  path: '/videos/',
+  getParentRoute: () => AppRouteRoute,
+} as any)
 const AppVocabularyIndexRoute = AppVocabularyIndexRouteImport.update({
   id: '/vocabulary/',
   path: '/vocabulary/',
@@ -122,6 +131,24 @@ const AppLessonsSlugPracticeRoute = AppLessonsSlugPracticeRouteImport.update({
   path: '/lessons/$slug/practice',
   getParentRoute: () => AppRouteRoute,
 } as any)
+const AppVideosVideoIdDictationRoute =
+  AppVideosVideoIdDictationRouteImport.update({
+    id: '/videos/$videoId/dictation',
+    path: '/videos/$videoId/dictation',
+    getParentRoute: () => AppRouteRoute,
+  } as any)
+const AppVideosVideoIdShadowingRoute =
+  AppVideosVideoIdShadowingRouteImport.update({
+    id: '/videos/$videoId/shadowing',
+    path: '/videos/$videoId/shadowing',
+    getParentRoute: () => AppRouteRoute,
+  } as any)
+const AppVideosCategoriesCategorySlugRoute =
+  AppVideosCategoriesCategorySlugRouteImport.update({
+    id: '/videos/categories/$categorySlug',
+    path: '/videos/categories/$categorySlug',
+    getParentRoute: () => AppRouteRoute,
+  } as any)
 const AppVoiceRoomConversationIdRoute =
   AppVoiceRoomConversationIdRouteImport.update({
     id: '/voice/room/$conversationId',
@@ -166,9 +193,13 @@ export interface FileRoutesByFullPath {
   '/voice/preview': typeof AppVoicePreviewRoute
   '/api/media/$': typeof ApiMediaSplatRoute
   '/lessons/': typeof AppLessonsIndexRoute
+  '/videos/': typeof AppVideosIndexRoute
   '/vocabulary/': typeof AppVocabularyIndexRoute
   '/voice/': typeof AppVoiceIndexRoute
   '/lessons/$slug/practice': typeof AppLessonsSlugPracticeRoute
+  '/videos/$videoId/dictation': typeof AppVideosVideoIdDictationRoute
+  '/videos/$videoId/shadowing': typeof AppVideosVideoIdShadowingRoute
+  '/videos/categories/$categorySlug': typeof AppVideosCategoriesCategorySlugRoute
   '/voice/room/$conversationId': typeof AppVoiceRoomConversationIdRoute
   '/voice/scenarios/$scenarioId': typeof AppVoiceScenariosScenarioIdRoute
   '/api/voice/$conversationId/offer': typeof ApiVoiceConversationIdOfferRoute
@@ -190,9 +221,13 @@ export interface FileRoutesByTo {
   '/voice/preview': typeof AppVoicePreviewRoute
   '/api/media/$': typeof ApiMediaSplatRoute
   '/lessons': typeof AppLessonsIndexRoute
+  '/videos': typeof AppVideosIndexRoute
   '/vocabulary': typeof AppVocabularyIndexRoute
   '/voice': typeof AppVoiceIndexRoute
   '/lessons/$slug/practice': typeof AppLessonsSlugPracticeRoute
+  '/videos/$videoId/dictation': typeof AppVideosVideoIdDictationRoute
+  '/videos/$videoId/shadowing': typeof AppVideosVideoIdShadowingRoute
+  '/videos/categories/$categorySlug': typeof AppVideosCategoriesCategorySlugRoute
   '/voice/room/$conversationId': typeof AppVoiceRoomConversationIdRoute
   '/voice/scenarios/$scenarioId': typeof AppVoiceScenariosScenarioIdRoute
   '/api/voice/$conversationId/offer': typeof ApiVoiceConversationIdOfferRoute
@@ -216,9 +251,13 @@ export interface FileRoutesById {
   '/_app/voice/preview': typeof AppVoicePreviewRoute
   '/api/media/$': typeof ApiMediaSplatRoute
   '/_app/lessons/': typeof AppLessonsIndexRoute
+  '/_app/videos/': typeof AppVideosIndexRoute
   '/_app/vocabulary/': typeof AppVocabularyIndexRoute
   '/_app/voice/': typeof AppVoiceIndexRoute
   '/_app/lessons/$slug/practice': typeof AppLessonsSlugPracticeRoute
+  '/_app/videos/$videoId/dictation': typeof AppVideosVideoIdDictationRoute
+  '/_app/videos/$videoId/shadowing': typeof AppVideosVideoIdShadowingRoute
+  '/_app/videos/categories/$categorySlug': typeof AppVideosCategoriesCategorySlugRoute
   '/_app/voice/room/$conversationId': typeof AppVoiceRoomConversationIdRoute
   '/_app/voice/scenarios/$scenarioId': typeof AppVoiceScenariosScenarioIdRoute
   '/api/voice/$conversationId/offer': typeof ApiVoiceConversationIdOfferRoute
@@ -242,9 +281,13 @@ export interface FileRouteTypes {
     | '/voice/preview'
     | '/api/media/$'
     | '/lessons/'
+    | '/videos/'
     | '/vocabulary/'
     | '/voice/'
     | '/lessons/$slug/practice'
+    | '/videos/$videoId/dictation'
+    | '/videos/$videoId/shadowing'
+    | '/videos/categories/$categorySlug'
     | '/voice/room/$conversationId'
     | '/voice/scenarios/$scenarioId'
     | '/api/voice/$conversationId/offer'
@@ -266,9 +309,13 @@ export interface FileRouteTypes {
     | '/voice/preview'
     | '/api/media/$'
     | '/lessons'
+    | '/videos'
     | '/vocabulary'
     | '/voice'
     | '/lessons/$slug/practice'
+    | '/videos/$videoId/dictation'
+    | '/videos/$videoId/shadowing'
+    | '/videos/categories/$categorySlug'
     | '/voice/room/$conversationId'
     | '/voice/scenarios/$scenarioId'
     | '/api/voice/$conversationId/offer'
@@ -291,9 +338,13 @@ export interface FileRouteTypes {
     | '/_app/voice/preview'
     | '/api/media/$'
     | '/_app/lessons/'
+    | '/_app/videos/'
     | '/_app/vocabulary/'
     | '/_app/voice/'
     | '/_app/lessons/$slug/practice'
+    | '/_app/videos/$videoId/dictation'
+    | '/_app/videos/$videoId/shadowing'
+    | '/_app/videos/categories/$categorySlug'
     | '/_app/voice/room/$conversationId'
     | '/_app/voice/scenarios/$scenarioId'
     | '/api/voice/$conversationId/offer'
@@ -396,6 +447,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppLessonsIndexRouteImport
       parentRoute: typeof AppRouteRoute
     }
+    '/_app/videos/': {
+      id: '/_app/videos/'
+      path: '/videos'
+      fullPath: '/videos/'
+      preLoaderRoute: typeof AppVideosIndexRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
     '/_app/vocabulary/': {
       id: '/_app/vocabulary/'
       path: '/vocabulary'
@@ -445,6 +503,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppLessonsSlugPracticeRouteImport
       parentRoute: typeof AppRouteRoute
     }
+    '/_app/videos/$videoId/dictation': {
+      id: '/_app/videos/$videoId/dictation'
+      path: '/videos/$videoId/dictation'
+      fullPath: '/videos/$videoId/dictation'
+      preLoaderRoute: typeof AppVideosVideoIdDictationRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/_app/videos/$videoId/shadowing': {
+      id: '/_app/videos/$videoId/shadowing'
+      path: '/videos/$videoId/shadowing'
+      fullPath: '/videos/$videoId/shadowing'
+      preLoaderRoute: typeof AppVideosVideoIdShadowingRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/_app/videos/categories/$categorySlug': {
+      id: '/_app/videos/categories/$categorySlug'
+      path: '/videos/categories/$categorySlug'
+      fullPath: '/videos/categories/$categorySlug'
+      preLoaderRoute: typeof AppVideosCategoriesCategorySlugRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
     '/_app/voice/room/$conversationId': {
       id: '/_app/voice/room/$conversationId'
       path: '/voice/room/$conversationId'
@@ -488,9 +567,13 @@ interface AppRouteRouteChildren {
   AppVocabularyItemIdRoute: typeof AppVocabularyItemIdRoute
   AppVoicePreviewRoute: typeof AppVoicePreviewRoute
   AppLessonsIndexRoute: typeof AppLessonsIndexRoute
+  AppVideosIndexRoute: typeof AppVideosIndexRoute
   AppVocabularyIndexRoute: typeof AppVocabularyIndexRoute
   AppVoiceIndexRoute: typeof AppVoiceIndexRoute
   AppLessonsSlugPracticeRoute: typeof AppLessonsSlugPracticeRoute
+  AppVideosVideoIdDictationRoute: typeof AppVideosVideoIdDictationRoute
+  AppVideosVideoIdShadowingRoute: typeof AppVideosVideoIdShadowingRoute
+  AppVideosCategoriesCategorySlugRoute: typeof AppVideosCategoriesCategorySlugRoute
   AppVoiceRoomConversationIdRoute: typeof AppVoiceRoomConversationIdRoute
   AppVoiceScenariosScenarioIdRoute: typeof AppVoiceScenariosScenarioIdRoute
   AppLessonsSlugIndexRoute: typeof AppLessonsSlugIndexRoute
@@ -502,9 +585,13 @@ const AppRouteRouteChildren: AppRouteRouteChildren = {
   AppVocabularyItemIdRoute: AppVocabularyItemIdRoute,
   AppVoicePreviewRoute: AppVoicePreviewRoute,
   AppLessonsIndexRoute: AppLessonsIndexRoute,
+  AppVideosIndexRoute: AppVideosIndexRoute,
   AppVocabularyIndexRoute: AppVocabularyIndexRoute,
   AppVoiceIndexRoute: AppVoiceIndexRoute,
   AppLessonsSlugPracticeRoute: AppLessonsSlugPracticeRoute,
+  AppVideosVideoIdDictationRoute: AppVideosVideoIdDictationRoute,
+  AppVideosVideoIdShadowingRoute: AppVideosVideoIdShadowingRoute,
+  AppVideosCategoriesCategorySlugRoute: AppVideosCategoriesCategorySlugRoute,
   AppVoiceRoomConversationIdRoute: AppVoiceRoomConversationIdRoute,
   AppVoiceScenariosScenarioIdRoute: AppVoiceScenariosScenarioIdRoute,
   AppLessonsSlugIndexRoute: AppLessonsSlugIndexRoute,

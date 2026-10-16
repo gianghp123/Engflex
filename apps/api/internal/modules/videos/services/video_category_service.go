@@ -13,6 +13,7 @@ import (
 
 type VideoCategoryService interface {
 	List(ctx context.Context, limit, offset int) ([]*models.VideoCategory, int64, error)
+	ListWithPreview(ctx context.Context, previewK int) ([]*models.VideoCategory, error)
 	GetByID(ctx context.Context, id string) (*models.VideoCategory, error)
 	Create(ctx context.Context, req requests.CreateVideoCategory) (*models.VideoCategory, error)
 	Update(ctx context.Context, id string, req requests.UpdateVideoCategory) (*models.VideoCategory, error)
@@ -113,4 +114,21 @@ func (s *videoCategoryService) List(ctx context.Context, limit, offset int) ([]*
 	}
 	slog.InfoContext(ctx, "video categories listed", "count", len(categories), "total", total)
 	return categories, total, nil
+}
+
+func (s *videoCategoryService) ListWithPreview(ctx context.Context, previewK int) ([]*models.VideoCategory, error) {
+	if previewK < 1 {
+		previewK = common.VideoPreviewDefault
+	}
+	if previewK > common.VideoPreviewMax {
+		previewK = common.VideoPreviewMax
+	}
+	categories, err := s.repo.ListWithPreview(ctx, previewK)
+	if err != nil {
+		appErr := common.FromDBError(err, "video category")
+		logger.Report(ctx, "failed to list video categories with preview", appErr, "preview_k", previewK)
+		return nil, appErr
+	}
+	slog.InfoContext(ctx, "video categories with preview listed", "count", len(categories), "preview_k", previewK)
+	return categories, nil
 }

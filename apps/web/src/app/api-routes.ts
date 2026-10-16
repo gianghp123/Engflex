@@ -59,6 +59,11 @@ export const API_ROUTES = {
 	PROGRESS: {
 		SUMMARY: "/progress",
 	},
+	VIDEOS: {
+		LIST: "/video-exercises",
+		BY_ID: (id: ApiId) => `/video-exercises/${id}`,
+		CATEGORIES_PREVIEW: "/video-categories/preview",
+	},
 } as const;
 
 /**

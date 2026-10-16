@@ -11,8 +11,11 @@ import (
 	"github.com/stretchr/testify/require"
 	"gorm.io/gorm"
 
+	"engflex-api/internal/common"
+	"engflex-api/internal/common/enums"
 	"engflex-api/internal/database/models"
 	"engflex-api/internal/database/repositories/mocks"
+	"engflex-api/internal/modules/videos/dtos/requests"
 	"engflex-api/internal/modules/videos/services"
 )
 
@@ -94,6 +97,81 @@ func TestVideoExerciseService_GetByID_DBError(t *testing.T) {
 	res, err := svc.GetByID(context.Background(), "11111111-1111-1111-1111-111111111111")
 	requireAppError(t, err, http.StatusInternalServerError)
 	assert.Nil(t, res)
+}
+
+func TestVideoExerciseService_List(t *testing.T) {
+	categoryID := "22222222-2222-2222-2222-222222222222"
+	level := enums.CEFRB1
+	page := []*models.VideoExercise{{ID: "11111111-1111-1111-1111-111111111111", Title: "Trailer"}}
+
+	tests := []struct {
+		name       string
+		req        requests.ListVideoExercises
+		setupMock  func(m *mocks.MockVideoExerciseRepository)
+		wantStatus int
+		wantTotal  int64
+	}{
+		{
+			name: "filters reach the repo, search is trimmed, page 2 offsets by one page",
+			req: requests.ListVideoExercises{
+				ListParams: common.ListParams{Page: 2, PageSize: 10, Search: "  trailer  "},
+				CategoryID: &categoryID,
+				CEFRLevel:  &level,
+			},
+			setupMock: func(m *mocks.MockVideoExerciseRepository) {
+				m.On("List", mock.Anything, &categoryID, &level, "trailer", 10, 10).Return(page, nil)
+				m.On("Count", mock.Anything, &categoryID, &level, "trailer").Return(int64(11), nil)
+			},
+			wantTotal: 11,
+		},
+		{
+			name: "unset paging falls back to the first default page, no filters",
+			req:  requests.ListVideoExercises{},
+			setupMock: func(m *mocks.MockVideoExerciseRepository) {
+				m.On("List", mock.Anything, (*string)(nil), (*enums.CEFR)(nil), "", common.DefaultPageSize, 0).Return(page, nil)
+				m.On("Count", mock.Anything, (*string)(nil), (*enums.CEFR)(nil), "").Return(int64(1), nil)
+			},
+			wantTotal: 1,
+		},
+		{
+			name: "list failure maps to 500 and skips the count",
+			req:  requests.ListVideoExercises{},
+			setupMock: func(m *mocks.MockVideoExerciseRepository) {
+				m.On("List", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).
+					Return(nil, errors.New("db connection failure"))
+			},
+			wantStatus: http.StatusInternalServerError,
+		},
+		{
+			name: "count failure maps to 500",
+			req:  requests.ListVideoExercises{},
+			setupMock: func(m *mocks.MockVideoExerciseRepository) {
+				m.On("List", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).
+					Return(page, nil)
+				m.On("Count", mock.Anything, mock.Anything, mock.Anything, mock.Anything).
+					Return(int64(0), errors.New("db connection failure"))
+			},
+			wantStatus: http.StatusInternalServerError,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			svc, mockRepo := setupExercise(t)
+			tt.setupMock(mockRepo)
+
+			items, total, err := svc.List(context.Background(), tt.req)
+
+			if tt.wantStatus != 0 {
+				requireAppError(t, err, tt.wantStatus)
+				assert.Nil(t, items)
+				return
+			}
+			require.NoError(t, err)
+			assert.Len(t, items, len(page))
+			assert.Equal(t, tt.wantTotal, total)
+		})
+	}
 }
 
 func strPtr(s string) *string { return &s }

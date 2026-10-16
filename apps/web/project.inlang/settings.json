@@ -21,6 +21,7 @@
       "./messages/{locale}/progress.json",
       "./messages/{locale}/errors.json",
       "./messages/{locale}/about.json",
+      "./messages/{locale}/videos.json",
       "./messages/{locale}/pricing.json",
       "./messages/{locale}/landing.json"
     ]

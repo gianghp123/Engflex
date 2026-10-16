@@ -45,4 +45,5 @@ func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB) {
 	c.POST("", middleware.RequireAuth(), middleware.RequireAdmin(), categoryCtl.Create)
 	c.PUT("/:id", middleware.RequireAuth(), middleware.RequireAdmin(), categoryCtl.Update)
 	c.DELETE("/:id", middleware.RequireAuth(), middleware.RequireAdmin(), categoryCtl.Delete)
+	c.GET("/preview", middleware.RequireAuth(), categoryCtl.ListWithPreview)
 }

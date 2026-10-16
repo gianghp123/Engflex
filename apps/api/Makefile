@@ -5,9 +5,8 @@ MIGRATIONS_DIR ?= internal/database/migrations
 # assignment overrides the environment, so `include` would let the .env value
 # clobber a real DATABASE_URL (the e2e suite migrates a dedicated database and
 # was silently migrating the dev one). Missing file is fine (CI passes env).
-ifneq (,$(wildcard .env))
-	DATABASE_URL ?= $(shell sed -n 's/^DATABASE_URL=//p' .env | head -1)
-endif
+# Default DATABASE_URL fallback for local dev (covers Windows environments without sed)
+DATABASE_URL ?= postgres://postgres:postgres@localhost:5777/engflex?sslmode=disable
 
 .PHONY: migration-create migration-up migration-down migration-status migration-reset mocks contracts swagger seed-audio pronounce-image pronounce-warm
 
