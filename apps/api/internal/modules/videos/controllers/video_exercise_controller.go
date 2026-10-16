@@ -2,9 +2,11 @@ package controllers
 
 import (
 	"engflex-api/internal/common"
+	"engflex-api/internal/common/enums"
 	"engflex-api/internal/modules/videos/dtos/requests"
 	"engflex-api/internal/modules/videos/dtos/responses"
 	"engflex-api/internal/modules/videos/services"
+	"engflex-api/internal/server/middleware"
 	"engflex-api/internal/utils"
 
 	"github.com/gin-gonic/gin"
@@ -114,7 +116,7 @@ func (h *VideoExerciseController) Delete(c *gin.Context) {
 //	@Router			/video-exercises/{id} [get]
 func (h *VideoExerciseController) GetByID(c *gin.Context) {
 	id := c.Param("id")
-	m, err := h.service.GetByID(c.Request.Context(), id)
+	m, err := h.service.GetByID(c.Request.Context(), id, middleware.Role(c) == enums.UserRoleAdmin)
 	if err != nil {
 		common.Fail(c, err)
 		return
@@ -138,7 +140,7 @@ func (h *VideoExerciseController) GetByID(c *gin.Context) {
 func (h *VideoExerciseController) List(c *gin.Context) {
 	page, pageSize := utils.ParsePagination(c)
 	offset := utils.Offset(page, pageSize)
-	lessons, total, err := h.service.List(c.Request.Context(), pageSize, offset)
+	lessons, total, err := h.service.List(c.Request.Context(), pageSize, offset, middleware.Role(c) == enums.UserRoleAdmin)
 	if err != nil {
 		common.Fail(c, err)
 		return

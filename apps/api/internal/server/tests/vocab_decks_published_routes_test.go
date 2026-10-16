@@ -13,13 +13,12 @@ import (
 )
 
 // TestVocabAdminDecksItemsRoutesRequireAuth guards against silently losing
-// RequireAuth() on the new admin-only vocabulary routes (system deck
-// creation, system entry creation, dictionary entry update/delete). The
-// admin-vs-user 403 split for these, and the owner-vs-admin split on the
-// shared /vocabulary-decks/:id PUT/DELETE, are covered by the service-layer
-// table tests in modules/vocabulary/services/tests — a real Clerk token is
-// needed to exercise the HTTP path end to end, which only the manual
-// Swagger pass can provide.
+// RequireAuth() on admin-only content routes (vocabulary, then videos —
+// same curated-content pattern). The admin-vs-user 403 split for these, and
+// the owner-vs-admin split on the shared /vocabulary-decks/:id PUT/DELETE,
+// are covered by the service-layer table tests in each module's
+// services/tests — a real Clerk token is needed to exercise the HTTP path
+// end to end, which only the manual Swagger pass can provide.
 func TestVocabAdminDecksItemsRoutesRequireAuth(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
@@ -32,6 +31,15 @@ func TestVocabAdminDecksItemsRoutesRequireAuth(t *testing.T) {
 		{http.MethodPost, "/api/v1/vocabulary-categories"},
 		{http.MethodPut, "/api/v1/vocabulary-categories/" + uuid},
 		{http.MethodDelete, "/api/v1/vocabulary-categories/" + uuid},
+		{http.MethodPost, "/api/v1/video-exercises"},
+		{http.MethodPut, "/api/v1/video-exercises/" + uuid},
+		{http.MethodDelete, "/api/v1/video-exercises/" + uuid},
+		{http.MethodPost, "/api/v1/video-categories"},
+		{http.MethodPut, "/api/v1/video-categories/" + uuid},
+		{http.MethodDelete, "/api/v1/video-categories/" + uuid},
+		{http.MethodPost, "/api/v1/video-transcripts"},
+		{http.MethodPut, "/api/v1/video-transcripts/" + uuid},
+		{http.MethodDelete, "/api/v1/video-transcripts/" + uuid},
 	}
 
 	for _, tt := range tests {

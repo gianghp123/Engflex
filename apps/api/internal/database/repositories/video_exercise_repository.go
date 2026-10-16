@@ -4,11 +4,16 @@ import (
 	"context"
 	"engflex-api/internal/database/models"
 
+	"engflex-api/internal/common/enums"
 	"gorm.io/gorm"
 )
 
+// List/Count take onlyPublished so draft exercises never leak into a
+// non-admin page (filtered before LIMIT/OFFSET so pages and counts agree).
+// GetByID/GetDetail stay unfiltered; the service decides visibility for a
+// single fetch, same as vocabulary items/decks.
 type VideoExerciseRepository interface {
-	List(ctx context.Context, limit int, offset int) ([]*models.VideoExercise, error)
+	List(ctx context.Context, limit int, offset int, onlyPublished bool) ([]*models.VideoExercise, error)
 	GetByID(ctx context.Context, id string) (*models.VideoExercise, error)
 	// GetDetail returns the exercise with its category (one join) and its
 	// transcripts (second query, ordered by sequence) attached.
@@ -16,7 +21,7 @@ type VideoExerciseRepository interface {
 	Create(ctx context.Context, lesson *models.VideoExercise) error
 	Update(ctx context.Context, lesson *models.VideoExercise) error
 	Delete(ctx context.Context, id string) error
-	Count(ctx context.Context) (int64, error)
+	Count(ctx context.Context, onlyPublished bool) (int64, error)
 	WithTx(tx *gorm.DB) VideoExerciseRepository
 }
 
@@ -31,9 +36,16 @@ func (r *videoExerciseRepository) WithTx(tx *gorm.DB) VideoExerciseRepository {
 	return &videoExerciseRepository{db: tx}
 }
 
-func (r *videoExerciseRepository) List(ctx context.Context, limit int, offset int) ([]*models.VideoExercise, error) {
+func visiblePublishedVideos(db *gorm.DB, onlyPublished bool) *gorm.DB {
+	if !onlyPublished {
+		return db
+	}
+	return db.Where("status = ?", enums.PublishStatusPublished)
+}
+
+func (r *videoExerciseRepository) List(ctx context.Context, limit int, offset int, onlyPublished bool) ([]*models.VideoExercise, error) {
 	lessons := make([]*models.VideoExercise, 0)
-	query := r.db.WithContext(ctx).Order("id asc")
+	query := visiblePublishedVideos(r.db.WithContext(ctx), onlyPublished).Order("id asc")
 	if limit > 0 {
 		query = query.Limit(limit).Offset(offset)
 	}
@@ -110,9 +122,10 @@ func (r *videoExerciseRepository) Delete(ctx context.Context, id string) error {
 	return nil
 }
 
-func (r *videoExerciseRepository) Count(ctx context.Context) (int64, error) {
+func (r *videoExerciseRepository) Count(ctx context.Context, onlyPublished bool) (int64, error) {
 	var count int64
-	err := r.db.WithContext(ctx).Model(&models.VideoExercise{}).Count(&count).Error
+	query := visiblePublishedVideos(r.db.WithContext(ctx).Model(&models.VideoExercise{}), onlyPublished)
+	err := query.Count(&count).Error
 	if err != nil {
 		return 0, err
 	}

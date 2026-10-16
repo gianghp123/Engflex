@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"gorm.io/gorm"
 
+	"engflex-api/internal/common/enums"
 	"engflex-api/internal/database/models"
 	"engflex-api/internal/database/repositories/mocks"
 	"engflex-api/internal/modules/videos/services"
@@ -29,6 +30,7 @@ func TestVideoExerciseService_GetByID(t *testing.T) {
 		ID:         exerciseID,
 		CategoryID: strPtr("22222222-2222-2222-2222-222222222222"),
 		Title:      "Trailer",
+		Status:     enums.PublishStatusPublished,
 		Category:   &models.VideoCategory{ID: "22222222-2222-2222-2222-222222222222", Slug: "trailer", Name: "Trailer"},
 		Transcripts: []*models.VideoTranscript{
 			{ID: "33333333-3333-3333-3333-333333333333", VideoExerciseID: exerciseID, Sequence: 1, Content: "hello"},
@@ -68,7 +70,7 @@ func TestVideoExerciseService_GetByID(t *testing.T) {
 			if tt.wantErr {
 				id = "missing"
 			}
-			res, err := svc.GetByID(context.Background(), id)
+			res, err := svc.GetByID(context.Background(), id, false)
 
 			if tt.wantErr {
 				requireAppError(t, err, http.StatusNotFound)
@@ -91,9 +93,35 @@ func TestVideoExerciseService_GetByID_DBError(t *testing.T) {
 	mockRepo.On("GetDetail", mock.Anything, mock.Anything).
 		Return(nil, errors.New("db connection failure"))
 
-	res, err := svc.GetByID(context.Background(), "11111111-1111-1111-1111-111111111111")
+	res, err := svc.GetByID(context.Background(), "11111111-1111-1111-1111-111111111111", false)
 	requireAppError(t, err, http.StatusInternalServerError)
 	assert.Nil(t, res)
+}
+
+// A draft exercise is invisible to non-admins (404) but visible to admins —
+// same rule as vocabulary items/decks.
+func TestVideoExerciseService_GetByID_DraftHiddenFromNonAdmin(t *testing.T) {
+	exerciseID := "11111111-1111-1111-1111-111111111111"
+	draft := &models.VideoExercise{ID: exerciseID, Status: enums.PublishStatusDraft}
+
+	svc, mockRepo := setupExercise(t)
+	mockRepo.On("GetDetail", mock.Anything, exerciseID).Return(draft, nil)
+
+	res, err := svc.GetByID(context.Background(), exerciseID, false)
+	requireAppError(t, err, http.StatusNotFound)
+	assert.Nil(t, res)
+}
+
+func TestVideoExerciseService_GetByID_DraftVisibleToAdmin(t *testing.T) {
+	exerciseID := "11111111-1111-1111-1111-111111111111"
+	draft := &models.VideoExercise{ID: exerciseID, Status: enums.PublishStatusDraft}
+
+	svc, mockRepo := setupExercise(t)
+	mockRepo.On("GetDetail", mock.Anything, exerciseID).Return(draft, nil)
+
+	res, err := svc.GetByID(context.Background(), exerciseID, true)
+	require.NoError(t, err)
+	require.NotNil(t, res)
 }
 
 func strPtr(s string) *string { return &s }

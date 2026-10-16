@@ -47,6 +47,8 @@ export * from './conversations-requests.ts';
 export * from './conversations-responses.ts';
 export * from './vocabulary-requests.ts';
 export * from './vocabulary-responses.ts';
+export * from './videos-requests.ts';
+export * from './videos-responses.ts';
 export * from './attempts-requests.ts';
 export * from './attempts-responses.ts';
 // Both conversations and lessons responses declare structurally identical
