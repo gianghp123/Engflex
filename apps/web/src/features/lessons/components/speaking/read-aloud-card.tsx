@@ -248,6 +248,3 @@ export function SpeakingActivity({
 		/>
 	);
 }
-
-/** Alias kept for the file name: the card IS the per-item read-aloud loop. */
-export const ReadAloudCard = SpeakingActivity;

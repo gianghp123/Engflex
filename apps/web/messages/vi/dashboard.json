@@ -6,7 +6,7 @@
       "greetingName": "Xin chào, {name}"
     },
     "activeLesson": {
-      "unitLabel": "Bài học đang học · Học phần 4.2",
+      "label": "Bài học đang học",
       "progress": "Đã hoàn thành {done} trên {total} bài tập",
       "continue": "Tiếp tục luyện tập"
     },

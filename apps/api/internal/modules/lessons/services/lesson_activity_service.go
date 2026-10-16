@@ -6,6 +6,7 @@ import (
 	"errors"
 	"log/slog"
 	"net/http"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -35,6 +36,7 @@ type LessonActivityService interface {
 	Pronounce(ctx context.Context, userID, id, attemptID string, itemIndex int, audio []byte, mime string) (*responses.PronunciationResult, error)
 	StartAttempt(ctx context.Context, userID, lessonID string) (*models.Attempt, error)
 	GetOpenProgress(ctx context.Context, userID, lessonID string) (*responses.AttemptProgress, error)
+	ListProgress(ctx context.Context, userID string) ([]*responses.LessonProgressSummary, error)
 	AttachPartResult(ctx context.Context, userID, attemptID, activityID string, entry PartEntry) (*models.Attempt, error)
 	ScoreWriting(ctx context.Context, userID, id, attemptID, text string) (*responses.WritingScoreResponse, error)
 }
@@ -118,7 +120,8 @@ func (s *lessonActivityService) StartAttempt(ctx context.Context, userID, lesson
 
 // GetOpenProgress returns the open run with graded questions rehydrated so
 // the client can resume mid-lesson. 404 when no run is open (the caller then
-// starts one). Non-checkable entries are omitted; outcomes pointing past the
+// starts one). Non-checkable entries are omitted from checks (their ids still
+// ride in completedParts); outcomes pointing past the
 // current config are skipped as stale.
 func (s *lessonActivityService) GetOpenProgress(ctx context.Context, userID, lessonID string) (*responses.AttemptProgress, error) {
 	if _, err := uuid.Parse(lessonID); err != nil {
@@ -132,8 +135,9 @@ func (s *lessonActivityService) GetOpenProgress(ctx context.Context, userID, les
 		}
 		return nil, appErr
 	}
+	parts := decodePartMap(m)
 	checks := map[string][]responses.CheckedQuestion{}
-	for activityID, entry := range decodePartMap(m) {
+	for activityID, entry := range parts {
 		am, err := s.repo.GetByID(ctx, activityID)
 		if err != nil {
 			logger.Report(ctx, "progress activity missing", common.FromDBError(err, "lesson activity"), "activityID", activityID)
@@ -168,8 +172,54 @@ func (s *lessonActivityService) GetOpenProgress(ctx context.Context, userID, les
 		logger.Report(ctx, "progress map failed", common.Internal(), "attemptID", m.ID)
 		return nil, common.Internal()
 	}
-	slog.InfoContext(ctx, "attempt progress loaded", "attemptID", m.ID, "activities", len(checks))
-	return &responses.AttemptProgress{Attempt: summary, Checks: checks}, nil
+	completed := make([]string, 0, len(parts))
+	for activityID := range parts {
+		completed = append(completed, activityID)
+	}
+	sort.Strings(completed)
+	slog.InfoContext(ctx, "attempt progress loaded", "attemptID", m.ID, "activities", len(checks), "completed", len(completed))
+	return &responses.AttemptProgress{Attempt: summary, Checks: checks, CompletedParts: completed}, nil
+}
+
+// ListProgress derives one summary per lesson from the caller's lesson
+// attempts. A completed run beats any open run (newest first within each
+// status); lessons with only abandoned runs are absent — the hub renders
+// them as not started.
+func (s *lessonActivityService) ListProgress(ctx context.Context, userID string) ([]*responses.LessonProgressSummary, error) {
+	rows, err := s.attempts.ListLessonAttempts(ctx, userID)
+	if err != nil {
+		appErr := common.FromDBError(err, "attempt")
+		logger.Report(ctx, "list lesson attempts failed", appErr, "userID", userID)
+		return nil, appErr
+	}
+	byLesson := make(map[string]*responses.LessonProgressSummary, len(rows))
+	for _, m := range rows {
+		if m.LessonID == nil {
+			continue
+		}
+		lessonID := *m.LessonID
+		current, ok := byLesson[lessonID]
+		if ok && !(m.Status == enums.AttemptStatusCompleted && current.Status != enums.AttemptStatusCompleted) {
+			continue
+		}
+		ids := make([]string, 0, 4)
+		for activityID := range decodePartMap(m) {
+			ids = append(ids, activityID)
+		}
+		sort.Strings(ids)
+		byLesson[lessonID] = &responses.LessonProgressSummary{
+			LessonID:             lessonID,
+			Status:               m.Status,
+			CompletedActivityIDs: ids,
+		}
+	}
+	out := make([]*responses.LessonProgressSummary, 0, len(byLesson))
+	for _, item := range byLesson {
+		out = append(out, item)
+	}
+	sort.Slice(out, func(i, j int) bool { return out[i].LessonID < out[j].LessonID })
+	slog.InfoContext(ctx, "lesson progress listed", "userID", userID, "lessons", len(out))
+	return out, nil
 }
 
 // loadOwnedAttempt fetches one attempt and proves ownership: foreign ids

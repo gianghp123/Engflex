@@ -1,27 +1,21 @@
 import type { ActivityType, LessonDetail } from "@engflex/contracts";
-import { BookmarkCheck, BookmarkPlus, Clock3, Layers } from "lucide-react";
+import { Clock3, Layers } from "lucide-react";
 import { CefrBadge } from "#/components/common/cefr-badge";
 import { MoMascot } from "#/components/common/mo-mascot";
 import { SubmitButton } from "#/components/common/submit-button";
-import { Button } from "#/components/ui/button";
 import { PART_META } from "#/features/lessons/parts";
-import type { LessonProgress } from "#/features/lessons/store";
 import { m } from "#/paraglide/messages";
 
 export function LessonHeader({
 	lesson,
-	progress,
 	startPart,
 	startPartNumber,
-	onToggleBookmark,
 	onStart,
 	startPending,
 }: {
 	lesson: LessonDetail;
-	progress: LessonProgress;
 	startPart: ActivityType;
 	startPartNumber: number;
-	onToggleBookmark: () => void;
 	onStart: () => void;
 	startPending: boolean;
 }) {
@@ -62,21 +56,6 @@ export function LessonHeader({
 							part: PART_META[startPart].label(),
 						})}
 					</SubmitButton>
-					<Button
-						type="button"
-						variant="outline"
-						className="btn btn-outline"
-						onClick={onToggleBookmark}
-					>
-						{progress.bookmarked ? (
-							<BookmarkCheck data-icon="inline-start" />
-						) : (
-							<BookmarkPlus data-icon="inline-start" />
-						)}
-						{progress.bookmarked
-							? m["lessons.detail.saved"]()
-							: m["lessons.detail.saveLater"]()}
-					</Button>
 				</div>
 			</div>
 			<div className="flex shrink-0 items-start justify-center">

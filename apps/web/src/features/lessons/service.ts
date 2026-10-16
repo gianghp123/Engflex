@@ -3,6 +3,7 @@ import type {
 	AttemptProgress,
 	CheckResult,
 	LessonDetail,
+	LessonProgressSummary,
 	PronunciationResult,
 	UnitSection,
 	WritingScoreResponse,
@@ -25,6 +26,12 @@ export function getLessonDetail(id: string): Promise<LessonDetail> {
 
 export function getLessonDetailBySlug(slug: string): Promise<LessonDetail> {
 	return api<LessonDetail>(API_ROUTES.LESSONS.BY_SLUG(slug));
+}
+
+export function listLessonProgress(): Promise<LessonProgressSummary[]> {
+	return api<LessonProgressSummary[]>(API_ROUTES.LESSONS.PROGRESS, undefined, {
+		withCredentials: true,
+	});
 }
 
 export function checkAnswer(
@@ -87,6 +94,7 @@ export type {
 	AttemptProgress,
 	CheckResult,
 	LessonDetail,
+	LessonProgressSummary,
 	PronunciationResult,
 	UnitSection,
 	WritingScoreResponse,

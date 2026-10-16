@@ -199,6 +199,22 @@ func (h *LessonActivityController) GetOpenAttempt(c *gin.Context) {
 	common.OK(c, "open attempt", res)
 }
 
+// ListProgress godoc
+// @Summary      Per-lesson attempt progress for the hub
+// @Tags         lesson-attempts
+// @Security     BearerAuth
+// @Produce      json
+// @Success      200 {object} common.ApiResponse{data=[]responses.LessonProgressSummary}
+// @Router       /lessons/progress [get]
+func (h *LessonActivityController) ListProgress(c *gin.Context) {
+	out, err := h.activities.ListProgress(c.Request.Context(), middleware.UserID(c))
+	if err != nil {
+		common.Fail(c, err)
+		return
+	}
+	common.OK(c, "lesson progress", out)
+}
+
 // ScoreWriting godoc
 // @Summary      Score one writing part into the open attempt
 // @Tags         lesson-activities

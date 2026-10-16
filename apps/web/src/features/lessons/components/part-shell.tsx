@@ -1,12 +1,10 @@
 import type { ActivityType } from "@engflex/contracts";
-import { Link } from "@tanstack/react-router";
-import { ArrowLeft } from "lucide-react";
 import type { ReactNode } from "react";
 import { APP_ROUTES } from "#/app/app-route";
+import { BackButton } from "#/components/common/back-button";
 import { CefrBadge } from "#/components/common/cefr-badge";
 import { MoMascot } from "#/components/common/mo-mascot";
 import { PageLayout } from "#/components/common/page-layout";
-import { Button } from "#/components/ui/button";
 import { useLessonDetail } from "#/features/lessons/queries";
 import { m } from "#/paraglide/messages";
 import { LessonStepNavigator } from "./lesson-step-navigator";
@@ -16,11 +14,14 @@ export function PartShell({
 	lessonId,
 	part,
 	onSelect,
+	headerExtra,
 	children,
 }: {
 	lessonId: string;
 	part: ActivityType;
 	onSelect: (part: ActivityType) => void;
+	/** Rendered at the end of the step row — page-level help actions. */
+	headerExtra?: ReactNode;
 	children: ReactNode;
 }) {
 	const detailQuery = useLessonDetail(lessonId);
@@ -35,12 +36,11 @@ export function PartShell({
 				description: detail.description,
 			}}
 			action={
-				<Button asChild variant="ghost" size="sm" className="w-fit">
-					<Link to={APP_ROUTES.LESSONS.DETAIL} params={{ slug: detail.slug }}>
-						<ArrowLeft data-icon="inline-start" />
-						{m["lessons.detail.backToLesson"]()}
-					</Link>
-				</Button>
+				<BackButton
+					to={APP_ROUTES.LESSONS.DETAIL}
+					params={{ slug: detail.slug }}
+					label={m["lessons.detail.backToLesson"]()}
+				/>
 			}
 		>
 			<div className="flex flex-wrap items-center justify-between gap-3">
@@ -50,8 +50,11 @@ export function PartShell({
 					currentPart={part}
 					onSelect={onSelect}
 				/>
-				<span className="chip px-3 py-1 text-xs">
-					<CefrBadge value={detail.cefrLevel} />
+				<span className="flex items-center gap-2">
+					<span className="chip px-3 py-1 text-xs">
+						<CefrBadge value={detail.cefrLevel} />
+					</span>
+					{headerExtra}
 				</span>
 			</div>
 			{children}

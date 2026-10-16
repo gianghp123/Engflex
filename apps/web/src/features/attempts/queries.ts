@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { API_ROUTES } from "#/app/api-routes";
 import { api } from "#/lib/api";
 
-export const progressKeys = {
+const progressKeys = {
 	summary: ["progress"] as const,
 };
 

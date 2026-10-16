@@ -4,6 +4,7 @@ import {
 	getLessonDetail,
 	getLessonDetailBySlug,
 	getOpenAttempt,
+	listLessonProgress,
 	listSections,
 	pronounceAttempt,
 	scoreWriting,
@@ -13,6 +14,7 @@ import { ApiError } from "#/lib/api";
 
 export const lessonKeys = {
 	sections: ["lesson-sections"] as const,
+	progress: ["lessons", "progress"] as const,
 	detail: (id: string) => ["lesson", id] as const,
 	detailBySlug: (slug: string) => ["lesson", "slug", slug] as const,
 	openAttempt: (id: string) => ["lesson", id, "open-attempt"] as const,
@@ -43,6 +45,17 @@ export function lessonSectionsQueryOptions() {
 		queryKey: lessonKeys.sections,
 		queryFn: () => listSections(),
 	};
+}
+
+export function lessonProgressQueryOptions() {
+	return {
+		queryKey: lessonKeys.progress,
+		queryFn: () => listLessonProgress(),
+	};
+}
+
+export function useLessonProgress() {
+	return useQuery(lessonProgressQueryOptions());
 }
 
 export function useLessonDetail(id: string | undefined) {

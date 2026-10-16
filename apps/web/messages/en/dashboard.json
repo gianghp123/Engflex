@@ -6,7 +6,7 @@
       "greetingName": "Good morning, {name}"
     },
     "activeLesson": {
-      "unitLabel": "Active lesson · Unit 4.2",
+      "label": "Active lesson",
       "progress": "{done} of {total} exercises completed",
       "continue": "Continue practice"
     },

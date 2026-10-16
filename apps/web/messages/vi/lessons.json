@@ -3,7 +3,6 @@
   "lessons": {
     "reading": {
       "previousQuestion": "Câu trước",
-      "readTime": "Đọc ~2 phút",
       "questionOf": "Câu {number}/{total}",
       "nextQuestion": "Câu tiếp theo"
     },
@@ -22,14 +21,11 @@
     },
     "detail": {
       "pace": "Nhịp độ khuyến nghị: Chậm rãi",
-      "sequential": "Theo thứ tự",
       "coach": "Huấn luyện Mo",
       "steady": "Tốc độ ổn định",
       "calmTip": "Mẹo giữ bình tĩnh của Mo",
       "calmQuote": "Cứ thở đều giữa các câu. Nói chậm mà rõ là ăn điểm nhất.",
       "startLesson": "Bắt đầu bài học (Phần {number}: {part})",
-      "saved": "Đã lưu",
-      "saveLater": "Lưu để học sau",
       "activitiesTitle": "Hoạt động trong bài",
       "activitiesSubtitle": "Cần hoàn thành mọi bước",
       "partOf": "Phần {number}/{total}",
@@ -37,8 +33,6 @@
     },
     "status": {
       "available": "Có thể học",
-      "locked": "Đã khóa",
-      "unlocks": "Mở sau {id}",
       "nextUp": "Kế tiếp",
       "recommended": "Nên học tiếp",
       "inProgress": "Đang học",

@@ -22,11 +22,12 @@ export function LiveVoicePartnerCard() {
 		? pickedId
 		: (rows[0]?.id ?? null);
 
-	async function startFreeTalk() {
-		if (createConversation.isPending) return;
+	async function startPartnerTalk() {
+		if (createConversation.isPending || !selectedId) return;
 		try {
 			const conversation = await createConversation.mutateAsync({
-				mode: "free_talk",
+				mode: "roleplay",
+				scenarioId: selectedId,
 			});
 			await navigate({
 				to: APP_ROUTES.VOICE.ROOM,
@@ -82,9 +83,10 @@ export function LiveVoicePartnerCard() {
 			</div>
 			<SubmitButton
 				className="btn btn-primary mt-auto w-full"
+				disabled={!selectedId}
 				pending={createConversation.isPending}
 				onClick={() => {
-					void startFreeTalk();
+					void startPartnerTalk();
 				}}
 			>
 				<Mic data-icon="inline-start" />

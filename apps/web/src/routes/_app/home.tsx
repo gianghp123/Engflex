@@ -69,7 +69,7 @@ function DashboardPage() {
 						title={m["dashboard.stats.streak"]()}
 						value={progress.data?.streakDays ?? 0}
 						aside={
-							<span className="tile bg-secondary text-primary">
+							<span className="tile bg-secondary text-secondary-foreground">
 								<Flame className="size-5" />
 							</span>
 						}
@@ -106,7 +106,7 @@ function DashboardPage() {
 						title={m["dashboard.stats.lessons"]()}
 						value={progress.data?.lessonsCompleted ?? 0}
 						aside={
-							<span className="tile bg-secondary text-primary">
+							<span className="tile bg-secondary text-secondary-foreground">
 								<BookOpenText className="size-5" />
 							</span>
 						}

@@ -3,7 +3,6 @@
   "lessons": {
     "reading": {
       "previousQuestion": "Previous",
-      "readTime": "~2 min read",
       "questionOf": "Question {number} of {total}",
       "nextQuestion": "Next question"
     },
@@ -22,14 +21,11 @@
     },
     "detail": {
       "pace": "Recommended pace: Calm",
-      "sequential": "Sequential",
       "coach": "Coach Mo",
       "steady": "Steady speed",
       "calmTip": "Mo's calm tip",
       "calmQuote": "Take a breath between sentences. Slow and clear always wins.",
       "startLesson": "Start lesson (Part {number}: {part})",
-      "saved": "Saved",
-      "saveLater": "Save for later",
       "activitiesTitle": "Lesson activities",
       "activitiesSubtitle": "All steps required for completion",
       "partOf": "Part {number} of {total}",
@@ -37,8 +33,6 @@
     },
     "status": {
       "available": "Available",
-      "locked": "Locked",
-      "unlocks": "Unlocks after {id}",
       "nextUp": "Next up",
       "recommended": "Recommended next",
       "inProgress": "In progress",

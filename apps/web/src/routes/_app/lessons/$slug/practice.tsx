@@ -38,6 +38,8 @@ import {
 	completePart,
 	getFirstIncompleteActivity,
 } from "#/features/lessons/store";
+import { DockGuide } from "#/features/vocabulary/components/dock-guide";
+import { TextActionDock } from "#/features/vocabulary/components/text-action-dock";
 import { loadOr404 } from "#/lib/route-loader";
 import { m } from "#/paraglide/messages";
 
@@ -96,19 +98,17 @@ function buildQuestionSeeds(
 	return seeds;
 }
 
-/** Fully-answered check activities count as complete for pills + resume. */
+/** Every part with a recorded server entry counts complete — the server's
+ *  own finalize rule (any attached part covers it), so writing and speaking
+ *  rehydrate too. Mid-activity answers still restore via `checks`. */
 function markCompleteParts(
 	lessonId: string,
 	activities: Activity[],
 	progress: AttemptProgress,
 ) {
+	const completed = new Set(progress.completedParts ?? []);
 	for (const activity of activities) {
-		const total =
-			activity.reading?.questions.length ??
-			activity.listening?.questions.length ??
-			0;
-		const answered = progress.checks[activity.id]?.length ?? 0;
-		if (total > 0 && answered >= total) {
+		if (completed.has(activity.id)) {
 			completePart(lessonId, activity.partNumber, activities.length);
 		}
 	}
@@ -176,6 +176,7 @@ function PracticeInner({
 				lessonId={lessonId}
 				part={currentPart}
 				onSelect={setActivePart}
+				headerExtra={<DockGuide />}
 			>
 				<NoOpenRunCard
 					lessonId={lessonId}
@@ -189,54 +190,63 @@ function PracticeInner({
 	}
 
 	return (
-		<PartShell lessonId={lessonId} part={currentPart} onSelect={setActivePart}>
-			{currentPart === "reading" && activity?.reading && attemptId !== null ? (
-				<ReadingActivity
-					key={`${activity.id}:${attemptId}`}
-					lessonId={lessonId}
-					slug={slug}
-					activity={activity}
-					activities={detail.activities}
-					onAdvance={setActivePart}
-					attemptId={attemptId}
-					seed={seeds[activity.id] ?? { answers: {}, results: {} }}
-				/>
-			) : null}
-			{currentPart === "listening" &&
-			activity?.listening &&
-			attemptId !== null ? (
-				<ListeningActivity
-					key={`${activity.id}:${attemptId}`}
-					lessonId={lessonId}
-					slug={slug}
-					activity={activity}
-					activities={detail.activities}
-					onAdvance={setActivePart}
-					attemptId={attemptId}
-					seed={seeds[activity.id] ?? { answers: {}, results: {} }}
-				/>
-			) : null}
-			{currentPart === "writing" && activity?.writing ? (
-				<WritingActivity
-					lessonId={lessonId}
-					slug={slug}
-					activity={activity}
-					activities={detail.activities}
-					onAdvance={setActivePart}
-					attemptId={attemptId}
-				/>
-			) : null}
-			{currentPart === "speaking" && activity?.speaking ? (
-				<SpeakingBranch
-					lessonId={lessonId}
-					slug={slug}
-					activity={activity}
-					activities={detail.activities}
-					onAdvance={setActivePart}
-					attemptId={attemptId}
-				/>
-			) : null}
-		</PartShell>
+		<TextActionDock source={{ type: "lesson", id: lessonId }}>
+			<PartShell
+				lessonId={lessonId}
+				part={currentPart}
+				onSelect={setActivePart}
+				headerExtra={<DockGuide />}
+			>
+				{currentPart === "reading" &&
+				activity?.reading &&
+				attemptId !== null ? (
+					<ReadingActivity
+						key={`${activity.id}:${attemptId}`}
+						lessonId={lessonId}
+						slug={slug}
+						activity={activity}
+						activities={detail.activities}
+						onAdvance={setActivePart}
+						attemptId={attemptId}
+						seed={seeds[activity.id] ?? { answers: {}, results: {} }}
+					/>
+				) : null}
+				{currentPart === "listening" &&
+				activity?.listening &&
+				attemptId !== null ? (
+					<ListeningActivity
+						key={`${activity.id}:${attemptId}`}
+						lessonId={lessonId}
+						slug={slug}
+						activity={activity}
+						activities={detail.activities}
+						onAdvance={setActivePart}
+						attemptId={attemptId}
+						seed={seeds[activity.id] ?? { answers: {}, results: {} }}
+					/>
+				) : null}
+				{currentPart === "writing" && activity?.writing ? (
+					<WritingActivity
+						lessonId={lessonId}
+						slug={slug}
+						activity={activity}
+						activities={detail.activities}
+						onAdvance={setActivePart}
+						attemptId={attemptId}
+					/>
+				) : null}
+				{currentPart === "speaking" && activity?.speaking ? (
+					<SpeakingBranch
+						lessonId={lessonId}
+						slug={slug}
+						activity={activity}
+						activities={detail.activities}
+						onAdvance={setActivePart}
+						attemptId={attemptId}
+					/>
+				) : null}
+			</PartShell>
+		</TextActionDock>
 	);
 }
 
@@ -556,8 +566,6 @@ function WritingActivity({
 						<ModelAnswerCard
 							modelAnswer={payload.modelAnswer}
 							checklist={payload.checklist}
-							continueLabel={continueLabel}
-							onContinue={handleContinue}
 						/>
 					) : null}
 				</div>

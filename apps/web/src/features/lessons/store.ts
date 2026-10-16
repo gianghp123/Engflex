@@ -1,15 +1,12 @@
 import type { Activity, LessonStatus } from "@engflex/contracts";
 import { Store } from "@tanstack/store";
 
-/** Local-only progress derivation (never a wire shape). Mirrors the
- *  removed contract LessonProgress field for field. */
+/** Local-only progress derivation (never a wire shape). */
 export interface LessonProgress {
 	status: LessonStatus;
 	percent: number /* int */;
 	partsCompleted: number /* int */;
 	partsTotal: number /* int */;
-	bookmarked: boolean;
-	savedAt?: string /* RFC3339 */;
 }
 
 export type LessonsState = {
@@ -18,15 +15,27 @@ export type LessonsState = {
 	 *  the activity list); lets hub-level reads size `done/total` without a
 	 *  server count field. */
 	lessonTotals: Record<string, number>;
-	bookmarks: Record<string, string>;
 };
 
 /** Local-only progress until attempts land. Keys are lesson ids. */
 export const lessonsStore = new Store<LessonsState>({
 	completedParts: {},
 	lessonTotals: {},
-	bookmarks: {},
 });
+
+/** Maps a server summary's completed activity ids onto the lesson's part
+ *  numbers (unknown ids — edited lesson configs — are dropped). */
+export function partNumbersFor(
+	activities: Activity[],
+	ids: string[],
+): number[] {
+	const byId = new Map(
+		activities.map((activity) => [activity.id, activity.partNumber]),
+	);
+	return ids
+		.map((id) => byId.get(id))
+		.filter((part): part is number => part !== undefined);
+}
 
 /** Pure derivation — usable from a `useStore` selector for reactive reads.
  *  `fallbackTotal` is the caller's freshly fetched activity count; 0/undefined
@@ -35,25 +44,31 @@ export function progressFrom(
 	state: LessonsState,
 	lessonId: string,
 	fallbackTotal?: number,
+	server?: { count: number; completed: boolean },
 ): LessonProgress {
 	const completed = state.completedParts[lessonId] ?? [];
-	const partsCompleted = completed.length;
+	// A part never un-completes and the server set is monotonic, so the
+	// larger count is the merged truth (local overlay ∪ server rollup).
+	const partsCompleted = Math.max(completed.length, server?.count ?? 0);
 	const partsTotal =
 		fallbackTotal && fallbackTotal > 0
 			? fallbackTotal
 			: (state.lessonTotals[lessonId] ?? 0);
 	const percent =
-		partsTotal === 0 ? 0 : Math.round((partsCompleted / partsTotal) * 100);
+		partsTotal === 0
+			? 0
+			: Math.min(100, Math.round((partsCompleted / partsTotal) * 100));
 	const status: LessonStatus =
-		percent === 0 ? "unstarted" : percent >= 100 ? "completed" : "in_progress";
-	const savedAt = state.bookmarks[lessonId];
+		server?.completed || percent >= 100
+			? "completed"
+			: percent > 0
+				? "in_progress"
+				: "unstarted";
 	return {
 		status,
 		percent,
 		partsCompleted,
 		partsTotal,
-		bookmarked: Boolean(savedAt),
-		savedAt,
 	};
 }
 
@@ -61,21 +76,16 @@ export function progressFrom(
 export function getFirstIncompleteActivity(
 	lessonId: string,
 	activities: Activity[],
+	serverParts: number[] = [],
 ): Activity | undefined {
-	const completed = lessonsStore.state.completedParts[lessonId] ?? [];
+	const completed = new Set([
+		...(lessonsStore.state.completedParts[lessonId] ?? []),
+		...serverParts,
+	]);
 	return (
-		activities.find((activity) => !completed.includes(activity.partNumber)) ??
+		activities.find((activity) => !completed.has(activity.partNumber)) ??
 		activities[0]
 	);
-}
-
-export function toggleBookmark(lessonId: string): void {
-	lessonsStore.setState((state) => {
-		const next = { ...state.bookmarks };
-		if (next[lessonId]) delete next[lessonId];
-		else next[lessonId] = new Date().toISOString();
-		return { ...state, bookmarks: next };
-	});
 }
 
 export function completePart(

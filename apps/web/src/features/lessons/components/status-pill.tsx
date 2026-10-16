@@ -1,27 +1,17 @@
 import type { LessonStatus } from "@engflex/contracts";
 import { cn } from "cn";
-import { Check, Lock, LockOpen, RotateCw } from "lucide-react";
+import { Check, LockOpen, RotateCw } from "lucide-react";
 import { m } from "#/paraglide/messages";
 
 export function LessonStatusPill({
 	status,
 	percent = 0,
-	locked = false,
 	className,
 }: {
 	status: LessonStatus;
 	percent?: number;
-	locked?: boolean;
 	className?: string;
 }) {
-	if (locked) {
-		return (
-			<span className={cn("chip px-2 py-0.5 text-xs", className)}>
-				<Lock className="size-3.5" />
-				{m["lessons.status.locked"]()}
-			</span>
-		);
-	}
 	if (status === "completed") {
 		return (
 			<span

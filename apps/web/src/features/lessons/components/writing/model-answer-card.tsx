@@ -1,18 +1,13 @@
 import { ChevronDownIcon } from "lucide-react";
-import { Button } from "#/components/ui/button";
 import { m } from "#/paraglide/messages";
 
 /** Post-submit reveal: the model answer plus a self-check checklist, collapsed by default. */
 export function ModelAnswerCard({
 	modelAnswer,
 	checklist,
-	continueLabel,
-	onContinue,
 }: {
 	modelAnswer: string;
 	checklist: string[];
-	continueLabel: string;
-	onContinue: () => void;
 }) {
 	return (
 		<details className="surface-card group flex flex-col gap-4 p-5">
@@ -46,11 +41,6 @@ export function ModelAnswerCard({
 						</li>
 					))}
 				</ul>
-			</div>
-			<div className="flex justify-end">
-				<Button type="button" className="btn btn-primary" onClick={onContinue}>
-					{continueLabel}
-				</Button>
 			</div>
 		</details>
 	);

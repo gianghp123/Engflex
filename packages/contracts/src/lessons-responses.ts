@@ -269,11 +269,28 @@ export interface CheckedQuestion {
   explanation: string;
 }
 /**
- * AttemptProgress is the resume payload: run state plus per-activity graded
- * questions keyed by activity id. Checkable activities only — writing and
- * speaking entries carry no rehydratable answers yet and are omitted.
+ * AttemptProgress is the resume payload: run state, per-activity graded
+ * questions keyed by activity id (checkable activities only), and the ids of
+ * every part with a recorded result — writing and speaking included.
  */
 export interface AttemptProgress {
   attempt: AttemptSummary;
+  /**
+   * Checks carries graded questions for checkable activities only.
+   */
   checks: { [key: string]: CheckedQuestion[]};
+  /**
+   * CompletedParts lists the activity ids present in the run's result map:
+   * the server's own finalize rule (any recorded entry covers a part).
+   */
+  completedParts: string[];
+}
+/**
+ * LessonProgressSummary is one lesson's hub progress: the representative
+ * attempt's status and the ids of its attached parts (any activity type).
+ */
+export interface LessonProgressSummary {
+  lessonId: string;
+  status: AttemptStatus;
+  completedActivityIds: string[];
 }

@@ -25,6 +25,10 @@ type AttemptRepository interface {
 	ListCompletedDays(ctx context.Context, userID string, since time.Time) ([]string, error)
 	// CountCompleted returns the caller's total completed attempts.
 	CountCompleted(ctx context.Context, userID string) (int64, error)
+	// ListLessonAttempts returns the caller's lesson attempts (open or
+	// completed), newest first — the hub progress rollup's input. Non-lesson
+	// attempt types and abandoned runs are excluded.
+	ListLessonAttempts(ctx context.Context, userID string) ([]*models.Attempt, error)
 	WithTx(tx *gorm.DB) AttemptRepository
 }
 
@@ -80,6 +84,16 @@ func (r *attemptRepository) CountCompleted(ctx context.Context, userID string) (
 		Where("user_id = ? AND status = ?", userID, enums.AttemptStatusCompleted).
 		Count(&n).Error
 	return n, err
+}
+
+func (r *attemptRepository) ListLessonAttempts(ctx context.Context, userID string) ([]*models.Attempt, error) {
+	var rows []*models.Attempt
+	err := r.db.WithContext(ctx).
+		Where("user_id = ? AND lesson_id IS NOT NULL AND status IN ?", userID,
+			[]enums.AttemptStatus{enums.AttemptStatusInProgress, enums.AttemptStatusCompleted}).
+		Order("created_at DESC").
+		Find(&rows).Error
+	return rows, err
 }
 
 // WithTx returns the repository bound to the given transaction handle.

@@ -1,10 +1,9 @@
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { useStore } from "@tanstack/react-store";
-import { ArrowLeft, Gauge } from "lucide-react";
+import { createFileRoute, notFound } from "@tanstack/react-router";
+import { Gauge } from "lucide-react";
 import { APP_ROUTES } from "#/app/app-route";
 import { useBreadcrumbs } from "#/app/breadcrumbs";
+import { BackButton } from "#/components/common/back-button";
 import { PageLayout } from "#/components/common/page-layout";
-import { Button } from "#/components/ui/button";
 import { ActivityRow } from "#/features/lessons/components/activity-row";
 import { LessonHeader } from "#/features/lessons/components/lesson-header";
 import { TipBar } from "#/features/lessons/components/tip-bar";
@@ -12,12 +11,11 @@ import { useStartPractice } from "#/features/lessons/hooks/use-start-practice";
 import {
 	lessonDetailBySlugQueryOptions,
 	useLessonDetailBySlug,
+	useLessonProgress,
 } from "#/features/lessons/queries";
 import {
 	getFirstIncompleteActivity,
-	lessonsStore,
-	progressFrom,
-	toggleBookmark,
+	partNumbersFor,
 } from "#/features/lessons/store";
 import { loadOr404 } from "#/lib/route-loader";
 import { m } from "#/paraglide/messages";
@@ -41,8 +39,8 @@ function LessonDetailPage() {
 	const { slug } = Route.useParams();
 	const detailQuery = useLessonDetailBySlug(slug);
 	const detail = detailQuery.data;
-	const storeState = useStore(lessonsStore);
 	const starting = useStartPractice();
+	const progressQuery = useLessonProgress();
 	useBreadcrumbs(
 		detail
 			? [
@@ -58,14 +56,16 @@ function LessonDetailPage() {
 	if (detailQuery.isError) throw detailQuery.error;
 	if (!detail) return null;
 
-	const progress = progressFrom(
-		storeState,
-		detail.id,
-		detail.activities.length,
+	const serverItem = progressQuery.data?.find(
+		(item) => item.lessonId === detail.id,
 	);
+
 	const startActivity = getFirstIncompleteActivity(
 		detail.id,
 		detail.activities,
+		serverItem
+			? partNumbersFor(detail.activities, serverItem.completedActivityIds)
+			: [],
 	);
 	// Unreachable: the loader enforces non-empty activities, and the lookup
 	// falls back to the first activity. Kept for type narrowing only.
@@ -74,20 +74,15 @@ function LessonDetailPage() {
 	return (
 		<PageLayout
 			action={
-				<Button asChild variant="outline" size="sm" className="btn btn-outline">
-					<Link to={APP_ROUTES.LESSONS.LIST}>
-						<ArrowLeft data-icon="inline-start" />
-						{m["lessons.detail.backToLesson"]()}
-					</Link>
-				</Button>
+				<BackButton
+					to={APP_ROUTES.LESSONS.LIST}
+					label={m["lessons.detail.backToLesson"]()}
+				/>
 			}
 		>
 			<div className="flex flex-wrap items-center gap-2">
 				<span className="chip px-2 py-0.5 text-xs">
 					{detail.section?.title}
-				</span>
-				<span className="chip px-2 py-0.5 text-xs">
-					{m["lessons.detail.sequential"]()}
 				</span>
 				<span className="chip ml-auto px-2 py-0.5 text-xs">
 					<Gauge className="size-3.5" />
@@ -97,10 +92,8 @@ function LessonDetailPage() {
 
 			<LessonHeader
 				lesson={detail}
-				progress={progress}
 				startPart={startActivity.type}
 				startPartNumber={startActivity.partNumber}
-				onToggleBookmark={() => toggleBookmark(detail.id)}
 				onStart={() => void starting.begin(detail.slug, detail.id)}
 				startPending={starting.pending}
 			/>

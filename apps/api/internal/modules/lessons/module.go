@@ -44,6 +44,7 @@ func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB, voiceCfg config.VoiceConfi
 	l.GET("", middleware.RequireAuth(), lessonCtl.List)
 	l.GET("/:id", middleware.RequireAuth(), lessonCtl.GetByID)
 	l.GET("/by-slug/:slug", middleware.RequireAuth(), lessonCtl.GetBySlug)
+	l.GET("/progress", middleware.RequireAuth(), activityCtl.ListProgress)
 	l.POST("/:id/attempts", middleware.RequireAuth(), activityCtl.StartAttempt)
 	l.GET("/:id/attempts/open", middleware.RequireAuth(), activityCtl.GetOpenAttempt)
 

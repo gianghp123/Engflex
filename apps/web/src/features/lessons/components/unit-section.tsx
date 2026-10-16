@@ -1,16 +1,16 @@
-import type { Lesson } from "@engflex/contracts";
+import type { Lesson, LessonProgressSummary } from "@engflex/contracts";
 import { m } from "#/paraglide/messages";
 import { LessonCard } from "./lesson-card";
 
 export function UnitSection({
 	section,
 	units,
-	unlocksAfterById,
+	serverById,
 	recommendedId,
 }: {
 	section: { id: string; title: string; cefrBand: string };
 	units: Lesson[];
-	unlocksAfterById: Record<string, string | undefined>;
+	serverById: Record<string, LessonProgressSummary | undefined>;
 	recommendedId?: string;
 }) {
 	return (
@@ -35,8 +35,7 @@ export function UnitSection({
 					<LessonCard
 						key={lesson.id}
 						lesson={lesson}
-						locked={unlocksAfterById[lesson.id] !== undefined}
-						unlocksAfter={unlocksAfterById[lesson.id]}
+						server={serverById[lesson.id]}
 						recommended={recommendedId === lesson.id}
 					/>
 				))}

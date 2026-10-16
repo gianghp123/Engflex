@@ -1,5 +1,3 @@
-import { m } from "#/paraglide/messages";
-
 export function PassagePanel({
 	kicker,
 	title,
@@ -19,9 +17,6 @@ export function PassagePanel({
 			<div className="flex flex-wrap items-center justify-between gap-2">
 				<span className="chip bg-accent px-2 py-0.5 text-[11px] font-bold">
 					{kicker}
-				</span>
-				<span className="text-[11px] font-medium text-muted-foreground">
-					{m["lessons.reading.readTime"]()}
 				</span>
 			</div>
 			<h2 className="text-xl font-bold text-foreground">{title}</h2>
