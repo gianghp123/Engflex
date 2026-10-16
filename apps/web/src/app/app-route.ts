@@ -48,6 +48,13 @@ export const APP_ROUTES = {
 		SIGNAL_START: "/api/voice/$conversationId/start",
 		SIGNAL_OFFER: "/api/voice/$conversationId/offer",
 	},
+	VIDEOS: {
+		LIST: "/videos",
+		DETAIL: "/videos/$videoId",
+		DICTATION: "/videos/$videoId/dictation",
+		SHADOWING: "/videos/$videoId/shadowing",
+		CATEGORY: "/videos/categories/$categorySlug",
+	},
 	/**
 	 * Clerk's catch-all pages. The file routes are `/sign-in/$` splats, so a
 	 * typed `to` needs the splat id — but `redirect({ href })` bypasses route

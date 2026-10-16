@@ -1,0 +1,145 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "videos": {
+    "hub": {
+      "title": "Thư viện video",
+      "body": "Xem video và luyện nghe theo từng câu.",
+      "empty": {
+        "title": "Chưa có video nào",
+        "body": "Thư viện video đang được cập nhật. Bạn quay lại sau nhé."
+      },
+      "loading": "Đang tải thư viện video"
+    },
+    "section": {
+      "count": "({count} bài học)",
+      "seeAll": "Xem tất cả"
+    },
+    "card": {
+      "pro": "PRO",
+      "views": "{count} lượt nghe",
+      "duration": "Thời lượng {time}",
+      "source": {
+        "youtube": "Youtube"
+      },
+      "practice": {
+        "dictation": "Dictation",
+        "shadowing": "Shadowing",
+        "done": "{mode}: đã hoàn thành",
+        "todo": "{mode}: chưa luyện"
+      }
+    },
+    "modeDialog": {
+      "title": "Chọn chế độ học",
+      "body": "Chọn chế độ học phù hợp với bạn nhất",
+      "mode": {
+        "dictation": "Nghe - viết chính tả",
+        "shadowing": "Bắt chước phát âm"
+      }
+    },
+    "dictation": {
+      "toolbar": {
+        "hideMedia": "Ẩn media",
+        "showMedia": "Hiện media",
+        "hideTranscript": "Ẩn transcript",
+        "showTranscript": "Hiện transcript"
+      },
+      "video": {
+        "title": "Video",
+        "time": "Thời gian {time}",
+        "controls": "Điều khiển",
+        "start": "Bắt đầu",
+        "replay": "Phát lại"
+      },
+      "level": {
+        "label": "Độ khó",
+        "easy": "Dễ",
+        "normal": "Vừa",
+        "hard": "Khó"
+      },
+      "hints": {
+        "reveal": "Hiện từ {index}",
+        "hide": "Ẩn từ {index}",
+        "note": "Các từ được tiết lộ sẽ bị tính là lỗi và ảnh hưởng đến điểm số của bạn.",
+        "revealAll": "Hiện tất cả từ"
+      },
+      "next": "Tiếp theo",
+      "summary": {
+        "title": "Phiên học hoàn thành",
+        "body": "Bạn đã hoàn thành tất cả các câu trong video này.",
+        "accuracy": "Độ chính xác: {percent}%",
+        "correctWords": "Từ đúng: {count}",
+        "incorrectWords": "Từ sai: {count}",
+        "restart": "Luyện tập lại",
+        "backToHub": "Về thư viện video"
+      },
+      "empty": {
+        "title": "Chưa có bản chép lời",
+        "body": "Video này chưa có phụ đề để luyện tập dictation.",
+        "back": "Quay lại thư viện"
+      },
+      "input": {
+        "hint": "Gõ từng từ và nhấn phím Space để kiểm tra",
+        "sentenceDone": "Hoàn thành câu! Nhấn Enter hoặc 'Tiếp theo' để tiếp tục.",
+        "accuracy": "Đúng {correct}/{total} từ"
+      }
+    },
+    "practice": {
+      "video": {
+        "play": "Phát video"
+      },
+      "player": {
+        "prev": "Câu trước",
+        "replay": "Nghe lại câu",
+        "play": "Phát câu",
+        "next": "Câu tiếp theo",
+        "speed": "Tốc độ phát {speed}x",
+        "settings": "Cài đặt",
+        "shortcuts": "Phím tắt"
+      },
+      "transcript": {
+        "title": "Bản chép",
+        "progress": "{value}%",
+        "item": "Câu {index}",
+        "edit": "Sửa câu"
+      }
+    },
+    "shadowing": {
+      "toolbar": {
+        "hideTranscript": "Ẩn transcript",
+        "showTranscript": "Hiện transcript",
+        "view": "Chế độ xem",
+        "watch": "Xem",
+        "practice": "Luyện",
+        "time": "Thời gian {time}"
+      },
+      "controls": {
+        "autoPause": "Tự động dừng",
+        "largeVideo": "Video kích thước lớn",
+        "start": "Bắt đầu"
+      },
+      "record": {
+        "start": "Ghi âm",
+        "stop": "Dừng ghi âm",
+        "playback": "Phát lại ghi âm"
+      },
+      "transcript": {
+        "phonetic": "IPA",
+        "translation": "Dịch"
+      }
+    },
+    "category": {
+      "back": "Quay lại chủ đề",
+      "total": "Tổng số bài học: {count}",
+      "filter": {
+        "title": "Bộ lọc",
+        "search": "Tìm kiếm bài học...",
+        "level": "Độ khó",
+        "levelAll": "Tất cả độ khó"
+      },
+      "empty": {
+        "title": "Không tìm thấy video",
+        "body": "Thử từ khóa khác hoặc chọn độ khó khác."
+      }
+    }
+  }
+}

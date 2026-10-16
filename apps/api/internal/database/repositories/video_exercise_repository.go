@@ -2,21 +2,20 @@ package repositories
 
 import (
 	"context"
+	"engflex-api/internal/common/enums"
 	"engflex-api/internal/database/models"
 
 	"gorm.io/gorm"
 )
 
 type VideoExerciseRepository interface {
-	List(ctx context.Context, limit int, offset int) ([]*models.VideoExercise, error)
+	List(ctx context.Context, categoryID *string, cefr *enums.CEFR, search string, limit, offset int) ([]*models.VideoExercise, error)
 	GetByID(ctx context.Context, id string) (*models.VideoExercise, error)
-	// GetDetail returns the exercise with its category (one join) and its
-	// transcripts (second query, ordered by sequence) attached.
 	GetDetail(ctx context.Context, id string) (*models.VideoExercise, error)
 	Create(ctx context.Context, lesson *models.VideoExercise) error
 	Update(ctx context.Context, lesson *models.VideoExercise) error
 	Delete(ctx context.Context, id string) error
-	Count(ctx context.Context) (int64, error)
+	Count(ctx context.Context, categoryID *string, cefr *enums.CEFR, search string) (int64, error)
 	WithTx(tx *gorm.DB) VideoExerciseRepository
 }
 
@@ -31,9 +30,29 @@ func (r *videoExerciseRepository) WithTx(tx *gorm.DB) VideoExerciseRepository {
 	return &videoExerciseRepository{db: tx}
 }
 
-func (r *videoExerciseRepository) List(ctx context.Context, limit int, offset int) ([]*models.VideoExercise, error) {
+func filterVideoExercises(q *gorm.DB, categoryID *string, cefr *enums.CEFR, search string) *gorm.DB {
+	if categoryID != nil && *categoryID != "" {
+		q = q.Where("video_exercises.category_id = ?", *categoryID)
+	}
+	if cefr != nil && *cefr != "" {
+		q = q.Where("video_exercises.cefr_level = ?", *cefr)
+	}
+	if search != "" {
+		like := "%" + search + "%"
+		q = q.Where("(video_exercises.title ILIKE ? OR video_exercises.description ILIKE ?)", like, like)
+	}
+	return q
+}
+
+const (
+	exerciseCategorySelect = `video_exercises.*, "Category".id AS "Category__id", "Category".slug AS "Category__slug", "Category".name AS "Category__name", "Category".created_at AS "Category__created_at", "Category".updated_at AS "Category__updated_at"`
+	exerciseCategoryJoin   = `LEFT JOIN video_categories "Category" ON video_exercises.category_id = "Category".id`
+)
+
+func (r *videoExerciseRepository) List(ctx context.Context, categoryID *string, cefr *enums.CEFR, search string, limit, offset int) ([]*models.VideoExercise, error) {
 	lessons := make([]*models.VideoExercise, 0)
-	query := r.db.WithContext(ctx).Order("id asc")
+	query := filterVideoExercises(r.db.WithContext(ctx).Table("video_exercises").Select(exerciseCategorySelect).Joins(exerciseCategoryJoin), categoryID, cefr, search).
+		Order("video_exercises.created_at DESC, video_exercises.id ASC")
 	if limit > 0 {
 		query = query.Limit(limit).Offset(offset)
 	}
@@ -57,16 +76,12 @@ func (r *videoExerciseRepository) GetByID(ctx context.Context, id string) (*mode
 	return &lesson, nil
 }
 
-// GetDetail returns one exercise with its category joined in a single
-// round trip and its transcripts attached from a second query ordered by
-// sequence. Transcripts stay out of the join: a has-many join would
-// cartesian-duplicate the parent and break pagination.
 func (r *videoExerciseRepository) GetDetail(ctx context.Context, id string) (*models.VideoExercise, error) {
 	if _, err := parseID(id, "id"); err != nil {
 		return nil, err
 	}
 	var lesson models.VideoExercise
-	if err := r.db.WithContext(ctx).Joins("Category").First(&lesson, "video_exercises.id = ?", id).Error; err != nil {
+	if err := r.db.WithContext(ctx).Table("video_exercises").Select(exerciseCategorySelect).Joins(exerciseCategoryJoin).First(&lesson, "video_exercises.id = ?", id).Error; err != nil {
 		return nil, err
 	}
 	transcripts := make([]*models.VideoTranscript, 0)
@@ -110,9 +125,10 @@ func (r *videoExerciseRepository) Delete(ctx context.Context, id string) error {
 	return nil
 }
 
-func (r *videoExerciseRepository) Count(ctx context.Context) (int64, error) {
+func (r *videoExerciseRepository) Count(ctx context.Context, categoryID *string, cefr *enums.CEFR, search string) (int64, error) {
 	var count int64
-	err := r.db.WithContext(ctx).Model(&models.VideoExercise{}).Count(&count).Error
+	err := filterVideoExercises(r.db.WithContext(ctx).Model(&models.VideoExercise{}), categoryID, cefr, search).
+		Count(&count).Error
 	if err != nil {
 		return 0, err
 	}

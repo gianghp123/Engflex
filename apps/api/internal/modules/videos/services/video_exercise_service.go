@@ -9,10 +9,11 @@ import (
 	"engflex-api/internal/modules/videos/dtos/requests"
 	"engflex-api/internal/utils"
 	"log/slog"
+	"strings"
 )
 
 type VideoExerciseService interface {
-	List(ctx context.Context, limit int, offset int) ([]*models.VideoExercise, int64, error)
+	List(ctx context.Context, req requests.ListVideoExercises) ([]*models.VideoExercise, int64, error)
 	GetByID(ctx context.Context, id string) (*models.VideoExercise, error)
 	Create(ctx context.Context, req requests.CreateVideoExercise) (*models.VideoExercise, error)
 	Update(ctx context.Context, id string, req requests.UpdateVideoExercise) (*models.VideoExercise, error)
@@ -28,20 +29,33 @@ func NewVideoExerciseService(repo repositories.VideoExerciseRepository) VideoExe
 	return &videoExerciseService{repo: repo}
 }
 
-func (s *videoExerciseService) List(ctx context.Context, limit, offset int) ([]*models.VideoExercise, int64, error) {
-	lessons, err := s.repo.List(ctx, limit, offset)
+// List pages the catalog under the request's filters. Page and the total
+// come from the same filter set, so the page count the client derives is
+// exact. A blank search (only whitespace) matches everything.
+func (s *videoExerciseService) List(ctx context.Context, req requests.ListVideoExercises) ([]*models.VideoExercise, int64, error) {
+	page, pageSize := req.Page, req.PageSize
+	if page < 1 {
+		page = common.DefaultPage
+	}
+	if pageSize < 1 {
+		pageSize = common.DefaultPageSize
+	}
+	offset := utils.Offset(page, pageSize)
+	search := strings.TrimSpace(req.Search)
+
+	lessons, err := s.repo.List(ctx, req.CategoryID, req.CEFRLevel, search, pageSize, offset)
 	if err != nil {
 		appErr := common.FromDBError(err, "video exercise")
 		logger.Report(ctx, "failed to list video exercises", appErr)
 		return nil, 0, appErr
 	}
-	total, err := s.repo.Count(ctx)
+	total, err := s.repo.Count(ctx, req.CategoryID, req.CEFRLevel, search)
 	if err != nil {
 		appErr := common.FromDBError(err, "video exercise")
 		logger.Report(ctx, "failed to count video exercises", appErr)
 		return nil, 0, appErr
 	}
-	slog.InfoContext(ctx, "video exercises listed", "count", len(lessons), "total", total)
+	slog.InfoContext(ctx, "video exercises listed", "count", len(lessons), "total", total, "page", page)
 	return lessons, total, nil
 }
 
@@ -103,7 +117,7 @@ func (s *videoExerciseService) Delete(ctx context.Context, id string) error {
 }
 
 func (s *videoExerciseService) Count(ctx context.Context) (int64, error) {
-	count, err := s.repo.Count(ctx)
+	count, err := s.repo.Count(ctx, nil, nil, "")
 	if err != nil {
 		appErr := common.FromDBError(err, "video exercise")
 		logger.Report(ctx, "failed to count video exercise", appErr)

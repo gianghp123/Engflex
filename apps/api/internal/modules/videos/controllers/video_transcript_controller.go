@@ -23,6 +23,7 @@ func NewVideoTranscriptController(service services.VideoTranscriptService) *Vide
 //	@Summary		Create transcript
 //	@Description	Create a new transcript
 //	@Tags			Video Transcripts
+//	@Security		BearerAuth
 //	@Accept			json
 //	@Produce		json
 //	@Param			request	body		requests.CreateVideoTranscript								true	"Transcript payload"
@@ -52,6 +53,7 @@ func (h *VideoTranscriptController) Create(c *gin.Context) {
 //	@Summary		Update transcript
 //	@Description	Update an existing transcript by its ID
 //	@Tags			Video Transcripts
+//	@Security		BearerAuth
 //	@Accept			json
 //	@Produce		json
 //	@Param			id		path		string													true	"Transcript ID"
@@ -83,6 +85,7 @@ func (h *VideoTranscriptController) Update(c *gin.Context) {
 //	@Summary		Delete transcript
 //	@Description	Delete a transcript by its ID
 //	@Tags			Video Transcripts
+//	@Security		BearerAuth
 //	@Produce		json
 //	@Param			id	path		string				true	"Transcript ID"
 //	@Success		200	{object}	common.ApiResponse	"Transcript deleted successfully"
@@ -105,6 +108,7 @@ func (h *VideoTranscriptController) Delete(c *gin.Context) {
 //	@Summary		Get transcript by ID
 //	@Description	Retrieve details of a transcript by its ID
 //	@Tags			Video Transcripts
+//	@Security		BearerAuth
 //	@Produce		json
 //	@Param			id	path		string													true	"Transcript ID"
 //	@Success		200	{object}	common.ApiResponse{data=responses.VideoTranscriptResponse}	"Transcript retrieved successfully"
@@ -129,6 +133,7 @@ func (h *VideoTranscriptController) GetByID(c *gin.Context) {
 //	@Summary		Get transcripts by lesson ID
 //	@Description	Retrieve list of transcripts belonging to a lesson
 //	@Tags			Video Transcripts
+//	@Security		BearerAuth
 //	@Produce		json
 //	@Param			video_exercise_id	path		string													true	"Lesson ID"
 //	@Success		200			{object}	common.ApiResponse{data=[]responses.VideoTranscriptResponse}	"Transcripts retrieved successfully"
@@ -152,6 +157,7 @@ func (h *VideoTranscriptController) GetByVideoExerciseID(c *gin.Context) {
 //	@Summary		List transcripts
 //	@Description	Get paginated list of transcripts
 //	@Tags			Video Transcripts
+//	@Security		BearerAuth
 //	@Produce		json
 //	@Param			page		query		int														false	"Page number (1-based)"	default(1)
 //	@Param			pageSize	query		int														false	"Page size"				default(20)

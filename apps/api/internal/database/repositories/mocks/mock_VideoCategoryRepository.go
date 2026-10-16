@@ -365,6 +365,74 @@ func (_c *MockVideoCategoryRepository_List_Call) RunAndReturn(run func(ctx conte
 	return _c
 }
 
+// ListWithPreview provides a mock function for the type MockVideoCategoryRepository
+func (_mock *MockVideoCategoryRepository) ListWithPreview(ctx context.Context, previewSize int) ([]*models.VideoCategory, error) {
+	ret := _mock.Called(ctx, previewSize)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ListWithPreview")
+	}
+
+	var r0 []*models.VideoCategory
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, int) ([]*models.VideoCategory, error)); ok {
+		return returnFunc(ctx, previewSize)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, int) []*models.VideoCategory); ok {
+		r0 = returnFunc(ctx, previewSize)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.VideoCategory)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = returnFunc(ctx, previewSize)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockVideoCategoryRepository_ListWithPreview_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ListWithPreview'
+type MockVideoCategoryRepository_ListWithPreview_Call struct {
+	*mock.Call
+}
+
+// ListWithPreview is a helper method to define mock.On call
+//   - ctx context.Context
+//   - previewSize int
+func (_e *MockVideoCategoryRepository_Expecter) ListWithPreview(ctx any, previewSize any) *MockVideoCategoryRepository_ListWithPreview_Call {
+	return &MockVideoCategoryRepository_ListWithPreview_Call{Call: _e.mock.On("ListWithPreview", ctx, previewSize)}
+}
+
+func (_c *MockVideoCategoryRepository_ListWithPreview_Call) Run(run func(ctx context.Context, previewSize int)) *MockVideoCategoryRepository_ListWithPreview_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 int
+		if args[1] != nil {
+			arg1 = args[1].(int)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockVideoCategoryRepository_ListWithPreview_Call) Return(videoCategorys []*models.VideoCategory, err error) *MockVideoCategoryRepository_ListWithPreview_Call {
+	_c.Call.Return(videoCategorys, err)
+	return _c
+}
+
+func (_c *MockVideoCategoryRepository_ListWithPreview_Call) RunAndReturn(run func(ctx context.Context, previewSize int) ([]*models.VideoCategory, error)) *MockVideoCategoryRepository_ListWithPreview_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // Update provides a mock function for the type MockVideoCategoryRepository
 func (_mock *MockVideoCategoryRepository) Update(ctx context.Context, category *models.VideoCategory) error {
 	ret := _mock.Called(ctx, category)

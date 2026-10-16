@@ -26,7 +26,7 @@ services:
 
   minio:
     container_name: engflex_minio
-    image: minio/minio:latest
+    image: pgsty/minio:latest
     command: server /data --console-address ":9001"
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
@@ -41,7 +41,7 @@ services:
       - engflex_minio_data:/data
 
   minio-init:
-    image: minio/mc:latest
+    image: pgsty/mc:latest
     depends_on:
       - minio
     entrypoint: >
@@ -61,6 +61,8 @@ services:
   # Compose builds the image from the pinned upstream tag on first `up`
   # (one-time, ~5 GB, network needed); `make pronounce-warm` loads the weights.
   openpronounce:
+    profiles:
+      - pronounce
     container_name: engflex_openpronounce
     image: openpronounce:v0.3.0
     build:
