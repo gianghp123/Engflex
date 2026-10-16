@@ -58,6 +58,8 @@ export const API_ROUTES = {
 		VOCABULARY_DECKS: "/admin/vocabulary-decks",
 		VOCABULARY_ITEMS: "/admin/vocabulary-items",
 		LESSON_ACTIVITY: (id: ApiId) => `/admin/lesson-activities/${id}`,
+		USERS: "/admin/users",
+		USER_ROLE: (id: ApiId) => `/admin/users/${id}/role`,
 	},
 	PERSONAS: {
 		LIST: "/personas",
