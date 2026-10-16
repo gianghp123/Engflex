@@ -17,7 +17,8 @@
       "./messages/{locale}/voice.json",
       "./messages/{locale}/progress.json",
       "./messages/{locale}/errors.json",
-      "./messages/{locale}/about.json"
+      "./messages/{locale}/about.json",
+      "./messages/{locale}/admin.json"
     ]
   }
 }

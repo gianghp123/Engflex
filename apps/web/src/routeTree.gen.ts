@@ -10,11 +10,18 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AppRouteRouteImport } from './routes/_app/route'
+import { Route as AdminRouteRouteImport } from './routes/admin/route'
 import { Route as ErrorRouteImport } from './routes/error'
 import { Route as NotFoundRouteImport } from './routes/not-found'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
 import { Route as AppAboutRouteImport } from './routes/_app/about'
+import { Route as AdminIndexRouteImport } from './routes/admin/index'
+import { Route as AdminLessonsRouteImport } from './routes/admin/lessons'
+import { Route as AdminScenariosRouteImport } from './routes/admin/scenarios'
+import { Route as AdminUsersRouteImport } from './routes/admin/users'
+import { Route as AdminVideosRouteImport } from './routes/admin/videos'
+import { Route as AdminVocabularyRouteImport } from './routes/admin/vocabulary'
 import { Route as SignInSplatRouteImport } from './routes/sign-in.$'
 import { Route as SignUpSplatRouteImport } from './routes/sign-up.$'
 import { Route as AppLessonsIndexRouteImport } from './routes/_app/lessons/index'
@@ -30,6 +37,11 @@ import { Route as AppVoiceScenariosScenarioIdRouteImport } from './routes/_app/v
 
 const AppRouteRoute = AppRouteRouteImport.update({
   id: '/_app',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRouteRoute = AdminRouteRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ErrorRoute = ErrorRouteImport.update({
@@ -56,6 +68,36 @@ const AppAboutRoute = AppAboutRouteImport.update({
   id: '/about',
   path: '/about',
   getParentRoute: () => AppRouteRoute,
+} as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminLessonsRoute = AdminLessonsRouteImport.update({
+  id: '/lessons',
+  path: '/lessons',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminScenariosRoute = AdminScenariosRouteImport.update({
+  id: '/scenarios',
+  path: '/scenarios',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminUsersRoute = AdminUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminVideosRoute = AdminVideosRouteImport.update({
+  id: '/videos',
+  path: '/videos',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminVocabularyRoute = AdminVocabularyRouteImport.update({
+  id: '/vocabulary',
+  path: '/vocabulary',
+  getParentRoute: () => AdminRouteRoute,
 } as any)
 const SignInSplatRoute = SignInSplatRouteImport.update({
   id: '/sign-in/$',
@@ -122,12 +164,19 @@ const AppVoiceScenariosScenarioIdRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
+  '/admin': typeof AdminRouteRouteWithChildren
   '/error': typeof ErrorRoute
   '/not-found': typeof NotFoundRoute
   '/onboarding': typeof OnboardingRoute
   '/about': typeof AppAboutRoute
+  '/admin/lessons': typeof AdminLessonsRoute
+  '/admin/scenarios': typeof AdminScenariosRoute
+  '/admin/users': typeof AdminUsersRoute
+  '/admin/videos': typeof AdminVideosRoute
+  '/admin/vocabulary': typeof AdminVocabularyRoute
   '/sign-in/$': typeof SignInSplatRoute
   '/sign-up/$': typeof SignUpSplatRoute
+  '/admin/': typeof AdminIndexRoute
   '/vocabulary/$itemId': typeof AppVocabularyItemIdRoute
   '/voice/preview': typeof AppVoicePreviewRoute
   '/lessons/': typeof AppLessonsIndexRoute
@@ -144,9 +193,15 @@ export interface FileRoutesByTo {
   '/not-found': typeof NotFoundRoute
   '/onboarding': typeof OnboardingRoute
   '/about': typeof AppAboutRoute
+  '/admin/lessons': typeof AdminLessonsRoute
+  '/admin/scenarios': typeof AdminScenariosRoute
+  '/admin/users': typeof AdminUsersRoute
+  '/admin/videos': typeof AdminVideosRoute
+  '/admin/vocabulary': typeof AdminVocabularyRoute
   '/sign-in/$': typeof SignInSplatRoute
   '/sign-up/$': typeof SignUpSplatRoute
   '/': typeof AppIndexRoute
+  '/admin': typeof AdminIndexRoute
   '/vocabulary/$itemId': typeof AppVocabularyItemIdRoute
   '/voice/preview': typeof AppVoicePreviewRoute
   '/lessons': typeof AppLessonsIndexRoute
@@ -161,13 +216,20 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteRouteWithChildren
+  '/admin': typeof AdminRouteRouteWithChildren
   '/error': typeof ErrorRoute
   '/not-found': typeof NotFoundRoute
   '/onboarding': typeof OnboardingRoute
   '/_app/about': typeof AppAboutRoute
+  '/admin/lessons': typeof AdminLessonsRoute
+  '/admin/scenarios': typeof AdminScenariosRoute
+  '/admin/users': typeof AdminUsersRoute
+  '/admin/videos': typeof AdminVideosRoute
+  '/admin/vocabulary': typeof AdminVocabularyRoute
   '/sign-in/$': typeof SignInSplatRoute
   '/sign-up/$': typeof SignUpSplatRoute
   '/_app/': typeof AppIndexRoute
+  '/admin/': typeof AdminIndexRoute
   '/_app/vocabulary/$itemId': typeof AppVocabularyItemIdRoute
   '/_app/voice/preview': typeof AppVoicePreviewRoute
   '/_app/lessons/': typeof AppLessonsIndexRoute
@@ -183,12 +245,19 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin'
     | '/error'
     | '/not-found'
     | '/onboarding'
     | '/about'
+    | '/admin/lessons'
+    | '/admin/scenarios'
+    | '/admin/users'
+    | '/admin/videos'
+    | '/admin/vocabulary'
     | '/sign-in/$'
     | '/sign-up/$'
+    | '/admin/'
     | '/vocabulary/$itemId'
     | '/voice/preview'
     | '/lessons/'
@@ -205,9 +274,15 @@ export interface FileRouteTypes {
     | '/not-found'
     | '/onboarding'
     | '/about'
+    | '/admin/lessons'
+    | '/admin/scenarios'
+    | '/admin/users'
+    | '/admin/videos'
+    | '/admin/vocabulary'
     | '/sign-in/$'
     | '/sign-up/$'
     | '/'
+    | '/admin'
     | '/vocabulary/$itemId'
     | '/voice/preview'
     | '/lessons'
@@ -221,13 +296,20 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/_app'
+    | '/admin'
     | '/error'
     | '/not-found'
     | '/onboarding'
     | '/_app/about'
+    | '/admin/lessons'
+    | '/admin/scenarios'
+    | '/admin/users'
+    | '/admin/videos'
+    | '/admin/vocabulary'
     | '/sign-in/$'
     | '/sign-up/$'
     | '/_app/'
+    | '/admin/'
     | '/_app/vocabulary/$itemId'
     | '/_app/voice/preview'
     | '/_app/lessons/'
@@ -242,6 +324,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   AppRouteRoute: typeof AppRouteRouteWithChildren
+  AdminRouteRoute: typeof AdminRouteRouteWithChildren
   ErrorRoute: typeof ErrorRoute
   NotFoundRoute: typeof NotFoundRoute
   OnboardingRoute: typeof OnboardingRoute
@@ -256,6 +339,13 @@ declare module '@tanstack/react-router' {
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof AppRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/error': {
@@ -292,6 +382,48 @@ declare module '@tanstack/react-router' {
       fullPath: '/about'
       preLoaderRoute: typeof AppAboutRouteImport
       parentRoute: typeof AppRouteRoute
+    }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/lessons': {
+      id: '/admin/lessons'
+      path: '/lessons'
+      fullPath: '/admin/lessons'
+      preLoaderRoute: typeof AdminLessonsRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/scenarios': {
+      id: '/admin/scenarios'
+      path: '/scenarios'
+      fullPath: '/admin/scenarios'
+      preLoaderRoute: typeof AdminScenariosRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/users': {
+      id: '/admin/users'
+      path: '/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AdminUsersRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/videos': {
+      id: '/admin/videos'
+      path: '/videos'
+      fullPath: '/admin/videos'
+      preLoaderRoute: typeof AdminVideosRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/vocabulary': {
+      id: '/admin/vocabulary'
+      path: '/vocabulary'
+      fullPath: '/admin/vocabulary'
+      preLoaderRoute: typeof AdminVocabularyRouteImport
+      parentRoute: typeof AdminRouteRoute
     }
     '/sign-in/$': {
       id: '/sign-in/$'
@@ -414,8 +546,31 @@ const AppRouteRouteWithChildren = AppRouteRoute._addFileChildren(
   AppRouteRouteChildren,
 )
 
+interface AdminRouteRouteChildren {
+  AdminLessonsRoute: typeof AdminLessonsRoute
+  AdminScenariosRoute: typeof AdminScenariosRoute
+  AdminUsersRoute: typeof AdminUsersRoute
+  AdminVideosRoute: typeof AdminVideosRoute
+  AdminVocabularyRoute: typeof AdminVocabularyRoute
+  AdminIndexRoute: typeof AdminIndexRoute
+}
+
+const AdminRouteRouteChildren: AdminRouteRouteChildren = {
+  AdminLessonsRoute: AdminLessonsRoute,
+  AdminScenariosRoute: AdminScenariosRoute,
+  AdminUsersRoute: AdminUsersRoute,
+  AdminVideosRoute: AdminVideosRoute,
+  AdminVocabularyRoute: AdminVocabularyRoute,
+  AdminIndexRoute: AdminIndexRoute,
+}
+
+const AdminRouteRouteWithChildren = AdminRouteRoute._addFileChildren(
+  AdminRouteRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   AppRouteRoute: AppRouteRouteWithChildren,
+  AdminRouteRoute: AdminRouteRouteWithChildren,
   ErrorRoute: ErrorRoute,
   NotFoundRoute: NotFoundRoute,
   OnboardingRoute: OnboardingRoute,

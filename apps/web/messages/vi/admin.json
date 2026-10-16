@@ -1,0 +1,48 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "admin": {
+    "nav": {
+      "overview": "Tổng quan",
+      "vocabulary": "Từ vựng",
+      "videos": "Video",
+      "scenarios": "Tình huống",
+      "lessons": "Bài học",
+      "users": "Người dùng"
+    },
+    "overview": {
+      "title": "Bảng quản trị",
+      "description": "Quản lý nội dung và người dùng của Engflex."
+    },
+    "actions": {
+      "create": "Tạo mới",
+      "edit": "Sửa",
+      "delete": "Xoá",
+      "publish": "Xuất bản",
+      "unpublish": "Gỡ xuất bản",
+      "save": "Lưu",
+      "cancel": "Huỷ"
+    },
+    "status": {
+      "draft": "Bản nháp",
+      "published": "Đã xuất bản"
+    },
+    "confirm": {
+      "deleteTitle": "Xoá mục này?",
+      "deleteDescription": "Hành động này không thể hoàn tác."
+    },
+    "toast": {
+      "created": "Đã tạo",
+      "updated": "Đã lưu thay đổi",
+      "deleted": "Đã xoá",
+      "published": "Đã xuất bản",
+      "unpublished": "Đã gỡ xuất bản",
+      "error": "Có lỗi xảy ra, vui lòng thử lại"
+    },
+    "table": {
+      "empty": "Chưa có dữ liệu",
+      "loading": "Đang tải...",
+      "status": "Trạng thái",
+      "actions": "Hành động"
+    }
+  }
+}

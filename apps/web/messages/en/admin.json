@@ -1,0 +1,48 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "admin": {
+    "nav": {
+      "overview": "Overview",
+      "vocabulary": "Vocabulary",
+      "videos": "Videos",
+      "scenarios": "Scenarios",
+      "lessons": "Lessons",
+      "users": "Users"
+    },
+    "overview": {
+      "title": "Admin console",
+      "description": "Manage Engflex content and users."
+    },
+    "actions": {
+      "create": "Create",
+      "edit": "Edit",
+      "delete": "Delete",
+      "publish": "Publish",
+      "unpublish": "Unpublish",
+      "save": "Save",
+      "cancel": "Cancel"
+    },
+    "status": {
+      "draft": "Draft",
+      "published": "Published"
+    },
+    "confirm": {
+      "deleteTitle": "Delete this item?",
+      "deleteDescription": "This action cannot be undone."
+    },
+    "toast": {
+      "created": "Created",
+      "updated": "Changes saved",
+      "deleted": "Deleted",
+      "published": "Published",
+      "unpublished": "Unpublished",
+      "error": "Something went wrong, please try again"
+    },
+    "table": {
+      "empty": "No data yet",
+      "loading": "Loading...",
+      "status": "Status",
+      "actions": "Actions"
+    }
+  }
+}

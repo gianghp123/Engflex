@@ -33,4 +33,12 @@ export const APP_ROUTES = {
 		NOT_FOUND: "/not-found",
 		SERVER: "/error",
 	},
+	ADMIN: {
+		OVERVIEW: "/admin",
+		VOCABULARY: "/admin/vocabulary",
+		VIDEOS: "/admin/videos",
+		SCENARIOS: "/admin/scenarios",
+		LESSONS: "/admin/lessons",
+		USERS: "/admin/users",
+	},
 } as const;
