@@ -29,6 +29,9 @@ func TestVocabAdminDecksItemsRoutesRequireAuth(t *testing.T) {
 		{http.MethodPost, "/api/v1/admin/vocabulary-items"},
 		{http.MethodPut, "/api/v1/vocabulary-items/" + uuid},
 		{http.MethodDelete, "/api/v1/vocabulary-items/" + uuid},
+		{http.MethodPost, "/api/v1/vocabulary-categories"},
+		{http.MethodPut, "/api/v1/vocabulary-categories/" + uuid},
+		{http.MethodDelete, "/api/v1/vocabulary-categories/" + uuid},
 	}
 
 	for _, tt := range tests {

@@ -39,7 +39,7 @@ func TestVocabularyDeckItemService_ListByDeck_EmptyReturns200(t *testing.T) {
 	itemRepo.On("ListByDeck", mock.Anything, deckID).Return(make([]*models.VocabularyDeckItem, 0), nil)
 	svc := services.NewVocabularyDeckItemService(itemRepo, deckRepo)
 
-	res, err := svc.ListByDeck(context.Background(), owner, deckID)
+	res, err := svc.ListByDeck(context.Background(), owner, deckID, false)
 
 	require.NoError(t, err)
 	require.NotNil(t, res)
@@ -52,7 +52,7 @@ func TestVocabularyDeckItemService_Create_BadDeckID(t *testing.T) {
 	deckRepo.On("GetByID", mock.Anything, mock.Anything).Return(nil, &common.InvalidIDError{Name: "deckId"})
 	svc := services.NewVocabularyDeckItemService(itemRepo, deckRepo)
 
-	res, err := svc.Create(context.Background(), "user_1", requests.CreateVocabularyDeckItem{DeckID: "11111111-1111-1111-1111-111111111111", Phrase: "hello", Meaning: "xin chao"})
+	res, err := svc.Create(context.Background(), "user_1", false, requests.CreateVocabularyDeckItem{DeckID: "11111111-1111-1111-1111-111111111111", Phrase: "hello", Meaning: "xin chao"})
 
 	requireAppError(t, err, http.StatusBadRequest)
 	assert.Nil(t, res)

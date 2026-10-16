@@ -35,9 +35,11 @@ func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB) {
 	c := rg.Group("/vocabulary-categories")
 	c.GET("", middleware.RequireAuth(), categoryCtl.List)
 	c.GET("/:id", middleware.RequireAuth(), categoryCtl.GetByID)
-	c.POST("", middleware.RequireAuth(), categoryCtl.Create)
-	c.PUT("/:id", middleware.RequireAuth(), categoryCtl.Update)
-	c.DELETE("/:id", middleware.RequireAuth(), categoryCtl.Delete)
+	// Categories are shared taxonomy, not owned content, so admin-only
+	// (unlike decks/items, there's no "owner" to fall back to).
+	c.POST("", middleware.RequireAuth(), middleware.RequireAdmin(), categoryCtl.Create)
+	c.PUT("/:id", middleware.RequireAuth(), middleware.RequireAdmin(), categoryCtl.Update)
+	c.DELETE("/:id", middleware.RequireAuth(), middleware.RequireAdmin(), categoryCtl.Delete)
 
 	d := rg.Group("/vocabulary-decks")
 	d.GET("", middleware.RequireAuth(), deckCtl.List)

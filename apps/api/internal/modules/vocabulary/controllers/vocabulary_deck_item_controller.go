@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"engflex-api/internal/common"
+	"engflex-api/internal/common/enums"
 	"engflex-api/internal/modules/vocabulary/dtos/requests"
 	"engflex-api/internal/modules/vocabulary/dtos/responses"
 	"engflex-api/internal/modules/vocabulary/services"
@@ -35,7 +36,7 @@ func (h *VocabularyDeckItemController) List(c *gin.Context) {
 		common.Fail(c, common.BadRequest("deckId is required"))
 		return
 	}
-	items, err := h.items.ListByDeck(c.Request.Context(), middleware.UserID(c), deckID)
+	items, err := h.items.ListByDeck(c.Request.Context(), middleware.UserID(c), deckID, middleware.Role(c) == enums.UserRoleAdmin)
 	if err != nil {
 		common.Fail(c, err)
 		return
@@ -54,7 +55,7 @@ func (h *VocabularyDeckItemController) List(c *gin.Context) {
 // @Success      200 {object} common.ApiResponse{data=responses.VocabularyDeckItemResponse}
 // @Router       /vocabulary-deck-items/{id} [get]
 func (h *VocabularyDeckItemController) GetByID(c *gin.Context) {
-	m, err := h.items.GetByID(c.Request.Context(), middleware.UserID(c), c.Param("id"))
+	m, err := h.items.GetByID(c.Request.Context(), middleware.UserID(c), c.Param("id"), middleware.Role(c) == enums.UserRoleAdmin)
 	if err != nil {
 		common.Fail(c, err)
 		return
@@ -79,7 +80,7 @@ func (h *VocabularyDeckItemController) Create(c *gin.Context) {
 		common.Fail(c, common.BadRequest(err.Error()))
 		return
 	}
-	m, err := h.items.Create(c.Request.Context(), middleware.UserID(c), req)
+	m, err := h.items.Create(c.Request.Context(), middleware.UserID(c), middleware.Role(c) == enums.UserRoleAdmin, req)
 	if err != nil {
 		common.Fail(c, err)
 		return
@@ -105,7 +106,7 @@ func (h *VocabularyDeckItemController) Update(c *gin.Context) {
 		common.Fail(c, common.BadRequest(err.Error()))
 		return
 	}
-	m, err := h.items.Update(c.Request.Context(), middleware.UserID(c), c.Param("id"), req)
+	m, err := h.items.Update(c.Request.Context(), middleware.UserID(c), c.Param("id"), middleware.Role(c) == enums.UserRoleAdmin, req)
 	if err != nil {
 		common.Fail(c, err)
 		return
@@ -124,7 +125,7 @@ func (h *VocabularyDeckItemController) Update(c *gin.Context) {
 // @Success      200 {object} common.ApiResponse
 // @Router       /vocabulary-deck-items/{id} [delete]
 func (h *VocabularyDeckItemController) Delete(c *gin.Context) {
-	if err := h.items.Delete(c.Request.Context(), middleware.UserID(c), c.Param("id")); err != nil {
+	if err := h.items.Delete(c.Request.Context(), middleware.UserID(c), c.Param("id"), middleware.Role(c) == enums.UserRoleAdmin); err != nil {
 		common.Fail(c, err)
 		return
 	}

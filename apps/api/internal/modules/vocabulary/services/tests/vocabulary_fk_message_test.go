@@ -25,7 +25,7 @@ func TestVocabularyDeckItemService_Create_UnknownDeckNamesDeck(t *testing.T) {
 		Return(&pgconn.PgError{Code: "23503"})
 	svc := services.NewVocabularyDeckItemService(itemRepo, deckRepo)
 
-	res, err := svc.Create(context.Background(), owner, requests.CreateVocabularyDeckItem{DeckID: deckID, Phrase: "hi", Meaning: "chao"})
+	res, err := svc.Create(context.Background(), owner, false, requests.CreateVocabularyDeckItem{DeckID: deckID, Phrase: "hi", Meaning: "chao"})
 
 	require.Error(t, err)
 	assert.Nil(t, res)

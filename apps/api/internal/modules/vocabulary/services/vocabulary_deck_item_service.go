@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"engflex-api/internal/common"
+	"engflex-api/internal/common/enums"
 	"engflex-api/internal/database/models"
 	"engflex-api/internal/database/repositories"
 	"engflex-api/internal/logger"
@@ -14,16 +15,16 @@ import (
 )
 
 // VocabularyDeckItemService owns flashcard rows. Every method takes the
-// caller's userID and proves deck ownership through the deck repository
-// before touching rows: cards inherit their deck's owner, and ids are
-// unguessable but not unshareable, so the check cannot live in the
-// controller alone.
+// caller's userID and isAdmin, and proves deck access through the deck
+// repository before touching rows: cards inherit their deck's access rules
+// (canReadDeck/canManageDeck, below), and ids are unguessable but not
+// unshareable, so the check cannot live in the controller alone.
 type VocabularyDeckItemService interface {
-	ListByDeck(ctx context.Context, userID, deckID string) ([]*models.VocabularyDeckItem, error)
-	GetByID(ctx context.Context, userID, id string) (*models.VocabularyDeckItem, error)
-	Create(ctx context.Context, userID string, req requests.CreateVocabularyDeckItem) (*models.VocabularyDeckItem, error)
-	Update(ctx context.Context, userID, id string, req requests.UpdateVocabularyDeckItem) (*models.VocabularyDeckItem, error)
-	Delete(ctx context.Context, userID, id string) error
+	ListByDeck(ctx context.Context, userID, deckID string, isAdmin bool) ([]*models.VocabularyDeckItem, error)
+	GetByID(ctx context.Context, userID, id string, isAdmin bool) (*models.VocabularyDeckItem, error)
+	Create(ctx context.Context, userID string, isAdmin bool, req requests.CreateVocabularyDeckItem) (*models.VocabularyDeckItem, error)
+	Update(ctx context.Context, userID, id string, isAdmin bool, req requests.UpdateVocabularyDeckItem) (*models.VocabularyDeckItem, error)
+	Delete(ctx context.Context, userID, id string, isAdmin bool) error
 }
 
 type vocabularyDeckItemService struct {
@@ -36,12 +37,22 @@ func NewVocabularyDeckItemService(items repositories.VocabularyDeckItemRepositor
 	return &vocabularyDeckItemService{items: items, decks: decks}
 }
 
-func (s *vocabularyDeckItemService) requireOwner(ctx context.Context, userID, deckID string) error {
+// requireRead mirrors vocabularyDeckService.GetDetail's access split: a
+// draft system deck is invisible to non-admins (404, existence hidden) once
+// published it's readable by anyone; a personal deck stays owner-only (403
+// — ownership, not existence, is what's being withheld).
+func (s *vocabularyDeckItemService) requireRead(ctx context.Context, userID, deckID string, isAdmin bool) error {
 	d, err := s.decks.GetByID(ctx, deckID)
 	if err != nil {
 		appErr := common.FromDBError(err, "vocabulary deck")
-		logger.Report(ctx, "deck lookup for ownership failed", appErr, "deckID", deckID)
+		logger.Report(ctx, "deck lookup for read access failed", appErr, "deckID", deckID)
 		return appErr
+	}
+	if d.IsDefault {
+		if d.Status != enums.PublishStatusPublished && !isAdmin {
+			return common.NotFound("vocabulary deck not found")
+		}
+		return nil
 	}
 	if d.UserID != userID {
 		return common.Forbidden("not your deck")
@@ -49,8 +60,21 @@ func (s *vocabularyDeckItemService) requireOwner(ctx context.Context, userID, de
 	return nil
 }
 
-func (s *vocabularyDeckItemService) ListByDeck(ctx context.Context, userID, deckID string) ([]*models.VocabularyDeckItem, error) {
-	if err := s.requireOwner(ctx, userID, deckID); err != nil {
+func (s *vocabularyDeckItemService) requireManage(ctx context.Context, userID, deckID string, isAdmin bool) error {
+	d, err := s.decks.GetByID(ctx, deckID)
+	if err != nil {
+		appErr := common.FromDBError(err, "vocabulary deck")
+		logger.Report(ctx, "deck lookup for manage access failed", appErr, "deckID", deckID)
+		return appErr
+	}
+	if !canManageDeck(d, userID, isAdmin) {
+		return common.Forbidden("not your deck")
+	}
+	return nil
+}
+
+func (s *vocabularyDeckItemService) ListByDeck(ctx context.Context, userID, deckID string, isAdmin bool) ([]*models.VocabularyDeckItem, error) {
+	if err := s.requireRead(ctx, userID, deckID, isAdmin); err != nil {
 		return nil, err
 	}
 	items, err := s.items.ListByDeck(ctx, deckID)
@@ -63,22 +87,22 @@ func (s *vocabularyDeckItemService) ListByDeck(ctx context.Context, userID, deck
 	return items, nil
 }
 
-func (s *vocabularyDeckItemService) GetByID(ctx context.Context, userID, id string) (*models.VocabularyDeckItem, error) {
+func (s *vocabularyDeckItemService) GetByID(ctx context.Context, userID, id string, isAdmin bool) (*models.VocabularyDeckItem, error) {
 	m, err := s.items.GetByID(ctx, id)
 	if err != nil {
 		appErr := common.FromDBError(err, "vocabulary deck item")
 		logger.Report(ctx, "get vocabulary deck item failed", appErr, "id", id)
 		return nil, appErr
 	}
-	if err := s.requireOwner(ctx, userID, m.DeckID); err != nil {
+	if err := s.requireRead(ctx, userID, m.DeckID, isAdmin); err != nil {
 		return nil, err
 	}
 	slog.InfoContext(ctx, "vocabulary deck item found", "id", m.ID)
 	return m, nil
 }
 
-func (s *vocabularyDeckItemService) Create(ctx context.Context, userID string, req requests.CreateVocabularyDeckItem) (*models.VocabularyDeckItem, error) {
-	if err := s.requireOwner(ctx, userID, req.DeckID); err != nil {
+func (s *vocabularyDeckItemService) Create(ctx context.Context, userID string, isAdmin bool, req requests.CreateVocabularyDeckItem) (*models.VocabularyDeckItem, error) {
+	if err := s.requireManage(ctx, userID, req.DeckID, isAdmin); err != nil {
 		return nil, err
 	}
 	i := &models.VocabularyDeckItem{}
@@ -96,14 +120,14 @@ func (s *vocabularyDeckItemService) Create(ctx context.Context, userID string, r
 	return i, nil
 }
 
-func (s *vocabularyDeckItemService) Update(ctx context.Context, userID, id string, req requests.UpdateVocabularyDeckItem) (*models.VocabularyDeckItem, error) {
+func (s *vocabularyDeckItemService) Update(ctx context.Context, userID, id string, isAdmin bool, req requests.UpdateVocabularyDeckItem) (*models.VocabularyDeckItem, error) {
 	i, err := s.items.GetByID(ctx, id)
 	if err != nil {
 		appErr := common.FromDBError(err, "vocabulary deck item")
 		logger.Report(ctx, "get vocabulary deck item for update failed", appErr, "id", id)
 		return nil, appErr
 	}
-	if err := s.requireOwner(ctx, userID, i.DeckID); err != nil {
+	if err := s.requireManage(ctx, userID, i.DeckID, isAdmin); err != nil {
 		return nil, err
 	}
 	if err := utils.Map(i, req); err != nil {
@@ -122,14 +146,14 @@ func (s *vocabularyDeckItemService) Update(ctx context.Context, userID, id strin
 	return i, nil
 }
 
-func (s *vocabularyDeckItemService) Delete(ctx context.Context, userID, id string) error {
+func (s *vocabularyDeckItemService) Delete(ctx context.Context, userID, id string, isAdmin bool) error {
 	i, err := s.items.GetByID(ctx, id)
 	if err != nil {
 		appErr := common.FromDBError(err, "vocabulary deck item")
 		logger.Report(ctx, "get vocabulary deck item for delete failed", appErr, "id", id)
 		return appErr
 	}
-	if err := s.requireOwner(ctx, userID, i.DeckID); err != nil {
+	if err := s.requireManage(ctx, userID, i.DeckID, isAdmin); err != nil {
 		return err
 	}
 	if err := s.items.Delete(ctx, id); err != nil {
