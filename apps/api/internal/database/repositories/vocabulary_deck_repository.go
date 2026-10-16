@@ -16,6 +16,9 @@ import (
 type VocabularyDeckRepository interface {
 	ListVisible(ctx context.Context, userID string, limit, offset int) ([]*models.VocabularyDeck, error)
 	CountVisible(ctx context.Context, userID string) (int64, error)
+	// CountByUser counts the caller's own decks only (curated decks are not
+	// theirs and never count toward the per-user cap).
+	CountByUser(ctx context.Context, userID string) (int64, error)
 	GetByID(ctx context.Context, id string) (*models.VocabularyDeck, error)
 	GetDetail(ctx context.Context, userID, id string) (*models.VocabularyDeck, error)
 	Create(ctx context.Context, d *models.VocabularyDeck) error
@@ -53,6 +56,14 @@ func (r *vocabularyDeckRepository) CountVisible(ctx context.Context, userID stri
 	var n int64
 	err := r.db.WithContext(ctx).Model(&models.VocabularyDeck{}).
 		Where("user_id IS NULL OR user_id = ?", userID).Count(&n).Error
+	return n, err
+}
+
+// CountByUser counts the caller's own decks (user_id = ?), never curated ones.
+func (r *vocabularyDeckRepository) CountByUser(ctx context.Context, userID string) (int64, error) {
+	var n int64
+	err := r.db.WithContext(ctx).Model(&models.VocabularyDeck{}).
+		Where("user_id = ?", userID).Count(&n).Error
 	return n, err
 }
 

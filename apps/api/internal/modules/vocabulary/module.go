@@ -8,14 +8,16 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 
+	"engflex-api/config"
 	"engflex-api/internal/database/repositories"
+	"engflex-api/internal/llm"
 	"engflex-api/internal/modules/vocabulary/controllers"
 	"engflex-api/internal/modules/vocabulary/services"
 	"engflex-api/internal/server/middleware"
 )
 
 // RegisterRoutes mounts the vocabulary endpoints under /api/v1.
-func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB) {
+func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB, llmCfg config.LLMConfig) {
 	categorySvc := services.NewVocabularyCategoryService(repositories.NewVocabularyCategoryRepository(db))
 	categoryCtl := controllers.NewVocabularyCategoryController(categorySvc)
 
@@ -30,6 +32,9 @@ func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB) {
 
 	dictSvc := services.NewVocabularyItemService(itemRepo, userRepo, repositories.NewVocabularyDeckRepository(db), repositories.NewVocabularyDeckItemRepository(db))
 	dictCtl := controllers.NewVocabularyItemController(dictSvc)
+
+	draftSvc := services.NewVocabularyWordDraftService(llm.NewHTTPLLMClient(llmCfg))
+	draftCtl := controllers.NewVocabularyWordDraftController(draftSvc)
 
 	stateSvc := services.NewUserVocabularyService(userRepo, itemRepo)
 	stateCtl := controllers.NewUserVocabularyController(stateSvc, dictSvc)
@@ -59,6 +64,7 @@ func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB) {
 	v.GET("", middleware.RequireAuth(), dictCtl.List)
 	v.GET("/:id", middleware.RequireAuth(), dictCtl.GetByID)
 	v.POST("", middleware.RequireAuth(), dictCtl.Create)
+	v.POST("/generate", middleware.RequireAuth(), draftCtl.GenerateWordDraft)
 
 	u := rg.Group("/user-vocabulary")
 	u.GET("", middleware.RequireAuth(), stateCtl.List)

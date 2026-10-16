@@ -44,6 +44,7 @@ func TestVocabularyItemService_AddWord_JoinsDeck(t *testing.T) {
 			existing := &models.VocabularyItem{ID: wordID, Term: "bank"}
 			repo.On("GetPrivateByTermKey", mock.Anything, "user_1", "bank").Return(existing, nil)
 			userVocab.On("Get", mock.Anything, "user_1", wordID).Return(nil, gorm.ErrRecordNotFound)
+			userVocab.On("CountByUser", mock.Anything, "user_1").Return(int64(0), nil)
 			userVocab.On("Upsert", mock.Anything, mock.Anything, false).Return(nil)
 			repo.On("GetByID", mock.Anything, "user_1", wordID).Return(existing, nil)
 
@@ -53,6 +54,7 @@ func TestVocabularyItemService_AddWord_JoinsDeck(t *testing.T) {
 				deckItems.On("GetByDeckAndItem", mock.Anything, deckID, wordID).Return(tt.existingRow, nil)
 			} else {
 				deckItems.On("GetByDeckAndItem", mock.Anything, deckID, wordID).Return(nil, gorm.ErrRecordNotFound)
+				deckItems.On("CountByDeck", mock.Anything, deckID).Return(int64(0), nil)
 				deckItems.On("Create", mock.Anything, mock.Anything).Return(nil)
 			}
 

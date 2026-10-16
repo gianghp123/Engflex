@@ -49,6 +49,72 @@ func (_m *MockVocabularyDeckItemRepository) EXPECT() *MockVocabularyDeckItemRepo
 	return &MockVocabularyDeckItemRepository_Expecter{mock: &_m.Mock}
 }
 
+// CountByDeck provides a mock function for the type MockVocabularyDeckItemRepository
+func (_mock *MockVocabularyDeckItemRepository) CountByDeck(ctx context.Context, deckID string) (int64, error) {
+	ret := _mock.Called(ctx, deckID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CountByDeck")
+	}
+
+	var r0 int64
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) (int64, error)); ok {
+		return returnFunc(ctx, deckID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) int64); ok {
+		r0 = returnFunc(ctx, deckID)
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = returnFunc(ctx, deckID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockVocabularyDeckItemRepository_CountByDeck_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CountByDeck'
+type MockVocabularyDeckItemRepository_CountByDeck_Call struct {
+	*mock.Call
+}
+
+// CountByDeck is a helper method to define mock.On call
+//   - ctx context.Context
+//   - deckID string
+func (_e *MockVocabularyDeckItemRepository_Expecter) CountByDeck(ctx any, deckID any) *MockVocabularyDeckItemRepository_CountByDeck_Call {
+	return &MockVocabularyDeckItemRepository_CountByDeck_Call{Call: _e.mock.On("CountByDeck", ctx, deckID)}
+}
+
+func (_c *MockVocabularyDeckItemRepository_CountByDeck_Call) Run(run func(ctx context.Context, deckID string)) *MockVocabularyDeckItemRepository_CountByDeck_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockVocabularyDeckItemRepository_CountByDeck_Call) Return(n int64, err error) *MockVocabularyDeckItemRepository_CountByDeck_Call {
+	_c.Call.Return(n, err)
+	return _c
+}
+
+func (_c *MockVocabularyDeckItemRepository_CountByDeck_Call) RunAndReturn(run func(ctx context.Context, deckID string) (int64, error)) *MockVocabularyDeckItemRepository_CountByDeck_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // Create provides a mock function for the type MockVocabularyDeckItemRepository
 func (_mock *MockVocabularyDeckItemRepository) Create(ctx context.Context, i *models.VocabularyDeckItem) error {
 	ret := _mock.Called(ctx, i)

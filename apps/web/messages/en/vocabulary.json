@@ -24,6 +24,7 @@
       "pickerFailed": "Couldn't load your words. Please try again.",
       "added": "Added to deck",
       "addFailed": "Couldn't add that word. Please try again.",
+      "limitReached": "This deck is full ({max} words) — use another deck or remove a word.",
       "remove": "Remove",
       "removed": "Removed from deck",
       "removeFailed": "Couldn't remove that word. Please try again."
@@ -46,7 +47,9 @@
       "create": "Create deck",
       "created": "Deck created",
       "createFailed": "Couldn't create that deck. Please try again.",
-      "required": "A deck name is required."
+      "required": "A deck name is required.",
+      "nameTaken": "You already have a deck with this name.",
+      "limitReached": "You've reached the {max}-deck limit — delete a deck to create another."
     },
     "detail": {
       "saveNote": "Save note",
@@ -66,16 +69,12 @@
       "noteFailed": "Couldn't save your note. Please try again."
     },
     "card": {
-      "listenUs": "Listen pronunciation (US)",
-      "listenUk": "Listen (UK)",
-      "playTerm": "Play {term}",
       "markMastered": "Mark mastered",
       "retained": "Retained",
       "dueToday": "Due today",
       "review": "Review",
       "mastered": "Mastered",
       "markAsMastered": "Mark as mastered",
-      "share": "Share",
       "fullDefinition": "Full definition",
       "masteredFailed": "Couldn't update mastery. Please try again."
     },
@@ -124,10 +123,6 @@
       "video": "From video",
       "manual": "Custom"
     },
-    "sourceLine": {
-      "lesson": "From lesson: {id}",
-      "note": "Note: {id}"
-    },
     "pos": {
       "noun": "Noun",
       "verb": "Verb",
@@ -150,15 +145,78 @@
         "word": "Add word"
       },
       "alreadyInLibrary": "Already in your words — saving will use your existing entry.",
+      "limitReached": "Your word list is full ({max} words) — delete a word to save another.",
       "termLabel": "Term or phrase",
       "cefrLabel": "CEFR tier",
       "cefrPlaceholder": "Select level",
       "posLabel": "Part of speech",
+      "deckLabel": "Deck",
+      "noDeck": "Don't add to a deck",
       "definitionLabel": "Definition",
       "exampleLabel": "Contextual usage / Example sentence",
+      "generate": "Generate details",
+      "generateFailed": "Couldn't generate details. Please try again.",
+      "outputLanguage": "Output language",
+      "outputLanguageHint": "Definitions and tips in this language — example sentences stay English.",
+      "detailsTitle": "Word details",
       "save": "Save to vocabulary",
       "required": "Term, definition, and CEFR level are required.",
       "failed": "Couldn't save that word. Please try again."
+    },
+    "dock": {
+      "saveWord": "Save word",
+      "createDeck": "Create deck",
+      "copy": "Copy",
+      "copied": "Copied to clipboard",
+      "copyFailed": "Couldn't copy — select the text and press Ctrl/Cmd+C.",
+      "guide": {
+        "eyebrow": "Quick tip",
+        "title": "Save words straight from the text",
+        "subtitle": "Right-click any word in a lesson part or a video transcript — a small dock appears at your pointer. Right-clicking works on desktop.",
+        "cta": "Got it",
+        "reopen": "Show word dock guide",
+        "step1": {
+          "title": "Right-click any word or phrase",
+          "body": "In lesson parts and video transcripts, %icon% a word — or drag-select a phrase first. The dock appears at your cursor.",
+          "action": "Right-click"
+        },
+        "step2": {
+          "title": "Save word",
+          "body": "%icon% opens the add-word dialog prefilled with the word and the sentence you met it in — draft with AI, review, save."
+        },
+        "step3": {
+          "title": "Create deck",
+          "body": "%icon% makes a new deck on the spot — name it and the word lands inside it."
+        },
+        "step4": {
+          "title": "Copy",
+          "body": "%icon% keeps the selection on your clipboard for your own notes."
+        }
+      }
+    },
+    "guide": {
+      "eyebrow": "Before you start",
+      "title": "How vocabulary works",
+      "subtitle": "Save words from anywhere, let the AI draft the details, and keep everything organized in decks you review.",
+      "cta": "Got it",
+      "reopen": "Show vocabulary guide",
+      "step1": {
+        "title": "Add a word",
+        "body": "Press %icon% to save any word or phrase to your personal list — only the term, definition, and level are required."
+      },
+      "step2": {
+        "title": "Draft details with AI",
+        "body": "Press %icon% and the AI fills the definition, level, part of speech, IPA and examples. Pick the explanation language in the config first — review everything before saving."
+      },
+      "step3": {
+        "title": "Group words into decks",
+        "body": "Save straight into a deck from the dialog, or make a new one with %icon% on the decks page. Decks keep what you review together."
+      },
+      "step4": {
+        "title": "Review and track",
+        "body": "Filter by level or source, mark words %icon% after reviewing, and open any word for its full details.",
+        "footer": "Words saved from lessons and videos link back to where you met them."
+      }
     }
   }
 }

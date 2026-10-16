@@ -14,6 +14,8 @@ type VocabularyDeckItemRepository interface {
 	GetByID(ctx context.Context, id string) (*models.VocabularyDeckItem, error)
 	// GetByDeckAndItem finds a deck's row for one entry (the membership key).
 	GetByDeckAndItem(ctx context.Context, deckID, itemID string) (*models.VocabularyDeckItem, error)
+	// CountByDeck counts a deck's memberships; the per-deck word cap checks it.
+	CountByDeck(ctx context.Context, deckID string) (int64, error)
 	// ListPreviewByDeckIDs returns up to previewK rows per deck, each carrying its
 	// dictionary entry and the caller's review state — the landing's preview.
 	ListPreviewByDeckIDs(ctx context.Context, userID string, deckIDs []string, previewK int) ([]*models.VocabularyDeckItem, error)
@@ -155,6 +157,14 @@ func (r *vocabularyDeckItemRepository) GetByDeckAndItem(ctx context.Context, dec
 		return nil, err
 	}
 	return &m, nil
+}
+
+// CountByDeck counts a deck's memberships; the per-deck word cap checks it.
+func (r *vocabularyDeckItemRepository) CountByDeck(ctx context.Context, deckID string) (int64, error) {
+	var n int64
+	err := r.db.WithContext(ctx).Model(&models.VocabularyDeckItem{}).
+		Where("deck_id = ?", deckID).Count(&n).Error
+	return n, err
 }
 
 func (r *vocabularyDeckItemRepository) Create(ctx context.Context, i *models.VocabularyDeckItem) error {

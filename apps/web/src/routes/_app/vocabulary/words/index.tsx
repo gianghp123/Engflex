@@ -20,6 +20,7 @@ import {
 	DEFAULT_VOCAB_FILTERS,
 	VocabFilterBar,
 } from "#/features/vocabulary/components/vocab-filter-bar";
+import { VocabularyGuide } from "#/features/vocabulary/components/vocabulary-guide";
 import {
 	CardSkeletons,
 	VocabularyStatsRow,
@@ -132,7 +133,12 @@ function VocabularyWordsPage() {
 			<VocabularyStatsRow
 				stats={vocabularyStats}
 				pending={stats.isPending}
-				action={<AddWordDialog className="btn btn-primary" />}
+				action={
+					<div className="flex items-center gap-2">
+						<AddWordDialog className="btn btn-primary" />
+						<VocabularyGuide autoOpen />
+					</div>
+				}
 			/>
 			<VocabFilterBar
 				filters={filters}

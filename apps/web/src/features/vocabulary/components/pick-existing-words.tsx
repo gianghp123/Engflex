@@ -1,3 +1,4 @@
+import { MaxDeckWords } from "@engflex/contracts";
 import { Plus, Search } from "lucide-react";
 import { type FormEvent, type ReactNode, useState } from "react";
 import { toast } from "sonner";
@@ -12,6 +13,7 @@ import {
 	useDeck,
 	useLibrarySearch,
 } from "#/features/vocabulary/queries";
+import { ApiError } from "#/lib/api";
 import { m } from "#/paraglide/messages";
 
 /**
@@ -74,7 +76,14 @@ export function PickExistingWords({ deckId }: { deckId: string }) {
 	function add(itemId: string) {
 		addToDeck.mutate(itemId, {
 			onSuccess: () => toast.success(m["vocabulary.deck.added"]()),
-			onError: () => toast.error(m["vocabulary.deck.addFailed"]()),
+			onError: (err) => {
+				// 422 is the server's per-deck cap on a new membership.
+				if (err instanceof ApiError && err.status === 422) {
+					toast.error(m["vocabulary.deck.limitReached"]({ max: MaxDeckWords }));
+					return;
+				}
+				toast.error(m["vocabulary.deck.addFailed"]());
+			},
 		});
 	}
 

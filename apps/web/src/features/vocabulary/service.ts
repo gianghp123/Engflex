@@ -1,4 +1,5 @@
 import type {
+	GenerateWordDraft,
 	ListVocabulary,
 	Pagination,
 	UserVocabularyState,
@@ -6,6 +7,7 @@ import type {
 	VocabularyDeckItemResponse,
 	VocabularyItem,
 	VocabularyStats,
+	WordDraft,
 } from "@engflex/contracts";
 import { MaxPageSize } from "@engflex/contracts";
 import { API_ROUTES } from "#/app/api-routes";
@@ -16,10 +18,11 @@ const JSON_HEADERS = { "content-type": "application/json" };
 
 /**
  * My saved words, with per-user state. The hub pages this server-side
- * (`page` + filters + `pageSize`); without params it is the add-word form's
- * one big page. `search` is the API's `%search%` match over term or
- * definition. Params are the generated request DTO (`ListVocabulary`) made
- * partial: an omitted field means "no filter", matching the Go zero values.
+ * (`page` + filters + `pageSize`); the picker and the add-word form's
+ * duplicate check use `search`. `search` is the API's `%search%` match over
+ * term or definition. Params are the generated request DTO (`ListVocabulary`)
+ * made partial: an omitted field means "no filter", matching the Go zero
+ * values.
  */
 export function listMyVocabulary(
 	params?: Partial<ListVocabulary>,
@@ -58,6 +61,15 @@ export function getVocabularyItem(id: string): Promise<VocabularyItem> {
 	});
 }
 
+/** The saved details document: the source sentence first, generated rows after. */
+function wordDetails(input: AddWordInput) {
+	const contexts = [
+		...(input.example ? [{ label: "Example", quote: input.example }] : []),
+		...(input.details?.contexts ?? []),
+	];
+	return input.details ? { ...input.details, contexts } : { contexts };
+}
+
 /** Create-or-enrol a word the user typed. Idempotent by term on the server. */
 export function addVocabularyWord(
 	input: AddWordInput,
@@ -70,12 +82,25 @@ export function addVocabularyWord(
 			definition: input.definition,
 			cefr: input.cefr,
 			partOfSpeech: input.partOfSpeech,
-			details: {
-				contexts: input.example
-					? [{ label: "Example", quote: input.example }]
-					: [],
-			},
+			sourceType: input.sourceType,
+			sourceId: input.sourceId,
+			details: wordDetails(input),
 		}),
+	});
+}
+
+/**
+ * Ask the API for an LLM word draft (read-only). The dialog fills its fields
+ * with the reviewed result; the learner edits and saves through the normal
+ * add-word path.
+ */
+export function generateWordDraft(
+	input: GenerateWordDraft,
+): Promise<WordDraft> {
+	return api<WordDraft>(API_ROUTES.VOCABULARY.ITEMS.GENERATE, {
+		method: "POST",
+		headers: JSON_HEADERS,
+		body: JSON.stringify(input),
 	});
 }
 
@@ -152,11 +177,9 @@ export function addWordToDeck(
 			cefr: input.cefr,
 			partOfSpeech: input.partOfSpeech,
 			deckId,
-			details: {
-				contexts: input.example
-					? [{ label: "Example", quote: input.example }]
-					: [],
-			},
+			sourceType: input.sourceType,
+			sourceId: input.sourceId,
+			details: wordDetails(input),
 		}),
 	});
 }

@@ -1,3 +1,4 @@
+import { MaxUserDecks } from "@engflex/contracts";
 import { Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -19,15 +20,38 @@ import {
 } from "#/components/ui/field";
 import { Input } from "#/components/ui/input";
 import { Textarea } from "#/components/ui/textarea";
-import { useCreateDeck } from "#/features/vocabulary/queries";
+import { useCreateDeck, useDecks } from "#/features/vocabulary/queries";
+import { ApiError } from "#/lib/api";
 import { m } from "#/paraglide/messages";
 
-export function NewDeckDialog() {
+export function NewDeckDialog({
+	open: controlledOpen,
+	onOpenChange,
+}: {
+	/** Controlled mode: the caller owns `open`; no trigger is rendered. */
+	open?: boolean;
+	onOpenChange?: (open: boolean) => void;
+}) {
 	const createDeck = useCreateDeck();
-	const [open, setOpen] = useState(false);
+	const [selfOpen, setSelfOpen] = useState(false);
+	const controlled = controlledOpen !== undefined;
+	const open = controlledOpen ?? selfOpen;
+	const setOpen = onOpenChange ?? setSelfOpen;
 	const [name, setName] = useState("");
 	const [description, setDescription] = useState("");
 	const [error, setError] = useState<string | null>(null);
+	const decks = useDecks(0);
+	const typedName = name.trim().toLowerCase();
+	const nameTaken =
+		typedName.length > 0 &&
+		(decks.data?.items ?? []).some(
+			(deck) => deck.name.trim().toLowerCase() === typedName,
+		);
+	// Curated decks (no userId) are shared and never count toward the cap.
+	const ownedCount = (decks.data?.items ?? []).filter(
+		(deck) => deck.userId,
+	).length;
+	const atDeckLimit = ownedCount >= MaxUserDecks;
 
 	function submit() {
 		const trimmed = name.trim();
@@ -45,21 +69,35 @@ export function NewDeckDialog() {
 					setName("");
 					setDescription("");
 				},
-				onError: () => toast.error(m["vocabulary.decks.createFailed"]()),
+				onError: (err) => {
+					if (err instanceof ApiError && err.status === 409) {
+						setError(m["vocabulary.decks.nameTaken"]());
+						return;
+					}
+					// 422 is the server's deck cap (the client precheck usually
+					// beats it; a race lands here).
+					if (err instanceof ApiError && err.status === 422) {
+						setError(m["vocabulary.decks.limitReached"]({ max: MaxUserDecks }));
+						return;
+					}
+					toast.error(m["vocabulary.decks.createFailed"]());
+				},
 			},
 		);
 	}
 
 	return (
 		<>
-			<Button
-				type="button"
-				className="btn btn-accent"
-				onClick={() => setOpen(true)}
-			>
-				<Plus data-icon="inline-start" />
-				{m["vocabulary.decks.new"]()}
-			</Button>
+			{controlled ? null : (
+				<Button
+					type="button"
+					className="btn btn-accent"
+					onClick={() => setOpen(true)}
+				>
+					<Plus data-icon="inline-start" />
+					{m["vocabulary.decks.new"]()}
+				</Button>
+			)}
 			<Dialog open={open} onOpenChange={setOpen}>
 				<DialogContent>
 					<DialogHeader>
@@ -69,6 +107,11 @@ export function NewDeckDialog() {
 						</DialogDescription>
 					</DialogHeader>
 					<FieldGroup>
+						{atDeckLimit ? (
+							<p className="text-xs font-bold text-muted-foreground">
+								{m["vocabulary.decks.limitReached"]({ max: MaxUserDecks })}
+							</p>
+						) : null}
 						<Field data-invalid={Boolean(error)}>
 							<FieldLabel htmlFor="deck-name">
 								{m["vocabulary.decks.nameLabel"]()}
@@ -78,6 +121,11 @@ export function NewDeckDialog() {
 								value={name}
 								onChange={(event) => setName(event.target.value)}
 							/>
+							{nameTaken ? (
+								<p className="text-xs font-bold text-muted-foreground">
+									{m["vocabulary.decks.nameTaken"]()}
+								</p>
+							) : null}
 						</Field>
 						<Field>
 							<FieldLabel htmlFor="deck-description">
@@ -104,6 +152,7 @@ export function NewDeckDialog() {
 							type="button"
 							onClick={submit}
 							pending={createDeck.isPending}
+							disabled={atDeckLimit}
 						>
 							{m["vocabulary.decks.create"]()}
 						</SubmitButton>

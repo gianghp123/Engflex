@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
+	"gorm.io/gorm"
 
 	"engflex-api/internal/common"
 	"engflex-api/internal/database/models"
@@ -80,6 +81,8 @@ func TestUserVocabularyService_Save_Idempotent(t *testing.T) {
 
 func TestUserVocabularyService_Save_BadItemID(t *testing.T) {
 	repo := mocks.NewMockUserVocabularyRepository(t)
+	repo.On("Get", mock.Anything, "user_1", "11111111-1111-1111-1111-111111111111").Return(nil, gorm.ErrRecordNotFound)
+	repo.On("CountByUser", mock.Anything, "user_1").Return(int64(0), nil)
 	repo.On("Upsert", mock.Anything, mock.Anything, false).Return(&common.InvalidIDError{Name: "itemId"})
 	entries := mocks.NewMockVocabularyItemRepository(t)
 	entries.On("GetByID", mock.Anything, "user_1", "11111111-1111-1111-1111-111111111111").

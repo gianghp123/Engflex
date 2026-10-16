@@ -29,6 +29,7 @@ func TestVocabularyItemService_AddWord_NormalizesTerm(t *testing.T) {
 		saved = a.Get(1).(*models.VocabularyItem)
 	}).Return(nil)
 	userVocab.On("Get", mock.Anything, "user_1", mock.Anything).Return(nil, gorm.ErrRecordNotFound)
+	userVocab.On("CountByUser", mock.Anything, "user_1").Return(int64(0), nil)
 	userVocab.On("Upsert", mock.Anything, mock.Anything, false).Return(nil)
 	repo.On("GetByID", mock.Anything, "user_1", mock.Anything).Return(&models.VocabularyItem{Term: "give up"}, nil)
 

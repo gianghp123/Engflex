@@ -1,10 +1,8 @@
-import { Link } from "@tanstack/react-router";
-import { ArrowLeft } from "lucide-react";
 import { APP_ROUTES } from "#/app/app-route";
 import { useBreadcrumbs } from "#/app/breadcrumbs";
+import { BackButton } from "#/components/common/back-button";
 import { CardShell } from "#/components/common/card-shell";
 import { PageLayout } from "#/components/common/page-layout";
-import { Button } from "#/components/ui/button";
 import { Skeleton } from "#/components/ui/skeleton";
 import { AcousticBreakdownCard } from "#/features/vocabulary/components/acoustic-breakdown-card";
 import { CollocationsGrid } from "#/features/vocabulary/components/collocations-grid";
@@ -62,20 +60,17 @@ export function WordDetail({
 
 	// The back action is context-derived and needs no data, so it renders while
 	// the word loads — the frame never flashes empty.
-	const backAction = (
-		<Button asChild variant="ghost" size="sm" className="w-fit">
-			{deckId ? (
-				<Link to={APP_ROUTES.VOCABULARY.DECKS.DETAIL} params={{ deckId }}>
-					<ArrowLeft data-icon="inline-start" />
-					{m["common.actions.back"]()}
-				</Link>
-			) : (
-				<Link to={APP_ROUTES.VOCABULARY.WORDS.LIST}>
-					<ArrowLeft data-icon="inline-start" />
-					{m["common.actions.back"]()}
-				</Link>
-			)}
-		</Button>
+	const backAction = deckId ? (
+		<BackButton
+			to={APP_ROUTES.VOCABULARY.DECKS.DETAIL}
+			params={{ deckId }}
+			label={m["common.actions.back"]()}
+		/>
+	) : (
+		<BackButton
+			to={APP_ROUTES.VOCABULARY.WORDS.LIST}
+			label={m["common.actions.back"]()}
+		/>
 	);
 
 	if (itemQuery.isPending || !item) {

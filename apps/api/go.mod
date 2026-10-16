@@ -5,6 +5,7 @@ go 1.26.4
 require (
 	github.com/clerk/clerk-sdk-go/v2 v2.7.0
 	github.com/getsentry/sentry-go v0.50.0
+	github.com/getsentry/sentry-go/gin v0.50.0
 	github.com/gin-contrib/cors v1.7.8
 	github.com/gin-gonic/gin v1.12.0
 	github.com/google/uuid v1.6.0
@@ -20,6 +21,7 @@ require (
 	github.com/swaggo/gin-swagger v1.6.1
 	github.com/swaggo/swag v1.16.6
 	github.com/ulule/limiter/v3 v3.11.2
+	golang.org/x/text v0.41.0
 	gorm.io/datatypes v1.2.7
 	gorm.io/driver/postgres v1.6.0
 	gorm.io/gorm v1.31.0
@@ -39,7 +41,6 @@ require (
 	github.com/cloudwego/base64x v0.1.7 // indirect
 	github.com/coder/websocket v1.8.15 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.13 // indirect
-	github.com/getsentry/sentry-go/gin v0.50.0 // indirect
 	github.com/gin-contrib/sse v1.1.1 // indirect
 	github.com/go-jose/go-jose/v3 v3.0.4 // indirect
 	github.com/go-json-experiment/json v0.0.0-20260601182631-00ed12fed2a6 // indirect
@@ -88,7 +89,6 @@ require (
 	golang.org/x/net v0.58.0 // indirect
 	golang.org/x/sync v0.22.0 // indirect
 	golang.org/x/sys v0.48.0 // indirect
-	golang.org/x/text v0.41.0 // indirect
 	golang.org/x/tools v0.48.0 // indirect
 	google.golang.org/protobuf v1.36.11 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect

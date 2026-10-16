@@ -1,5 +1,6 @@
 import type {
 	CEFR,
+	VocabularyDetails,
 	VocabularyPartOfSpeech,
 	VocabularySort,
 	VocabularySource,
@@ -12,6 +13,17 @@ export interface AddWordInput {
 	partOfSpeech: VocabularyPartOfSpeech;
 	definition: string;
 	example: string;
+	/** LLM-generated rich details; saved as-is (audio fields stay empty). */
+	details?: VocabularyDetails;
+	/** Where the save was started from (the context dock); omitted = manual. */
+	sourceType?: VocabularySource;
+	sourceId?: string;
+}
+
+/** The surface a word was captured from: lesson exercise or video practice. */
+export interface AddWordSource {
+	type: VocabularySource;
+	id?: string;
 }
 
 /** The hub's filter set: what the URL carries and the API narrows by. */

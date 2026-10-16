@@ -15,11 +15,9 @@ const SOURCE = {
 
 export function SourcePill({
 	source,
-	suffix,
 	className,
 }: {
 	source: VocabularySource;
-	suffix?: string;
 	className?: string;
 }) {
 	const { label, icon: Icon } = SOURCE[source];
@@ -33,7 +31,6 @@ export function SourcePill({
 		>
 			<Icon className="size-3" />
 			{labelText}
-			{suffix ? `: ${suffix}` : null}
 		</span>
 	);
 }

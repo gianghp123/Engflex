@@ -105,16 +105,18 @@ export function PersonalNoteCard({
 							<Pencil data-icon="inline-start" />
 							{m["vocabulary.detail.editNote"]()}
 						</Button>
-						<SubmitButton
-							type="button"
-							variant="ghost"
-							size="sm"
-							pending={patch.isPending}
-							onClick={clear}
-						>
-							<Trash2 data-icon="inline-start" />
-							{m["vocabulary.detail.deleteNote"]()}
-						</SubmitButton>
+						{note ? (
+							<SubmitButton
+								type="button"
+								variant="ghost"
+								size="sm"
+								pending={patch.isPending}
+								onClick={clear}
+							>
+								<Trash2 data-icon="inline-start" />
+								{m["vocabulary.detail.deleteNote"]()}
+							</SubmitButton>
+						) : null}
 					</div>
 				</>
 			)}

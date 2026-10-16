@@ -13,6 +13,8 @@ import { TranscriptPanel } from "#/features/videos/components/transcript-panel";
 import { pairWords } from "#/features/videos/dictation";
 import { formatDuration } from "#/features/videos/format";
 import { videoDetailQueryOptions } from "#/features/videos/queries";
+import { DockGuide } from "#/features/vocabulary/components/dock-guide";
+import { TextActionDock } from "#/features/vocabulary/components/text-action-dock";
 import { m } from "#/paraglide/messages";
 
 export const Route = createFileRoute("/_app/videos/$videoId/shadowing")({
@@ -73,6 +75,9 @@ function ShadowingPage() {
 	return (
 		<PageLayout>
 			<div className="flex flex-wrap items-center justify-end gap-3">
+				<div className="mr-auto">
+					<DockGuide />
+				</div>
 				<span className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
 					<Clock3 aria-hidden="true" className="size-4" />
 					<span aria-hidden="true">{time}</span>
@@ -116,58 +121,60 @@ function ShadowingPage() {
 				</ToggleGroup>
 			</div>
 
-			<div
-				className={cn(
-					"grid items-start gap-3",
-					twoColumns && "xl:grid-cols-[minmax(0,8fr)_minmax(0,4fr)]",
-				)}
-			>
-				<ShadowingPanel
-					video={video}
-					practice={view === "practice"}
-					words={words}
-					autoPause={autoPause}
-					onAutoPauseChange={setAutoPause}
-					largeVideo={largeVideo}
-					onLargeVideoChange={setLargeVideo}
-					speed={1}
-					recording={false}
-					hasRecording={false}
-				/>
-				{showTranscript ? (
-					<TranscriptPanel
-						transcripts={transcripts}
-						activeIndex={activeIndex}
-						progress={0}
-						masked={false}
-						showPhonetic={showPhonetic}
-						showTranslation={showTranslation}
-						onSelect={setActiveIndex}
-						actions={
-							<>
-								<Toggle
-									size="sm"
-									pressed={showPhonetic}
-									onPressedChange={setShowPhonetic}
-									className={LINE_TOGGLE}
-								>
-									{showPhonetic ? <Eye /> : <EyeOff />}
-									{m["videos.shadowing.transcript.phonetic"]()}
-								</Toggle>
-								<Toggle
-									size="sm"
-									pressed={showTranslation}
-									onPressedChange={setShowTranslation}
-									className={LINE_TOGGLE}
-								>
-									{showTranslation ? <Eye /> : <EyeOff />}
-									{m["videos.shadowing.transcript.translation"]()}
-								</Toggle>
-							</>
-						}
+			<TextActionDock source={{ type: "video", id: video.id }}>
+				<div
+					className={cn(
+						"grid items-start gap-3",
+						twoColumns && "xl:grid-cols-[minmax(0,8fr)_minmax(0,4fr)]",
+					)}
+				>
+					<ShadowingPanel
+						video={video}
+						practice={view === "practice"}
+						words={words}
+						autoPause={autoPause}
+						onAutoPauseChange={setAutoPause}
+						largeVideo={largeVideo}
+						onLargeVideoChange={setLargeVideo}
+						speed={1}
+						recording={false}
+						hasRecording={false}
 					/>
-				) : null}
-			</div>
+					{showTranscript ? (
+						<TranscriptPanel
+							transcripts={transcripts}
+							activeIndex={activeIndex}
+							progress={0}
+							masked={false}
+							showPhonetic={showPhonetic}
+							showTranslation={showTranslation}
+							onSelect={setActiveIndex}
+							actions={
+								<>
+									<Toggle
+										size="sm"
+										pressed={showPhonetic}
+										onPressedChange={setShowPhonetic}
+										className={LINE_TOGGLE}
+									>
+										{showPhonetic ? <Eye /> : <EyeOff />}
+										{m["videos.shadowing.transcript.phonetic"]()}
+									</Toggle>
+									<Toggle
+										size="sm"
+										pressed={showTranslation}
+										onPressedChange={setShowTranslation}
+										className={LINE_TOGGLE}
+									>
+										{showTranslation ? <Eye /> : <EyeOff />}
+										{m["videos.shadowing.transcript.translation"]()}
+									</Toggle>
+								</>
+							}
+						/>
+					) : null}
+				</div>
+			</TextActionDock>
 		</PageLayout>
 	);
 }

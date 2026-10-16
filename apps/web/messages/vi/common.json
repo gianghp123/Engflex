@@ -18,7 +18,6 @@
       "save": "Lưu"
     },
     "audio": {
-      "playPronunciation": "Nghe phát âm",
       "play": "Phát âm thanh",
       "pause": "Tạm dừng",
       "total": "Tổng"
@@ -29,7 +28,6 @@
     },
     "toast": {
       "copiedClipboard": "Đã sao chép",
-      "linkCopied": "Đã sao chép liên kết",
       "clipboardUnavailable": "Không thể sao chép trong trình duyệt này",
       "addedToVocabulary": "Đã thêm vào từ vựng của bạn"
     },
@@ -46,6 +44,9 @@
       "light": "Sáng",
       "dark": "Tối",
       "auto": "Hệ thống"
+    },
+    "guide": {
+      "dismiss": "Đừng hiện mẹo này nữa"
     },
     "dev": {
       "title": "Đang xây dựng",

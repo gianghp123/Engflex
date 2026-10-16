@@ -473,6 +473,8 @@ pre code {
 }
 
 @utility chip {
+  /* Colors deliberately unpinned: call sites re-tint the base chip
+     (status-pill's muted variant); the solid themes pin theirs instead. */
   display: inline-flex;
   align-items: center;
   gap: 0.375rem;
@@ -489,15 +491,31 @@ pre code {
 }
 
 @utility chip-selected {
-  background: var(--sidebar);
+  /* Background/color !important extend the btn contract: @utility rules
+     sort before the shadcn cva variants, so a ghost/outline Button's
+     hover:bg-accent would otherwise win over the themed fill. Border stays
+     fluid for call-site hovers, same as btn-outline. The hover darken keeps
+     the pressable cue in-family and is scoped to interactive elements so
+     static status chips never react. */
+  background: var(--sidebar) !important;
   border-color: var(--sidebar);
-  color: var(--sidebar-foreground);
+  color: var(--sidebar-foreground) !important;
+
+  &:is(button, a):hover {
+    background: color-mix(in oklab, var(--sidebar) 88%, black) !important;
+    border-color: color-mix(in oklab, var(--sidebar) 88%, black);
+  }
 }
 
 @utility chip-accent {
-  background: var(--secondary);
+  background: var(--secondary) !important;
   border-color: var(--secondary);
-  color: var(--secondary-foreground);
+  color: var(--secondary-foreground) !important;
+
+  &:is(button, a):hover {
+    background: color-mix(in oklab, var(--secondary) 88%, black) !important;
+    border-color: color-mix(in oklab, var(--secondary) 88%, black);
+  }
 }
 
 @utility field {

@@ -49,6 +49,72 @@ func (_m *MockVocabularyDeckRepository) EXPECT() *MockVocabularyDeckRepository_E
 	return &MockVocabularyDeckRepository_Expecter{mock: &_m.Mock}
 }
 
+// CountByUser provides a mock function for the type MockVocabularyDeckRepository
+func (_mock *MockVocabularyDeckRepository) CountByUser(ctx context.Context, userID string) (int64, error) {
+	ret := _mock.Called(ctx, userID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CountByUser")
+	}
+
+	var r0 int64
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) (int64, error)); ok {
+		return returnFunc(ctx, userID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) int64); ok {
+		r0 = returnFunc(ctx, userID)
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = returnFunc(ctx, userID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockVocabularyDeckRepository_CountByUser_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CountByUser'
+type MockVocabularyDeckRepository_CountByUser_Call struct {
+	*mock.Call
+}
+
+// CountByUser is a helper method to define mock.On call
+//   - ctx context.Context
+//   - userID string
+func (_e *MockVocabularyDeckRepository_Expecter) CountByUser(ctx any, userID any) *MockVocabularyDeckRepository_CountByUser_Call {
+	return &MockVocabularyDeckRepository_CountByUser_Call{Call: _e.mock.On("CountByUser", ctx, userID)}
+}
+
+func (_c *MockVocabularyDeckRepository_CountByUser_Call) Run(run func(ctx context.Context, userID string)) *MockVocabularyDeckRepository_CountByUser_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockVocabularyDeckRepository_CountByUser_Call) Return(n int64, err error) *MockVocabularyDeckRepository_CountByUser_Call {
+	_c.Call.Return(n, err)
+	return _c
+}
+
+func (_c *MockVocabularyDeckRepository_CountByUser_Call) RunAndReturn(run func(ctx context.Context, userID string) (int64, error)) *MockVocabularyDeckRepository_CountByUser_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // CountVisible provides a mock function for the type MockVocabularyDeckRepository
 func (_mock *MockVocabularyDeckRepository) CountVisible(ctx context.Context, userID string) (int64, error) {
 	ret := _mock.Called(ctx, userID)

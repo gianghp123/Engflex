@@ -100,6 +100,10 @@ type AddUserVocabularyWord struct {
 	// caller's private decks — the deck page's "add a word" path.
 	DeckID  *string            `json:"deckId" binding:"omitempty,uuid"`
 	Details *VocabularyDetails `json:"details"`
+	// SourceType/SourceID record where the word came from when the save was
+	// started from content (the lesson/video context dock). Omitted = manual.
+	SourceType string  `json:"sourceType" binding:"omitempty,oneof=lesson conversation video manual"`
+	SourceID   *string `json:"sourceId" binding:"omitempty,uuid"`
 }
 
 // PatchUserVocabulary updates one saved word's mutable state. Both fields are
@@ -116,4 +120,16 @@ type PatchUserVocabulary struct {
 // value is indistinguishable from "again" and `{}` would bind successfully.
 type ReviewUserVocabulary struct {
 	Grade *int `json:"grade" binding:"required,oneof=0 1 2 3"`
+}
+
+// GenerateWordDraft asks for an LLM-authored word draft for the add-word
+// dialog. Read-only: nothing is stored; the reviewed result rides the normal
+// add-word save.
+type GenerateWordDraft struct {
+	Term    string `json:"term" binding:"required,max=120"`
+	Context string `json:"context" binding:"max=400"`
+	// OutputLanguage is a BCP-47 code ("en", "vi", …) naming the language the
+	// explanation fields are written in. Empty is English, the default; any
+	// assigned language works, so adding a UI locale needs no change here.
+	OutputLanguage string `json:"outputLanguage,omitempty" binding:"omitempty,max=16"`
 }

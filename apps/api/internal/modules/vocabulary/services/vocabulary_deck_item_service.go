@@ -166,6 +166,17 @@ func ensureDeckItem(ctx context.Context, items repositories.VocabularyDeckItemRe
 		logger.Report(ctx, "deck item membership lookup failed", appErr, "deckID", row.DeckID, "itemID", row.ItemID)
 		return nil, appErr
 	}
+	// Product cap: only a genuinely new membership reaches this point (an
+	// existing row returned above), so re-adding at the cap still converges.
+	count, cErr := items.CountByDeck(ctx, row.DeckID)
+	if cErr != nil {
+		appErr := common.FromDBError(cErr, "vocabulary deck item")
+		logger.Report(ctx, "count deck memberships failed", appErr, "deckID", row.DeckID)
+		return nil, appErr
+	}
+	if count >= common.MaxDeckWords {
+		return nil, common.UnprocessableEntity("deck word limit reached")
+	}
 	if cErr := items.Create(ctx, row); cErr != nil {
 		// A concurrent add can still lose the unique index; the row exists, so
 		// re-read and return it instead of surfacing a conflict.

@@ -6,6 +6,7 @@ import {
 	addWordToDeck,
 	createDeck,
 	deleteDeck,
+	generateWordDraft,
 	getDeck,
 	getVocabularyItem,
 	getVocabularyStats,
@@ -109,13 +110,6 @@ export function useDeleteDeck() {
 	});
 }
 
-export function libraryQueryOptions() {
-	return {
-		queryKey: vocabularyKeys.library,
-		queryFn: () => listMyVocabulary({ pageSize: MaxPageSize }),
-	};
-}
-
 export function vocabularyStatsQueryOptions(dayStart?: string) {
 	return {
 		queryKey: vocabularyKeys.stats(dayStart),
@@ -130,14 +124,11 @@ export function vocabularyItemQueryOptions(id: string) {
 	};
 }
 
-export function useMyVocabulary() {
-	return useQuery(libraryQueryOptions());
-}
-
 /**
- * The picker's explicit search: one page of my words matching `%search%` over
- * term or definition. `null` is "nothing submitted yet" — the query stays
- * disabled, so the picker fetches nothing until the reader searches.
+ * One page of my words matching `%search%` over term or definition. The deck
+ * picker submits it explicitly; the add-word form debounces the typed term
+ * through it. `null` disables the query — nothing is fetched until a needle
+ * exists.
  */
 export function useLibrarySearch(search: string | null) {
 	return useQuery({
@@ -213,6 +204,11 @@ export function useAddWord() {
 			queryClient.invalidateQueries({ queryKey: decksPrefix });
 		},
 	});
+}
+
+/** Generation writes nothing, so there is nothing to invalidate. */
+export function useGenerateWordDraft() {
+	return useMutation({ mutationFn: generateWordDraft });
 }
 
 export function useAddExistingWordToDeck(deckId: string) {

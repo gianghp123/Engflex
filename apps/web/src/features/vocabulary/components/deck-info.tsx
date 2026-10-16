@@ -14,7 +14,12 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "#/components/ui/dialog";
-import { Field, FieldGroup, FieldLabel } from "#/components/ui/field";
+import {
+	Field,
+	FieldError,
+	FieldGroup,
+	FieldLabel,
+} from "#/components/ui/field";
 import { Input } from "#/components/ui/input";
 import { Textarea } from "#/components/ui/textarea";
 import { useDeleteDeck, useUpdateDeck } from "#/features/vocabulary/queries";
@@ -29,10 +34,15 @@ export function DeckInfo({ deck }: { deck: VocabularyDeckDetail }) {
 	const [confirming, setConfirming] = useState(false);
 	const [name, setName] = useState(deck.name);
 	const [description, setDescription] = useState(deck.description);
+	const [error, setError] = useState<string | null>(null);
 
 	function save() {
 		const trimmed = name.trim();
-		if (!trimmed) return;
+		if (!trimmed) {
+			setError(m["vocabulary.decks.required"]());
+			return;
+		}
+		setError(null);
 		updateDeck.mutate(
 			{ name: trimmed, description: description.trim() },
 			{
@@ -102,7 +112,7 @@ export function DeckInfo({ deck }: { deck: VocabularyDeckDetail }) {
 						</DialogDescription>
 					</DialogHeader>
 					<FieldGroup>
-						<Field>
+						<Field data-invalid={Boolean(error)}>
 							<FieldLabel htmlFor="deck-edit-name">
 								{m["vocabulary.decks.nameLabel"]()}
 							</FieldLabel>
@@ -123,6 +133,7 @@ export function DeckInfo({ deck }: { deck: VocabularyDeckDetail }) {
 								onChange={(event) => setDescription(event.target.value)}
 							/>
 						</Field>
+						{error ? <FieldError>{error}</FieldError> : null}
 					</FieldGroup>
 					<DialogFooter>
 						<Button

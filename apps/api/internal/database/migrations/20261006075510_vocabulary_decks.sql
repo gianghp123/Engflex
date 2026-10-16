@@ -12,6 +12,11 @@ CREATE TABLE vocabulary_decks (
 );
 CREATE INDEX idx_vocabulary_decks_user_id ON vocabulary_decks (user_id);
 CREATE INDEX idx_vocabulary_decks_category_id ON vocabulary_decks (category_id);
+-- One name per user, case-insensitive. Curated decks (user_id NULL) are not
+-- constrained to each other — NULLs never collide in a unique index anyway,
+-- and the partial clause keeps the index to exactly the rows this rule owns.
+-- Service-side TrimSpace keeps " daily words " colliding with "Daily Words".
+CREATE UNIQUE INDEX uq_vocabulary_decks_user_name ON vocabulary_decks (user_id, lower(name)) WHERE user_id IS NOT NULL;
 
 -- +goose Down
 DROP TABLE IF EXISTS vocabulary_decks;

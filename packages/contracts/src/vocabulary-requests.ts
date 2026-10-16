@@ -144,6 +144,12 @@ export interface AddUserVocabularyWord {
    */
   deckId?: string;
   details?: VocabularyDetails;
+  /**
+   * SourceType/SourceID record where the word came from when the save was
+   * started from content (the lesson/video context dock). Omitted = manual.
+   */
+  sourceType: string;
+  sourceId?: string;
 }
 /**
  * PatchUserVocabulary updates one saved word's mutable state. Both fields are
@@ -162,4 +168,19 @@ export interface PatchUserVocabulary {
  */
 export interface ReviewUserVocabulary {
   grade?: number /* int */;
+}
+/**
+ * GenerateWordDraft asks for an LLM-authored word draft for the add-word
+ * dialog. Read-only: nothing is stored; the reviewed result rides the normal
+ * add-word save.
+ */
+export interface GenerateWordDraft {
+  term: string;
+  context: string;
+  /**
+   * OutputLanguage is a BCP-47 code ("en", "vi", …) naming the language the
+   * explanation fields are written in. Empty is English, the default; any
+   * assigned language works, so adding a UI locale needs no change here.
+   */
+  outputLanguage?: string;
 }

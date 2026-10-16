@@ -2,8 +2,11 @@ package services
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 	"time"
+
+	"gorm.io/gorm"
 
 	"engflex-api/internal/common"
 	"engflex-api/internal/common/enums"
@@ -65,6 +68,23 @@ func (s *userVocabularyService) Save(ctx context.Context, userID string, req req
 	if _, err := s.entries.GetByID(ctx, userID, req.ItemID); err != nil {
 		appErr := common.FromDBError(err, "vocabulary item")
 		logger.Report(ctx, "save vocabulary item lookup failed", appErr, "itemID", req.ItemID)
+		return nil, appErr
+	}
+	// Product cap: only a NEW enrolment is capped — an existing row updates as
+	// before, so re-saving at the cap still succeeds.
+	if _, gErr := s.repo.Get(ctx, userID, req.ItemID); errors.Is(gErr, gorm.ErrRecordNotFound) {
+		owned, cErr := s.repo.CountByUser(ctx, userID)
+		if cErr != nil {
+			appErr := common.FromDBError(cErr, "user vocabulary")
+			logger.Report(ctx, "count saved words failed", appErr)
+			return nil, appErr
+		}
+		if owned >= common.MaxUserWords {
+			return nil, common.UnprocessableEntity("word list limit reached")
+		}
+	} else if gErr != nil {
+		appErr := common.FromDBError(gErr, "user vocabulary")
+		logger.Report(ctx, "lookup enrolment for save failed", appErr, "itemID", req.ItemID)
 		return nil, appErr
 	}
 	u := &models.UserVocabulary{UserID: userID, ItemID: req.ItemID}

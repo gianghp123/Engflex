@@ -6,22 +6,11 @@ export const API_ROUTES = {
 		ME: "/profiles/me",
 		BY_ID: (id: ApiId) => `/profiles/${id}`,
 	},
-	CONTENTS: {
-		LIST: "/contents",
-		BY_ID: (id: ApiId) => `/contents/${id}`,
-	},
-	EXERCISES: {
-		LIST: "/exercises",
-		BY_ID: (id: ApiId) => `/exercises/${id}`,
-	},
-	ATTEMPTS: {
-		LIST: "/attempts",
-		BY_ID: (id: ApiId) => `/attempts/${id}`,
-	},
 	VOCABULARY: {
 		ITEMS: {
 			LIST: "/vocabulary-items",
 			BY_ID: (id: ApiId) => `/vocabulary-items/${id}`,
+			GENERATE: "/vocabulary-items/generate",
 		},
 		LIBRARY: {
 			LIST: "/user-vocabulary",
@@ -35,10 +24,6 @@ export const API_ROUTES = {
 			ITEMS: "/vocabulary-deck-items",
 			ITEM_BY_ID: (id: ApiId) => `/vocabulary-deck-items/${id}`,
 		},
-	},
-	PERSONAS: {
-		LIST: "/personas",
-		BY_ID: (id: ApiId) => `/personas/${id}`,
 	},
 	SCENARIOS: {
 		LIST: "/scenarios",
@@ -63,6 +48,7 @@ export const API_ROUTES = {
 		LIST: "/lessons",
 		BY_ID: (id: ApiId) => `/lessons/${id}`,
 		BY_SLUG: (slug: string) => `/lessons/by-slug/${slug}`,
+		PROGRESS: "/lessons/progress",
 		START_ATTEMPT: (id: ApiId) => `/lessons/${id}/attempts`,
 		OPEN_ATTEMPT: (id: ApiId) => `/lessons/${id}/attempts/open`,
 		CHECK: (activityId: ApiId) => `/lesson-activities/${activityId}/check`,

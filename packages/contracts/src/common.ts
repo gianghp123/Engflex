@@ -27,6 +27,14 @@ export const MaxTurnsPerBatch = 500;
  */
 export const VideoPreviewDefault = 4;
 export const VideoPreviewMax = 32;
+/**
+ * Product caps, enforced in services (422) and mirrored by the web's
+ * prechecks and limit copy. Values are provisional ("for now"): tune here
+ * and both sides follow through the generated contracts.
+ */
+export const MaxUserDecks = 20;
+export const MaxDeckWords = 50;
+export const MaxUserWords = 100;
 
 //////////
 // source: list.go

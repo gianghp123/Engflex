@@ -11,6 +11,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "#/components/ui/tabs";
 import { AddWordForm } from "#/features/vocabulary/components/add-word-form";
 import { PickExistingWords } from "#/features/vocabulary/components/pick-existing-words";
+import type { AddWordSource } from "#/features/vocabulary/types";
 import { m } from "#/paraglide/messages";
 
 type ButtonProps = ComponentProps<typeof Button>;
@@ -26,36 +27,62 @@ type ButtonProps = ComponentProps<typeof Button>;
  * `size`/`variant` reach the trigger: it is the page's primary action where it
  * is the only one (All words, a deck page), and a quiet control inside a deck
  * section's header, where the page's primary is the New-deck card.
+ *
+ * Controlled mode drops the trigger entirely — the context dock opens it and
+ * seeds the prefill (the selected term, its sentence, the capture surface).
  */
 export function AddWordDialog({
 	deckId,
+	deckFull,
 	size = "default",
 	variant = "default",
 	className,
+	open: controlledOpen,
+	onOpenChange,
+	initialTerm,
+	initialContext,
+	source,
 }: {
 	deckId?: string;
+	/** The target deck already holds its cap of words; the form blocks saves. */
+	deckFull?: boolean;
 	size?: ButtonProps["size"];
 	variant?: ButtonProps["variant"];
 	/** Styling for the visible control — the trigger button. */
 	className?: string;
+	/** Controlled mode: the caller owns `open`; no trigger is rendered. */
+	open?: boolean;
+	onOpenChange?: (open: boolean) => void;
+	/** Prefill from the context dock: the selection and its sentence. */
+	initialTerm?: string;
+	initialContext?: string;
+	/** The surface the capture started from; rides the save payload. */
+	source?: AddWordSource;
 }) {
-	const [open, setOpen] = useState(false);
+	const [selfOpen, setSelfOpen] = useState(false);
+	const controlled = controlledOpen !== undefined;
+	const open = controlledOpen ?? selfOpen;
+	const setOpen = onOpenChange ?? setSelfOpen;
 	const close = () => setOpen(false);
 
 	return (
 		<>
-			<Button
-				type="button"
-				size={size}
-				variant={variant}
-				className={className}
-				onClick={() => setOpen(true)}
-			>
-				<Plus data-icon="inline-start" />
-				{m["vocabulary.addWord.button"]()}
-			</Button>
+			{controlled ? null : (
+				<Button
+					type="button"
+					size={size}
+					variant={variant}
+					className={className}
+					onClick={() => setOpen(true)}
+				>
+					<Plus data-icon="inline-start" />
+					{m["vocabulary.addWord.button"]()}
+				</Button>
+			)}
 			<Dialog open={open} onOpenChange={setOpen}>
-				<DialogContent>
+				{/* Tall form (deck picker + generated-details preview): scroll
+				    inside the viewport instead of overflowing it. */}
+				<DialogContent className="max-h-[calc(100dvh-2rem)] overflow-y-auto">
 					<DialogHeader>
 						<DialogTitle>{m["vocabulary.addWord.title"]()}</DialogTitle>
 					</DialogHeader>
@@ -70,14 +97,26 @@ export function AddWordDialog({
 								</TabsTrigger>
 							</TabsList>
 							<TabsContent value="word" className="flex flex-col gap-4">
-								<AddWordForm deckId={deckId} onClose={close} />
+								<AddWordForm
+									deckId={deckId}
+									deckFull={deckFull}
+									onClose={close}
+									initialTerm={initialTerm}
+									initialContext={initialContext}
+									source={source}
+								/>
 							</TabsContent>
 							<TabsContent value="library" className="flex flex-col gap-4">
 								<PickExistingWords deckId={deckId} />
 							</TabsContent>
 						</Tabs>
 					) : (
-						<AddWordForm onClose={close} />
+						<AddWordForm
+							onClose={close}
+							initialTerm={initialTerm}
+							initialContext={initialContext}
+							source={source}
+						/>
 					)}
 				</DialogContent>
 			</Dialog>

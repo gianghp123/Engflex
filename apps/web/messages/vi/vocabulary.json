@@ -24,6 +24,7 @@
       "pickerFailed": "Không tải được danh sách từ. Hãy thử lại.",
       "added": "Đã thêm vào bộ thẻ",
       "addFailed": "Không thêm được từ đó. Hãy thử lại.",
+      "limitReached": "Bộ thẻ này đã đầy ({max} từ) — dùng bộ khác hoặc xoá bớt một từ.",
       "remove": "Bỏ ra",
       "removed": "Đã bỏ khỏi bộ thẻ",
       "removeFailed": "Không bỏ được từ đó. Hãy thử lại."
@@ -46,7 +47,9 @@
       "create": "Tạo bộ thẻ",
       "created": "Đã tạo bộ thẻ",
       "createFailed": "Không tạo được bộ thẻ. Hãy thử lại.",
-      "required": "Cần có tên bộ thẻ."
+      "required": "Cần có tên bộ thẻ.",
+      "nameTaken": "Bạn đã có một bộ thẻ với tên này.",
+      "limitReached": "Bạn đã đạt giới hạn {max} bộ thẻ — xoá một bộ để tạo bộ mới."
     },
     "detail": {
       "saveNote": "Lưu ghi chú",
@@ -66,16 +69,12 @@
       "noteFailed": "Không lưu được ghi chú. Hãy thử lại."
     },
     "card": {
-      "listenUs": "Nghe phát âm (Mỹ)",
-      "listenUk": "Nghe (Anh)",
-      "playTerm": "Nghe {term}",
       "markMastered": "Đánh dấu đã thuộc",
       "retained": "Đã thuộc",
       "dueToday": "Đến hạn hôm nay",
       "review": "Ôn tập",
       "mastered": "Đã thuộc",
       "markAsMastered": "Đánh dấu đã thuộc",
-      "share": "Chia sẻ",
       "fullDefinition": "Định nghĩa đầy đủ",
       "masteredFailed": "Không cập nhật được trạng thái thuộc. Hãy thử lại."
     },
@@ -124,10 +123,6 @@
       "video": "Từ video",
       "manual": "Tùy chỉnh"
     },
-    "sourceLine": {
-      "lesson": "Từ bài học: {id}",
-      "note": "Ghi chú: {id}"
-    },
     "pos": {
       "noun": "Danh từ",
       "verb": "Động từ",
@@ -150,15 +145,78 @@
         "word": "Thêm từ"
       },
       "alreadyInLibrary": "Đã có trong danh sách của bạn — khi lưu sẽ dùng lại từ này.",
+      "limitReached": "Danh sách từ của bạn đã đầy ({max} từ) — xoá bớt một từ để lưu thêm.",
       "termLabel": "Từ hoặc cụm từ",
       "cefrLabel": "Cấp độ CEFR",
       "cefrPlaceholder": "Chọn cấp độ",
       "posLabel": "Từ loại",
+      "deckLabel": "Bộ thẻ",
+      "noDeck": "Không thêm vào bộ thẻ",
       "definitionLabel": "Định nghĩa",
       "exampleLabel": "Câu ví dụ / ngữ cảnh",
+      "generate": "Tạo chi tiết",
+      "generateFailed": "Không tạo được chi tiết. Hãy thử lại.",
+      "outputLanguage": "Ngôn ngữ đầu ra",
+      "outputLanguageHint": "Phần định nghĩa và giải thích theo ngôn ngữ này — câu ví dụ vẫn là tiếng Anh.",
+      "detailsTitle": "Chi tiết từ",
       "save": "Lưu vào từ vựng",
       "required": "Từ, định nghĩa và cấp độ CEFR là bắt buộc.",
       "failed": "Không lưu được từ này. Hãy thử lại."
+    },
+    "dock": {
+      "saveWord": "Lưu từ",
+      "createDeck": "Tạo bộ thẻ",
+      "copy": "Sao chép",
+      "copied": "Đã sao chép",
+      "copyFailed": "Không sao chép được — hãy bôi đen và nhấn Ctrl/Cmd+C.",
+      "guide": {
+        "eyebrow": "Mẹo nhanh",
+        "title": "Lưu từ ngay từ văn bản",
+        "subtitle": "Nhấn chuột phải vào bất kỳ từ nào trong bài học hoặc bản chép video — một thanh hành động nhỏ hiện ra ngay tại con trỏ. Tính năng này dùng trên máy tính.",
+        "cta": "Rõ rồi",
+        "reopen": "Xem hướng dẫn lưu từ nhanh",
+        "step1": {
+          "title": "Nhấn chuột phải vào từ hoặc cụm từ",
+          "body": "Trong bài học và bản chép video, %icon% một từ — hoặc bôi đen cụm từ trước. Thanh hành động hiện ngay tại con trỏ.",
+          "action": "Chuột phải"
+        },
+        "step2": {
+          "title": "Lưu từ",
+          "body": "%icon% mở hộp thoại thêm từ đã điền sẵn từ và câu bạn gặp nó — soạn bằng AI, xem lại, lưu."
+        },
+        "step3": {
+          "title": "Tạo bộ thẻ",
+          "body": "%icon% tạo bộ thẻ mới ngay tại chỗ — đặt tên và từ đó nằm trong bộ."
+        },
+        "step4": {
+          "title": "Sao chép",
+          "body": "%icon% giữ đoạn chọn trong bộ nhớ tạm cho ghi chú của bạn."
+        }
+      }
+    },
+    "guide": {
+      "eyebrow": "Trước khi bắt đầu",
+      "title": "Từ vựng hoạt động như thế nào",
+      "subtitle": "Lưu từ ở bất cứ đâu, để AI soạn chi tiết, và sắp xếp mọi thứ vào các bộ thẻ bạn ôn tập.",
+      "cta": "Rõ rồi",
+      "reopen": "Xem hướng dẫn từ vựng",
+      "step1": {
+        "title": "Thêm một từ",
+        "body": "Nhấn %icon% để lưu bất kỳ từ hay cụm từ nào vào danh sách cá nhân — chỉ cần từ, định nghĩa và trình độ."
+      },
+      "step2": {
+        "title": "Soạn chi tiết bằng AI",
+        "body": "Nhấn %icon% để AI điền định nghĩa, trình độ, từ loại, phiên âm và ví dụ. Chọn ngôn ngữ đầu ra trong phần cấu hình trước — xem lại mọi thứ trước khi lưu."
+      },
+      "step3": {
+        "title": "Gom từ vào bộ thẻ",
+        "body": "Lưu thẳng vào một bộ thẻ ngay trong hộp thoại, hoặc tạo bộ mới bằng %icon% ở trang bộ thẻ. Bộ thẻ giữ những gì bạn ôn cùng nhau."
+      },
+      "step4": {
+        "title": "Ôn tập và theo dõi",
+        "body": "Lọc theo trình độ hoặc nguồn, đánh dấu từ %icon% sau khi ôn, và mở từ bất kỳ để xem chi tiết đầy đủ.",
+        "footer": "Từ lưu từ bài học và video có liên kết về nơi bạn gặp chúng."
+      }
     }
   }
 }

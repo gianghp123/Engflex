@@ -196,20 +196,38 @@ func (s *vocabularyItemService) AddWord(ctx context.Context, userID string, req 
 	}
 
 	now := time.Now().UTC()
+	source := enums.VocabularySourceManual
+	if req.SourceType != "" {
+		source = enums.VocabularySource(req.SourceType)
+	}
 	u := &models.UserVocabulary{
 		UserID:     userID,
 		ItemID:     item.ID,
-		SourceType: enums.VocabularySourceManual,
+		SourceType: source,
+		SourceID:   req.SourceID,
 		SRSDueAt:   &now, // insert-only: Upsert excludes the schedule on conflict
 	}
 	// Never modify an existing enrolment: re-adding a saved word must leave its
 	// note, source, and schedule untouched (Upsert would overwrite note and
-	// source_type on conflict). Only enrol when the word is not yet saved.
+	// source_type on conflict). Only enrol when the word is not yet saved —
+	// and the source is a fact about the first save, never rewritten by a
+	// later re-add.
 	if _, gErr := s.userVocab.Get(ctx, userID, item.ID); gErr != nil {
 		if !errors.Is(gErr, gorm.ErrRecordNotFound) {
 			appErr := common.FromDBError(gErr, "user vocabulary")
 			logger.Report(ctx, "lookup enrolment for added word failed", appErr, "itemID", item.ID)
 			return nil, appErr
+		}
+		// Product cap: only a new enrolment is capped; re-adding a saved word
+		// (the found branch) never counts against the list limit.
+		owned, cErr := s.userVocab.CountByUser(ctx, userID)
+		if cErr != nil {
+			appErr := common.FromDBError(cErr, "user vocabulary")
+			logger.Report(ctx, "count saved words failed", appErr)
+			return nil, appErr
+		}
+		if owned >= common.MaxUserWords {
+			return nil, common.UnprocessableEntity("word list limit reached")
 		}
 		if uErr := s.userVocab.Upsert(ctx, u, false); uErr != nil {
 			appErr := common.FromDBError(uErr, "user vocabulary")

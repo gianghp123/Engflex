@@ -34,6 +34,7 @@ func TestVocabularyItemService_AddWord(t *testing.T) {
 					a.Get(1).(*models.VocabularyItem).ID = itemID
 				}).Return(nil)
 				user.On("Get", mock.Anything, "user_1", itemID).Return(nil, gorm.ErrRecordNotFound)
+				user.On("CountByUser", mock.Anything, "user_1").Return(int64(0), nil)
 				user.On("Upsert", mock.Anything, mock.Anything, false).Return(nil)
 				items.On("GetByID", mock.Anything, "user_1", itemID).Return(&models.VocabularyItem{ID: itemID, Term: "serendipity"}, nil)
 			},
@@ -44,6 +45,7 @@ func TestVocabularyItemService_AddWord(t *testing.T) {
 			setupMock: func(items *mocks.MockVocabularyItemRepository, user *mocks.MockUserVocabularyRepository) {
 				items.On("GetPrivateByTermKey", mock.Anything, "user_1", "serendipity").Return(&models.VocabularyItem{ID: itemID, Term: "serendipity"}, nil)
 				user.On("Get", mock.Anything, "user_1", itemID).Return(nil, gorm.ErrRecordNotFound)
+				user.On("CountByUser", mock.Anything, "user_1").Return(int64(0), nil)
 				user.On("Upsert", mock.Anything, mock.Anything, false).Return(nil)
 				items.On("GetByID", mock.Anything, "user_1", itemID).Return(&models.VocabularyItem{ID: itemID, Term: "serendipity"}, nil)
 			},

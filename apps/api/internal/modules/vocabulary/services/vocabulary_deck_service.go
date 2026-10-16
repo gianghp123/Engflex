@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"log/slog"
+	"strings"
 
 	"engflex-api/internal/common"
 	"engflex-api/internal/database/models"
@@ -115,6 +116,25 @@ func (s *vocabularyDeckService) GetDetail(ctx context.Context, userID, id string
 }
 
 func (s *vocabularyDeckService) Create(ctx context.Context, userID string, req requests.CreateVocabularyDeck) (*models.VocabularyDeck, error) {
+	// Names are unique per user (lower(name) index): trim before the blank
+	// guard so "   " can never reach the unique index as a distinct name.
+	name := strings.TrimSpace(req.Name)
+	if name == "" {
+		return nil, common.BadRequest("name is required")
+	}
+	req.Name = name
+	// Product cap; curated decks (user_id NULL) are shared and never count.
+	// Checked without a transaction: concurrent creates could land one over —
+	// the cap is a product guard, not a constraint.
+	owned, err := s.repo.CountByUser(ctx, userID)
+	if err != nil {
+		appErr := common.FromDBError(err, "vocabulary deck")
+		logger.Report(ctx, "count user decks failed", appErr)
+		return nil, appErr
+	}
+	if owned >= common.MaxUserDecks {
+		return nil, common.UnprocessableEntity("deck limit reached")
+	}
 	d := &models.VocabularyDeck{}
 	if err := utils.Map(d, req); err != nil {
 		logger.Report(ctx, "map create vocabulary deck failed", err)
@@ -152,7 +172,11 @@ func (s *vocabularyDeckService) Update(ctx context.Context, userID, id string, r
 		d.CategoryID = req.CategoryID
 	}
 	if req.Name != nil {
-		d.Name = *req.Name
+		name := strings.TrimSpace(*req.Name)
+		if name == "" {
+			return nil, common.BadRequest("name is required")
+		}
+		d.Name = name
 	}
 	if req.Description != nil {
 		d.Description = *req.Description

@@ -4,12 +4,12 @@ import { cn } from "cn";
 import { Check, CircleCheck, X } from "lucide-react";
 import { toast } from "sonner";
 import { APP_ROUTES } from "#/app/app-route";
-import { AudioButton } from "#/components/common/audio-button";
 import { CefrBadge } from "#/components/common/cefr-badge";
 import { SourcePill } from "#/components/common/source-pill";
 import { SubmitButton } from "#/components/common/submit-button";
 import { Button } from "#/components/ui/button";
 import { posLabel } from "#/features/vocabulary/components/pos-label";
+import { SourceRef } from "#/features/vocabulary/components/source-ref";
 import { isDue } from "#/features/vocabulary/dates";
 import { usePatchVocabulary } from "#/features/vocabulary/queries";
 import { m } from "#/paraglide/messages";
@@ -120,16 +120,9 @@ export function VocabCard({
 			) : null}
 
 			<div className="mt-auto flex items-center gap-2 pt-1">
-				<AudioButton
-					label={m["vocabulary.card.playTerm"]({ term: item.term })}
-				/>
 				<CefrBadge value={item.cefr} />
-				{state?.sourceId ? (
-					<span className="truncate text-[11px] font-medium text-muted-foreground">
-						{state.sourceType === "lesson"
-							? m["vocabulary.sourceLine.lesson"]({ id: state.sourceId })
-							: m["vocabulary.sourceLine.note"]({ id: state.sourceId })}
-					</span>
+				{state ? (
+					<SourceRef type={state.sourceType} id={state.sourceId} />
 				) : null}
 				<Button asChild size="sm" className="btn btn-primary ml-auto">
 					{deckId ? (

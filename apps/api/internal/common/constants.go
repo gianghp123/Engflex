@@ -22,4 +22,11 @@ const (
 	// only covers internal callers that pass nothing.
 	VideoPreviewDefault = 4
 	VideoPreviewMax     = 32
+
+	// Product caps, enforced in services (422) and mirrored by the web's
+	// prechecks and limit copy. Values are provisional ("for now"): tune here
+	// and both sides follow through the generated contracts.
+	MaxUserDecks = 20
+	MaxDeckWords = 50
+	MaxUserWords = 100
 )

@@ -298,7 +298,7 @@ export function TurnDiagnosticsCard({
 			) : null}
 
 			<div className="flex items-center gap-2">
-				<div className="tile bg-secondary text-primary">
+				<div className="tile bg-secondary text-secondary-foreground">
 					<Lightbulb size={17} />
 				</div>
 				<p className="text-sm">

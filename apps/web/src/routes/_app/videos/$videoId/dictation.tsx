@@ -35,6 +35,8 @@ import {
 	splitWords,
 } from "#/features/videos/dictation";
 import { videoDetailQueryOptions } from "#/features/videos/queries";
+import { DockGuide } from "#/features/vocabulary/components/dock-guide";
+import { TextActionDock } from "#/features/vocabulary/components/text-action-dock";
 import { m } from "#/paraglide/messages";
 
 export const Route = createFileRoute("/_app/videos/$videoId/dictation")({
@@ -375,6 +377,9 @@ function DictationPage() {
 	return (
 		<PageLayout>
 			<div className="flex flex-wrap items-center justify-end gap-2">
+				<div className="mr-auto">
+					<DockGuide />
+				</div>
 				<Button
 					type="button"
 					variant="outline"
@@ -409,58 +414,60 @@ function DictationPage() {
 				</Button>
 			</div>
 
-			<div className={cn("grid items-start gap-3", layout)}>
-				{showMedia ? (
-					<VideoPanel
-						video={video}
-						currentTime={currentTime}
-						onStart={handlePlaySentence}
-						onReplay={handleReplaySentence}
-					>
-						{youtubeId ? (
-							<YouTubePlayer
-								ref={playerRef}
-								videoId={youtubeId}
-								onTimeUpdate={setCurrentTime}
-							/>
-						) : null}
-					</VideoPanel>
-				) : null}
+			<TextActionDock source={{ type: "video", id: video?.id }}>
+				<div className={cn("grid items-start gap-3", layout)}>
+					{showMedia ? (
+						<VideoPanel
+							video={video}
+							currentTime={currentTime}
+							onStart={handlePlaySentence}
+							onReplay={handleReplaySentence}
+						>
+							{youtubeId ? (
+								<YouTubePlayer
+									ref={playerRef}
+									videoId={youtubeId}
+									onTimeUpdate={setCurrentTime}
+								/>
+							) : null}
+						</VideoPanel>
+					) : null}
 
-				<DictationPanel
-					level={level}
-					onLevelChange={setLevel}
-					speed={speed}
-					words={words}
-					revealed={revealed}
-					wordStates={currentSentenceState.wordStates}
-					activeWordIndex={activeWordIndex}
-					currentInput={currentInput}
-					isCompleted={isSentenceCompleted}
-					onInputChange={setCurrentInput}
-					onWordSubmit={handleWordSubmit}
-					onWordBackspace={handleWordBackspace}
-					onEnterPress={handleNextSentence}
-					onResetSentence={handleResetSentence}
-					onReveal={handleReveal}
-					onRevealAll={handleRevealAll}
-					onPrev={handlePrevSentence}
-					onNextSentence={handleNextSentence}
-					onNext={handleNextSentence}
-					onPlaySentence={handlePlaySentence}
-					onReplaySentence={handleReplaySentence}
-					onSpeed={handleSpeedCycle}
-				/>
-
-				{showTranscript ? (
-					<TranscriptPanel
-						transcripts={transcripts}
-						activeIndex={activeIndex}
-						progress={overallProgress}
-						onSelect={selectLine}
+					<DictationPanel
+						level={level}
+						onLevelChange={setLevel}
+						speed={speed}
+						words={words}
+						revealed={revealed}
+						wordStates={currentSentenceState.wordStates}
+						activeWordIndex={activeWordIndex}
+						currentInput={currentInput}
+						isCompleted={isSentenceCompleted}
+						onInputChange={setCurrentInput}
+						onWordSubmit={handleWordSubmit}
+						onWordBackspace={handleWordBackspace}
+						onEnterPress={handleNextSentence}
+						onResetSentence={handleResetSentence}
+						onReveal={handleReveal}
+						onRevealAll={handleRevealAll}
+						onPrev={handlePrevSentence}
+						onNextSentence={handleNextSentence}
+						onNext={handleNextSentence}
+						onPlaySentence={handlePlaySentence}
+						onReplaySentence={handleReplaySentence}
+						onSpeed={handleSpeedCycle}
 					/>
-				) : null}
-			</div>
+
+					{showTranscript ? (
+						<TranscriptPanel
+							transcripts={transcripts}
+							activeIndex={activeIndex}
+							progress={overallProgress}
+							onSelect={selectLine}
+						/>
+					) : null}
+				</div>
+			</TextActionDock>
 
 			<DictationSummaryDialog
 				open={showSummary}

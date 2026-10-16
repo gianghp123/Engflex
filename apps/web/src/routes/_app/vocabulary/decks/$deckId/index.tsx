@@ -1,14 +1,15 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft } from "lucide-react";
+import { MaxDeckWords } from "@engflex/contracts";
+import { createFileRoute } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { APP_ROUTES } from "#/app/app-route";
 import { useBreadcrumbs } from "#/app/breadcrumbs";
+import { BackButton } from "#/components/common/back-button";
 import { CardShell } from "#/components/common/card-shell";
 import { PageLayout } from "#/components/common/page-layout";
-import { Button } from "#/components/ui/button";
 import { Skeleton } from "#/components/ui/skeleton";
 import { AddWordDialog } from "#/features/vocabulary/components/add-word-dialog";
 import { DeckInfo } from "#/features/vocabulary/components/deck-info";
+import { VocabularyGuide } from "#/features/vocabulary/components/vocabulary-guide";
 import {
 	deckStats,
 	VocabularyStatsRow,
@@ -52,11 +53,10 @@ function VocabularyDeckPage() {
 	return (
 		<PageLayout
 			action={
-				<Button asChild variant="ghost" size="sm">
-					<Link to={APP_ROUTES.VOCABULARY.DECKS.LIST}>
-						<ArrowLeft /> {m["vocabulary.deck.back"]()}
-					</Link>
-				</Button>
+				<BackButton
+					to={APP_ROUTES.VOCABULARY.DECKS.LIST}
+					label={m["vocabulary.deck.back"]()}
+				/>
 			}
 		>
 			{deck.data ? (
@@ -80,7 +80,16 @@ function VocabularyDeckPage() {
 					<VocabularyStatsRow
 						stats={deckStats(items)}
 						pending={pending}
-						action={<AddWordDialog deckId={deckId} className="btn-accent" />}
+						action={
+							<div className="flex items-center gap-2">
+								<AddWordDialog
+									deckId={deckId}
+									deckFull={items.length >= MaxDeckWords}
+									className="btn-accent"
+								/>
+								<VocabularyGuide />
+							</div>
+						}
 					/>
 				}
 				emptyTitle={m["vocabulary.deck.emptyTitle"]()}

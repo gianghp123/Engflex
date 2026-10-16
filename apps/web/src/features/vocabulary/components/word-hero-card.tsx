@@ -1,13 +1,13 @@
 import type { VocabularyItem } from "@engflex/contracts";
 import { cn } from "cn";
-import { Check, Copy, Share2 } from "lucide-react";
+import { Check, Copy } from "lucide-react";
 import { toast } from "sonner";
-import { AudioButton } from "#/components/common/audio-button";
 import { CefrBadge } from "#/components/common/cefr-badge";
 import { SourcePill } from "#/components/common/source-pill";
 import { SubmitButton } from "#/components/common/submit-button";
 import { Button } from "#/components/ui/button";
 import { posLabel } from "#/features/vocabulary/components/pos-label";
+import { SourceRef } from "#/features/vocabulary/components/source-ref";
 import { usePatchVocabulary } from "#/features/vocabulary/queries";
 import { m } from "#/paraglide/messages";
 
@@ -47,16 +47,21 @@ export function WordHeroCard({ item }: { item: VocabularyItem }) {
 						{posLabel(item.partOfSpeech)}
 					</span>
 				) : null}
+				{state ? <SourcePill source={state.sourceType} /> : null}
 				{state ? (
-					<SourcePill source={state.sourceType} suffix={state.sourceId} />
+					<SourceRef
+						type={state.sourceType}
+						id={state.sourceId}
+						showLabel={false}
+					/>
 				) : null}
 			</div>
 
-			<div className="flex flex-wrap items-center gap-2">
-				<span className="chip font-mono text-xs">{item.details?.ipa}</span>
-				<AudioButton label={m["vocabulary.card.listenUs"]()} />
-				<AudioButton label={m["vocabulary.card.listenUk"]()} />
-			</div>
+			{item.details?.ipa ? (
+				<div className="flex flex-wrap items-center gap-2">
+					<span className="chip font-mono text-xs">{item.details.ipa}</span>
+				</div>
+			) : null}
 
 			<p className="text-[15px] font-medium text-muted-foreground">
 				{item.definition}
@@ -91,16 +96,6 @@ export function WordHeroCard({ item }: { item: VocabularyItem }) {
 				>
 					<Copy data-icon="inline-start" />
 					{m["common.actions.copy"]()}
-				</Button>
-				<Button
-					type="button"
-					variant="ghost"
-					onClick={() =>
-						copy(window.location.href, m["common.toast.linkCopied"]())
-					}
-				>
-					<Share2 data-icon="inline-start" />
-					{m["vocabulary.card.share"]()}
 				</Button>
 			</div>
 		</div>
