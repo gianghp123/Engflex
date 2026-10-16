@@ -38,6 +38,14 @@ export const API_ROUTES = {
 		LIST: "/vocabulary-categories",
 		BY_ID: (id: ApiId) => `/vocabulary-categories/${id}`,
 	},
+	VIDEO_EXERCISES: {
+		LIST: "/video-exercises",
+		BY_ID: (id: ApiId) => `/video-exercises/${id}`,
+	},
+	VIDEO_CATEGORIES: {
+		LIST: "/video-categories",
+		BY_ID: (id: ApiId) => `/video-categories/${id}`,
+	},
 	ADMIN: {
 		VOCABULARY_DECKS: "/admin/vocabulary-decks",
 		VOCABULARY_ITEMS: "/admin/vocabulary-items",
