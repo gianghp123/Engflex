@@ -69,6 +69,25 @@ func (s *ConversationService) Get(ctx context.Context, userID, id string) (*mode
 	return s.getOwned(ctx, userID, id)
 }
 
+// List returns the caller's finished conversations (ended or failed),
+// newest first, with scenario + persona attached for the history row.
+func (s *ConversationService) List(ctx context.Context, userID string, scenarioID *string, limit, offset int) ([]*models.Conversation, int64, error) {
+	rows, err := s.conversations.ListByUser(ctx, userID, scenarioID, limit, offset)
+	if err != nil {
+		appErr := common.FromDBError(err, "conversation")
+		logger.Report(ctx, "list conversations failed", appErr, "userID", userID)
+		return nil, 0, appErr
+	}
+	total, err := s.conversations.CountByUser(ctx, userID, scenarioID)
+	if err != nil {
+		appErr := common.FromDBError(err, "conversation")
+		logger.Report(ctx, "count conversations failed", appErr, "userID", userID)
+		return nil, 0, appErr
+	}
+	slog.InfoContext(ctx, "conversations listed", "userID", userID, "count", len(rows), "total", total)
+	return rows, total, nil
+}
+
 // Start provisions the engine session (idempotent) and returns the ICE config.
 func (s *ConversationService) Start(ctx context.Context, userID, id string) (*models.Conversation, *responses.IceConfig, error) {
 	conv, err := s.getOwned(ctx, userID, id)
@@ -213,6 +232,19 @@ func (s *ConversationService) Finalize(ctx context.Context, id string, durationS
 		appErr := common.FromDBError(err, "conversation")
 		logger.Report(ctx, "finalize conversation lookup failed", appErr, "conversationID", id)
 		return appErr
+	}
+	// Zero turns at finalize is definitive: the engine posts its turn batch
+	// (awaited) before this callback, so nothing can arrive later. Discard
+	// the empty conversation instead of storing empty history.
+	deleted, err := s.conversations.DeleteIfEmpty(ctx, id)
+	if err != nil {
+		appErr := common.FromDBError(err, "conversation")
+		logger.Report(ctx, "finalize empty-check failed", appErr, "conversationID", id)
+		return appErr
+	}
+	if deleted {
+		slog.InfoContext(ctx, "empty conversation discarded", "conversationID", id)
+		return nil
 	}
 	if _, err := s.conversations.SetEnded(ctx, id, &durationSec); err != nil {
 		appErr := common.FromDBError(err, "conversation")

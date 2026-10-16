@@ -79,6 +79,36 @@ func (h *ConversationController) Get(c *gin.Context) {
 	common.OK(c, "conversation", dto)
 }
 
+// List godoc
+// @Summary      List the caller's finished conversations
+// @Description  Ended and failed conversations, newest first, with the scenario and partner attached. Optionally scoped to one scenario.
+// @Tags         conversations
+// @Security     BearerAuth
+// @Produce      json
+// @Param        page query int false "page"
+// @Param        pageSize query int false "page size"
+// @Param        scenarioId query string false "scenario filter"
+// @Success      200 {object} common.ApiResponse{data=[]responses.ConversationSummary}
+// @Failure      400 {object} common.ApiResponse
+// @Failure      401 {object} common.ApiResponse
+// @Router       /conversations [get]
+func (h *ConversationController) List(c *gin.Context) {
+	page, pageSize := utils.ParsePagination(c)
+	var req requests.ListConversations
+	if err := c.ShouldBindQuery(&req); err != nil {
+		common.Fail(c, common.BadRequest(err.Error()))
+		return
+	}
+	rows, total, err := h.service.List(c.Request.Context(), middleware.UserID(c), req.ScenarioID, pageSize, utils.Offset(page, pageSize))
+	if err != nil {
+		common.Fail(c, err)
+		return
+	}
+	dtos := make([]responses.ConversationSummary, 0, len(rows))
+	_ = utils.MapSlice(&dtos, rows)
+	common.Paginated(c, "conversations", dtos, page, pageSize, total)
+}
+
 // Start godoc
 // @Summary      Provision the voice session
 // @Tags         conversations

@@ -36,6 +36,7 @@ func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB, cfg config.VoiceConfig, se
 	}
 	strictAuth := append(append([]gin.HandlerFunc{}, strict...), middleware.RequireAuth())
 	g.POST("", append(strictAuth, ctl.Create)...)
+	g.GET("", middleware.RequireAuth(), ctl.List)
 	g.GET("/:id", middleware.RequireAuth(), ctl.Get)
 	g.POST("/:id/start", append(strictAuth, ctl.Start)...)
 	g.POST("/:id/offer", append(strictAuth, ctl.Offer)...)

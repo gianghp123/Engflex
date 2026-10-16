@@ -75,7 +75,7 @@ export default defineConfig({
 		{ name: "global setup", testMatch: /global\.setup\.ts/ },
 		{
 			name: "voice",
-			testMatch: /voice-(room|detail|signal)\.spec\.ts/,
+			testMatch: /voice-(room|detail|signal)\.spec\.ts|history\.spec\.ts/,
 			dependencies: ["global setup"],
 			use: {
 				...devices["Desktop Chrome"],
@@ -101,6 +101,10 @@ export default defineConfig({
 			env: {
 				PORT: String(API_PORT),
 				...e2eDbParts(),
+				// The web proxy forwards the browser Origin; the API's CORS
+				// allowlist defaults to dev ports only, so the e2e web port
+				// must be listed or every proxied call 403s with an empty body.
+				CORS_ORIGINS: `http://localhost:${WEB_PORT}`,
 				VOICE_SERVICE_URL: "http://127.0.0.1:9",
 				VOICE_START_TIMEOUT_MS: "3000",
 				VOICE_OFFER_TIMEOUT_MS: "3000",

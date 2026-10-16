@@ -1,12 +1,22 @@
 package requests
 
-import "engflex-api/internal/common/enums"
+import (
+	"engflex-api/internal/common"
+	"engflex-api/internal/common/enums"
+)
 
 // StartConversation provisions a session. scenarioId is required for
 // roleplay and omitted for free talk.
 type StartConversation struct {
 	Mode       enums.ConversationMode `json:"mode" binding:"required,oneof=free_talk roleplay"`
 	ScenarioID *string                `json:"scenarioId" binding:"omitempty,uuid"`
+}
+
+// ListConversations pages the caller's finished conversations, optionally
+// scoped to one scenario.
+type ListConversations struct {
+	common.ListParams `tstype:",extends"`
+	ScenarioID        *string `form:"scenarioId" json:"scenarioId" binding:"omitempty,uuid"`
 }
 
 // AnalysisSpanInput is one problematic span in an ingested analysis.

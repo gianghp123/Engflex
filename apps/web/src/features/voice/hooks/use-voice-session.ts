@@ -1,5 +1,5 @@
 import type { ConversationSession } from "@engflex/contracts";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { APP_ROUTES } from "#/app/app-route";
 import { useConversation, useEndConversation } from "#/features/voice/queries";
 import { authToken } from "#/lib/auth-token";
@@ -46,38 +46,52 @@ export function useVoiceSession(
 		return () => window.removeEventListener("beforeunload", beforeUnload);
 	}, []);
 
-	const startBotParams = {
-		endpoint: APP_ROUTES.VOICE.SIGNAL_START.replace(
-			"$conversationId",
-			conversationId,
-		),
-		// Null until the token resolves; the room renders a skeleton until
-		// `ready`, so this is never sent without headers.
-		headers: authHeaders ?? undefined,
-	};
+	// Both values feed PipecatAppBase's startBot callback, which sits in the
+	// dependency chain of the effect that CREATES the transport + client: a
+	// fresh identity per render makes the kit disconnect and rebuild on every
+	// re-render. Each rebuild re-runs /start and stacks another listener on
+	// the shared Daily device emitters (10+ trips Node's
+	// MaxListenersExceededWarning). Stable for the room's life: `authHeaders`
+	// is set once, before the `ready` gate mounts the kit at all.
+	const startBotParams = useMemo(
+		() => ({
+			endpoint: APP_ROUTES.VOICE.SIGNAL_START.replace(
+				"$conversationId",
+				conversationId,
+			),
+			// Null until the token resolves; the room renders a skeleton until
+			// `ready`, so this is never sent without headers.
+			headers: authHeaders ?? undefined,
+		}),
+		[conversationId, authHeaders],
+	);
 
-	function transformStartResponse(response: unknown) {
-		const data = (response as { data?: ConversationSession } | null | undefined)
-			?.data;
-		return {
-			webrtcRequestParams: {
-				endpoint: APP_ROUTES.VOICE.SIGNAL_OFFER.replace(
-					"$conversationId",
-					conversationId,
-				),
-				headers: authHeaders ?? undefined,
-			},
-			iceConfig: data?.iceConfig
-				? {
-						iceServers: data.iceConfig.iceServers.map((server) => ({
-							urls: server.urls,
-							...(server.username ? { username: server.username } : {}),
-							...(server.credential ? { credential: server.credential } : {}),
-						})),
-					}
-				: undefined,
-		};
-	}
+	const transformStartResponse = useCallback(
+		(response: unknown) => {
+			const data = (
+				response as { data?: ConversationSession } | null | undefined
+			)?.data;
+			return {
+				webrtcRequestParams: {
+					endpoint: APP_ROUTES.VOICE.SIGNAL_OFFER.replace(
+						"$conversationId",
+						conversationId,
+					),
+					headers: authHeaders ?? undefined,
+				},
+				iceConfig: data?.iceConfig
+					? {
+							iceServers: data.iceConfig.iceServers.map((server) => ({
+								urls: server.urls,
+								...(server.username ? { username: server.username } : {}),
+								...(server.credential ? { credential: server.credential } : {}),
+							})),
+						}
+					: undefined,
+			};
+		},
+		[conversationId, authHeaders],
+	);
 
 	/** End server-side, then leave: end is idempotent, so navigate regardless. */
 	async function handleExit() {

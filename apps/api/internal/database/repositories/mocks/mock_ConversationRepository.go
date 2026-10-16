@@ -51,6 +51,78 @@ func (_m *MockConversationRepository) EXPECT() *MockConversationRepository_Expec
 	return &MockConversationRepository_Expecter{mock: &_m.Mock}
 }
 
+// CountByUser provides a mock function for the type MockConversationRepository
+func (_mock *MockConversationRepository) CountByUser(ctx context.Context, userID string, scenarioID *string) (int64, error) {
+	ret := _mock.Called(ctx, userID, scenarioID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CountByUser")
+	}
+
+	var r0 int64
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, *string) (int64, error)); ok {
+		return returnFunc(ctx, userID, scenarioID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, *string) int64); ok {
+		r0 = returnFunc(ctx, userID, scenarioID)
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, *string) error); ok {
+		r1 = returnFunc(ctx, userID, scenarioID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockConversationRepository_CountByUser_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CountByUser'
+type MockConversationRepository_CountByUser_Call struct {
+	*mock.Call
+}
+
+// CountByUser is a helper method to define mock.On call
+//   - ctx context.Context
+//   - userID string
+//   - scenarioID *string
+func (_e *MockConversationRepository_Expecter) CountByUser(ctx any, userID any, scenarioID any) *MockConversationRepository_CountByUser_Call {
+	return &MockConversationRepository_CountByUser_Call{Call: _e.mock.On("CountByUser", ctx, userID, scenarioID)}
+}
+
+func (_c *MockConversationRepository_CountByUser_Call) Run(run func(ctx context.Context, userID string, scenarioID *string)) *MockConversationRepository_CountByUser_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 *string
+		if args[2] != nil {
+			arg2 = args[2].(*string)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockConversationRepository_CountByUser_Call) Return(n int64, err error) *MockConversationRepository_CountByUser_Call {
+	_c.Call.Return(n, err)
+	return _c
+}
+
+func (_c *MockConversationRepository_CountByUser_Call) RunAndReturn(run func(ctx context.Context, userID string, scenarioID *string) (int64, error)) *MockConversationRepository_CountByUser_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // Create provides a mock function for the type MockConversationRepository
 func (_mock *MockConversationRepository) Create(ctx context.Context, m *models.Conversation) error {
 	ret := _mock.Called(ctx, m)
@@ -165,6 +237,72 @@ func (_c *MockConversationRepository_CreateClosingActive_Call) RunAndReturn(run 
 	return _c
 }
 
+// DeleteIfEmpty provides a mock function for the type MockConversationRepository
+func (_mock *MockConversationRepository) DeleteIfEmpty(ctx context.Context, id string) (bool, error) {
+	ret := _mock.Called(ctx, id)
+
+	if len(ret) == 0 {
+		panic("no return value specified for DeleteIfEmpty")
+	}
+
+	var r0 bool
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) (bool, error)); ok {
+		return returnFunc(ctx, id)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) bool); ok {
+		r0 = returnFunc(ctx, id)
+	} else {
+		r0 = ret.Get(0).(bool)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = returnFunc(ctx, id)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockConversationRepository_DeleteIfEmpty_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DeleteIfEmpty'
+type MockConversationRepository_DeleteIfEmpty_Call struct {
+	*mock.Call
+}
+
+// DeleteIfEmpty is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id string
+func (_e *MockConversationRepository_Expecter) DeleteIfEmpty(ctx any, id any) *MockConversationRepository_DeleteIfEmpty_Call {
+	return &MockConversationRepository_DeleteIfEmpty_Call{Call: _e.mock.On("DeleteIfEmpty", ctx, id)}
+}
+
+func (_c *MockConversationRepository_DeleteIfEmpty_Call) Run(run func(ctx context.Context, id string)) *MockConversationRepository_DeleteIfEmpty_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockConversationRepository_DeleteIfEmpty_Call) Return(b bool, err error) *MockConversationRepository_DeleteIfEmpty_Call {
+	_c.Call.Return(b, err)
+	return _c
+}
+
+func (_c *MockConversationRepository_DeleteIfEmpty_Call) RunAndReturn(run func(ctx context.Context, id string) (bool, error)) *MockConversationRepository_DeleteIfEmpty_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetByID provides a mock function for the type MockConversationRepository
 func (_mock *MockConversationRepository) GetByID(ctx context.Context, id string) (*models.Conversation, error) {
 	ret := _mock.Called(ctx, id)
@@ -229,6 +367,92 @@ func (_c *MockConversationRepository_GetByID_Call) Return(conversation *models.C
 }
 
 func (_c *MockConversationRepository_GetByID_Call) RunAndReturn(run func(ctx context.Context, id string) (*models.Conversation, error)) *MockConversationRepository_GetByID_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// ListByUser provides a mock function for the type MockConversationRepository
+func (_mock *MockConversationRepository) ListByUser(ctx context.Context, userID string, scenarioID *string, limit int, offset int) ([]*models.Conversation, error) {
+	ret := _mock.Called(ctx, userID, scenarioID, limit, offset)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ListByUser")
+	}
+
+	var r0 []*models.Conversation
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, *string, int, int) ([]*models.Conversation, error)); ok {
+		return returnFunc(ctx, userID, scenarioID, limit, offset)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, *string, int, int) []*models.Conversation); ok {
+		r0 = returnFunc(ctx, userID, scenarioID, limit, offset)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.Conversation)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, *string, int, int) error); ok {
+		r1 = returnFunc(ctx, userID, scenarioID, limit, offset)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockConversationRepository_ListByUser_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ListByUser'
+type MockConversationRepository_ListByUser_Call struct {
+	*mock.Call
+}
+
+// ListByUser is a helper method to define mock.On call
+//   - ctx context.Context
+//   - userID string
+//   - scenarioID *string
+//   - limit int
+//   - offset int
+func (_e *MockConversationRepository_Expecter) ListByUser(ctx any, userID any, scenarioID any, limit any, offset any) *MockConversationRepository_ListByUser_Call {
+	return &MockConversationRepository_ListByUser_Call{Call: _e.mock.On("ListByUser", ctx, userID, scenarioID, limit, offset)}
+}
+
+func (_c *MockConversationRepository_ListByUser_Call) Run(run func(ctx context.Context, userID string, scenarioID *string, limit int, offset int)) *MockConversationRepository_ListByUser_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 *string
+		if args[2] != nil {
+			arg2 = args[2].(*string)
+		}
+		var arg3 int
+		if args[3] != nil {
+			arg3 = args[3].(int)
+		}
+		var arg4 int
+		if args[4] != nil {
+			arg4 = args[4].(int)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+			arg4,
+		)
+	})
+	return _c
+}
+
+func (_c *MockConversationRepository_ListByUser_Call) Return(conversations []*models.Conversation, err error) *MockConversationRepository_ListByUser_Call {
+	_c.Call.Return(conversations, err)
+	return _c
+}
+
+func (_c *MockConversationRepository_ListByUser_Call) RunAndReturn(run func(ctx context.Context, userID string, scenarioID *string, limit int, offset int) ([]*models.Conversation, error)) *MockConversationRepository_ListByUser_Call {
 	_c.Call.Return(run)
 	return _c
 }

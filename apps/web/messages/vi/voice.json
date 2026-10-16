@@ -2,9 +2,12 @@
   "$schema": "https://inlang.com/schema/inlang-message-format",
   "voice": {
     "crumb": {
+      "modes": "Chế độ luyện nói",
       "scenarios": "Tình huống",
       "detail": "Chi tiết tình huống",
-      "room": "Phiên luyện trực tiếp"
+      "room": "Phiên luyện trực tiếp",
+      "history": "Lịch sử",
+      "session": "Phiên luyện"
     },
     "room": {
       "sessionEnded": "Phiên này đã kết thúc.",
@@ -209,6 +212,29 @@
     "card": {
       "maxSession": "Tối đa {max} phút",
       "start": "Bắt đầu luyện"
+    },
+    "history": {
+      "title": "Lịch sử luyện nói",
+      "subtitle": "Mọi phiên nói đã hoàn thành — xem lại hội thoại và nhận xét của Mo.",
+      "recentTitle": "Phiên gần đây",
+      "viewAll": "Xem tất cả",
+      "emptyTitle": "Chưa có phiên nào",
+      "emptyBody": "Các cuộc hội thoại của bạn sẽ xuất hiện ở đây sau phiên đầu tiên.",
+      "emptyCta": "Bắt đầu một phiên",
+      "loadMore": "Tải thêm",
+      "interrupted": "Bị ngắt",
+      "freeTalk": "Nói tự do",
+      "roleplayFallback": "Phiên nhập vai",
+      "duration": "{minutes} phút",
+      "today": "Hôm nay",
+      "yesterday": "Hôm qua",
+      "sceneLabel": "Phiên luyện",
+      "backToList": "Về lịch sử",
+      "error": "Không tải được lịch sử. Vui lòng thử lại sau.",
+      "filter": {
+        "scenario": "Tình huống: {title}",
+        "clear": "Bỏ lọc"
+      }
     },
     "tip": {
       "title": "Mẹo của Mo",

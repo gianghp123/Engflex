@@ -63,6 +63,11 @@ function VoiceRoomPage() {
 					scenario.data?.maxDuration != null
 						? m["voice.room.controls.timeLeft"]({ left: formatLeft(left) })
 						: null,
+				// The call header's scenario card: title + objective while the
+				// session runs; free talk renders its own pair when absent.
+				scene: scenario.data
+					? { title: scenario.data.title, body: scenario.data.objective }
+					: undefined,
 				onExit: () => void session.handleExit(),
 				onBack: () => void exit(),
 				onEnd: () => void session.handleEnd(),

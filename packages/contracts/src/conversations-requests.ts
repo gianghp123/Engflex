@@ -12,6 +12,13 @@ export interface StartConversation {
   scenarioId?: string;
 }
 /**
+ * ListConversations pages the caller's finished conversations, optionally
+ * scoped to one scenario.
+ */
+export interface ListConversations extends ListParams {
+  scenarioId?: string;
+}
+/**
  * AnalysisSpanInput is one problematic span in an ingested analysis.
  */
 export interface AnalysisSpanInput {

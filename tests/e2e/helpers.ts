@@ -207,3 +207,38 @@ export async function closeDb(): Promise<void> {
 	await pool?.end();
 	pool = null;
 }
+
+/** Flip a conversation into the failed state the engine would report. */
+export async function dbFailConversation(id: string): Promise<void> {
+	await db().query(
+		"UPDATE conversations SET status = 'failed', ended_at = COALESCE(ended_at, now()) WHERE id = $1",
+		[id],
+	);
+}
+
+/** A bare scenario with no persona, for the deleted-scenario fallback case. */
+export async function dbInsertScenario(
+	id: string,
+	topicId: string,
+	title: string,
+): Promise<void> {
+	await db().query(
+		`INSERT INTO scenarios (id, topic_id, persona_id, title, objective, cefr_level, max_duration, details)
+		 VALUES ($1, $2, NULL, $3, '', 'A1', 5,
+		 '{"context":[],"role":"","goal_format":"","interlocutor_role":"","opening":{"label":"","text":""},"vocab":[]}'::jsonb)`,
+		[id, topicId, title],
+	);
+}
+
+export async function dbDeleteScenario(id: string): Promise<void> {
+	await db().query("DELETE FROM scenarios WHERE id = $1", [id]);
+}
+
+/** Whether the conversation row still exists (deletion checks). */
+export async function dbConversationExists(id: string): Promise<boolean> {
+	const { rows } = await db().query(
+		"SELECT 1 FROM conversations WHERE id = $1",
+		[id],
+	);
+	return rows.length > 0;
+}

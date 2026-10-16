@@ -30,7 +30,7 @@ function localDayStart(): string {
   return startOfLocalDay().toISOString();
 }
 
-export const Route = createFileRoute("/_app/vocabulary/")({
+export const Route = createFileRoute("/_app/vocabulary/decks/")({
   // Only the decks are prefetched: the stats query is keyed by the reader's
   // local day, which the server cannot know, so the client owns that read.
   loader: async ({ context: { queryClient } }) => {
@@ -90,7 +90,10 @@ function LandingStats({
 }
 
 function VocabularyDecksPage() {
-  useBreadcrumbs([{ label: m["nav.item.vocabulary"]() }]);
+  useBreadcrumbs([
+    { label: m["nav.item.vocabulary"]() },
+    { label: m["vocabulary.decks.title"]() },
+  ]);
   const dayStart = localDayStart();
   const decks = useDecks(PREVIEW_K);
   const stats = useVocabularyStats(dayStart);
@@ -112,7 +115,7 @@ function VocabularyDecksPage() {
   return (
     <PageLayout
       hero={{
-        icon: <MoMascot variant="open" size={84} />,
+        icon: <MoMascot variant="nice" size={84} />,
         title: m["vocabulary.hub.title"](),
         description: m["vocabulary.hub.subtitle"](),
       }}

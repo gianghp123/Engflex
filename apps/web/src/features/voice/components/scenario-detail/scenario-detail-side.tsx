@@ -1,9 +1,22 @@
 import type { Scenario } from "@engflex/contracts";
+import { Link } from "@tanstack/react-router";
+import { APP_ROUTES } from "#/app/app-route";
 import { MoMascot } from "#/components/common/mo-mascot";
+import {
+	HistoryRow,
+	HistoryRowSkeleton,
+} from "#/features/voice/components/history/history-row";
+import { useScenarioRuns } from "#/features/voice/queries";
 import { m } from "#/paraglide/messages";
 
-/** Target vocabulary plus the runs shell (empty in v1 — no history yet). */
+const RUNS_PREVIEW = 3;
+
+/** Target vocabulary plus the scenario's previous runs (history API). */
 export function ScenarioDetailSide({ scenario }: { scenario: Scenario }) {
+	const runs = useScenarioRuns(scenario.id, RUNS_PREVIEW);
+	const rows = runs.data?.items ?? [];
+	const total = runs.data?.pagination.total ?? 0;
+
 	return (
 		<div className="flex flex-col gap-6">
 			{scenario.details.vocab && scenario.details.vocab.length > 0 ? (
@@ -28,17 +41,47 @@ export function ScenarioDetailSide({ scenario }: { scenario: Scenario }) {
 				</section>
 			) : null}
 
-			<section className="surface-card flex flex-col items-center gap-2 p-5 text-center">
-				<MoMascot variant="rest" size={56} />
+			<section className="surface-card flex flex-col gap-3 p-5">
 				<h2 className="text-base font-bold text-foreground">
 					{m["voice.detail.runs.title"]()}
 				</h2>
-				<p className="text-sm font-bold text-foreground">
-					{m["voice.detail.runs.emptyTitle"]()}
-				</p>
-				<p className="text-xs text-muted-foreground">
-					{m["voice.detail.runs.emptyBody"]()}
-				</p>
+				{runs.isPending ? (
+					<div className="flex flex-col divide-y">
+						<HistoryRowSkeleton />
+						<HistoryRowSkeleton />
+					</div>
+				) : runs.isError ? (
+					<p className="text-xs text-muted-foreground">
+						{m["voice.history.error"]()}
+					</p>
+				) : rows.length === 0 ? (
+					<div className="flex flex-col items-center gap-2 text-center">
+						<MoMascot variant="rest" size={56} />
+						<p className="text-sm font-bold text-foreground">
+							{m["voice.detail.runs.emptyTitle"]()}
+						</p>
+						<p className="text-xs text-muted-foreground">
+							{m["voice.detail.runs.emptyBody"]()}
+						</p>
+					</div>
+				) : (
+					<>
+						<div className="flex flex-col divide-y">
+							{rows.map((conversation) => (
+								<HistoryRow key={conversation.id} conversation={conversation} />
+							))}
+						</div>
+						{total > rows.length ? (
+							<Link
+								to={APP_ROUTES.VOICE.HISTORY.LIST}
+								search={{ scenarioId: scenario.id }}
+								className="text-sm font-bold text-primary hover:underline"
+							>
+								{m["voice.history.viewAll"]()}
+							</Link>
+						) : null}
+					</>
+				)}
 			</section>
 		</div>
 	);

@@ -36,17 +36,22 @@ export async function forwardVoiceSignal(args: {
 	}
 	// Forward all incoming headers (framing stripped by the helper): the
 	// limiter keys on CF-Connecting-IP, and byte-verbatim body handling
-	// stays untouched — headers never alter the SDP bytes. Explicit
-	// Content-Type/Authorization win over forwarded copies.
+	// stays untouched — headers never alter the SDP bytes. Overrides go
+	// through `set()` on a Headers instance, because a plain record keys
+	// case-sensitively: the room attaches the client's own Bearer, which
+	// forwards as lowercase `authorization`, and a record-style
+	// `Authorization` sits BESIDE it instead of replacing it — fetch then
+	// merges both into one unparseable `Bearer <client>, <minted>` that
+	// the API's Clerk verifier rejects with 401.
 	const path =
 		action === "start"
 			? API_ROUTES.CONVERSATIONS.START(conversationId)
 			: API_ROUTES.CONVERSATIONS.OFFER(conversationId);
-	const forwarded = pickForwardedHeaders(getRequestHeaders());
+	const forwarded = new Headers(pickForwardedHeaders(getRequestHeaders()));
 	if (contentType) {
-		forwarded["Content-Type"] = contentType;
+		forwarded.set("Content-Type", contentType);
 	}
-	forwarded.Authorization = `Bearer ${token}`;
+	forwarded.set("Authorization", `Bearer ${token}`);
 	let upstream: Response;
 	try {
 		upstream = await fetch(`${INTERNAL_API_URL}${path}`, {

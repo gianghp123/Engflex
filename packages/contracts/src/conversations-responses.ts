@@ -57,6 +57,38 @@ export interface ConversationSession {
 }
 
 //////////
+// source: conversation_summary.go
+
+/**
+ * ConversationSummary is one row in the history list: the conversation plus
+ * the scenario/partner the row renders. Turn data is detail-only.
+ */
+export interface ConversationSummary {
+  id: string;
+  mode: ConversationMode;
+  status: ConversationStatus;
+  scenarioId?: string;
+  startedAt: string /* RFC3339 */;
+  durationSec?: number /* int */;
+  scenario?: ScenarioSummary;
+}
+/**
+ * ScenarioSummary is the scenario as a history row needs it — never the
+ * whole detail document.
+ */
+export interface ScenarioSummary {
+  title: string;
+  persona?: PersonaSummary;
+}
+/**
+ * PersonaSummary is the partner line ("Maya · Barista").
+ */
+export interface PersonaSummary {
+  name: string;
+  roleTitle: string;
+}
+
+//////////
 // source: feedback.go
 
 /**

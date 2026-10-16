@@ -2,15 +2,8 @@ import type { Scenario } from "@engflex/contracts";
 import { ArrowRight, Clock3 } from "lucide-react";
 import { CefrBadge } from "#/components/common/cefr-badge";
 import { SubmitButton } from "#/components/common/submit-button";
+import { personaInitials } from "#/features/voice/persona";
 import { m } from "#/paraglide/messages";
-
-function personaInitials(roleTitle: string): string {
-	const words = roleTitle.split(/\s+/).filter(Boolean);
-	const letters = words.map((word) =>
-		word.replace(/^[^A-Za-z]*/, "").charAt(0),
-	);
-	return (letters.slice(0, 2).join("") || "?").toUpperCase();
-}
 
 /** Hero card: badges, title, objective, partner tile, start CTA. */
 export function ScenarioDetailHero({

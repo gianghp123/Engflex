@@ -71,7 +71,7 @@ test("ended session: persisted review renders seeded turns", async ({
 	});
 	await expect(page.getByText("Hello from the e2e seed")).toBeVisible();
 
-	await page.getByRole("button", { name: "Back to scenarios" }).click();
+	await page.getByRole("button", { name: "Pick another mode" }).click();
 	await expect(page).toHaveURL(/\/voice\/?$/);
 });
 
@@ -131,7 +131,7 @@ test("roleplay start: seeded scenario creates a conversation and the room loads"
 	await page.goto("/voice");
 	const conv = await apiCreateConversation({
 		mode: "roleplay",
-		scenarioId: "01b9a032-e2cf-5bb0-8df5-7bf49704bee8",
+		scenarioId: "7c000001-0000-4000-8000-000000000001",
 	});
 	const id = await tracked(conv.id);
 

@@ -65,6 +65,23 @@ const NAV_GROUPS = [
 				to: APP_ROUTES.VOICE.LIST,
 				icon: AudioWaveform,
 				tile: "bg-nav-voice",
+				// Section landings and list-level pages, like vocabulary. Every
+				// other /voice path is a drill-down — the room or one session —
+				// and lights the nearest entry (`isSubActive`, longest match).
+				items: [
+					{
+						title: () => m["voice.crumb.modes"](),
+						to: APP_ROUTES.VOICE.LIST,
+					},
+					{
+						title: () => m["voice.crumb.scenarios"](),
+						to: APP_ROUTES.VOICE.SCENARIOS,
+					},
+					{
+						title: () => m["voice.crumb.history"](),
+						to: APP_ROUTES.VOICE.HISTORY.LIST,
+					},
+				],
 			},
 		],
 	},
@@ -177,7 +194,14 @@ type NavItem = (typeof NAV_GROUPS)[number]["items"][number];
  */
 function NavMenuItem({ item, pathname }: { item: NavItem; pathname: string }) {
 	const { state, setOpen } = useSidebar();
-	const inSection = pathname.startsWith(item.to);
+	// A section is active on its own landing (`to`) and on the list-level pages
+	// its sub-entries expose. The landing is not always the section's prefix:
+	// `VOCABULARY.DECKS.LIST` is a sibling of `VOCABULARY.WORDS.LIST`, not an
+	// ancestor, so a bare `startsWith(item.to)` would shut the section and hide
+	// the sub-menu on the words pages.
+	const inSection =
+		pathname.startsWith(item.to) ||
+		("items" in item && item.items.some((sub) => pathname.startsWith(sub.to)));
 
 	// Radix is uncontrolled unless `open` is passed, and `defaultOpen` is read
 	// once at mount — a client navigation does not remount the sidebar, so a
@@ -273,12 +297,12 @@ function NavMenuItem({ item, pathname }: { item: NavItem; pathname: string }) {
 }
 
 /**
- * A section's landing route is also the bare prefix of its sibling's route
- * (`DECKS.LIST` versus `WORDS.LIST`), so a plain `startsWith` on both would
- * light *both* sub-items while the reader is on the words page — the decks
- * landing is not an ancestor of the words list, it just shares its prefix.
- * Longest match wins: an entry yields the highlight to a sibling whose route is
- * the deeper match for the same pathname.
+ * A section's landing route is also the bare prefix of its siblings' routes
+ * (`VOICE.LIST` versus `VOICE.SCENARIOS`), so a plain `startsWith` on both
+ * would light *both* sub-items while the reader is inside scenarios — the
+ * modes page is not an ancestor of the scenarios list, it just shares its
+ * prefix. Longest match wins: an entry yields the highlight to a sibling whose
+ * route is the deeper match for the same pathname.
  */
 function isSubActive(
 	to: string,

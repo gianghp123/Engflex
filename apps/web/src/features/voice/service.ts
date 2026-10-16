@@ -1,6 +1,7 @@
 import type {
 	Conversation,
 	ConversationSession,
+	ConversationSummary,
 	Feedback,
 	Pagination,
 	Persona,
@@ -135,5 +136,22 @@ export function listPersonas(): Promise<{
 		API_ROUTES.PERSONAS.LIST,
 		{ method: "GET" },
 		{ withCredentials: true },
+	);
+}
+
+/** One page of the caller's finished conversations, newest first. */
+export function listConversations(params: {
+	scenarioId?: string;
+	page?: number;
+	pageSize?: number;
+}): Promise<{ items: ConversationSummary[]; pagination: Pagination }> {
+	const query: Record<string, string> = {};
+	if (params.scenarioId) query.scenarioId = params.scenarioId;
+	if (params.page) query.page = String(params.page);
+	if (params.pageSize) query.pageSize = String(params.pageSize);
+	return apiPage<ConversationSummary>(
+		API_ROUTES.CONVERSATIONS.LIST,
+		{ method: "GET" },
+		{ withCredentials: true, query },
 	);
 }

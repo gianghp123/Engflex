@@ -345,23 +345,31 @@ func TestEnd(t *testing.T) {
 
 func TestFinalize(t *testing.T) {
 	tests := []struct {
-		name       string
-		status     enums.ConversationStatus
-		duration   int
-		wantStatus int
+		name         string
+		status       enums.ConversationStatus
+		duration     int
+		deleted      bool
+		deleteErr    error
+		wantSetEnded bool
+		wantStatus   int
 	}{
-		{name: "live conversation records duration", status: enums.ConversationStatusLive, duration: 120},
-		{name: "finalize after end keeps duration", status: enums.ConversationStatusEnded, duration: 42},
+		{name: "live conversation records duration", status: enums.ConversationStatusLive, duration: 120, wantSetEnded: true},
+		{name: "finalize after end keeps duration", status: enums.ConversationStatusEnded, duration: 42, wantSetEnded: true},
+		{name: "empty conversation is discarded without SetEnded", status: enums.ConversationStatusLive, duration: 60, deleted: true},
+		{name: "empty-check failure surfaces 500", status: enums.ConversationStatusLive, duration: 60, deleteErr: errBoom(), wantStatus: http.StatusInternalServerError},
 		{name: "negative duration is rejected", status: enums.ConversationStatusLive, duration: -1, wantStatus: http.StatusBadRequest},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			svc, repo, _, _, _ := newService(t)
-			if tt.wantStatus == 0 {
+			if tt.wantStatus == 0 || tt.deleteErr != nil {
 				repo.On("GetByID", mock.Anything, convID).Return(&models.Conversation{
 					ID: convID, UserID: userID, Status: tt.status,
 				}, nil).Once()
+				repo.On("DeleteIfEmpty", mock.Anything, convID).Return(tt.deleted, tt.deleteErr).Once()
+			}
+			if tt.wantSetEnded {
 				repo.On("SetEnded", mock.Anything, convID, mock.MatchedBy(func(d *int) bool {
 					return d != nil && *d == tt.duration
 				})).Return(int64(1), nil).Once()

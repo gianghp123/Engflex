@@ -2,9 +2,12 @@
   "$schema": "https://inlang.com/schema/inlang-message-format",
   "voice": {
     "crumb": {
+      "modes": "Speaking modes",
       "scenarios": "Scenarios",
       "detail": "Scenario detail",
-      "room": "Live session"
+      "room": "Live session",
+      "history": "History",
+      "session": "Session"
     },
     "room": {
       "sessionEnded": "This session has ended.",
@@ -209,6 +212,29 @@
     "card": {
       "maxSession": "Max {max} min session",
       "start": "Start practice"
+    },
+    "history": {
+      "title": "Your speaking history",
+      "subtitle": "Every voice session you’ve finished — replay the transcript and revisit Mo’s feedback.",
+      "recentTitle": "Recent sessions",
+      "viewAll": "View all",
+      "emptyTitle": "No sessions yet",
+      "emptyBody": "Your voice conversations will appear here after your first session.",
+      "emptyCta": "Start a session",
+      "loadMore": "Load more",
+      "interrupted": "Interrupted",
+      "freeTalk": "Free talk",
+      "roleplayFallback": "Roleplay session",
+      "duration": "{minutes} min",
+      "today": "Today",
+      "yesterday": "Yesterday",
+      "sceneLabel": "Session",
+      "backToList": "Back to history",
+      "error": "Could not load your sessions. Please try again later.",
+      "filter": {
+        "scenario": "Scenario: {title}",
+        "clear": "Clear filter"
+      }
     },
     "tip": {
       "title": "Mo’s tip",

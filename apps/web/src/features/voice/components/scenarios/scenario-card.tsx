@@ -3,21 +3,8 @@ import { cn } from "cn";
 import { Clock3 } from "lucide-react";
 import { CefrBadge } from "#/components/common/cefr-badge";
 import { Button } from "#/components/ui/button";
+import { personaInitials, tileTone } from "#/features/voice/persona";
 import { m } from "#/paraglide/messages";
-
-const TILE_TONES = [
-	"bg-primary text-primary-foreground",
-	"bg-secondary text-secondary-foreground",
-	"bg-accent-violet text-primary-foreground",
-] as const;
-
-function personaInitials(roleTitle: string): string {
-	const words = roleTitle.split(/\s+/).filter(Boolean);
-	const letters = words.map((word) =>
-		word.replace(/^[^A-Za-z]*/, "").charAt(0),
-	);
-	return (letters.slice(0, 2).join("") || "?").toUpperCase();
-}
 
 export function ScenarioCard({
 	scenario,
@@ -26,8 +13,7 @@ export function ScenarioCard({
 	scenario: Scenario;
 	onStart: () => void;
 }) {
-	const tone =
-		TILE_TONES[(scenario.persona?.name.length ?? 1) % TILE_TONES.length];
+	const tone = scenario.persona ? tileTone(scenario.persona.name) : "";
 
 	return (
 		<div className="surface-card flex h-full flex-col gap-3 p-5">

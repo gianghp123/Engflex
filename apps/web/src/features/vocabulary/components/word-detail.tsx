@@ -36,8 +36,9 @@ export function WordDetail({
 	useBreadcrumbs(
 		deckId
 			? [
+					{ label: m["nav.item.vocabulary"]() },
 					{
-						label: m["nav.item.vocabulary"](),
+						label: m["vocabulary.decks.title"](),
 						to: APP_ROUTES.VOCABULARY.DECKS.LIST,
 					},
 					{
@@ -48,10 +49,7 @@ export function WordDetail({
 					{ label: item?.term ?? "" },
 				]
 			: [
-					{
-						label: m["nav.item.vocabulary"](),
-						to: APP_ROUTES.VOCABULARY.DECKS.LIST,
-					},
+					{ label: m["nav.item.vocabulary"]() },
 					{
 						label: m["vocabulary.decks.allWords"](),
 						to: APP_ROUTES.VOCABULARY.WORDS.LIST,

@@ -33,7 +33,8 @@ function VocabularyDeckPage() {
   const deck = useDeck(deckId);
   const removeDeckItem = useRemoveDeckItem();
   useBreadcrumbs([
-    { label: m["nav.item.vocabulary"](), to: APP_ROUTES.VOCABULARY.DECKS.LIST },
+    { label: m["nav.item.vocabulary"]() },
+    { label: m["vocabulary.decks.title"](), to: APP_ROUTES.VOCABULARY.DECKS.LIST },
     // The current page is the deck itself — no link on the last crumb.
     { label: deck.data?.name ?? m["vocabulary.decks.title"]() },
   ]);

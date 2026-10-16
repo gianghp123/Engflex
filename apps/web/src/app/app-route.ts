@@ -24,7 +24,7 @@ export const APP_ROUTES = {
 	VOCABULARY: {
 		/** My decks — the section's landing. */
 		DECKS: {
-			LIST: "/vocabulary",
+			LIST: "/vocabulary/decks",
 			DETAIL: "/vocabulary/decks/$deckId",
 			/** A word opened from a deck: the deck stays in the URL so back works. */
 			WORD: "/vocabulary/decks/$deckId/words/$itemId",
@@ -40,6 +40,11 @@ export const APP_ROUTES = {
 		SCENARIOS: "/voice/scenarios",
 		SCENARIO: "/voice/scenarios/$scenarioId",
 		ROOM: "/voice/room/$conversationId",
+		/** Past sessions: the list and one session's review. */
+		HISTORY: {
+			LIST: "/voice/history",
+			DETAIL: "/voice/history/$conversationId",
+		},
 		SIGNAL_START: "/api/voice/$conversationId/start",
 		SIGNAL_OFFER: "/api/voice/$conversationId/offer",
 	},

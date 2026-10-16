@@ -5,8 +5,11 @@ import "@tanstack/react-start/server-only";
 // new boundary) and Host/Connection are fetch-forbidden — Undici drops them,
 // but dropping explicitly keeps the contract visible. Everything else —
 // CF-Connecting-IP, X-Forwarded-For chains, client hints — passes through
-// untouched so Go sees what the edge and proxies saw. Callers layer their
-// own Content-Type/Authorization on top (JSON default, minted Bearer).
+// untouched so Go sees what the edge and proxies saw. Overrides
+// (Content-Type JSON default, minted Authorization Bearer) must go through
+// `set()` on a Headers instance built from the result: the returned keys are
+// lowercase, so a record-style capitalized assignment adds a SECOND entry
+// that fetch merges into one invalid value instead of replacing the original.
 const DROP = new Set([
 	"connection",
 	"keep-alive",

@@ -546,6 +546,19 @@ Assert with `require.ErrorAs(err, &appErr)` + check `.Status`.
   card will land, and a page never `return null` while loading. One exemption:
   a section that renders nothing when empty anyway (a "recent" preview strip)
   renders nothing while pending too — skeleton-then-vanish is the worse flash.
+- Stat metrics: a metric tile renders through `components/common/StatCard` —
+  never a hand-rolled `surface-card` carrying its own label/number markup. The
+  frame fixes exactly three things so they cannot drift: the title's typography,
+  the metric's `size` (`md` = `text-2xl`, `lg` = `stat-display`), and the
+  `CardShell` pending contract. Everything else belongs to the caller: `aside`
+  is the right column (ring, icon tile, badge), `children` is the body under the
+  metric (bar, caption, a CTA pinned with `mt-auto`), and `skeleton` overrides
+  the placeholder when those are an unusual shape. Never add a prop that switches
+  on a widget type (`ringValue`, `icon`, `bar`, `tone`) — a new visual goes in
+  `aside` or `children`, and a prop per caller is the smell this replaced. The
+  grid (`md:grid-cols-3`, …) stays at the call site: the card is the unit, not
+  the row, and a row's stats mapping (which three metrics a page shows) stays
+  with that page or feature.
 - Enum pickers derive their options from the generated value array:
   `enumOptions(CEFR_VALUES, LABELS?)` — never a hand-written options array.
   Codes (CEFR, ScenarioDifficulty) render as the code; prose enums supply a

@@ -10,7 +10,15 @@ import { m } from "#/paraglide/messages";
 
 /** Scene summary: what this session just was. The eyebrow frames it so a
  * bare title + objective never reads as a stray card. */
-function SceneCard({ title, body }: { title: string; body: string }) {
+function SceneCard({
+	title,
+	body,
+	label,
+}: {
+	title: string;
+	body: string;
+	label?: string;
+}) {
 	return (
 		<section className="surface-card flex flex-col gap-1 p-5">
 			<div className="flex items-center gap-3">
@@ -18,7 +26,7 @@ function SceneCard({ title, body }: { title: string; body: string }) {
 
 				<div className="flex flex-col gap-1">
 					<p className="text-xs font-bold tracking-wide text-muted-foreground uppercase">
-						{m["voice.room.scene.label"]()}
+						{label ?? m["voice.room.scene.label"]()}
 					</p>
 					<h2 className="text-base font-bold tracking-tight text-foreground">
 						{title}
@@ -47,6 +55,8 @@ export function EndedReview({
 	durationSec: durationSecOverride,
 	analyze,
 	onBack,
+	variant = "review",
+	backLabel,
 }: {
 	conversationId?: string;
 	turns?: Turn[];
@@ -56,7 +66,13 @@ export function EndedReview({
 	durationSec?: number;
 	analyze?: AnalyzeControl;
 	onBack: () => void;
+	/** "history" hides the post-session survey and frames the scene as a past session. */
+	variant?: "review" | "history";
+	/** Back-action label; defaults to the room's "Pick another mode". */
+	backLabel?: string;
 }) {
+	const history = variant === "history";
+	const backText = backLabel ?? m["voice.room.chooseMode"]();
 	const useFixtures = turns !== undefined;
 	// Same query key as PersistedTranscript — shared cache, no extra request.
 	// Also tells the aside whether the session produced anything worth a survey.
@@ -92,7 +108,7 @@ export function EndedReview({
 						className="btn btn-primary w-fit"
 						onClick={onBack}
 					>
-						{m["voice.room.chooseMode"]()}
+						{backText}
 					</Button>
 				</div>
 			</div>
@@ -119,11 +135,18 @@ export function EndedReview({
 				}
 				aside={
 					<div className="flex flex-col gap-4 lg:sticky lg:top-4">
-						{scene ? <SceneCard title={scene.title} body={scene.body} /> : null}
+						{scene ? (
+							<SceneCard
+								title={scene.title}
+								body={scene.body}
+								label={history ? m["voice.history.sceneLabel"]() : undefined}
+							/>
+						) : null}
 						{!scene && showFreeTalk ? (
 							<SceneCard
 								title={m["voice.room.scene.freeTitle"]()}
 								body={m["voice.room.scene.freeBody"]()}
+								label={history ? m["voice.history.sceneLabel"]() : undefined}
 							/>
 						) : null}
 						<section className="surface-card flex flex-col gap-4 p-5">
@@ -172,10 +195,10 @@ export function EndedReview({
 								className="btn btn-primary w-full"
 								onClick={onBack}
 							>
-								{m["voice.room.chooseMode"]()}
+								{backText}
 							</Button>
 						</section>
-						<SurveyCard />
+						{history ? null : <SurveyCard />}
 					</div>
 				}
 			/>

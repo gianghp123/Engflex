@@ -46,18 +46,19 @@ export async function fetchApiServer(req: ProxyRequest): Promise<ProxyResult> {
 	// and proxy headers must arrive intact — filtering here would silently
 	// re-bucket clients. Content-Type keeps its existing rule (fetch sets
 	// the multipart boundary for FormData); the minted Bearer below wins
-	// over any forwarded Authorization.
+	// over any forwarded Authorization case-insensitively — via `set()` on
+	// a Headers instance. A record would keep a forwarded lowercase
+	// `authorization` beside the capitalized override and fetch would merge
+	// both into one invalid Bearer (see voice-signal.server.ts).
 	const isForm = req.body instanceof FormData;
-	const headers: Record<string, string> = {
-		...pickForwardedHeaders(getRequestHeaders()),
-	};
+	const headers = new Headers(pickForwardedHeaders(getRequestHeaders()));
 	if (isForm) {
-		delete headers["content-type"];
+		headers.delete("content-type");
 	} else {
-		headers["Content-Type"] = "application/json";
+		headers.set("Content-Type", "application/json");
 	}
 	if (token) {
-		headers.Authorization = `Bearer ${token}`;
+		headers.set("Authorization", `Bearer ${token}`);
 	}
 	const res = await fetch(`${SERVER_API_URL}${req.path}`, {
 		method: req.method,
