@@ -31,6 +31,7 @@ func NewScenarioController(service *services.ScenarioService) *ScenarioControlle
 // @Param        page query int false "page"
 // @Param        pageSize query int false "page size"
 // @Param        topicId query string false "topic filter"
+// @Param        random query bool false "random order instead of newest-first"
 // @Success      200 {object} common.ApiResponse{data=[]responses.Scenario}
 // @Router       /scenarios [get]
 func (h *ScenarioController) List(c *gin.Context) {

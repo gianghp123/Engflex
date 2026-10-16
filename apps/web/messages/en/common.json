@@ -23,6 +23,10 @@
       "pause": "Pause audio",
       "total": "Total"
     },
+    "pager": {
+      "previous": "Previous",
+      "next": "Next"
+    },
     "toast": {
       "copiedClipboard": "Copied to clipboard",
       "linkCopied": "Link copied",
@@ -34,7 +38,8 @@
       "close": "Close",
       "sidebar": "Sidebar",
       "sidebarDescription": "Displays the mobile sidebar.",
-      "toggleSidebar": "Toggle Sidebar"
+      "toggleSidebar": "Toggle Sidebar",
+      "pagination": "Pagination"
     },
     "theme": {
       "label": "Theme",

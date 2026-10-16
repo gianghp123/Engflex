@@ -6,7 +6,6 @@ import { APP_ROUTES } from "#/app/app-route";
 import { CardShell } from "#/components/common/card-shell";
 import { SubmitButton } from "#/components/common/submit-button";
 import { Skeleton } from "#/components/ui/skeleton";
-import { VOICE_PARTNER_SCENARIO_IDS } from "#/features/dashboard/fixtures";
 import { useCreateConversation, useScenarios } from "#/features/voice/queries";
 import { m } from "#/paraglide/messages";
 import { ScenarioSelectorRow } from "./scenario-selector-row";
@@ -14,13 +13,14 @@ import { ScenarioSelectorRow } from "./scenario-selector-row";
 export function LiveVoicePartnerCard() {
 	const navigate = useNavigate();
 	const createConversation = useCreateConversation();
-	const [selectedId, setSelectedId] = useState<string>(
-		VOICE_PARTNER_SCENARIO_IDS[0],
-	);
-	const partnerScenarios = useScenarios();
-	const rows = (partnerScenarios.data?.items ?? []).filter((scenario) =>
-		(VOICE_PARTNER_SCENARIO_IDS as readonly string[]).includes(scenario.id),
-	);
+	const partnerScenarios = useScenarios({ random: true, pageSize: 2 });
+	const rows = partnerScenarios.data?.items ?? [];
+	// Two random partners each fetch; the picked row stays selected until a
+	// refetch replaces the pair, then the first row is the effective pick.
+	const [pickedId, setPickedId] = useState<string | null>(null);
+	const selectedId = rows.some((row) => row.id === pickedId)
+		? pickedId
+		: (rows[0]?.id ?? null);
 
 	async function startFreeTalk() {
 		if (createConversation.isPending) return;
@@ -76,7 +76,7 @@ export function LiveVoicePartnerCard() {
 								: m["dashboard.voicePartner.ready"]()
 						}
 						selected={selectedId === scenario.id}
-						onSelect={() => setSelectedId(scenario.id)}
+						onSelect={() => setPickedId(scenario.id)}
 					/>
 				))}
 			</div>

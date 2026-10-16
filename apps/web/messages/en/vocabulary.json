@@ -18,6 +18,8 @@
       "addFromLibrary": "Add from my words",
       "pickerDescription": "Pick from words already in your library.",
       "pickerSearch": "Search my words",
+      "pickerHint": "Type a word and press Enter to find it in your library.",
+      "pickerNoResults": "No words match \"{term}\".",
       "pickerEmpty": "Nothing left to add — every word is already in this deck.",
       "pickerFailed": "Couldn't load your words. Please try again.",
       "added": "Added to deck",
@@ -28,6 +30,7 @@
     },
     "decks": {
       "title": "My decks",
+      "subtitle": "Group your words into decks and keep each collection on track.",
       "new": "New deck",
       "allWords": "All words",
       "seeDeck": "View deck",
@@ -81,6 +84,8 @@
       "subtitle": "Review your words, keep the ones you add, and watch them stick.",
       "emptyTitle": "No words match your filters",
       "showing": "Showing {shown} of {total} word cards",
+      "showingRange": "Showing {from}–{to} of {total} word cards",
+      "showingAll": "{total} word cards",
       "reviewNow": "Review now",
       "masteredOf": "{done} of {total} mastered"
     },

@@ -35,7 +35,7 @@ func (s *ScenarioService) List(ctx context.Context, req requests.ListScenarios) 
 	}
 	offset := utils.Offset(page, pageSize)
 
-	items, err := s.scenarios.List(ctx, req.TopicID, pageSize, offset)
+	items, err := s.scenarios.List(ctx, req.TopicID, req.Random, pageSize, offset)
 	if err != nil {
 		appErr := common.FromDBError(err, "scenario")
 		logger.Report(ctx, "list scenarios failed", appErr)

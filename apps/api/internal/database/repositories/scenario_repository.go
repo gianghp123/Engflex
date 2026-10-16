@@ -15,7 +15,9 @@ import (
 // because it returns a scenario; the file is named for what comes back, not for
 // every table the SQL happens to touch.
 type ScenarioRepository interface {
-	List(ctx context.Context, topicID *string, limit, offset int) ([]*models.Scenario, error)
+	// List returns scenarios newest-first, or in random() order when random is
+	// true (the home card's two surprises).
+	List(ctx context.Context, topicID *string, random bool, limit, offset int) ([]*models.Scenario, error)
 	Count(ctx context.Context, topicID *string) (int64, error)
 	GetByID(ctx context.Context, id string) (*models.Scenario, error)
 	GetDetail(ctx context.Context, id string) (*models.Scenario, error)
@@ -36,13 +38,18 @@ func (r *scenarioRepository) WithTx(tx *gorm.DB) ScenarioRepository {
 	return &scenarioRepository{db: tx}
 }
 
-func (r *scenarioRepository) List(ctx context.Context, topicID *string, limit, offset int) ([]*models.Scenario, error) {
+func (r *scenarioRepository) List(ctx context.Context, topicID *string, random bool, limit, offset int) ([]*models.Scenario, error) {
 	q := r.db.WithContext(ctx).Model(&models.Scenario{})
 	if topicID != nil && *topicID != "" {
 		q = q.Where("topic_id = ?", *topicID)
 	}
+	if random {
+		q = q.Order("random()")
+	} else {
+		q = q.Order("created_at DESC")
+	}
 	var out []*models.Scenario
-	if err := q.Order("created_at DESC").Limit(limit).Offset(offset).Find(&out).Error; err != nil {
+	if err := q.Limit(limit).Offset(offset).Find(&out).Error; err != nil {
 		return nil, err
 	}
 	return out, nil

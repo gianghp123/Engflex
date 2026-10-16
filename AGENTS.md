@@ -559,6 +559,20 @@ Assert with `require.ErrorAs(err, &appErr)` + check `.Status`.
   grid (`md:grid-cols-3`, …) stays at the call site: the card is the unit, not
   the row, and a row's stats mapping (which three metrics a page shows) stays
   with that page or feature.
+- Pagination: numbered lists page through `components/common/Pager`, never a
+  hand-rolled pager. It wraps the shadcn `Pagination` primitives
+  (`ui/pagination.tsx` is house-adapted: `PaginationLink` has `asChild`, the
+  active number uses the primary variant) and takes
+  `{ page, totalPages, onPageChange, summary? }`. It always renders for a real
+  list — a single page shows one active number with both arrows disabled, so
+  the control never pops in and out as filters change the page count (zero
+  items renders the empty state, not the pager). The caller owns navigation via
+  `onPageChange` and supplies the `summary` copy, so the row reads as one unit
+  with no locale string in the component: a range while the list spans pages, a
+  plain count on one page (`vocabulary.hub.showingRange` / `showingAll`
+  precedent). The page lives in the URL (`validateSearch` + `loaderDeps`),
+  coerced by `lib/search-params.ts` (`parsePage` handles both the number the
+  router parses out of `?page=2` and a garbage string).
 - Enum pickers derive their options from the generated value array:
   `enumOptions(CEFR_VALUES, LABELS?)` — never a hand-written options array.
   Codes (CEFR, ScenarioDifficulty) render as the code; prose enums supply a

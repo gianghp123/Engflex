@@ -1,4 +1,5 @@
 import type {
+	ListVocabulary,
 	Pagination,
 	UserVocabularyState,
 	VocabularyDeckDetail,
@@ -13,15 +14,27 @@ import type { AddWordInput } from "./types";
 
 const JSON_HEADERS = { "content-type": "application/json" };
 
-/** My saved words, with per-user state. One page — the hub filters client-side. */
-export function listMyVocabulary(): Promise<{
-	items: VocabularyItem[];
-	pagination: Pagination;
-}> {
+/**
+ * My saved words, with per-user state. The hub pages this server-side
+ * (`page` + filters + `pageSize`); without params it is the add-word form's
+ * one big page. `search` is the API's `%search%` match over term or
+ * definition. Params are the generated request DTO (`ListVocabulary`) made
+ * partial: an omitted field means "no filter", matching the Go zero values.
+ */
+export function listMyVocabulary(
+	params?: Partial<ListVocabulary>,
+): Promise<{ items: VocabularyItem[]; pagination: Pagination }> {
+	const query: Record<string, string> = {};
+	if (params?.page) query.page = String(params.page);
+	if (params?.pageSize) query.pageSize = String(params.pageSize);
+	if (params?.search?.trim()) query.search = params.search.trim();
+	if (params?.sort) query.sort = params.sort;
+	if (params?.cefr) query.cefr = params.cefr;
+	if (params?.source) query.source = params.source;
 	return apiPage<VocabularyItem>(
 		API_ROUTES.VOCABULARY.LIBRARY.LIST,
 		{ method: "GET" },
-		{ query: { pageSize: MaxPageSize } },
+		{ query },
 	);
 }
 

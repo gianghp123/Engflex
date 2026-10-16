@@ -18,6 +18,8 @@
       "addFromLibrary": "Thêm từ trong thư viện",
       "pickerDescription": "Chọn từ đã có trong danh sách của bạn.",
       "pickerSearch": "Tìm trong từ của tôi",
+      "pickerHint": "Nhập một từ rồi nhấn Enter để tìm trong thư viện của bạn.",
+      "pickerNoResults": "Không có từ nào khớp với \"{term}\".",
       "pickerEmpty": "Không còn gì để thêm — mọi từ đã có trong bộ thẻ này.",
       "pickerFailed": "Không tải được danh sách từ. Hãy thử lại.",
       "added": "Đã thêm vào bộ thẻ",
@@ -28,6 +30,7 @@
     },
     "decks": {
       "title": "Bộ thẻ của tôi",
+      "subtitle": "Gom từ của bạn thành các bộ thẻ và theo dõi tiến độ từng bộ.",
       "new": "Bộ thẻ mới",
       "allWords": "Tất cả từ",
       "seeDeck": "Xem bộ thẻ",
@@ -81,6 +84,8 @@
       "subtitle": "Ôn lại từ của bạn, giữ từ bạn tự thêm, càng học càng nhớ lâu.",
       "emptyTitle": "Không tìm thấy từ nào hợp bộ lọc",
       "showing": "Đang xem {shown}/{total} thẻ từ",
+      "showingRange": "Đang xem {from}–{to}/{total} thẻ từ",
+      "showingAll": "{total} thẻ từ",
       "reviewNow": "Ôn ngay",
       "masteredOf": "{done} trên {total} đã thuộc"
     },

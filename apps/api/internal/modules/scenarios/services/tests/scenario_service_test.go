@@ -42,7 +42,7 @@ func TestScenarioList(t *testing.T) {
 			name: "returns built-in scenarios",
 			req:  requests.ListScenarios{ListParams: common.ListParams{Page: 1, PageSize: 20}},
 			setup: func(repo *repomocks.MockScenarioRepository) {
-				repo.On("List", mock.Anything, (*string)(nil), 20, 0).Return([]*models.Scenario{{ID: "a"}}, nil).Once()
+				repo.On("List", mock.Anything, (*string)(nil), false, 20, 0).Return([]*models.Scenario{{ID: "a"}}, nil).Once()
 				repo.On("Count", mock.Anything, (*string)(nil)).Return(int64(1), nil).Once()
 			},
 			wantItems: 1,
@@ -55,16 +55,29 @@ func TestScenarioList(t *testing.T) {
 				TopicID:    &topicID,
 			},
 			setup: func(repo *repomocks.MockScenarioRepository) {
-				repo.On("List", mock.Anything, &topicID, 20, 0).Return([]*models.Scenario{}, nil).Once()
+				repo.On("List", mock.Anything, &topicID, false, 20, 0).Return([]*models.Scenario{}, nil).Once()
 				repo.On("Count", mock.Anything, &topicID).Return(int64(0), nil).Once()
 			},
 			wantTotal: 0,
 		},
 		{
+			name: "random order flag is passed through",
+			req: requests.ListScenarios{
+				ListParams: common.ListParams{Page: 1, PageSize: 2},
+				Random:     true,
+			},
+			setup: func(repo *repomocks.MockScenarioRepository) {
+				repo.On("List", mock.Anything, (*string)(nil), true, 2, 0).Return([]*models.Scenario{{ID: "a"}}, nil).Once()
+				repo.On("Count", mock.Anything, (*string)(nil)).Return(int64(1), nil).Once()
+			},
+			wantItems: 1,
+			wantTotal: 1,
+		},
+		{
 			name: "list failure maps to 500",
 			req:  requests.ListScenarios{ListParams: common.ListParams{Page: 1, PageSize: 20}},
 			setup: func(repo *repomocks.MockScenarioRepository) {
-				repo.On("List", mock.Anything, (*string)(nil), 20, 0).Return(nil, boomErr{}).Once()
+				repo.On("List", mock.Anything, (*string)(nil), false, 20, 0).Return(nil, boomErr{}).Once()
 			},
 			wantErr: http.StatusInternalServerError,
 		},

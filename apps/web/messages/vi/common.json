@@ -23,6 +23,10 @@
       "pause": "Tạm dừng",
       "total": "Tổng"
     },
+    "pager": {
+      "previous": "Trước",
+      "next": "Sau"
+    },
     "toast": {
       "copiedClipboard": "Đã sao chép",
       "linkCopied": "Đã sao chép liên kết",
@@ -34,7 +38,8 @@
       "close": "Đóng",
       "sidebar": "Thanh bên",
       "sidebarDescription": "Hiển thị thanh bên trên di động.",
-      "toggleSidebar": "Ẩn/hiện thanh bên"
+      "toggleSidebar": "Ẩn/hiện thanh bên",
+      "pagination": "Phân trang"
     },
     "theme": {
       "label": "Giao diện",

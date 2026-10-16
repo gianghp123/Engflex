@@ -366,8 +366,8 @@ func (_c *MockVideoCategoryRepository_List_Call) RunAndReturn(run func(ctx conte
 }
 
 // ListWithPreview provides a mock function for the type MockVideoCategoryRepository
-func (_mock *MockVideoCategoryRepository) ListWithPreview(ctx context.Context, previewSize int) ([]*models.VideoCategory, error) {
-	ret := _mock.Called(ctx, previewSize)
+func (_mock *MockVideoCategoryRepository) ListWithPreview(ctx context.Context, previewK int) ([]*models.VideoCategory, error) {
+	ret := _mock.Called(ctx, previewK)
 
 	if len(ret) == 0 {
 		panic("no return value specified for ListWithPreview")
@@ -376,17 +376,17 @@ func (_mock *MockVideoCategoryRepository) ListWithPreview(ctx context.Context, p
 	var r0 []*models.VideoCategory
 	var r1 error
 	if returnFunc, ok := ret.Get(0).(func(context.Context, int) ([]*models.VideoCategory, error)); ok {
-		return returnFunc(ctx, previewSize)
+		return returnFunc(ctx, previewK)
 	}
 	if returnFunc, ok := ret.Get(0).(func(context.Context, int) []*models.VideoCategory); ok {
-		r0 = returnFunc(ctx, previewSize)
+		r0 = returnFunc(ctx, previewK)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*models.VideoCategory)
 		}
 	}
 	if returnFunc, ok := ret.Get(1).(func(context.Context, int) error); ok {
-		r1 = returnFunc(ctx, previewSize)
+		r1 = returnFunc(ctx, previewK)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -400,12 +400,12 @@ type MockVideoCategoryRepository_ListWithPreview_Call struct {
 
 // ListWithPreview is a helper method to define mock.On call
 //   - ctx context.Context
-//   - previewSize int
-func (_e *MockVideoCategoryRepository_Expecter) ListWithPreview(ctx any, previewSize any) *MockVideoCategoryRepository_ListWithPreview_Call {
-	return &MockVideoCategoryRepository_ListWithPreview_Call{Call: _e.mock.On("ListWithPreview", ctx, previewSize)}
+//   - previewK int
+func (_e *MockVideoCategoryRepository_Expecter) ListWithPreview(ctx any, previewK any) *MockVideoCategoryRepository_ListWithPreview_Call {
+	return &MockVideoCategoryRepository_ListWithPreview_Call{Call: _e.mock.On("ListWithPreview", ctx, previewK)}
 }
 
-func (_c *MockVideoCategoryRepository_ListWithPreview_Call) Run(run func(ctx context.Context, previewSize int)) *MockVideoCategoryRepository_ListWithPreview_Call {
+func (_c *MockVideoCategoryRepository_ListWithPreview_Call) Run(run func(ctx context.Context, previewK int)) *MockVideoCategoryRepository_ListWithPreview_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -428,7 +428,7 @@ func (_c *MockVideoCategoryRepository_ListWithPreview_Call) Return(videoCategory
 	return _c
 }
 
-func (_c *MockVideoCategoryRepository_ListWithPreview_Call) RunAndReturn(run func(ctx context.Context, previewSize int) ([]*models.VideoCategory, error)) *MockVideoCategoryRepository_ListWithPreview_Call {
+func (_c *MockVideoCategoryRepository_ListWithPreview_Call) RunAndReturn(run func(ctx context.Context, previewK int) ([]*models.VideoCategory, error)) *MockVideoCategoryRepository_ListWithPreview_Call {
 	_c.Call.Return(run)
 	return _c
 }

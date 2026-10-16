@@ -8,6 +8,11 @@
  */
 export interface ListScenarios extends ListParams {
   topicId?: string;
+  /**
+   * Random orders by random() instead of newest-first — the home card picks
+   * two surprises, no schema support needed.
+   */
+  random: boolean;
 }
 
 //////////

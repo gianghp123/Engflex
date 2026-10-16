@@ -3,6 +3,7 @@ import type {
 	ConversationSession,
 	ConversationSummary,
 	Feedback,
+	ListScenarios,
 	Pagination,
 	Persona,
 	Scenario,
@@ -92,11 +93,19 @@ export function transcribeAudio(
 	);
 }
 
-export function listScenarios(params?: {
-	topicId?: string;
-}): Promise<{ items: Scenario[]; pagination: Pagination }> {
+/**
+ * One page of the scenario catalog. Params are the generated request DTO
+ * (`ListScenarios`) made partial — `random` swaps the newest-first order for
+ * `random()`, so the home card can pull two surprises.
+ */
+export function listScenarios(
+	params?: Partial<ListScenarios>,
+): Promise<{ items: Scenario[]; pagination: Pagination }> {
 	const query: Record<string, string> = {};
 	if (params?.topicId) query.topicId = params.topicId;
+	if (params?.random) query.random = "true";
+	if (params?.page) query.page = String(params.page);
+	if (params?.pageSize) query.pageSize = String(params.pageSize);
 	return apiPage<Scenario>(
 		API_ROUTES.SCENARIOS.LIST,
 		{ method: "GET" },

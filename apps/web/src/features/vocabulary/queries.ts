@@ -1,3 +1,4 @@
+import { MaxPageSize } from "@engflex/contracts";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
 	addExistingWordToDeck,
@@ -14,10 +15,28 @@ import {
 	removeDeckItem,
 	updateDeck,
 } from "./service";
-import type { AddWordInput } from "./types";
+import type { AddWordInput, VocabFilters } from "./types";
 
 export const vocabularyKeys = {
 	library: ["vocabulary", "library"] as const,
+	// Searches nest under the library prefix, so library invalidations reach
+	// them without a second invalidate call.
+	librarySearch: (search: string) =>
+		["vocabulary", "library", "search", search] as const,
+	// The hub's numbered pages. Filters are part of the identity — a chip
+	// change is a different list, not a refetch of the old one — and the key
+	// still nests under `library`, so library invalidations reach it.
+	libraryPage: (filters: VocabFilters, page: number) =>
+		[
+			"vocabulary",
+			"library",
+			"page",
+			page,
+			filters.search,
+			filters.sort,
+			filters.source,
+			filters.cefr,
+		] as const,
 	// The stats response depends on the reader's local day, so that day is part
 	// of the key — a new day is a different query, not a stale cache hit.
 	stats: (dayStart?: string) =>
@@ -35,6 +54,9 @@ const statsPrefix = ["vocabulary", "stats"] as const;
 /** Every deck read shares this prefix, so one invalidate covers list + detail. */
 const decksPrefix = ["vocabulary", "decks"] as const;
 const deckPrefix = ["vocabulary", "deck"] as const;
+
+/** Cards per page on the All-words grid: a full row on the 2- and 3-col grids. */
+const WORDS_PAGE_SIZE = 24;
 
 export function decksQueryOptions(previewK: number) {
 	return {
@@ -90,7 +112,7 @@ export function useDeleteDeck() {
 export function libraryQueryOptions() {
 	return {
 		queryKey: vocabularyKeys.library,
-		queryFn: () => listMyVocabulary(),
+		queryFn: () => listMyVocabulary({ pageSize: MaxPageSize }),
 	};
 }
 
@@ -110,6 +132,40 @@ export function vocabularyItemQueryOptions(id: string) {
 
 export function useMyVocabulary() {
 	return useQuery(libraryQueryOptions());
+}
+
+/**
+ * The picker's explicit search: one page of my words matching `%search%` over
+ * term or definition. `null` is "nothing submitted yet" — the query stays
+ * disabled, so the picker fetches nothing until the reader searches.
+ */
+export function useLibrarySearch(search: string | null) {
+	return useQuery({
+		queryKey: vocabularyKeys.librarySearch(search ?? ""),
+		queryFn: () =>
+			listMyVocabulary({ search: search ?? undefined, pageSize: MaxPageSize }),
+		enabled: search !== null,
+	});
+}
+
+/** One numbered page of my words under the given filters. */
+export function libraryPageQueryOptions(filters: VocabFilters, page: number) {
+	return {
+		queryKey: vocabularyKeys.libraryPage(filters, page),
+		queryFn: () =>
+			listMyVocabulary({
+				page,
+				pageSize: WORDS_PAGE_SIZE,
+				search: filters.search || undefined,
+				sort: filters.sort,
+				cefr: filters.cefr === "all" ? undefined : filters.cefr,
+				source: filters.source === "all" ? undefined : filters.source,
+			}),
+	};
+}
+
+export function useLibraryPage(filters: VocabFilters, page: number) {
+	return useQuery(libraryPageQueryOptions(filters, page));
 }
 
 export function useVocabularyStats(dayStart?: string) {

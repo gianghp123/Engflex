@@ -1,4 +1,8 @@
-import type { Conversation, StartConversation } from "@engflex/contracts";
+import type {
+	Conversation,
+	ListScenarios,
+	StartConversation,
+} from "@engflex/contracts";
 import {
 	useInfiniteQuery,
 	useMutation,
@@ -90,9 +94,14 @@ export const scenarioKeys = {
 	topic: (topicId: string) => ["scenarios", topicId] as const,
 };
 
-export function useScenarios(params?: { topicId?: string }) {
+export function useScenarios(params?: Partial<ListScenarios>) {
 	return useQuery({
-		queryKey: [...scenarioKeys.all, params?.topicId ?? "all"],
+		queryKey: [
+			...scenarioKeys.all,
+			params?.topicId ?? "all",
+			params?.random ? "random" : "recent",
+			params?.pageSize ?? 0,
+		],
 		queryFn: () => listScenarios(params),
 	});
 }

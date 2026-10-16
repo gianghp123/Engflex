@@ -1,12 +1,9 @@
-import type {
-	CEFR,
-	VocabularySort,
-	VocabularySource,
-} from "@engflex/contracts";
+import type { VocabularySort } from "@engflex/contracts";
 import { CEFR_VALUES, VOCABULARY_SOURCE_VALUES } from "@engflex/contracts";
 import { cn } from "cn";
 import { Search } from "lucide-react";
-import { Kbd } from "#/components/common/kbd";
+import { type FormEvent, useState } from "react";
+import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
 import {
 	Select,
@@ -15,6 +12,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "#/components/ui/select";
+import type { VocabFilters } from "#/features/vocabulary/types";
 import { enumOptions } from "#/lib/enum-options";
 import { m } from "#/paraglide/messages";
 
@@ -24,13 +22,6 @@ const SORT_MESSAGES: Record<VocabularySort, () => string> = {
 	alphabetical: () => m["vocabulary.filter.sort.alphabetical"](),
 	interval: () => m["vocabulary.filter.sort.interval"](),
 };
-
-export interface VocabFilters {
-	search: string;
-	sort: VocabularySort;
-	source: "all" | VocabularySource;
-	cefr: "all" | CEFR;
-}
 
 export const DEFAULT_VOCAB_FILTERS: VocabFilters = {
 	search: "",
@@ -61,23 +52,39 @@ export function VocabFilterBar({
 	filters: VocabFilters;
 	onChange: (next: VocabFilters) => void;
 }) {
+	const [draft, setDraft] = useState(filters.search);
+	const [seen, setSeen] = useState(filters.search);
+	if (seen !== filters.search) {
+		// The URL (back/forward, reset) is the source of truth; the draft follows it.
+		setSeen(filters.search);
+		setDraft(filters.search);
+	}
+
+	function submitSearch(event: FormEvent) {
+		event.preventDefault();
+		onChange({ ...filters, search: draft.trim() });
+	}
+
 	return (
 		<div className="surface-card flex flex-col gap-4 p-5">
 			<div className="grid gap-3 sm:grid-cols-[1fr_auto]">
-				<div className="relative">
-					<Search className="absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
+				<form onSubmit={submitSearch} className="flex items-center gap-2">
 					<Input
-						value={filters.search}
-						onChange={(event) =>
-							onChange({ ...filters, search: event.target.value })
-						}
+						value={draft}
+						onChange={(event) => setDraft(event.target.value)}
 						placeholder={m["vocabulary.filter.search"]()}
-						className="field pr-14 pl-8"
+						className="field"
 					/>
-					<span className="absolute top-1/2 right-2.5 -translate-y-1/2">
-						<Kbd>⌘K</Kbd>
-					</span>
-				</div>
+					<Button
+						type="submit"
+						variant="outline"
+						size="icon"
+						aria-label={m["vocabulary.filter.search"]()}
+						disabled={draft.trim() === filters.search}
+					>
+						<Search />
+					</Button>
+				</form>
 				<Select
 					value={filters.sort}
 					onValueChange={(value) =>

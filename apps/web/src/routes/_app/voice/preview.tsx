@@ -10,11 +10,12 @@ import {
 	type RoomSession,
 	VoiceRoom,
 } from "#/features/voice/components/room/voice-room";
+import { parseEnumParam } from "#/lib/search-params";
 import { m } from "#/paraglide/messages";
 
 export const Route = createFileRoute("/_app/voice/preview")({
 	validateSearch: (search: Record<string, unknown>) => ({
-		view: search.view === "prod" ? ("prod" as const) : undefined,
+		view: parseEnumParam(["prod"] as const, search.view),
 	}),
 	component: VoicePreviewPage,
 });

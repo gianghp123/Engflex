@@ -1,10 +1,13 @@
 import { Mic } from "lucide-react";
 import { SubmitButton } from "#/components/common/submit-button";
-import type { ModeCard as ModeCardFixture } from "#/features/voice/fixtures";
 import { m } from "#/paraglide/messages";
 
+/** The two voice modes the hub offers; per-mode copy lives in MODE_COPY. */
+export const VOICE_MODES = ["spontaneous", "structured"] as const;
+export type VoiceMode = (typeof VOICE_MODES)[number];
+
 const MODE_COPY: Record<
-	ModeCardFixture["id"],
+	VoiceMode,
 	{
 		badge: () => string;
 		title: () => string;
@@ -41,16 +44,16 @@ const MODE_COPY: Record<
 };
 
 export function ModeCard({
-	card,
+	mode,
 	onStart,
 	pending = false,
 }: {
-	card: ModeCardFixture;
+	mode: VoiceMode;
 	onStart: () => void;
 	pending?: boolean;
 }) {
-	const copy = MODE_COPY[card.id];
-	const primary = card.id === "spontaneous";
+	const copy = MODE_COPY[mode];
+	const primary = mode === "spontaneous";
 
 	return (
 		<div className="surface-card flex h-full flex-col gap-4 p-5">

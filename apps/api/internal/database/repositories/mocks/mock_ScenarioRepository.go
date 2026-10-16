@@ -252,8 +252,8 @@ func (_c *MockScenarioRepository_GetDetail_Call) RunAndReturn(run func(ctx conte
 }
 
 // List provides a mock function for the type MockScenarioRepository
-func (_mock *MockScenarioRepository) List(ctx context.Context, topicID *string, limit int, offset int) ([]*models.Scenario, error) {
-	ret := _mock.Called(ctx, topicID, limit, offset)
+func (_mock *MockScenarioRepository) List(ctx context.Context, topicID *string, random bool, limit int, offset int) ([]*models.Scenario, error) {
+	ret := _mock.Called(ctx, topicID, random, limit, offset)
 
 	if len(ret) == 0 {
 		panic("no return value specified for List")
@@ -261,18 +261,18 @@ func (_mock *MockScenarioRepository) List(ctx context.Context, topicID *string, 
 
 	var r0 []*models.Scenario
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, *string, int, int) ([]*models.Scenario, error)); ok {
-		return returnFunc(ctx, topicID, limit, offset)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *string, bool, int, int) ([]*models.Scenario, error)); ok {
+		return returnFunc(ctx, topicID, random, limit, offset)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, *string, int, int) []*models.Scenario); ok {
-		r0 = returnFunc(ctx, topicID, limit, offset)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *string, bool, int, int) []*models.Scenario); ok {
+		r0 = returnFunc(ctx, topicID, random, limit, offset)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*models.Scenario)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, *string, int, int) error); ok {
-		r1 = returnFunc(ctx, topicID, limit, offset)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, *string, bool, int, int) error); ok {
+		r1 = returnFunc(ctx, topicID, random, limit, offset)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -287,13 +287,14 @@ type MockScenarioRepository_List_Call struct {
 // List is a helper method to define mock.On call
 //   - ctx context.Context
 //   - topicID *string
+//   - random bool
 //   - limit int
 //   - offset int
-func (_e *MockScenarioRepository_Expecter) List(ctx any, topicID any, limit any, offset any) *MockScenarioRepository_List_Call {
-	return &MockScenarioRepository_List_Call{Call: _e.mock.On("List", ctx, topicID, limit, offset)}
+func (_e *MockScenarioRepository_Expecter) List(ctx any, topicID any, random any, limit any, offset any) *MockScenarioRepository_List_Call {
+	return &MockScenarioRepository_List_Call{Call: _e.mock.On("List", ctx, topicID, random, limit, offset)}
 }
 
-func (_c *MockScenarioRepository_List_Call) Run(run func(ctx context.Context, topicID *string, limit int, offset int)) *MockScenarioRepository_List_Call {
+func (_c *MockScenarioRepository_List_Call) Run(run func(ctx context.Context, topicID *string, random bool, limit int, offset int)) *MockScenarioRepository_List_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -303,19 +304,24 @@ func (_c *MockScenarioRepository_List_Call) Run(run func(ctx context.Context, to
 		if args[1] != nil {
 			arg1 = args[1].(*string)
 		}
-		var arg2 int
+		var arg2 bool
 		if args[2] != nil {
-			arg2 = args[2].(int)
+			arg2 = args[2].(bool)
 		}
 		var arg3 int
 		if args[3] != nil {
 			arg3 = args[3].(int)
+		}
+		var arg4 int
+		if args[4] != nil {
+			arg4 = args[4].(int)
 		}
 		run(
 			arg0,
 			arg1,
 			arg2,
 			arg3,
+			arg4,
 		)
 	})
 	return _c
@@ -326,7 +332,7 @@ func (_c *MockScenarioRepository_List_Call) Return(scenarios []*models.Scenario,
 	return _c
 }
 
-func (_c *MockScenarioRepository_List_Call) RunAndReturn(run func(ctx context.Context, topicID *string, limit int, offset int) ([]*models.Scenario, error)) *MockScenarioRepository_List_Call {
+func (_c *MockScenarioRepository_List_Call) RunAndReturn(run func(ctx context.Context, topicID *string, random bool, limit int, offset int) ([]*models.Scenario, error)) *MockScenarioRepository_List_Call {
 	_c.Call.Return(run)
 	return _c
 }
