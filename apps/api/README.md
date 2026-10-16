@@ -1,29 +1,24 @@
 # EngFlex API — Go Control Plane
 
-Go + Gin + GORM backend. It owns data, auth, and business logic — and
-**provisions** AI voice sessions (persona/context/token) without ever touching
-realtime audio. See the [root README](../../README.md) for the full system picture.
+Go + Gin + GORM backend. Owns data, auth, and business logic, and provisions AI
+voice sessions (persona/context/token) without ever touching realtime audio. See
+the [root README](../../README.md) for the full system picture.
 
 ## Layout
 
-```
-cmd/server/main.go          # Entrypoint: wires config + router only, no business logic
+```text
+cmd/server/main.go          # Entrypoint: wires config + router only
 config/                     # Auth, cors, database, log, server, voice
-docs/                       # Generated Swagger (served at /swagger)
 internal/
-  common/                   # AppError, ApiResponse envelope, enums, shared limits
+  common/                   # AppError, ApiResponse envelope, enums, limits
   database/
-    migrations/             # Goose SQL — source of truth (never AutoMigrate; one migration per table)
-    models/                 # GORM structs + TableName() + scopes (no gorm.Model)
-    repositories/           # Hand-written repos over *gorm.DB + mocks/
-  logger/                   # slog setup (New/NewWithWriter/Report/WithRequestID/WithUserID)
+    migrations/             # Goose SQL — schema source of truth
+    models/                 # GORM structs
+    repositories/           # Repos over *gorm.DB + mocks/
   modules/<domain>/         # attempts, conversations, lessons, profiles, scenarios, videos, vocabulary
-    module.go               # RegisterRoutes(rg, deps...) — wiring only
-    controllers/            # Gin handlers + Swagger annotations, no SQL
-    services/               # Business logic (returns *Model / []*Model + error, no gin)
-    dtos/requests|responses # Wire DTOs (tygo inputs, gin binding tags)
   server/middleware/        # RequireAuth, RequestID, RequestLogger, Recovery
-  utils/                    # Map/MapSlice, ParsePagination/Offset, IDs, Slug
+  utils/                    # Map/MapSlice, pagination, IDs
+docs/                       # Generated Swagger (served at /swagger)
 ```
 
 All routes mount under `/api/v1` (`internal/server/router.go`).
@@ -32,7 +27,7 @@ All routes mount under `/api/v1` (`internal/server/router.go`).
 
 ```bash
 make migration-up        # goose up (DATABASE_URL from .env)
-go run ./cmd/server
+go run ./cmd/server      # http://localhost:8000, Swagger at /swagger
 ```
 
 ## Commands
@@ -42,30 +37,36 @@ go run ./cmd/server
 | All tests | `go test ./... -count=1` |
 | One suite | `go test ./internal/modules/<domain>/... -count=1 -v` |
 | Vet / fmt | `go vet ./...`, `gofmt -l internal/` (must be empty) |
-| Mocks | `make mocks` (mockery v3, generated only) |
-| Contracts | `make contracts` (`tygo generate` → `packages/contracts`) |
+| Mocks | `make mocks` |
+| Contracts | `make contracts` |
 | New migration | `make migration-create name=...` |
-| Apply / rollback | `make migration-up` / `migration-down` |
+| Apply / rollback | `make migration-up` / `make migration-down` |
 | Swagger | `make swagger` |
 
-Pre-deploy rule: edit the existing migration in place and re-run it
-(`make migration-down` then `make migration-up`) instead of adding corrective
-migrations.
+## Error handling
 
-## Conventions (see `AGENTS.md`)
+Centralized in `internal/common/errors.go` + `response.go`. Controllers return
+errors via `common.Fail(c, err)`; the client always receives the `{ "message":
+... }` envelope, and any error that is not an `*AppError` becomes a generic 500.
 
-- **Models:** explicit IDs/timestamps, `clerk_user_id text PK` on profile, all
-  `user_id` FKs are Clerk strings. Read-mostly relations use `gorm:"->"`.
-- **Repositories:** one per table, named for the model returned; return
-  pointers (`*Model` / `[]*Model`); one method = one query; never custom structs.
-- **Services:** constructors take interfaces; map DB errors via
-  `common.FromDBError`; log via `slog`/`logger.Report`; map with
-  `utils.Map`/`MapSlice` (one call per mapping).
-- **Controllers:** `ShouldBindJSON` → `common.BadRequest`; pagination via
-  `utils.ParsePagination`; fixed `ApiResponse` envelope (`OK/Created/Paginated/Fail`).
-- **DTOs** mirror model shape (nested, never flattened); cross-package types in
-  DTOs break tygo — keep wire copies in the DTO package.
-- **Errors:** see `readme.md` (Vietnamese error-handling reference) and
-  `internal/common/errors.go`.
-- **Tests:** per-package `tests/` dirs, table-driven, mocks mandatory, never hit
-  a real DB in unit tests.
+| Helper | Status |
+|--------|--------|
+| `common.BadRequest` | 400 |
+| `common.Unauthorized` | 401 |
+| `common.Forbidden` | 403 |
+| `common.NotFound` | 404 |
+| `common.Conflict` | 409 |
+| `common.UnprocessableEntity` | 422 |
+| `common.TooManyRequests` | 429 |
+| `common.Internal` | 500 |
+| `common.ServiceUnavailable` | 503 |
+
+`common.FromDBError(err, resource)` maps database errors to `*AppError`:
+
+| DB error | Maps to | Status |
+|----------|---------|--------|
+| `*InvalidIDError` (unparseable id) | `BadRequest` | 400 |
+| `gorm.ErrRecordNotFound` | `NotFound` | 404 |
+| Postgres `23505` (unique violation) | `Conflict` | 409 |
+| Postgres `23503` (FK violation) | `NotFound` | 404 |
+| anything else | `Internal` | 500 |

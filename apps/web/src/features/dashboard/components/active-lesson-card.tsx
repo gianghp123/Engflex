@@ -1,9 +1,11 @@
 import { Link } from "@tanstack/react-router";
 import { useStore } from "@tanstack/react-store";
 import { APP_ROUTES } from "#/app/app-route";
+import { CardShell } from "#/components/common/card-shell";
 import { ProgressBar } from "#/components/common/progress-bar";
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
+import { Skeleton } from "#/components/ui/skeleton";
 import { useLessonDetail, useLessonSections } from "#/features/lessons/queries";
 import { lessonsStore, progressFrom } from "#/features/lessons/store";
 import { m } from "#/paraglide/messages";
@@ -23,10 +25,37 @@ export function ActiveLessonCard() {
 		? progressFrom(storeState, lesson.id, detailQuery.data?.activities.length)
 		: null;
 
+	if (sectionsQuery.isPending) {
+		return (
+			<CardShell
+				pending
+				surface="surface-hero"
+				className="flex h-full flex-col gap-4 p-5"
+				skeleton={
+					<>
+						<Skeleton className="h-6 w-28 rounded-full" />
+						<div className="flex flex-col gap-2">
+							<Skeleton className="h-5 w-3/4" />
+							<Skeleton className="h-4 w-full" />
+						</div>
+						<div className="mt-auto flex flex-col gap-2">
+							<Skeleton className="h-3 w-40" />
+							<Skeleton className="h-2 w-full rounded-full" />
+						</div>
+						<Skeleton className="h-9 w-36 rounded-lg" />
+					</>
+				}
+			/>
+		);
+	}
+
 	if (!lesson || !progress) return null;
 
 	return (
-		<div className="surface-hero flex h-full flex-col gap-4 p-5">
+		<CardShell
+			surface="surface-hero"
+			className="flex h-full flex-col gap-4 p-5"
+		>
 			<Badge variant="outline" className="chip w-fit">
 				{m["dashboard.activeLesson.unitLabel"]()}
 			</Badge>
@@ -55,6 +84,6 @@ export function ActiveLessonCard() {
 					{m["dashboard.activeLesson.continue"]()}
 				</Link>
 			</Button>
-		</div>
+		</CardShell>
 	);
 }

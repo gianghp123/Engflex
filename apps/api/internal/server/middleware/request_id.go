@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	sentrygin "github.com/getsentry/sentry-go/gin"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 
@@ -23,6 +24,11 @@ func RequestID() gin.HandlerFunc {
 		c.Request = c.Request.WithContext(
 			logger.WithRequestID(c.Request.Context(), requestID),
 		)
+		// Correlate Sentry events with slog records. Nil-guarded: chains
+		// without the Sentry middleware (notably tests) carry no hub.
+		if hub := sentrygin.GetHubFromContext(c); hub != nil {
+			hub.Scope().SetTag("request_id", requestID)
+		}
 		c.Next()
 	}
 }

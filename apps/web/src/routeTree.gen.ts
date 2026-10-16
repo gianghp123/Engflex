@@ -9,12 +9,14 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppRouteRouteImport } from './routes/_app/route'
+import { Route as AboutRouteImport } from './routes/about'
 import { Route as ErrorRouteImport } from './routes/error'
 import { Route as NotFoundRouteImport } from './routes/not-found'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
-import { Route as AppIndexRouteImport } from './routes/_app/index'
-import { Route as AppAboutRouteImport } from './routes/_app/about'
+import { Route as PricingRouteImport } from './routes/pricing'
+import { Route as AppHomeRouteImport } from './routes/_app/home'
 import { Route as SignInSplatRouteImport } from './routes/sign-in.$'
 import { Route as SignUpSplatRouteImport } from './routes/sign-up.$'
 import { Route as AppLessonsIndexRouteImport } from './routes/_app/lessons/index'
@@ -23,6 +25,7 @@ import { Route as AppVocabularyIndexRouteImport } from './routes/_app/vocabulary
 import { Route as AppVocabularyItemIdRouteImport } from './routes/_app/vocabulary/$itemId'
 import { Route as AppVoiceIndexRouteImport } from './routes/_app/voice/index'
 import { Route as AppVoicePreviewRouteImport } from './routes/_app/voice/preview'
+import { Route as ApiMediaSplatRouteImport } from './routes/api/media/$'
 import { Route as AppLessonsSlugIndexRouteImport } from './routes/_app/lessons/$slug/index'
 import { Route as AppLessonsSlugPracticeRouteImport } from './routes/_app/lessons/$slug/practice'
 import { Route as AppVideosVideoIdDictationRouteImport } from './routes/_app/videos/$videoId/dictation'
@@ -31,9 +34,21 @@ import { Route as AppVideosCategoriesCategorySlugRouteImport } from './routes/_a
 import { Route as AppVoiceRoomConversationIdRouteImport } from './routes/_app/voice/room/$conversationId'
 import { Route as AppVoiceScenariosIndexRouteImport } from './routes/_app/voice/scenarios/index'
 import { Route as AppVoiceScenariosScenarioIdRouteImport } from './routes/_app/voice/scenarios/$scenarioId'
+import { Route as ApiVoiceConversationIdOfferRouteImport } from './routes/api/voice/$conversationId/offer'
+import { Route as ApiVoiceConversationIdStartRouteImport } from './routes/api/voice/$conversationId/start'
 
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AppRouteRoute = AppRouteRouteImport.update({
   id: '/_app',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AboutRoute = AboutRouteImport.update({
+  id: '/about',
+  path: '/about',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ErrorRoute = ErrorRouteImport.update({
@@ -51,14 +66,14 @@ const OnboardingRoute = OnboardingRouteImport.update({
   path: '/onboarding',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AppIndexRoute = AppIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => AppRouteRoute,
+const PricingRoute = PricingRouteImport.update({
+  id: '/pricing',
+  path: '/pricing',
+  getParentRoute: () => rootRouteImport,
 } as any)
-const AppAboutRoute = AppAboutRouteImport.update({
-  id: '/about',
-  path: '/about',
+const AppHomeRoute = AppHomeRouteImport.update({
+  id: '/home',
+  path: '/home',
   getParentRoute: () => AppRouteRoute,
 } as any)
 const SignInSplatRoute = SignInSplatRouteImport.update({
@@ -100,6 +115,11 @@ const AppVoicePreviewRoute = AppVoicePreviewRouteImport.update({
   id: '/voice/preview',
   path: '/voice/preview',
   getParentRoute: () => AppRouteRoute,
+} as any)
+const ApiMediaSplatRoute = ApiMediaSplatRouteImport.update({
+  id: '/api/media/$',
+  path: '/api/media/$',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AppLessonsSlugIndexRoute = AppLessonsSlugIndexRouteImport.update({
   id: '/lessons/$slug/',
@@ -146,17 +166,32 @@ const AppVoiceScenariosScenarioIdRoute =
     path: '/voice/scenarios/$scenarioId',
     getParentRoute: () => AppRouteRoute,
   } as any)
+const ApiVoiceConversationIdOfferRoute =
+  ApiVoiceConversationIdOfferRouteImport.update({
+    id: '/api/voice/$conversationId/offer',
+    path: '/api/voice/$conversationId/offer',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiVoiceConversationIdStartRoute =
+  ApiVoiceConversationIdStartRouteImport.update({
+    id: '/api/voice/$conversationId/start',
+    path: '/api/voice/$conversationId/start',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof AppIndexRoute
+  '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/error': typeof ErrorRoute
   '/not-found': typeof NotFoundRoute
   '/onboarding': typeof OnboardingRoute
-  '/about': typeof AppAboutRoute
+  '/pricing': typeof PricingRoute
+  '/home': typeof AppHomeRoute
   '/sign-in/$': typeof SignInSplatRoute
   '/sign-up/$': typeof SignUpSplatRoute
   '/vocabulary/$itemId': typeof AppVocabularyItemIdRoute
   '/voice/preview': typeof AppVoicePreviewRoute
+  '/api/media/$': typeof ApiMediaSplatRoute
   '/lessons/': typeof AppLessonsIndexRoute
   '/videos/': typeof AppVideosIndexRoute
   '/vocabulary/': typeof AppVocabularyIndexRoute
@@ -167,19 +202,24 @@ export interface FileRoutesByFullPath {
   '/videos/categories/$categorySlug': typeof AppVideosCategoriesCategorySlugRoute
   '/voice/room/$conversationId': typeof AppVoiceRoomConversationIdRoute
   '/voice/scenarios/$scenarioId': typeof AppVoiceScenariosScenarioIdRoute
+  '/api/voice/$conversationId/offer': typeof ApiVoiceConversationIdOfferRoute
+  '/api/voice/$conversationId/start': typeof ApiVoiceConversationIdStartRoute
   '/lessons/$slug/': typeof AppLessonsSlugIndexRoute
   '/voice/scenarios/': typeof AppVoiceScenariosIndexRoute
 }
 export interface FileRoutesByTo {
+  '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/error': typeof ErrorRoute
   '/not-found': typeof NotFoundRoute
   '/onboarding': typeof OnboardingRoute
-  '/about': typeof AppAboutRoute
+  '/pricing': typeof PricingRoute
+  '/home': typeof AppHomeRoute
   '/sign-in/$': typeof SignInSplatRoute
   '/sign-up/$': typeof SignUpSplatRoute
-  '/': typeof AppIndexRoute
   '/vocabulary/$itemId': typeof AppVocabularyItemIdRoute
   '/voice/preview': typeof AppVoicePreviewRoute
+  '/api/media/$': typeof ApiMediaSplatRoute
   '/lessons': typeof AppLessonsIndexRoute
   '/videos': typeof AppVideosIndexRoute
   '/vocabulary': typeof AppVocabularyIndexRoute
@@ -190,21 +230,26 @@ export interface FileRoutesByTo {
   '/videos/categories/$categorySlug': typeof AppVideosCategoriesCategorySlugRoute
   '/voice/room/$conversationId': typeof AppVoiceRoomConversationIdRoute
   '/voice/scenarios/$scenarioId': typeof AppVoiceScenariosScenarioIdRoute
+  '/api/voice/$conversationId/offer': typeof ApiVoiceConversationIdOfferRoute
+  '/api/voice/$conversationId/start': typeof ApiVoiceConversationIdStartRoute
   '/lessons/$slug': typeof AppLessonsSlugIndexRoute
   '/voice/scenarios': typeof AppVoiceScenariosIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
   '/_app': typeof AppRouteRouteWithChildren
+  '/about': typeof AboutRoute
   '/error': typeof ErrorRoute
   '/not-found': typeof NotFoundRoute
   '/onboarding': typeof OnboardingRoute
-  '/_app/about': typeof AppAboutRoute
+  '/pricing': typeof PricingRoute
+  '/_app/home': typeof AppHomeRoute
   '/sign-in/$': typeof SignInSplatRoute
   '/sign-up/$': typeof SignUpSplatRoute
-  '/_app/': typeof AppIndexRoute
   '/_app/vocabulary/$itemId': typeof AppVocabularyItemIdRoute
   '/_app/voice/preview': typeof AppVoicePreviewRoute
+  '/api/media/$': typeof ApiMediaSplatRoute
   '/_app/lessons/': typeof AppLessonsIndexRoute
   '/_app/videos/': typeof AppVideosIndexRoute
   '/_app/vocabulary/': typeof AppVocabularyIndexRoute
@@ -215,6 +260,8 @@ export interface FileRoutesById {
   '/_app/videos/categories/$categorySlug': typeof AppVideosCategoriesCategorySlugRoute
   '/_app/voice/room/$conversationId': typeof AppVoiceRoomConversationIdRoute
   '/_app/voice/scenarios/$scenarioId': typeof AppVoiceScenariosScenarioIdRoute
+  '/api/voice/$conversationId/offer': typeof ApiVoiceConversationIdOfferRoute
+  '/api/voice/$conversationId/start': typeof ApiVoiceConversationIdStartRoute
   '/_app/lessons/$slug/': typeof AppLessonsSlugIndexRoute
   '/_app/voice/scenarios/': typeof AppVoiceScenariosIndexRoute
 }
@@ -222,14 +269,17 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/about'
     | '/error'
     | '/not-found'
     | '/onboarding'
-    | '/about'
+    | '/pricing'
+    | '/home'
     | '/sign-in/$'
     | '/sign-up/$'
     | '/vocabulary/$itemId'
     | '/voice/preview'
+    | '/api/media/$'
     | '/lessons/'
     | '/videos/'
     | '/vocabulary/'
@@ -240,19 +290,24 @@ export interface FileRouteTypes {
     | '/videos/categories/$categorySlug'
     | '/voice/room/$conversationId'
     | '/voice/scenarios/$scenarioId'
+    | '/api/voice/$conversationId/offer'
+    | '/api/voice/$conversationId/start'
     | '/lessons/$slug/'
     | '/voice/scenarios/'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/'
+    | '/about'
     | '/error'
     | '/not-found'
     | '/onboarding'
-    | '/about'
+    | '/pricing'
+    | '/home'
     | '/sign-in/$'
     | '/sign-up/$'
-    | '/'
     | '/vocabulary/$itemId'
     | '/voice/preview'
+    | '/api/media/$'
     | '/lessons'
     | '/videos'
     | '/vocabulary'
@@ -263,20 +318,25 @@ export interface FileRouteTypes {
     | '/videos/categories/$categorySlug'
     | '/voice/room/$conversationId'
     | '/voice/scenarios/$scenarioId'
+    | '/api/voice/$conversationId/offer'
+    | '/api/voice/$conversationId/start'
     | '/lessons/$slug'
     | '/voice/scenarios'
   id:
     | '__root__'
+    | '/'
     | '/_app'
+    | '/about'
     | '/error'
     | '/not-found'
     | '/onboarding'
-    | '/_app/about'
+    | '/pricing'
+    | '/_app/home'
     | '/sign-in/$'
     | '/sign-up/$'
-    | '/_app/'
     | '/_app/vocabulary/$itemId'
     | '/_app/voice/preview'
+    | '/api/media/$'
     | '/_app/lessons/'
     | '/_app/videos/'
     | '/_app/vocabulary/'
@@ -287,26 +347,48 @@ export interface FileRouteTypes {
     | '/_app/videos/categories/$categorySlug'
     | '/_app/voice/room/$conversationId'
     | '/_app/voice/scenarios/$scenarioId'
+    | '/api/voice/$conversationId/offer'
+    | '/api/voice/$conversationId/start'
     | '/_app/lessons/$slug/'
     | '/_app/voice/scenarios/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
+  IndexRoute: typeof IndexRoute
   AppRouteRoute: typeof AppRouteRouteWithChildren
+  AboutRoute: typeof AboutRoute
   ErrorRoute: typeof ErrorRoute
   NotFoundRoute: typeof NotFoundRoute
   OnboardingRoute: typeof OnboardingRoute
+  PricingRoute: typeof PricingRoute
   SignInSplatRoute: typeof SignInSplatRoute
   SignUpSplatRoute: typeof SignUpSplatRoute
+  ApiMediaSplatRoute: typeof ApiMediaSplatRoute
+  ApiVoiceConversationIdOfferRoute: typeof ApiVoiceConversationIdOfferRoute
+  ApiVoiceConversationIdStartRoute: typeof ApiVoiceConversationIdStartRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_app': {
       id: '/_app'
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof AppRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/about': {
+      id: '/about'
+      path: '/about'
+      fullPath: '/about'
+      preLoaderRoute: typeof AboutRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/error': {
@@ -330,18 +412,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OnboardingRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_app/': {
-      id: '/_app/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof AppIndexRouteImport
-      parentRoute: typeof AppRouteRoute
+    '/pricing': {
+      id: '/pricing'
+      path: '/pricing'
+      fullPath: '/pricing'
+      preLoaderRoute: typeof PricingRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_app/about': {
-      id: '/_app/about'
-      path: '/about'
-      fullPath: '/about'
-      preLoaderRoute: typeof AppAboutRouteImport
+    '/_app/home': {
+      id: '/_app/home'
+      path: '/home'
+      fullPath: '/home'
+      preLoaderRoute: typeof AppHomeRouteImport
       parentRoute: typeof AppRouteRoute
     }
     '/sign-in/$': {
@@ -400,6 +482,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppVoicePreviewRouteImport
       parentRoute: typeof AppRouteRoute
     }
+    '/api/media/$': {
+      id: '/api/media/$'
+      path: '/api/media/$'
+      fullPath: '/api/media/$'
+      preLoaderRoute: typeof ApiMediaSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_app/lessons/$slug/': {
       id: '/_app/lessons/$slug/'
       path: '/lessons/$slug'
@@ -456,12 +545,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppVoiceScenariosScenarioIdRouteImport
       parentRoute: typeof AppRouteRoute
     }
+    '/api/voice/$conversationId/offer': {
+      id: '/api/voice/$conversationId/offer'
+      path: '/api/voice/$conversationId/offer'
+      fullPath: '/api/voice/$conversationId/offer'
+      preLoaderRoute: typeof ApiVoiceConversationIdOfferRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/voice/$conversationId/start': {
+      id: '/api/voice/$conversationId/start'
+      path: '/api/voice/$conversationId/start'
+      fullPath: '/api/voice/$conversationId/start'
+      preLoaderRoute: typeof ApiVoiceConversationIdStartRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 interface AppRouteRouteChildren {
-  AppAboutRoute: typeof AppAboutRoute
-  AppIndexRoute: typeof AppIndexRoute
+  AppHomeRoute: typeof AppHomeRoute
   AppVocabularyItemIdRoute: typeof AppVocabularyItemIdRoute
   AppVoicePreviewRoute: typeof AppVoicePreviewRoute
   AppLessonsIndexRoute: typeof AppLessonsIndexRoute
@@ -479,8 +581,7 @@ interface AppRouteRouteChildren {
 }
 
 const AppRouteRouteChildren: AppRouteRouteChildren = {
-  AppAboutRoute: AppAboutRoute,
-  AppIndexRoute: AppIndexRoute,
+  AppHomeRoute: AppHomeRoute,
   AppVocabularyItemIdRoute: AppVocabularyItemIdRoute,
   AppVoicePreviewRoute: AppVoicePreviewRoute,
   AppLessonsIndexRoute: AppLessonsIndexRoute,
@@ -502,12 +603,18 @@ const AppRouteRouteWithChildren = AppRouteRoute._addFileChildren(
 )
 
 const rootRouteChildren: RootRouteChildren = {
+  IndexRoute: IndexRoute,
   AppRouteRoute: AppRouteRouteWithChildren,
+  AboutRoute: AboutRoute,
   ErrorRoute: ErrorRoute,
   NotFoundRoute: NotFoundRoute,
   OnboardingRoute: OnboardingRoute,
+  PricingRoute: PricingRoute,
   SignInSplatRoute: SignInSplatRoute,
   SignUpSplatRoute: SignUpSplatRoute,
+  ApiMediaSplatRoute: ApiMediaSplatRoute,
+  ApiVoiceConversationIdOfferRoute: ApiVoiceConversationIdOfferRoute,
+  ApiVoiceConversationIdStartRoute: ApiVoiceConversationIdStartRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

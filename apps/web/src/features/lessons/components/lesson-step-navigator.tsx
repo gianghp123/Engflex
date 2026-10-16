@@ -37,10 +37,9 @@ export function LessonStepNavigator({
 						className={cn(
 							"inline-flex cursor-pointer items-center gap-1.5 rounded-full border-2 px-3 py-1 text-xs font-bold transition",
 							active
-								? "border-primary bg-primary text-primary-foreground"
+								? "border-primary bg-primary text-primary-foreground shadow-edge-primary-md"
 								: "border-border bg-card text-muted-foreground hover:border-primary",
 						)}
-						style={active ? { boxShadow: "0 4px 0 #433095" } : undefined}
 					>
 						{done && !active ? (
 							<CircleCheck className="size-3.5 text-accuracy" />

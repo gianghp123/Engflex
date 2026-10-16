@@ -32,6 +32,8 @@ vendor/
 .env
 !.env.example
 
+client_secret*.json
+
 # --- Databases / local data ---
 *.db
 *.sqlite
@@ -75,3 +77,10 @@ apps/voice/models/
 !/docs/superpowers/rules/
 !/docs/superpowers/rules/*.md
 /docs/**/*.mjs
+
+# --- Terraform ---
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example

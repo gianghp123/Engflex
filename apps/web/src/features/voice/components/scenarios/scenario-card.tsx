@@ -8,7 +8,7 @@ import { m } from "#/paraglide/messages";
 const TILE_TONES = [
 	"bg-primary text-primary-foreground",
 	"bg-secondary text-secondary-foreground",
-	"bg-accent-violet text-white",
+	"bg-accent-violet text-primary-foreground",
 ] as const;
 
 function personaInitials(roleTitle: string): string {

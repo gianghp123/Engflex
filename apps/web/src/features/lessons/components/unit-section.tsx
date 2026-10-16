@@ -17,10 +17,7 @@ export function UnitSection({
 		<section className="flex flex-col gap-4">
 			<div className="flex items-start justify-between gap-3">
 				<div className="flex min-w-0 items-start gap-3">
-					<span
-						className="inline-flex h-8 shrink-0 items-center justify-center rounded-[12px] bg-primary px-2 text-sm font-bold text-primary-foreground"
-						style={{ boxShadow: "0 2px 0 #433095" }}
-					>
+					<span className="inline-flex h-8 shrink-0 items-center justify-center rounded-[12px] bg-primary px-2 text-sm font-bold text-primary-foreground shadow-edge-primary-xs">
 						{section.cefrBand}
 					</span>
 					<div className="min-w-0">

@@ -158,14 +158,7 @@ function VocabularyPage() {
 			</p>
 
 			<section className="surface-card flex flex-col gap-4 p-5 md:flex-row md:items-center">
-				<span
-					className="inline-flex h-16 w-16 shrink-0 items-center justify-center"
-					style={{
-						background: "var(--secondary)",
-						borderRadius: 13,
-						boxShadow: "0 3px 0 rgba(0,0,0,.2)",
-					}}
-				>
+				<span className="inline-flex h-16 w-16 shrink-0 items-center justify-center rounded-[13px] bg-secondary shadow-edge-neutral-sm">
 					<MoMascot variant="wave" size={52} />
 				</span>
 				<div className="min-w-0 flex-1">

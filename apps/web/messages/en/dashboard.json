@@ -3,8 +3,7 @@
   "dashboard": {
     "hero": {
       "greeting": "Good morning",
-      "greetingName": "Good morning, {name}",
-      "subtitle": "Speech performance"
+      "greetingName": "Good morning, {name}"
     },
     "activeLesson": {
       "unitLabel": "Active lesson · Unit 4.2",
@@ -12,50 +11,18 @@
       "continue": "Continue practice"
     },
     "stats": {
-      "fluency": "Overall fluency",
-      "pronunciation": "Pronunciation",
-      "speed": "Speaking speed",
-      "speedUnit": "words / min",
-      "reviewQueue": "Review queue",
-      "highFriction": "{count} high friction",
-      "practice": "Practice"
+      "streak": "Day streak",
+      "voice": "Voice today",
+      "voiceGoal": "{done} / {goal} min",
+      "lessons": "Lessons done"
     },
     "sequence": {
-      "title": "Today's practice sequence",
-      "meta": "{count} modules · Customize schedule →",
-      "duration": "{count} min",
-      "state": {
-        "upNext": "Up next",
-        "queued": "Queued"
-      },
-      "doneScore": "Done ({score}% score)",
-      "dueCount": "{count} due",
-      "cards": {
-        "shadowing": {
-          "kicker": "Shadowing",
-          "title": "Tech keynote speech cadence",
-          "description": "Matched pace with product launches and engineering demos.",
-          "cta": "Replay"
-        },
-        "dictation": {
-          "kicker": "Dictation · Up next",
-          "title": "Executive summary review",
-          "description": "Complex technical summaries with architectural decision records.",
-          "cta": "Start dictation"
-        },
-        "roleplay": {
-          "kicker": "Roleplay simulation",
-          "title": "Sprint retro debate trade-offs",
-          "description": "Handle contentious points without sounding aggressive or evasive.",
-          "cta": "View scenarios"
-        },
-        "spaced": {
-          "kicker": "Spaced repetition",
-          "title": "Sprint & engineering lexicon",
-          "description": "Strengthen active vocal recall for velocity and blocker terminology.",
-          "cta": "Practice"
-        }
-      }
+      "title": "Today's practice sequence"
+    },
+    "zero": {
+      "sequenceTitle": "Up next",
+      "sequenceBody": "Finish a lesson and Mo will line up what to practice next.",
+      "sequenceCta": "Browse lessons"
     },
     "voicePartner": {
       "title": "Spontaneous speaking roleplay",

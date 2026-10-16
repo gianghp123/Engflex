@@ -30,6 +30,10 @@ export type RoomSource =
 			turns: Turn[];
 			correctionText: string;
 			transcript: "live" | "saved";
+			/** Preview-only scene override (fixtures carry no scenarioId). */
+			scene?: { title: string; body: string };
+			/** Preview-only duration (fixtures carry no durationSec). */
+			durationSec?: number;
 	  };
 
 /** Everything session-ish the room needs, as plain data + callbacks. */
@@ -109,6 +113,8 @@ export function VoiceRoom({
 		) : (
 			<EndedReview
 				turns={source.turns}
+				scene={source.scene}
+				durationSec={source.durationSec}
 				analyze={{ pending: false, failed: false, onAnalyze: noopAnalyze }}
 				onBack={session.onBack}
 			/>

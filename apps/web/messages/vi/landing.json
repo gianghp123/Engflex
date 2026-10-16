@@ -1,0 +1,109 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "landing": {
+    "nav": {
+      "home": "Trang chủ",
+      "pricing": "Bảng giá",
+      "about": "Giới thiệu",
+      "signIn": "Đăng nhập",
+      "getStarted": "Bắt đầu",
+      "pending": "Sắp có"
+    },
+    "hero": {
+      "eyebrow": "Tiếng Anh, mỗi ngày",
+      "title": "Học tiếng Anh cùng một người bạn luôn đáp lời.",
+      "badgeLessons": "bài học",
+      "badgeLevels": "A1 đến C2",
+      "badgeQuestions": "câu hỏi",
+      "badgeExplained": "có giải thích",
+      "cta": "Bắt đầu",
+      "ctaSecondary": "Tôi đã có tài khoản",
+      "scared": "Tôi sợ nói tiếng Anh.",
+      "reassure": "Không lâu đâu."
+    },
+    "path": {
+      "say": "Chậm mà chắc. Bắt đầu từ đâu cũng được.",
+      "title": "Bắt đầu từ trình độ của bạn",
+      "body": "A1 đến C2. Mỗi bài học đều theo bốn bước: đọc, nghe, viết, nói.",
+      "lessonsPerLevel": "3 bài"
+    },
+    "practice": {
+      "title": "Bạn có thể học theo bài — hoặc chỉ trò chuyện.",
+      "body": "18 bài học từ A1 đến C2, mỗi bài đủ bốn kỹ năng. Hoặc vào ngay 15 tình huống hội thoại với người bạn đồng hành luôn nhập vai.",
+      "roleplayLabel": "Hội thoại",
+      "roleplayMeta": "15 tình huống · bảy chủ đề · A1 đến B1",
+      "roleplayCount": "{count} tình huống",
+      "lessonLabel": "Trong mỗi bài học",
+      "lessonMeta": "18 bài · đủ bốn kỹ năng · A1 đến C2",
+      "moreComing": "Sắp có thêm",
+      "skillsTitle": "Bốn kỹ năng trong mỗi bài.",
+      "skillsBody": "18 bài học từ A1 đến C2, mỗi trình độ ba bài. Bài nào cũng theo một vòng: đọc, nghe, viết, nói.",
+      "gradingTitle": "Câu trả lời được chấm.",
+      "gradingBody": "108 câu hỏi có đáp án và giải thích, kèm 18 bài viết được chấm theo bài mẫu.",
+      "pronunciationTitle": "Phát âm, từng từ một.",
+      "pronunciationBody": "Đọc một câu vào micro. Mô hình âm học chấm từng từ và chỉ ra âm nào còn lệch.",
+      "roleplayCountOne": "1 tình huống"
+    },
+    "testimonials": {
+      "title": "Học viên nói gì",
+      "body": "Lời chứng thực mẫu — sẽ thay bằng lời thật trước khi ra mắt.",
+      "oneQuote": "Trước đây tôi nhẩm lại câu năm lần trong đầu rồi mới dám nói. Giờ tôi gọi cà phê luôn.",
+      "oneName": "Linh N.",
+      "oneLevel": "Trình độ A2",
+      "twoQuote": "Phản hồi cho tôi biết người bản xứ sẽ nói thế nào, chứ không chỉ đúng hay sai.",
+      "twoName": "Trang P.",
+      "twoLevel": "Trình độ B1",
+      "threeQuote": "Hai mươi phút trên tàu mỗi sáng. Cả thói quen chỉ có vậy, và ngắn nên tôi giữ được.",
+      "threeName": "Minh Đ.",
+      "threeLevel": "Trình độ B2"
+    },
+    "closing": {
+      "body": "Bắt đầu từ trình độ của bạn — A1 đến C2.",
+      "cta": "Bắt đầu",
+      "ctaSecondary": "Tôi đã có tài khoản"
+    },
+    "footer": {
+      "blurb": "Luyện tiếng Anh ở mọi trình độ, từ A1 đến C2.",
+      "tagline": "Học cùng Mo.",
+      "copyright": "© 2026 Engflex",
+      "practice": {
+        "label": "Luyện tập",
+        "lessons": "Bài học",
+        "voice": "Hội thoại",
+        "scenarios": "Danh sách tình huống",
+        "pronunciation": "Luyện phát âm"
+      },
+      "levels": {
+        "label": "Trình độ",
+        "a1": "A1 · Mới bắt đầu",
+        "a2": "A2 · Sơ cấp",
+        "b1": "B1 · Trung cấp",
+        "b2": "B2 · Trung cấp cao",
+        "c1": "C1 · Nâng cao",
+        "c2": "C2 · Thành thạo"
+      },
+      "account": {
+        "label": "Engflex",
+        "about": "Giới thiệu",
+        "pricing": "Bảng giá",
+        "signIn": "Đăng nhập",
+        "signUp": "Tạo tài khoản"
+      },
+      "help": {
+        "label": "Hỗ trợ",
+        "contact": "Liên hệ",
+        "report": "Báo lỗi"
+      },
+      "legal": {
+        "label": "Pháp lý",
+        "privacy": "Quyền riêng tư",
+        "terms": "Điều khoản",
+        "cookies": "Cookie"
+      }
+    },
+    "meta": {
+      "title": "Engflex — luyện tiếng Anh ở mọi trình độ",
+      "description": "18 bài học từ A1 đến C2 với đủ bốn kỹ năng nghe, nói, đọc, viết, 108 câu hỏi có giải thích và 15 tình huống hội thoại cùng người bạn luôn đáp lời."
+    }
+  }
+}

@@ -3,8 +3,7 @@
   "dashboard": {
     "hero": {
       "greeting": "Xin chào",
-      "greetingName": "Xin chào, {name}",
-      "subtitle": "Kỹ năng nói"
+      "greetingName": "Xin chào, {name}"
     },
     "activeLesson": {
       "unitLabel": "Bài học đang học · Học phần 4.2",
@@ -12,50 +11,18 @@
       "continue": "Tiếp tục luyện tập"
     },
     "stats": {
-      "fluency": "Độ trôi chảy tổng thể",
-      "pronunciation": "Phát âm",
-      "speed": "Tốc độ nói",
-      "speedUnit": "từ / phút",
-      "reviewQueue": "Hàng chờ ôn tập",
-      "highFriction": "{count} điểm cần cải thiện",
-      "practice": "Luyện tập"
+      "streak": "Chuỗi ngày",
+      "voice": "Luyện nói hôm nay",
+      "voiceGoal": "{done} / {goal} phút",
+      "lessons": "Bài đã xong"
     },
     "sequence": {
-      "title": "Chuỗi luyện tập hôm nay",
-      "meta": "{count} module · Tùy chỉnh lịch học →",
-      "duration": "{count} phút",
-      "state": {
-        "upNext": "Tiếp theo",
-        "queued": "Đang chờ"
-      },
-      "doneScore": "Xong (điểm {score}%)",
-      "dueCount": "{count} mục đến hạn",
-      "cards": {
-        "shadowing": {
-          "kicker": "Nhại giọng",
-          "title": "Nhịp diễn thuyết công nghệ",
-          "description": "Bắt nhịp với các buổi ra mắt sản phẩm và demo kỹ thuật.",
-          "cta": "Xem lại"
-        },
-        "dictation": {
-          "kicker": "Nghe chép · Tiếp theo",
-          "title": "Ôn tóm tắt điều hành",
-          "description": "Các bản tóm tắt kỹ thuật phức tạp cùng biên bản quyết định kiến trúc.",
-          "cta": "Bắt đầu nghe chép"
-        },
-        "roleplay": {
-          "kicker": "Mô phỏng đóng vai",
-          "title": "Tranh luận đánh đổi trong retro sprint",
-          "description": "Xử lý điểm gây tranh cãi mà không gay gắt hay lảng tránh.",
-          "cta": "Xem tình huống"
-        },
-        "spaced": {
-          "kicker": "Lặp lại ngắt quãng",
-          "title": "Từ vựng sprint & kỹ thuật",
-          "description": "Củng cố phản xạ dùng thuật ngữ sprint khi nói.",
-          "cta": "Luyện tập"
-        }
-      }
+      "title": "Chuỗi luyện tập hôm nay"
+    },
+    "zero": {
+      "sequenceTitle": "Sắp tới",
+      "sequenceBody": "Học xong một bài, Mo sẽ xếp bài tiếp theo cho bạn.",
+      "sequenceCta": "Xem các bài học"
     },
     "voicePartner": {
       "title": "Đóng vai hội thoại tự nhiên",

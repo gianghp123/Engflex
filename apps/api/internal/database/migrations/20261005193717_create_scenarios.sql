@@ -6,7 +6,7 @@ CREATE TABLE scenarios (
     title      text NOT NULL,
     objective  text NOT NULL DEFAULT '',
     cefr_level text NOT NULL CONSTRAINT chk_scenarios_cefr_level
-        CHECK (cefr_level IN ('B1+', 'B2', 'C1')),
+        CHECK (cefr_level IN ('A1', 'A2', 'B1', 'B1+', 'B2', 'C1')),
     max_duration int NOT NULL,
     details    jsonb NOT NULL DEFAULT '{}',
     created_at timestamptz NOT NULL DEFAULT now(),

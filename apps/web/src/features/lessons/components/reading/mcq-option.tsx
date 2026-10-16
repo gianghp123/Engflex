@@ -29,13 +29,9 @@ export function McqOption({
 					(selected
 						? "border-primary bg-accent"
 						: "border-border bg-card hover:border-primary"),
+				selected && tone === "default" && "shadow-edge-sm",
 				disabled ? "cursor-default" : "cursor-pointer",
 			)}
-			style={
-				selected && tone === "default"
-					? { boxShadow: "0 3px 0 var(--border)" }
-					: undefined
-			}
 		>
 			<RadioGroupItem
 				id={id}

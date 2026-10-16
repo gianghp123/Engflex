@@ -1,7 +1,20 @@
 /** Centralized app route URLs. Use these instead of hardcoding paths. */
 export const APP_ROUTES = {
-	HOME: "/",
+	/** Public landing page — the front door for signed-out visitors. */
+	LANDING: "/",
+	HOME: "/home",
 	ABOUT: "/about",
+	PRICING: "/pricing",
+	/**
+	 * Section anchors on the landing page. The shared marketing nav turns these
+	 * into an in-page jump while it is on `/`, and into a cross-page link
+	 * (`LANDING` + fragment) on every other marketing page — the ids only exist
+	 * on the landing page, so a bare fragment elsewhere is a dead link.
+	 */
+	LANDING_SECTIONS: {
+		LEVELS: "#levels",
+		VOICE: "#voice",
+	},
 	ONBOARDING: "/onboarding",
 	LESSONS: {
 		LIST: "/lessons",
@@ -17,6 +30,8 @@ export const APP_ROUTES = {
 		SCENARIOS: "/voice/scenarios",
 		SCENARIO: "/voice/scenarios/$scenarioId",
 		ROOM: "/voice/room/$conversationId",
+		SIGNAL_START: "/api/voice/$conversationId/start",
+		SIGNAL_OFFER: "/api/voice/$conversationId/offer",
 	},
 	VIDEOS: {
 		LIST: "/videos",

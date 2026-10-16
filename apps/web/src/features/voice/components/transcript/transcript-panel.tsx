@@ -10,7 +10,6 @@ import { useEffect, useRef, useState } from "react";
 import { Avatar, AvatarFallback } from "#/components/ui/avatar";
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "#/components/ui/card";
 import { ScrollArea } from "#/components/ui/scroll-area";
 import {
 	Tooltip,
@@ -210,14 +209,17 @@ function TranscriptPanelView({
 	})();
 
 	return (
-		<Card className={cn("flex h-full min-h-0 flex-col", className)}>
-			<CardHeader className="pb-0">
-				<CardTitle className="flex items-center gap-2 text-base">
-					{m["voice.room.transcript.title"]()}
-					<Badge variant="secondary">{shown.length}</Badge>
-				</CardTitle>
-			</CardHeader>
-			<CardContent className="min-h-0 flex-1 pb-6">
+		<div
+			className={cn(
+				"surface-card flex h-full min-h-0 flex-col gap-6 py-6",
+				className,
+			)}
+		>
+			<div className="flex items-center gap-2 px-6 text-base leading-none font-semibold">
+				{m["voice.room.transcript.title"]()}
+				<Badge variant="secondary">{shown.length}</Badge>
+			</div>
+			<div className="min-h-0 flex-1 px-6 pb-6">
 				<ScrollArea className="h-full max-h-[55vh] min-h-0 overflow-x-clip pr-3 lg:max-h-none">
 					{shown.length === 0 ? (
 						<p className="py-8 text-center text-sm text-muted-foreground">
@@ -281,8 +283,8 @@ function TranscriptPanelView({
 					)}
 					<div ref={bottomRef} />
 				</ScrollArea>
-			</CardContent>
-		</Card>
+			</div>
+		</div>
 	);
 }
 

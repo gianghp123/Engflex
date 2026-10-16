@@ -80,15 +80,7 @@ export function LessonHeader({
 				</div>
 			</div>
 			<div className="flex shrink-0 items-start justify-center">
-				<div
-					className="flex w-44 flex-col items-center gap-2 p-4"
-					style={{
-						background: "#ffe2c5",
-						border: "2px solid var(--border)",
-						borderRadius: 24,
-						boxShadow: "0 5px 0 var(--border)",
-					}}
-				>
+				<div className="flex w-44 flex-col items-center gap-2 rounded-[24px] border-2 border-border bg-tip-bg p-4 shadow-edge">
 					<MoMascot variant="cheer" size={112} />
 					<span className="rounded-full bg-primary px-2.5 py-0.5 text-[11px] font-bold text-primary-foreground">
 						{m["lessons.detail.coach"]()}

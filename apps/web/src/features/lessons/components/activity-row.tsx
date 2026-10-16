@@ -13,10 +13,7 @@ export function ActivityRow({
 }) {
 	return (
 		<div className="surface-card flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:gap-4">
-			<span
-				className="inline-flex size-11 shrink-0 items-center justify-center rounded-full bg-primary text-lg font-bold text-primary-foreground"
-				style={{ boxShadow: "0 3px 0 #433095" }}
-			>
+			<span className="inline-flex size-11 shrink-0 items-center justify-center rounded-full bg-primary text-lg font-bold text-primary-foreground shadow-edge-primary-sm">
 				{activity.partNumber}
 			</span>
 			<div className="flex min-w-0 flex-1 flex-col gap-1">

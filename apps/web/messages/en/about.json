@@ -1,8 +1,65 @@
 {
-  "$schema": "https://inlang.com/schema/inlang-message-format",
-  "about": {
-    "crumb": "About",
-    "title": "Speak English at work, every day.",
-    "body": "Engflex turns the meetings you already have — standups, architecture reviews, sprint retros — into short daily speaking drills. Read or dictate the passage, then spar with an AI partner that adapts to your phrasing. Fluency, pronunciation and speed are tracked per skill, so you always know what to practise next."
-  }
+	"$schema": "https://inlang.com/schema/inlang-message-format",
+	"about": {
+		"crumb": "About",
+		"meta": {
+			"title": "About Engflex — English practice for every level",
+			"description": "Why Engflex is built around speaking: an A1–C2 path, 18 lessons with four skills each, and 15 everyday roleplays with a partner who answers."
+		},
+		"hero": {
+			"title": "Speak English every day.",
+			"body": "Engflex turns a few minutes a day into speaking practice. Read it, hear it, write it, say it — then talk it through with a partner who answers.",
+			"cta": "Get started",
+			"ctaSecondary": "I already have an account"
+		},
+		"problem": {
+			"eyebrow": "Why we built it",
+			"title": "Reading is not the hard part.",
+			"body": "You can read English for years and still freeze the moment you have to speak. Engflex keeps the reading and the listening you already do, and adds the part that usually gets skipped: saying it out loud, to a partner who answers and stays in the scene."
+		},
+		"path": {
+			"eyebrow": "The path",
+			"title": "One path, A1 to C2.",
+			"body": "18 lessons, three at every level, and the same four steps inside each one. The routine never changes — only the material gets harder.",
+			"lessonsPerLevel": "3 lessons",
+			"stepsLabel": "In every lesson",
+			"stepsMeta": "four steps, every level",
+			"stepReadTitle": "Read it",
+			"stepReadBody": "A short passage sets the situation and the words you need.",
+			"stepHearTitle": "Hear it",
+			"stepHearBody": "Listen to it, then read along.",
+			"stepWriteTitle": "Write it",
+			"stepWriteBody": "Answer in your own words — scored against a model email.",
+			"stepSayTitle": "Say it",
+			"stepSayBody": "Read a sentence aloud and get word-by-word pronunciation marks."
+		},
+		"talking": {
+			"eyebrow": "Talking",
+			"title": "Or skip straight to talking.",
+			"body": "15 everyday roleplays across seven topics, A1 to B1. Your partner stays in character the whole way through.",
+			"cardRoleplayTitle": "A partner who stays in character",
+			"cardRoleplayBody": "15 roleplays across seven topics, from A1 to B1: ordering, shopping, travel, small talk.",
+			"cardAnswersTitle": "Answers get checked",
+			"cardAnswersBody": "108 questions marked against answer keys, each with an explanation, plus writing scored against a model email.",
+			"cardPronunciationTitle": "Pronunciation, word by word",
+			"cardPronunciationBody": "Read a sentence into the mic. An acoustic model marks each word and shows which sounds slipped."
+		},
+		"expect": {
+			"eyebrow": "What to expect",
+			"title": "True from the first lesson.",
+			"body": "Voice roleplay goes up to B1 today; the lesson path runs to C2.",
+			"timeTitle": "A few minutes a day",
+			"timeBody": "the whole routine",
+			"levelsTitle": "Lessons at every level",
+			"levelsBody": "A1 to C2, three each",
+			"roleplayTitle": "Roleplay to B1",
+			"roleplayBody": "A1 to B1 today"
+		},
+		"closing": {
+			"title": "Start where you are.",
+			"body": "A1 to C2 — start anywhere.",
+			"cta": "Get started",
+			"ctaSecondary": "I already have an account"
+		}
+	}
 }

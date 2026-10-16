@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	sentrygin "github.com/getsentry/sentry-go/gin"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
@@ -16,6 +17,7 @@ import (
 
 	"engflex-api/config"
 	_ "engflex-api/docs"
+	"engflex-api/internal/modules/attempts"
 	"engflex-api/internal/modules/conversations"
 	"engflex-api/internal/modules/lessons"
 	"engflex-api/internal/modules/scenarios"
@@ -29,7 +31,15 @@ import (
 // profiles.RegisterRoutes(v1, db), contents.RegisterRoutes(v1, db), ...
 func NewRouter(db *gorm.DB, cfg config.Config) *gin.Engine {
 	r := gin.New()
-	r.Use(middleware.RequestID(), middleware.RequestLogger(), middleware.Recovery())
+	// Recovery mounts outermost (gin.Default semantics): sentrygin captures
+	// the panic first and repanics into Recovery, which writes the
+	// {message} envelope. Mounted the other way round, Recovery would
+	// swallow the panic before sentrygin sees it and nothing is reported.
+	r.Use(
+		middleware.Recovery(),
+		sentrygin.New(sentrygin.Options{Repanic: true, WaitForDelivery: false}),
+		middleware.RequestID(), middleware.RequestLogger(),
+	)
 	// Trust X-Forwarded-For only from configured proxies so the IP-keyed
 	// limiter buckets by real client IP (sona parity). Empty
 	// RATE_LIMIT_TRUSTED_PROXIES trusts none: spoofed headers are ignored.
@@ -49,14 +59,12 @@ func NewRouter(db *gorm.DB, cfg config.Config) *gin.Engine {
 		}
 	}
 	r.Use(cors.New(cors.Config{
-		// Dev: allow all origins. For production, switch to
-		// AllowOrigins: cfg.Cors.AllowedOrigins (and re-enable
-		// AllowCredentials, which browsers reject with a wildcard).
-		AllowAllOrigins: true,
-		AllowMethods:    []string{"GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"},
-		AllowHeaders:    []string{"Origin", "Content-Type", "Accept", "Authorization"},
-		ExposeHeaders:   []string{"Content-Length"},
-		MaxAge:          12 * time.Hour,
+		AllowOrigins:     cfg.Cors.AllowedOrigins,
+		AllowCredentials: true,
+		AllowMethods:     []string{"GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
+		ExposeHeaders:    []string{"Content-Length"},
+		MaxAge:           12 * time.Hour,
 	}))
 
 	r.GET("/health", func(c *gin.Context) {
@@ -93,11 +101,13 @@ func NewRouter(db *gorm.DB, cfg config.Config) *gin.Engine {
 	})
 
 	v1 := r.Group("/api/v1")
-	// buildLimiter selects the Redis store when REDIS_URL is set (shared
-	// buckets across replicas) and falls back to the in-memory store
+	// buildLimiter declares a limiter only when the scope has a rate: an
+	// unset or empty RATE_LIMIT_* means "no limiter", never a hidden default.
+	// When a rate is set it selects the Redis store if REDIS_URL is present
+	// (shared buckets across replicas) and falls back to the in-memory store
 	// otherwise. Any failure degrades loudly but never blocks boot.
 	buildLimiter := func(kind, rate, prefix string) gin.HandlerFunc {
-		if !cfg.RateLimit.Enabled {
+		if strings.TrimSpace(rate) == "" {
 			return nil
 		}
 		if cfg.Redis.URL == "" {
@@ -143,6 +153,7 @@ func NewRouter(db *gorm.DB, cfg config.Config) *gin.Engine {
 	sessionLimiter := buildLimiter("session", cfg.RateLimit.SessionRate, "session")
 	conversations.RegisterRoutes(v1, db, cfg.Voice, sessionLimiter)
 	lessons.RegisterRoutes(v1, db, cfg.Voice, cfg.LLM, cfg.Media, sessionLimiter)
+	attempts.RegisterRoutes(v1, db)
 	scenarios.RegisterRoutes(v1, db)
 	videos.RegisterRoutes(v1, db)
 	vocabulary.RegisterRoutes(v1, db)

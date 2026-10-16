@@ -20,15 +20,14 @@ export interface Attempt {
   createdAt: string /* RFC3339 */;
 }
 /**
- * ProgressSummary is the dashboard rollup, composed later by services from
- * attempts (streak, minutes, voice metrics) and user_vocabulary (due count).
+ * Progress is the measurable-only dashboard rollup. Fluency, pronunciation,
+ * WPM and due-vocabulary are deliberately absent: no scoring source exists,
+ * and due-vocabulary waits on the vocabulary feature. They return when their
+ * sources do — never as fabricated numbers.
  */
-export interface ProgressSummary {
+export interface Progress {
   streakDays: number /* int */;
-  todayMinutes: number /* int */;
+  voiceMinutesToday: number /* int */;
   dailyGoalMinutes: number /* int */;
-  fluencyPct: number /* int */;
-  pronunciationPct: number /* int */;
-  wpm: number /* int */;
-  dueVocabulary: number /* int */;
+  lessonsCompleted: number /* int */;
 }

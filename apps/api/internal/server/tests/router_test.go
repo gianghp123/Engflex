@@ -65,7 +65,11 @@ func TestSwaggerRouting(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			r := server.NewRouter(nil, config.Config{})
+			// The CORS middleware rejects an empty allowlist at
+			// construction (gin-contrib/cors panics), so pass one
+			// origin here; these routes carry no CORS assertions.
+			cfg := config.Config{Cors: config.CorsConfig{AllowedOrigins: []string{"http://localhost:3000"}}}
+			r := server.NewRouter(nil, cfg)
 
 			w := httptest.NewRecorder()
 			r.ServeHTTP(w, httptest.NewRequest(http.MethodGet, tt.path, nil))
@@ -74,6 +78,41 @@ func TestSwaggerRouting(t *testing.T) {
 			if tt.wantTo != "" {
 				assert.Equal(t, tt.wantTo, w.Header().Get("Location"))
 			}
+		})
+	}
+}
+
+// TestCORSAllowedOrigins pins the production switch away from AllowAllOrigins:
+// only configured origins get an Access-Control-Allow-Origin header.
+func TestCORSAllowedOrigins(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	const configured = "http://engflex-web.192-168-1-50.sslip.io"
+
+	tests := []struct {
+		name       string
+		origin     string
+		wantHeader string
+	}{
+		{name: "configured origin is echoed", origin: configured, wantHeader: configured},
+		{name: "unconfigured origin is not allowed", origin: "http://evil.example", wantHeader: ""},
+		{name: "no origin header stays headerless", origin: "", wantHeader: ""},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cfg := config.Config{Cors: config.CorsConfig{AllowedOrigins: []string{configured}}}
+			r := server.NewRouter(nil, cfg)
+
+			req := httptest.NewRequest(http.MethodOptions, "/api/v1/lessons", nil)
+			if tt.origin != "" {
+				req.Header.Set("Origin", tt.origin)
+				req.Header.Set("Access-Control-Request-Method", http.MethodGet)
+			}
+			w := httptest.NewRecorder()
+			r.ServeHTTP(w, req)
+
+			assert.Equal(t, tt.wantHeader, w.Header().Get("Access-Control-Allow-Origin"))
 		})
 	}
 }

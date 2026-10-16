@@ -8,8 +8,8 @@
       "nextQuestion": "Câu tiếp theo"
     },
     "hub": {
-      "title": "Bài học điều hành",
-      "moBody": "15 đến 25 phút luyện nói, nghe và tranh luận kỹ thuật có chủ đích mỗi ngày.",
+      "title": "Bài học",
+      "moBody": "Mỗi ngày 15–25 phút luyện nói, nghe và tán gẫu tiếng Anh. Học ít mà chắc nhé!",
       "inFlight": "Đang học",
       "overall": "Tiến độ chung của phần",
       "resume": "Học tiếp {unit}",
@@ -29,7 +29,7 @@
       "coach": "Huấn luyện Mo",
       "steady": "Tốc độ ổn định",
       "calmTip": "Mẹo giữ bình tĩnh của Mo",
-      "calmQuote": "Hãy hít thở giữa các câu. Vội vàng không làm code deploy nhanh hơn.",
+      "calmQuote": "Cứ thở đều giữa các câu. Nói chậm mà rõ là ăn điểm nhất.",
       "startLesson": "Bắt đầu bài học (Phần {number}: {part})",
       "saved": "Đã lưu",
       "saveLater": "Lưu để học sau",

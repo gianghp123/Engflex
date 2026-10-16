@@ -1,0 +1,109 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "landing": {
+    "nav": {
+      "home": "Home",
+      "pricing": "Pricing",
+      "about": "About",
+      "signIn": "Sign in",
+      "getStarted": "Get started",
+      "pending": "Coming soon"
+    },
+    "hero": {
+      "eyebrow": "English, every day",
+      "title": "Learn English with a partner who answers.",
+      "badgeLessons": "lessons",
+      "badgeLevels": "A1 to C2",
+      "badgeQuestions": "questions",
+      "badgeExplained": "explained",
+      "cta": "Get started",
+      "ctaSecondary": "I already have an account",
+      "scared": "I'm scared to speak English.",
+      "reassure": "Not for long."
+    },
+    "path": {
+      "say": "Slow and steady. Start anywhere.",
+      "title": "Start where you are",
+      "body": "A1 to C2. Every lesson runs the same four steps: read it, hear it, write it, say it.",
+      "lessonsPerLevel": "3 lessons"
+    },
+    "practice": {
+      "title": "You can work through a lesson — or just talk.",
+      "body": "18 lessons from A1 to C2, four skills in every one. Or skip straight to 15 everyday roleplays with a partner who stays in character.",
+      "roleplayLabel": "Roleplay",
+      "roleplayMeta": "15 scenarios · seven topics · A1 to B1",
+      "roleplayCount": "{count} roleplays",
+      "lessonLabel": "In every lesson",
+      "lessonMeta": "18 lessons · four skills each · A1 to C2",
+      "moreComing": "More coming",
+      "skillsTitle": "Four skills in every lesson.",
+      "skillsBody": "18 lessons from A1 to C2, three at every level. Each one runs the same loop: read it, hear it, write it, say it.",
+      "gradingTitle": "Answers get checked.",
+      "gradingBody": "108 questions marked against answer keys, each with an explanation, plus writing scored against a model email.",
+      "pronunciationTitle": "Pronunciation, word by word.",
+      "pronunciationBody": "Read a sentence into the mic. An acoustic model marks each word and shows which sounds slipped.",
+      "roleplayCountOne": "1 roleplay"
+    },
+    "testimonials": {
+      "title": "What learners say",
+      "body": "Placeholder quotes — to be replaced with attributable ones before launch.",
+      "oneQuote": "I used to rehearse a sentence five times in my head before saying it. Now I just order the coffee.",
+      "oneName": "Linh N.",
+      "oneLevel": "Practice level A2",
+      "twoQuote": "The feedback tells me what a native would actually say, not just whether I was wrong.",
+      "twoName": "Trang P.",
+      "twoLevel": "Practice level B1",
+      "threeQuote": "Twenty minutes on the train each morning. That's the whole routine, and it sticks because it's short.",
+      "threeName": "Minh Đ.",
+      "threeLevel": "Practice level B2"
+    },
+    "closing": {
+      "body": "Start where you are — A1 to C2.",
+      "cta": "Get started",
+      "ctaSecondary": "I already have an account"
+    },
+    "footer": {
+      "blurb": "English practice for every level, from A1 to C2.",
+      "tagline": "Learn with Mo.",
+      "copyright": "© 2026 Engflex",
+      "practice": {
+        "label": "Practice",
+        "lessons": "Lessons",
+        "voice": "Voice roleplay",
+        "scenarios": "Scenario catalog",
+        "pronunciation": "Pronunciation drill"
+      },
+      "levels": {
+        "label": "Levels",
+        "a1": "A1 · Beginner",
+        "a2": "A2 · Elementary",
+        "b1": "B1 · Intermediate",
+        "b2": "B2 · Upper intermediate",
+        "c1": "C1 · Advanced",
+        "c2": "C2 · Proficient"
+      },
+      "account": {
+        "label": "Engflex",
+        "about": "About",
+        "pricing": "Pricing",
+        "signIn": "Sign in",
+        "signUp": "Create an account"
+      },
+      "help": {
+        "label": "Help",
+        "contact": "Contact",
+        "report": "Report a problem"
+      },
+      "legal": {
+        "label": "Legal",
+        "privacy": "Privacy",
+        "terms": "Terms",
+        "cookies": "Cookies"
+      }
+    },
+    "meta": {
+      "title": "Engflex — English practice for every level",
+      "description": "18 lessons from A1 to C2 with reading, listening, writing and speaking, 108 explained questions, and 15 everyday roleplays with a partner who answers."
+    }
+  }
+}

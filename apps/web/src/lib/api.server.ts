@@ -8,8 +8,16 @@ import "@tanstack/react-start/server-only";
 
 import { auth } from "@clerk/tanstack-react-start/server";
 import type { ApiResponse } from "@engflex/contracts";
-import { getRequestIP } from "@tanstack/react-start/server";
-import { API_URL, type ProxyRequest, type ProxyResult } from "./api-base.ts";
+import { getRequestHeaders } from "@tanstack/react-start/server";
+import { API_INTERNAL_URL_FALLBACK } from "#/app/api-routes";
+import type { ProxyRequest, ProxyResult } from "./api-base.ts";
+import { pickForwardedHeaders } from "./forward-headers.server.ts";
+
+// Server-side API base: internal plain-HTTP service address. The browser
+// never uses this (voice signaling goes same-origin, everything else rides
+// serverFn).
+const SERVER_API_URL =
+	process.env.API_INTERNAL_URL ?? API_INTERNAL_URL_FALLBACK;
 
 /**
  * Direct call to the API from the server. When the request asks for
@@ -32,19 +40,28 @@ export async function fetchApiServer(req: ProxyRequest): Promise<ProxyResult> {
 		const { getToken } = await auth();
 		token = await getToken();
 	}
-	// Socket peer by default. If a CDN/LB of your own fronts this server,
-	// switch to `getRequestIP({ xForwardedFor: true })` once that layer
-	// guarantees the header. The API only honors X-Forwarded-For from hosts
-	// in RATE_LIMIT_TRUSTED_PROXIES, so a spoofed header is inert.
-	const clientIP = getRequestIP();
+	// Forward every incoming header except framing (fetch recomputes it; a
+	// stale Content-Length breaks FormData with its new boundary). The API
+	// keys its limiter on CF-Connecting-IP with ClientIP fallback, so edge
+	// and proxy headers must arrive intact — filtering here would silently
+	// re-bucket clients. Content-Type keeps its existing rule (fetch sets
+	// the multipart boundary for FormData); the minted Bearer below wins
+	// over any forwarded Authorization.
 	const isForm = req.body instanceof FormData;
-	const res = await fetch(`${API_URL}${req.path}`, {
+	const headers: Record<string, string> = {
+		...pickForwardedHeaders(getRequestHeaders()),
+	};
+	if (isForm) {
+		delete headers["content-type"];
+	} else {
+		headers["Content-Type"] = "application/json";
+	}
+	if (token) {
+		headers.Authorization = `Bearer ${token}`;
+	}
+	const res = await fetch(`${SERVER_API_URL}${req.path}`, {
 		method: req.method,
-		headers: {
-			...(isForm ? {} : { "Content-Type": "application/json" }),
-			...(token ? { Authorization: `Bearer ${token}` } : {}),
-			...(clientIP ? { "X-Forwarded-For": clientIP } : {}),
-		},
+		headers,
 		body: req.body ?? undefined,
 	});
 	const text = await res.text();

@@ -1,8 +1,9 @@
 import type { Turn } from "@engflex/contracts";
-import { createFileRoute, notFound } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import { APP_ROUTES } from "#/app/app-route";
 import { useBreadcrumbs } from "#/app/breadcrumbs";
+import { InDevelopment } from "#/components/common/in-development";
 import { MO_VARIANTS, MoMascot } from "#/components/common/mo-mascot";
 import { Button } from "#/components/ui/button";
 import {
@@ -12,12 +13,9 @@ import {
 import { m } from "#/paraglide/messages";
 
 export const Route = createFileRoute("/_app/voice/preview")({
-	// DEV-only page: guard in beforeLoad so production renders the 404 page
-	// instead of escaping down the error-boundary path (render throws of
-	// notFound() are not intercepted as not-found navigations).
-	beforeLoad: () => {
-		if (!import.meta.env.DEV) throw notFound();
-	},
+	validateSearch: (search: Record<string, unknown>) => ({
+		view: search.view === "prod" ? ("prod" as const) : undefined,
+	}),
 	component: VoicePreviewPage,
 });
 
@@ -186,6 +184,15 @@ type Phase = "live" | "ended" | "loading" | "failed";
  * beforeLoad above.
  */
 function VoicePreviewPage() {
+	// ?view=prod forces the production face while running dev.
+	const { view } = Route.useSearch();
+	if (!import.meta.env.DEV || view === "prod") {
+		return (
+			<div className="flex min-h-0 flex-1 flex-col gap-4 p-4">
+				<InDevelopment />
+			</div>
+		);
+	}
 	return <PreviewRoom />;
 }
 
@@ -304,6 +311,11 @@ function PreviewRoom() {
 					turns: PREVIEW_TURNS,
 					correctionText: FIXTURE_CORRECTION_TEXT,
 					transcript: source,
+					scene: {
+						title: "Ordering coffee",
+						body: "Order a drink and a snack, ask the price, then pay.",
+					},
+					durationSec: 360,
 				}}
 			/>
 		</div>

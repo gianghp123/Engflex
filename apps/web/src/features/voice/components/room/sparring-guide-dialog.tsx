@@ -91,7 +91,7 @@ export function SparringGuideDialog({
 			<>
 				{before}
 				<span
-					className="border-primary/30 bg-primary/10 text-primary mx-0.5 inline-flex h-5 w-5 items-center justify-center rounded-md border align-text-bottom"
+					className="mx-0.5 inline-flex h-5 w-5 items-center justify-center rounded-md bg-secondary text-primary align-text-bottom"
 					aria-hidden="true"
 				>
 					<ActionIcon size={12} />
@@ -134,11 +134,11 @@ export function SparringGuideDialog({
 						) => (
 							<div
 								key={title}
-								className="shadow-xs flex flex-col justify-between rounded-xl border bg-card p-5"
+								className="surface-card flex flex-col justify-between p-5"
 							>
 								<div>
 									<div className="mb-3 flex items-center gap-2.5">
-										<div className="bg-primary/10 text-primary flex h-7 w-7 items-center justify-center rounded-lg font-bold text-xs">
+										<div className="tile bg-secondary text-primary text-xs font-bold">
 											{index + 1}
 										</div>
 										<h2 className="font-bold text-sm">{title}</h2>

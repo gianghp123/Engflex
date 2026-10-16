@@ -190,10 +190,13 @@ export const RelevanceNotApplicable: RelevanceStatus = "not_applicable";
  * ScenarioDifficulty is the scenario difficulty value (scenarios.cefr_level).
  * Separate from CEFR because "B1+" is a product half-step, not a CEFR level.
  */
+export const ScenarioDifficultyA1 = "A1";
+export const ScenarioDifficultyA2 = "A2";
+export const ScenarioDifficultyB1 = "B1";
 export const ScenarioDifficultyB1Plus = "B1+";
 export const ScenarioDifficultyB2 = "B2";
 export const ScenarioDifficultyC1 = "C1";
-export type ScenarioDifficulty = typeof ScenarioDifficultyB1Plus | typeof ScenarioDifficultyB2 | typeof ScenarioDifficultyC1;
+export type ScenarioDifficulty = typeof ScenarioDifficultyA1 | typeof ScenarioDifficultyA2 | typeof ScenarioDifficultyB1 | typeof ScenarioDifficultyB1Plus | typeof ScenarioDifficultyB2 | typeof ScenarioDifficultyC1;
 
 //////////
 // source: span_status.go

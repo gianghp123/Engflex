@@ -9,6 +9,7 @@ import (
 	"engflex-api/internal/common/enums"
 	"engflex-api/internal/database/models"
 	"engflex-api/internal/database/repositories"
+	"time"
 
 	mock "github.com/stretchr/testify/mock"
 	"gorm.io/gorm"
@@ -228,6 +229,80 @@ func (_c *MockConversationRepository_GetByID_Call) Return(conversation *models.C
 }
 
 func (_c *MockConversationRepository_GetByID_Call) RunAndReturn(run func(ctx context.Context, id string) (*models.Conversation, error)) *MockConversationRepository_GetByID_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// ListEndedDays provides a mock function for the type MockConversationRepository
+func (_mock *MockConversationRepository) ListEndedDays(ctx context.Context, userID string, since time.Time) ([]string, error) {
+	ret := _mock.Called(ctx, userID, since)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ListEndedDays")
+	}
+
+	var r0 []string
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, time.Time) ([]string, error)); ok {
+		return returnFunc(ctx, userID, since)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, time.Time) []string); ok {
+		r0 = returnFunc(ctx, userID, since)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]string)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, time.Time) error); ok {
+		r1 = returnFunc(ctx, userID, since)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockConversationRepository_ListEndedDays_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ListEndedDays'
+type MockConversationRepository_ListEndedDays_Call struct {
+	*mock.Call
+}
+
+// ListEndedDays is a helper method to define mock.On call
+//   - ctx context.Context
+//   - userID string
+//   - since time.Time
+func (_e *MockConversationRepository_Expecter) ListEndedDays(ctx any, userID any, since any) *MockConversationRepository_ListEndedDays_Call {
+	return &MockConversationRepository_ListEndedDays_Call{Call: _e.mock.On("ListEndedDays", ctx, userID, since)}
+}
+
+func (_c *MockConversationRepository_ListEndedDays_Call) Run(run func(ctx context.Context, userID string, since time.Time)) *MockConversationRepository_ListEndedDays_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 time.Time
+		if args[2] != nil {
+			arg2 = args[2].(time.Time)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockConversationRepository_ListEndedDays_Call) Return(strings []string, err error) *MockConversationRepository_ListEndedDays_Call {
+	_c.Call.Return(strings, err)
+	return _c
+}
+
+func (_c *MockConversationRepository_ListEndedDays_Call) RunAndReturn(run func(ctx context.Context, userID string, since time.Time) ([]string, error)) *MockConversationRepository_ListEndedDays_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -456,6 +531,78 @@ func (_c *MockConversationRepository_SetStatus_Call) Return(n int64, err error) 
 }
 
 func (_c *MockConversationRepository_SetStatus_Call) RunAndReturn(run func(ctx context.Context, id string, from enums.ConversationStatus, to enums.ConversationStatus) (int64, error)) *MockConversationRepository_SetStatus_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// SumDurationSince provides a mock function for the type MockConversationRepository
+func (_mock *MockConversationRepository) SumDurationSince(ctx context.Context, userID string, since time.Time) (int64, error) {
+	ret := _mock.Called(ctx, userID, since)
+
+	if len(ret) == 0 {
+		panic("no return value specified for SumDurationSince")
+	}
+
+	var r0 int64
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, time.Time) (int64, error)); ok {
+		return returnFunc(ctx, userID, since)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, time.Time) int64); ok {
+		r0 = returnFunc(ctx, userID, since)
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, time.Time) error); ok {
+		r1 = returnFunc(ctx, userID, since)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockConversationRepository_SumDurationSince_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'SumDurationSince'
+type MockConversationRepository_SumDurationSince_Call struct {
+	*mock.Call
+}
+
+// SumDurationSince is a helper method to define mock.On call
+//   - ctx context.Context
+//   - userID string
+//   - since time.Time
+func (_e *MockConversationRepository_Expecter) SumDurationSince(ctx any, userID any, since any) *MockConversationRepository_SumDurationSince_Call {
+	return &MockConversationRepository_SumDurationSince_Call{Call: _e.mock.On("SumDurationSince", ctx, userID, since)}
+}
+
+func (_c *MockConversationRepository_SumDurationSince_Call) Run(run func(ctx context.Context, userID string, since time.Time)) *MockConversationRepository_SumDurationSince_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 time.Time
+		if args[2] != nil {
+			arg2 = args[2].(time.Time)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockConversationRepository_SumDurationSince_Call) Return(n int64, err error) *MockConversationRepository_SumDurationSince_Call {
+	_c.Call.Return(n, err)
+	return _c
+}
+
+func (_c *MockConversationRepository_SumDurationSince_Call) RunAndReturn(run func(ctx context.Context, userID string, since time.Time) (int64, error)) *MockConversationRepository_SumDurationSince_Call {
 	_c.Call.Return(run)
 	return _c
 }

@@ -3,7 +3,9 @@ import { Mic } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { APP_ROUTES } from "#/app/app-route";
+import { CardShell } from "#/components/common/card-shell";
 import { SubmitButton } from "#/components/common/submit-button";
+import { Skeleton } from "#/components/ui/skeleton";
 import { VOICE_PARTNER_SCENARIO_IDS } from "#/features/dashboard/fixtures";
 import { useCreateConversation, useScenarios } from "#/features/voice/queries";
 import { m } from "#/paraglide/messages";
@@ -36,7 +38,23 @@ export function LiveVoicePartnerCard() {
 	}
 
 	return (
-		<div className="surface-card flex h-full flex-col gap-4 p-5">
+		<CardShell
+			pending={partnerScenarios.isPending}
+			className="flex h-full flex-col gap-4 p-5"
+			skeleton={
+				<>
+					<div className="flex flex-col gap-2">
+						<Skeleton className="h-5 w-2/3" />
+						<Skeleton className="h-4 w-full" />
+					</div>
+					<div className="flex flex-col gap-2">
+						<Skeleton className="h-12 w-full rounded-xl" />
+						<Skeleton className="h-12 w-full rounded-xl" />
+					</div>
+					<Skeleton className="mt-auto h-10 w-full rounded-lg" />
+				</>
+			}
+		>
 			<div className="flex items-start justify-between gap-3">
 				<div>
 					<h3 className="text-base font-bold text-foreground">
@@ -72,6 +90,6 @@ export function LiveVoicePartnerCard() {
 				<Mic data-icon="inline-start" />
 				{m["dashboard.voicePartner.start"]()}
 			</SubmitButton>
-		</div>
+		</CardShell>
 	);
 }

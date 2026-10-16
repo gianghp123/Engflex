@@ -25,7 +25,6 @@ import {
 	SidebarMenuButton,
 	SidebarMenuItem,
 } from "#/components/ui/sidebar";
-import { PROGRESS_SUMMARY } from "#/features/attempts/fixtures";
 import { profileStore } from "#/features/profiles/store";
 import { m } from "#/paraglide/messages";
 
@@ -43,7 +42,7 @@ const NAV_GROUPS = [
 				title: () => m["nav.item.home"](),
 				to: APP_ROUTES.HOME,
 				icon: House,
-				tile: "bg-[#6c4df0]",
+				tile: "bg-nav-home",
 			},
 			{
 				title: () => m["nav.item.videos"](),
@@ -55,13 +54,13 @@ const NAV_GROUPS = [
 				title: () => m["nav.item.lessons"](),
 				to: APP_ROUTES.LESSONS.LIST,
 				icon: BookOpen,
-				tile: "bg-[#ea580c]",
+				tile: "bg-nav-lessons",
 			},
 			{
 				title: () => m["nav.item.voice"](),
 				to: APP_ROUTES.VOICE.LIST,
 				icon: AudioWaveform,
-				tile: "bg-[#2563eb]",
+				tile: "bg-nav-voice",
 			},
 		],
 	},
@@ -72,7 +71,7 @@ const NAV_GROUPS = [
 				title: () => m["nav.item.vocabulary"](),
 				to: APP_ROUTES.VOCABULARY.LIST,
 				icon: BookmarkCheck,
-				tile: "bg-[#059669]",
+				tile: "bg-nav-vocab",
 			},
 		],
 	},
@@ -190,9 +189,6 @@ function SidebarUserCard() {
 			<div className="flex min-w-0 flex-col leading-tight group-data-[collapsible=icon]:hidden">
 				<span className="truncate text-[13px] font-bold text-card-foreground">
 					{name}
-				</span>
-				<span className="truncate text-[11px] font-medium text-muted-foreground">
-					{m["progress.streak"]({ count: PROGRESS_SUMMARY.streakDays })}
 				</span>
 			</div>
 			<Badge

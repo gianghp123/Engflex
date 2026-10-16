@@ -1,0 +1,31 @@
+# Copy to terraform.tfvars (gitignored) and fill in real values.
+# Generate URL-safe passwords: openssl rand -hex 24
+#coolify_token          = ""
+#server_uuid            = ""
+#git_repository         = "your-git-repo"
+#git_branch              = "main"
+#server_ip              = "192.168.1.50"
+#db_password            = ""
+#redis_password         = ""
+#minio_root_password    = ""
+#clerk_secret_key       = ""
+#clerk_publishable_key  = ""
+#llm_api_key            = ""
+#llm_base_url           = "https://api.groq.com/openai/v1"
+#llm_model              = ""
+#voice_internal_secret  = ""
+#stt_api_key     = ""
+#tts_api_key     = ""
+#voice_model     = ""
+#male_voice_id   = ""
+#female_voice_id = ""
+# Remote TURN relay (ExpressTurn free tier; shared demo creds work for pilot,
+# rotate to a private account when serious).
+#expressturn_username   = ""
+#expressturn_credential = ""
+#cors_extra_origins = [] # e.g. ["https://extra.example"]
+# Sentry provisioning (org must exist; the team is created by the module).
+# Auth token = Sentry internal-integration token (org-scoped, team/project write).
+#sentry_organization = "giang-pham-90"
+#sentry_team         = "engflex"
+#sentry_auth_token   = ""

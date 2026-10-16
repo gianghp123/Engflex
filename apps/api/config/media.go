@@ -1,35 +1,22 @@
 package config
 
-import (
-	"strings"
+import "strings"
 
-	"engflex-api/internal/utils"
-)
+// MediaConfig locates lesson media. URLs are same-origin relative paths
+// served by the web app's /api/media route (tunnel-safe); the browser
+// resolves them against the page origin, so no base URL is configured.
+type MediaConfig struct{}
 
-// MediaConfig locates the public lesson-media bucket (MinIO in dev). Audio
-// URLs are composed from BaseURL + object key, so prod can point a CDN at a
-// different base without touching code.
-type MediaConfig struct {
-	BaseURL string
-}
+// LoadMediaConfig takes no environment: object keys come from activity
+// configs and the bucket is public-read (seed sets anonymous download).
+func LoadMediaConfig() MediaConfig { return MediaConfig{} }
 
-// LoadMediaConfig reads MEDIA_BASE_URL; the default targets the compose MinIO.
-func LoadMediaConfig() MediaConfig {
-	return MediaConfig{
-		BaseURL: strings.TrimRight(utils.GetEnv("MEDIA_BASE_URL", "http://localhost:9000/lesson-audio"), "/"),
-	}
-}
-
-// URL joins the base URL and an object key without double slashes. An empty
-// key yields "" so DTO fields stay clean when a payload is absent.
+// URL maps an object key to the same-origin media route. An empty key
+// yields "" so DTO fields stay clean when a payload is absent.
 func (c MediaConfig) URL(key string) string {
 	key = strings.TrimLeft(strings.TrimSpace(key), "/")
 	if key == "" {
 		return ""
 	}
-	base := strings.TrimRight(c.BaseURL, "/")
-	if base == "" {
-		return key
-	}
-	return base + "/" + key
+	return "/api/media/" + key
 }

@@ -14,19 +14,19 @@
         },
         "intermediate": {
           "title": "Intermediate",
-          "description": "Fluent meeting participation & technical dialogues",
+          "description": "Everyday conversations & confident small talk",
           "hint": "AI benchmark recommendation"
         },
         "advanced": {
           "title": "Advanced",
-          "description": "Executive negotiation, nuance, and keynote delivery",
+          "description": "Nuance, humor, and smooth storytelling",
           "hint": "Cognitive pressure mode"
         }
       }
     },
     "goal": {
       "title": "What's your goal?",
-      "subtitle": "Targeted synthetic dialogues will be generated around high-stakes real work situations.",
+      "subtitle": "Lessons and chats shaped around the moments you care about.",
       "option": {
         "travel": "Travel",
         "work": "Work & Career",
@@ -37,7 +37,7 @@
     },
     "topics": {
       "title": "Pick topics you like",
-      "subtitle": "Choose 2 or more topics to fuel dynamic case studies and AI voice drill scenarios.",
+      "subtitle": "Pick 2+ topics to shape your lessons and speaking games.",
       "option": {
         "travel": "Travel",
         "business": "Business",
@@ -68,15 +68,15 @@
         },
         "c30": {
           "label": "Accelerated mastery",
-          "sub": "Executive depth"
+          "sub": "Deep dive"
         }
       },
       "recommended": "Recommended",
       "minutesUnit": "{count} min"
     },
     "diagnostic": {
-      "percentile": "You're in the top 18% of technical communicators entering Engflex",
-      "acceleration": "High potential trajectory detected! Based on your target goals and chosen topics, your speech fluency curve accelerates 2.4x faster in simulation mode.",
+      "percentile": "Great start — here is your speaking snapshot!",
+      "acceleration": "Big potential spotted! Stick with your goals and topics, and your fluency will take off in practice mode.",
       "chartLabel": "Engflex acoustic diagnostic hexagon",
       "baseline": "Optimal baseline unlocked",
       "latency": "Predicted conversational latency",

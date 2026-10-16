@@ -1,28 +1,12 @@
 import type { VariantProps } from "class-variance-authority";
 import { cn } from "cn";
-import { Loader2Icon } from "lucide-react";
 import type * as React from "react";
+import { Spinner } from "#/components/common/spinner";
 import { Button, type buttonVariants } from "#/components/ui/button";
 
 /** Icon-only sizes have no label, so the spinner takes the icon's place.
  *  Every other size uses the centered overlay (see `SubmitButton`). */
 const ICON_SIZE = /^icon(-|$)/;
-
-/** The house spinner (`audio-button`, `sonner`). No `size-*` class on
- *  purpose: `buttonVariants` already sizes bare svgs per size variant
- *  (`[&_svg:not([class*='size-'])]:size-4`, `size-3` on xs/icon-xs). An
- *  explicit className marks the centered-overlay use, which is not an
- *  inline-start icon. Always decorative: the button's own label (kept in
- *  flow, even when invisible) owns the accessible name. */
-function Spinner({ className }: { className?: string }) {
-	return (
-		<Loader2Icon
-			aria-hidden="true"
-			className={cn("animate-spin", className)}
-			data-icon={className ? undefined : "inline-start"}
-		/>
-	);
-}
 
 /**
  * `Button` with a pending state, for anything driven by a mutation.

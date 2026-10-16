@@ -35,7 +35,7 @@ services:
       - "${MINIO_PORT:-9000}:9000"
       # Console is on 9010, not 9001: the host already runs another MinIO
       # (training-ml-minio console on :9001). API :9000 is unchanged, so
-      # MINIO_ENDPOINT/MEDIA_BASE_URL are unaffected.
+      # MINIO_ENDPOINT is unaffected.
       - "${MINIO_CONSOLE_PORT:-9010}:9001"
     volumes:
       - engflex_minio_data:/data

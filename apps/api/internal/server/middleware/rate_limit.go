@@ -60,6 +60,19 @@ func limitReachedHandler(c *gin.Context) {
 	common.Fail(c, common.TooManyRequests("rate limit exceeded"))
 }
 
+// RateLimitKey keys the limiter on CF-Connecting-IP when present (tunnel-
+// authoritative: the Cloudflare edge overwrites it, so tunnel clients cannot
+// spoof each other's buckets), else gin ClientIP (LAN direct + M2M, parsed
+// under the trusted-proxy rules). Trimmed; empty falls back. Pre-lockdown
+// caveat: LAN-local clients can set the header (trusted network); after the
+// planned inbound lockdown (tunnel-only traffic) every value is edge-set.
+func RateLimitKey(c *gin.Context) string {
+	if v := strings.TrimSpace(c.GetHeader("CF-Connecting-IP")); v != "" {
+		return v
+	}
+	return c.ClientIP()
+}
+
 // NewRateLimitMiddleware builds an IP-keyed Gin rate limiter over any
 // limiter.Store. formattedRate is "<limit>-<period>" (S/M/H/D, e.g. "60-M").
 // Unlike sona-voice (which panics), invalid input returns an error so the
@@ -71,6 +84,7 @@ func NewRateLimitMiddleware(store limiter.Store, formattedRate string) (gin.Hand
 	}
 	return mgin.NewMiddleware(
 		limiter.New(store, rate),
+		mgin.WithKeyGetter(RateLimitKey),
 		mgin.WithErrorHandler(failOpenHandler),
 		mgin.WithLimitReachedHandler(limitReachedHandler),
 	), nil
@@ -98,6 +112,7 @@ func NewRedisRateLimitMiddleware(redisClient *redis.Client, prefix, formattedRat
 	}
 	return mgin.NewMiddleware(
 		limiter.New(store, rate),
+		mgin.WithKeyGetter(RateLimitKey),
 		mgin.WithErrorHandler(failOpenHandler),
 	), nil
 }
