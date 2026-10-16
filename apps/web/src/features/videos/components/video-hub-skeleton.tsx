@@ -3,8 +3,7 @@ import { m } from "#/paraglide/messages";
 
 export function VideoHubSkeleton() {
 	return (
-		<div
-			role="status"
+		<output
 			aria-label={m["videos.hub.loading"]()}
 			className="flex flex-col gap-8"
 		>
@@ -18,6 +17,6 @@ export function VideoHubSkeleton() {
 					</div>
 				</div>
 			))}
-		</div>
+		</output>
 	);
 }
