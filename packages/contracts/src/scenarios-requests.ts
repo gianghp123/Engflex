@@ -18,3 +18,91 @@ export interface ListScenarios extends ListParams {
  */
 export interface ListPersonas extends ListParams {
 }
+
+//////////
+// source: scenario_mutations.go
+
+/**
+ * ScenarioDetailInput mirrors models.ScenarioDetail field for field (Go
+ * names identical) so utils.Map copies it into the model without manual
+ * lines; only the JSON tags differ (camelCase wire vs the model's
+ * snake_case jsonb storage tags).
+ */
+export interface ScenarioDetailInput {
+  role: string;
+  interlocutorRole: string;
+  goalFormat: string;
+  context: string[];
+  opening: DetailOpeningInput;
+  vocab: string[];
+}
+export interface DetailOpeningInput {
+  label: string;
+  text: string;
+}
+/**
+ * CreateScenario adds an admin-curated roleplay card. Always starts as
+ * draft (service-enforced); Status is not accepted here.
+ */
+export interface CreateScenario {
+  topicId: string;
+  personaId?: string;
+  title: string;
+  objective: string;
+  cefrLevel: ScenarioDifficulty;
+  maxDuration: number /* int */;
+  details: ScenarioDetailInput;
+}
+/**
+ * UpdateScenario edits a scenario. Status only takes effect for the
+ * explicit publish/unpublish action (service-enforced, matching
+ * UpdateVocabularyItem/UpdateVideoExercise).
+ */
+export interface UpdateScenario {
+  topicId?: string;
+  personaId?: string;
+  title?: string;
+  objective?: string;
+  cefrLevel?: ScenarioDifficulty;
+  maxDuration?: number /* int */;
+  details?: ScenarioDetailInput;
+  status?: PublishStatus;
+}
+/**
+ * CreateScenarioTopic / UpdateScenarioTopic manage the fixed banner
+ * taxonomy. Full replace, like video categories — topics have no draft
+ * concept of their own.
+ */
+export interface CreateScenarioTopic {
+  slug: string;
+  name: string;
+  shortName: string;
+  position: number /* int */;
+}
+export interface UpdateScenarioTopic {
+  slug: string;
+  name: string;
+  shortName: string;
+  position: number /* int */;
+}
+/**
+ * CreatePersona / UpdatePersona manage AI conversation partners.
+ */
+export interface CreatePersona {
+  name: string;
+  roleTitle: string;
+  personality?: string;
+  style?: string;
+  objective?: string;
+  gender: Gender;
+  defaultCefr?: CEFR;
+}
+export interface UpdatePersona {
+  name: string;
+  roleTitle: string;
+  personality?: string;
+  style?: string;
+  objective?: string;
+  gender: Gender;
+  defaultCefr?: CEFR;
+}

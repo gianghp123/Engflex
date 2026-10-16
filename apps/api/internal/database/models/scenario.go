@@ -25,6 +25,7 @@ type Scenario struct {
 	CEFRLevel   enums.ScenarioDifficulty `gorm:"column:cefr_level;not null" json:"cefrLevel"`
 	MaxDuration int                      `gorm:"column:max_duration;not null" json:"maxDuration"`
 	Details     ScenarioDetail           `gorm:"type:jsonb;not null" json:"details"`
+	Status      enums.PublishStatus      `gorm:"not null;default:draft" json:"status"`
 	Topic       *ScenarioTopic           `json:"topic,omitempty"`
 	Persona     *Persona                 `json:"persona,omitempty"`
 	CreatedAt   time.Time                `gorm:"autoCreateTime" json:"createdAt"`

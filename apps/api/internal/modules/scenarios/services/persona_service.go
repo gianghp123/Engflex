@@ -59,3 +59,50 @@ func (s *PersonaService) GetByID(ctx context.Context, id string) (*models.Person
 	slog.InfoContext(ctx, "persona found", "personaID", m.ID)
 	return m, nil
 }
+
+// Create/Update/Delete manage AI conversation partners (admin-only,
+// route-gated). Personas have no draft concept — visible immediately.
+func (s *PersonaService) Create(ctx context.Context, req requests.CreatePersona) (*models.Persona, error) {
+	m := &models.Persona{}
+	if err := utils.Map(m, req); err != nil {
+		logger.Report(ctx, "map create persona failed", err)
+		return nil, common.Internal()
+	}
+	if err := s.personas.Create(ctx, m); err != nil {
+		appErr := common.FromDBError(err, "persona")
+		logger.Report(ctx, "create persona failed", appErr)
+		return nil, appErr
+	}
+	slog.InfoContext(ctx, "persona created", "personaID", m.ID)
+	return m, nil
+}
+
+func (s *PersonaService) Update(ctx context.Context, id string, req requests.UpdatePersona) (*models.Persona, error) {
+	m, err := s.personas.GetByID(ctx, id)
+	if err != nil {
+		appErr := common.FromDBError(err, "persona")
+		logger.Report(ctx, "get persona for update failed", appErr, "id", id)
+		return nil, appErr
+	}
+	if err := utils.Map(m, req); err != nil {
+		logger.Report(ctx, "map update persona failed", err, "id", id)
+		return nil, common.Internal()
+	}
+	if err := s.personas.Update(ctx, m); err != nil {
+		appErr := common.FromDBError(err, "persona")
+		logger.Report(ctx, "update persona failed", appErr, "id", id)
+		return nil, appErr
+	}
+	slog.InfoContext(ctx, "persona updated", "personaID", id)
+	return m, nil
+}
+
+func (s *PersonaService) Delete(ctx context.Context, id string) error {
+	if err := s.personas.Delete(ctx, id); err != nil {
+		appErr := common.FromDBError(err, "persona")
+		logger.Report(ctx, "delete persona failed", appErr, "id", id)
+		return appErr
+	}
+	slog.InfoContext(ctx, "persona deleted", "id", id)
+	return nil
+}

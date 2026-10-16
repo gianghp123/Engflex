@@ -50,8 +50,8 @@ func (_m *MockScenarioRepository) EXPECT() *MockScenarioRepository_Expecter {
 }
 
 // Count provides a mock function for the type MockScenarioRepository
-func (_mock *MockScenarioRepository) Count(ctx context.Context, topicID *string) (int64, error) {
-	ret := _mock.Called(ctx, topicID)
+func (_mock *MockScenarioRepository) Count(ctx context.Context, topicID *string, onlyPublished bool) (int64, error) {
+	ret := _mock.Called(ctx, topicID, onlyPublished)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Count")
@@ -59,16 +59,16 @@ func (_mock *MockScenarioRepository) Count(ctx context.Context, topicID *string)
 
 	var r0 int64
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, *string) (int64, error)); ok {
-		return returnFunc(ctx, topicID)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *string, bool) (int64, error)); ok {
+		return returnFunc(ctx, topicID, onlyPublished)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, *string) int64); ok {
-		r0 = returnFunc(ctx, topicID)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *string, bool) int64); ok {
+		r0 = returnFunc(ctx, topicID, onlyPublished)
 	} else {
 		r0 = ret.Get(0).(int64)
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, *string) error); ok {
-		r1 = returnFunc(ctx, topicID)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, *string, bool) error); ok {
+		r1 = returnFunc(ctx, topicID, onlyPublished)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -83,11 +83,12 @@ type MockScenarioRepository_Count_Call struct {
 // Count is a helper method to define mock.On call
 //   - ctx context.Context
 //   - topicID *string
-func (_e *MockScenarioRepository_Expecter) Count(ctx any, topicID any) *MockScenarioRepository_Count_Call {
-	return &MockScenarioRepository_Count_Call{Call: _e.mock.On("Count", ctx, topicID)}
+//   - onlyPublished bool
+func (_e *MockScenarioRepository_Expecter) Count(ctx any, topicID any, onlyPublished any) *MockScenarioRepository_Count_Call {
+	return &MockScenarioRepository_Count_Call{Call: _e.mock.On("Count", ctx, topicID, onlyPublished)}
 }
 
-func (_c *MockScenarioRepository_Count_Call) Run(run func(ctx context.Context, topicID *string)) *MockScenarioRepository_Count_Call {
+func (_c *MockScenarioRepository_Count_Call) Run(run func(ctx context.Context, topicID *string, onlyPublished bool)) *MockScenarioRepository_Count_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -97,9 +98,14 @@ func (_c *MockScenarioRepository_Count_Call) Run(run func(ctx context.Context, t
 		if args[1] != nil {
 			arg1 = args[1].(*string)
 		}
+		var arg2 bool
+		if args[2] != nil {
+			arg2 = args[2].(bool)
+		}
 		run(
 			arg0,
 			arg1,
+			arg2,
 		)
 	})
 	return _c
@@ -110,7 +116,121 @@ func (_c *MockScenarioRepository_Count_Call) Return(n int64, err error) *MockSce
 	return _c
 }
 
-func (_c *MockScenarioRepository_Count_Call) RunAndReturn(run func(ctx context.Context, topicID *string) (int64, error)) *MockScenarioRepository_Count_Call {
+func (_c *MockScenarioRepository_Count_Call) RunAndReturn(run func(ctx context.Context, topicID *string, onlyPublished bool) (int64, error)) *MockScenarioRepository_Count_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// Create provides a mock function for the type MockScenarioRepository
+func (_mock *MockScenarioRepository) Create(ctx context.Context, s *models.Scenario) error {
+	ret := _mock.Called(ctx, s)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Create")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *models.Scenario) error); ok {
+		r0 = returnFunc(ctx, s)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockScenarioRepository_Create_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Create'
+type MockScenarioRepository_Create_Call struct {
+	*mock.Call
+}
+
+// Create is a helper method to define mock.On call
+//   - ctx context.Context
+//   - s *models.Scenario
+func (_e *MockScenarioRepository_Expecter) Create(ctx any, s any) *MockScenarioRepository_Create_Call {
+	return &MockScenarioRepository_Create_Call{Call: _e.mock.On("Create", ctx, s)}
+}
+
+func (_c *MockScenarioRepository_Create_Call) Run(run func(ctx context.Context, s *models.Scenario)) *MockScenarioRepository_Create_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 *models.Scenario
+		if args[1] != nil {
+			arg1 = args[1].(*models.Scenario)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockScenarioRepository_Create_Call) Return(err error) *MockScenarioRepository_Create_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockScenarioRepository_Create_Call) RunAndReturn(run func(ctx context.Context, s *models.Scenario) error) *MockScenarioRepository_Create_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// Delete provides a mock function for the type MockScenarioRepository
+func (_mock *MockScenarioRepository) Delete(ctx context.Context, id string) error {
+	ret := _mock.Called(ctx, id)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Delete")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) error); ok {
+		r0 = returnFunc(ctx, id)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockScenarioRepository_Delete_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Delete'
+type MockScenarioRepository_Delete_Call struct {
+	*mock.Call
+}
+
+// Delete is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id string
+func (_e *MockScenarioRepository_Expecter) Delete(ctx any, id any) *MockScenarioRepository_Delete_Call {
+	return &MockScenarioRepository_Delete_Call{Call: _e.mock.On("Delete", ctx, id)}
+}
+
+func (_c *MockScenarioRepository_Delete_Call) Run(run func(ctx context.Context, id string)) *MockScenarioRepository_Delete_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockScenarioRepository_Delete_Call) Return(err error) *MockScenarioRepository_Delete_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockScenarioRepository_Delete_Call) RunAndReturn(run func(ctx context.Context, id string) error) *MockScenarioRepository_Delete_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -252,8 +372,8 @@ func (_c *MockScenarioRepository_GetDetail_Call) RunAndReturn(run func(ctx conte
 }
 
 // List provides a mock function for the type MockScenarioRepository
-func (_mock *MockScenarioRepository) List(ctx context.Context, topicID *string, limit int, offset int) ([]*models.Scenario, error) {
-	ret := _mock.Called(ctx, topicID, limit, offset)
+func (_mock *MockScenarioRepository) List(ctx context.Context, topicID *string, onlyPublished bool, limit int, offset int) ([]*models.Scenario, error) {
+	ret := _mock.Called(ctx, topicID, onlyPublished, limit, offset)
 
 	if len(ret) == 0 {
 		panic("no return value specified for List")
@@ -261,18 +381,18 @@ func (_mock *MockScenarioRepository) List(ctx context.Context, topicID *string, 
 
 	var r0 []*models.Scenario
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, *string, int, int) ([]*models.Scenario, error)); ok {
-		return returnFunc(ctx, topicID, limit, offset)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *string, bool, int, int) ([]*models.Scenario, error)); ok {
+		return returnFunc(ctx, topicID, onlyPublished, limit, offset)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, *string, int, int) []*models.Scenario); ok {
-		r0 = returnFunc(ctx, topicID, limit, offset)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *string, bool, int, int) []*models.Scenario); ok {
+		r0 = returnFunc(ctx, topicID, onlyPublished, limit, offset)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*models.Scenario)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, *string, int, int) error); ok {
-		r1 = returnFunc(ctx, topicID, limit, offset)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, *string, bool, int, int) error); ok {
+		r1 = returnFunc(ctx, topicID, onlyPublished, limit, offset)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -287,13 +407,14 @@ type MockScenarioRepository_List_Call struct {
 // List is a helper method to define mock.On call
 //   - ctx context.Context
 //   - topicID *string
+//   - onlyPublished bool
 //   - limit int
 //   - offset int
-func (_e *MockScenarioRepository_Expecter) List(ctx any, topicID any, limit any, offset any) *MockScenarioRepository_List_Call {
-	return &MockScenarioRepository_List_Call{Call: _e.mock.On("List", ctx, topicID, limit, offset)}
+func (_e *MockScenarioRepository_Expecter) List(ctx any, topicID any, onlyPublished any, limit any, offset any) *MockScenarioRepository_List_Call {
+	return &MockScenarioRepository_List_Call{Call: _e.mock.On("List", ctx, topicID, onlyPublished, limit, offset)}
 }
 
-func (_c *MockScenarioRepository_List_Call) Run(run func(ctx context.Context, topicID *string, limit int, offset int)) *MockScenarioRepository_List_Call {
+func (_c *MockScenarioRepository_List_Call) Run(run func(ctx context.Context, topicID *string, onlyPublished bool, limit int, offset int)) *MockScenarioRepository_List_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -303,19 +424,24 @@ func (_c *MockScenarioRepository_List_Call) Run(run func(ctx context.Context, to
 		if args[1] != nil {
 			arg1 = args[1].(*string)
 		}
-		var arg2 int
+		var arg2 bool
 		if args[2] != nil {
-			arg2 = args[2].(int)
+			arg2 = args[2].(bool)
 		}
 		var arg3 int
 		if args[3] != nil {
 			arg3 = args[3].(int)
+		}
+		var arg4 int
+		if args[4] != nil {
+			arg4 = args[4].(int)
 		}
 		run(
 			arg0,
 			arg1,
 			arg2,
 			arg3,
+			arg4,
 		)
 	})
 	return _c
@@ -326,7 +452,64 @@ func (_c *MockScenarioRepository_List_Call) Return(scenarios []*models.Scenario,
 	return _c
 }
 
-func (_c *MockScenarioRepository_List_Call) RunAndReturn(run func(ctx context.Context, topicID *string, limit int, offset int) ([]*models.Scenario, error)) *MockScenarioRepository_List_Call {
+func (_c *MockScenarioRepository_List_Call) RunAndReturn(run func(ctx context.Context, topicID *string, onlyPublished bool, limit int, offset int) ([]*models.Scenario, error)) *MockScenarioRepository_List_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// Update provides a mock function for the type MockScenarioRepository
+func (_mock *MockScenarioRepository) Update(ctx context.Context, s *models.Scenario) error {
+	ret := _mock.Called(ctx, s)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Update")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *models.Scenario) error); ok {
+		r0 = returnFunc(ctx, s)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockScenarioRepository_Update_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Update'
+type MockScenarioRepository_Update_Call struct {
+	*mock.Call
+}
+
+// Update is a helper method to define mock.On call
+//   - ctx context.Context
+//   - s *models.Scenario
+func (_e *MockScenarioRepository_Expecter) Update(ctx any, s any) *MockScenarioRepository_Update_Call {
+	return &MockScenarioRepository_Update_Call{Call: _e.mock.On("Update", ctx, s)}
+}
+
+func (_c *MockScenarioRepository_Update_Call) Run(run func(ctx context.Context, s *models.Scenario)) *MockScenarioRepository_Update_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 *models.Scenario
+		if args[1] != nil {
+			arg1 = args[1].(*models.Scenario)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockScenarioRepository_Update_Call) Return(err error) *MockScenarioRepository_Update_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockScenarioRepository_Update_Call) RunAndReturn(run func(ctx context.Context, s *models.Scenario) error) *MockScenarioRepository_Update_Call {
 	_c.Call.Return(run)
 	return _c
 }

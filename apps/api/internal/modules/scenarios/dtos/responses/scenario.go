@@ -15,6 +15,7 @@ type Scenario struct {
 	CEFRLevel   enums.ScenarioDifficulty `json:"cefrLevel"`
 	MaxDuration int                      `json:"maxDuration"`
 	Details     ScenarioDetail           `json:"details"`
+	Status      enums.PublishStatus      `json:"status"`
 }
 
 // ScenarioDetail mirrors models.ScenarioDetail field for field so copier

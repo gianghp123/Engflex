@@ -13,6 +13,9 @@ type PersonaRepository interface {
 	List(ctx context.Context, limit, offset int) ([]*models.Persona, error)
 	Count(ctx context.Context) (int64, error)
 	GetByID(ctx context.Context, id string) (*models.Persona, error)
+	Create(ctx context.Context, p *models.Persona) error
+	Update(ctx context.Context, p *models.Persona) error
+	Delete(ctx context.Context, id string) error
 	WithTx(tx *gorm.DB) PersonaRepository
 }
 
@@ -58,4 +61,33 @@ func (r *personaRepository) GetByID(ctx context.Context, id string) (*models.Per
 		return nil, err
 	}
 	return &m, nil
+}
+
+func (r *personaRepository) Create(ctx context.Context, p *models.Persona) error {
+	return r.db.WithContext(ctx).Create(p).Error
+}
+
+func (r *personaRepository) Update(ctx context.Context, p *models.Persona) error {
+	result := r.db.WithContext(ctx).Save(p)
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return gorm.ErrRecordNotFound
+	}
+	return nil
+}
+
+func (r *personaRepository) Delete(ctx context.Context, id string) error {
+	if _, err := parseID(id, "personaId"); err != nil {
+		return err
+	}
+	result := r.db.WithContext(ctx).Delete(&models.Persona{}, "id = ?", id)
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return gorm.ErrRecordNotFound
+	}
+	return nil
 }

@@ -20,6 +20,9 @@ type ScenarioTopicRepository interface {
 	GetByID(ctx context.Context, id string) (*models.ScenarioTopic, error)
 	GetBySlug(ctx context.Context, slug string) (*models.ScenarioTopic, error)
 	ListWithPreview(ctx context.Context, previewK int, difficulty *string, search string) ([]*models.ScenarioTopic, error)
+	Create(ctx context.Context, t *models.ScenarioTopic) error
+	Update(ctx context.Context, t *models.ScenarioTopic) error
+	Delete(ctx context.Context, id string) error
 	WithTx(tx *gorm.DB) ScenarioTopicRepository
 }
 
@@ -121,4 +124,33 @@ func (r *scenarioTopicRepository) ListWithPreview(ctx context.Context, previewK 
 		t.Scenarios = append(t.Scenarios, s)
 	}
 	return topics, nil
+}
+
+func (r *scenarioTopicRepository) Create(ctx context.Context, t *models.ScenarioTopic) error {
+	return r.db.WithContext(ctx).Create(t).Error
+}
+
+func (r *scenarioTopicRepository) Update(ctx context.Context, t *models.ScenarioTopic) error {
+	result := r.db.WithContext(ctx).Save(t)
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return gorm.ErrRecordNotFound
+	}
+	return nil
+}
+
+func (r *scenarioTopicRepository) Delete(ctx context.Context, id string) error {
+	if _, err := parseID(id, "topicId"); err != nil {
+		return err
+	}
+	result := r.db.WithContext(ctx).Delete(&models.ScenarioTopic{}, "id = ?", id)
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return gorm.ErrRecordNotFound
+	}
+	return nil
 }

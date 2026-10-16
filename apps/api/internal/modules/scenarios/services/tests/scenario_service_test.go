@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"engflex-api/internal/common"
+	"engflex-api/internal/common/enums"
 	"engflex-api/internal/database/models"
 	repomocks "engflex-api/internal/database/repositories/mocks"
 	"engflex-api/internal/modules/scenarios/dtos/requests"
@@ -42,8 +43,8 @@ func TestScenarioList(t *testing.T) {
 			name: "returns built-in scenarios",
 			req:  requests.ListScenarios{ListParams: common.ListParams{Page: 1, PageSize: 20}},
 			setup: func(repo *repomocks.MockScenarioRepository) {
-				repo.On("List", mock.Anything, (*string)(nil), 20, 0).Return([]*models.Scenario{{ID: "a"}}, nil).Once()
-				repo.On("Count", mock.Anything, (*string)(nil)).Return(int64(1), nil).Once()
+				repo.On("List", mock.Anything, (*string)(nil), true, 20, 0).Return([]*models.Scenario{{ID: "a"}}, nil).Once()
+				repo.On("Count", mock.Anything, (*string)(nil), true).Return(int64(1), nil).Once()
 			},
 			wantItems: 1,
 			wantTotal: 1,
@@ -55,8 +56,8 @@ func TestScenarioList(t *testing.T) {
 				TopicID:    &topicID,
 			},
 			setup: func(repo *repomocks.MockScenarioRepository) {
-				repo.On("List", mock.Anything, &topicID, 20, 0).Return([]*models.Scenario{}, nil).Once()
-				repo.On("Count", mock.Anything, &topicID).Return(int64(0), nil).Once()
+				repo.On("List", mock.Anything, &topicID, true, 20, 0).Return([]*models.Scenario{}, nil).Once()
+				repo.On("Count", mock.Anything, &topicID, true).Return(int64(0), nil).Once()
 			},
 			wantTotal: 0,
 		},
@@ -64,7 +65,7 @@ func TestScenarioList(t *testing.T) {
 			name: "list failure maps to 500",
 			req:  requests.ListScenarios{ListParams: common.ListParams{Page: 1, PageSize: 20}},
 			setup: func(repo *repomocks.MockScenarioRepository) {
-				repo.On("List", mock.Anything, (*string)(nil), 20, 0).Return(nil, boomErr{}).Once()
+				repo.On("List", mock.Anything, (*string)(nil), true, 20, 0).Return(nil, boomErr{}).Once()
 			},
 			wantErr: http.StatusInternalServerError,
 		},
@@ -76,7 +77,7 @@ func TestScenarioList(t *testing.T) {
 			tt.setup(repo)
 			svc := services.NewScenarioService(repo, repomocks.NewMockScenarioTopicRepository(t))
 
-			items, total, err := svc.List(context.Background(), tt.req)
+			items, total, err := svc.List(context.Background(), tt.req, false)
 
 			if tt.wantErr != 0 {
 				requireAppError(t, err, tt.wantErr)
@@ -87,6 +88,23 @@ func TestScenarioList(t *testing.T) {
 			assert.Equal(t, tt.wantTotal, total)
 		})
 	}
+}
+
+// Admin list forwards isAdmin through as onlyPublished=false, so drafts
+// from every scenario show up — the mock's exact-args expectation fails if
+// the service drops or hardcodes the flag along the way.
+func TestScenarioList_AdminSeesDrafts(t *testing.T) {
+	repo := repomocks.NewMockScenarioRepository(t)
+	repo.On("List", mock.Anything, (*string)(nil), false, 20, 0).
+		Return([]*models.Scenario{{ID: "a"}}, nil).Once()
+	repo.On("Count", mock.Anything, (*string)(nil), false).Return(int64(1), nil).Once()
+	svc := services.NewScenarioService(repo, repomocks.NewMockScenarioTopicRepository(t))
+
+	items, total, err := svc.List(context.Background(), requests.ListScenarios{ListParams: common.ListParams{Page: 1, PageSize: 20}}, true)
+
+	require.NoError(t, err)
+	assert.Len(t, items, 1)
+	assert.Equal(t, int64(1), total)
 }
 
 func TestScenarioTopicsPreview(t *testing.T) {
@@ -219,12 +237,12 @@ func TestScenarioGetByID(t *testing.T) {
 func TestScenarioGetDetail(t *testing.T) {
 	scenarioID := "3a8b3191-c8a3-5855-8e05-0a268cedac3e"
 	full := &models.Scenario{
-		ID: scenarioID, Title: "Sprint retrospective",
+		ID: scenarioID, Title: "Sprint retrospective", Status: enums.PublishStatusPublished,
 		Persona: &models.Persona{ID: "473d21cd-6a87-5e3a-b4eb-b9638b9d2bb2", Name: "Tom"},
 		Topic:   &models.ScenarioTopic{ID: "9735face-d870-5b51-ae3a-e18768a282fc", ShortName: "Architecture reviews"},
 	}
 	bare := &models.Scenario{
-		ID: scenarioID, Title: "Sprint retrospective",
+		ID: scenarioID, Title: "Sprint retrospective", Status: enums.PublishStatusPublished,
 		Topic: &models.ScenarioTopic{ID: "9735face-d870-5b51-ae3a-e18768a282fc", ShortName: "Architecture reviews"},
 	}
 	tests := []struct {
@@ -267,7 +285,7 @@ func TestScenarioGetDetail(t *testing.T) {
 			tt.setup(repo)
 			svc := services.NewScenarioService(repo, repomocks.NewMockScenarioTopicRepository(t))
 
-			got, err := svc.GetDetail(context.Background(), tt.id)
+			got, err := svc.GetDetail(context.Background(), tt.id, false)
 
 			if tt.wantErr != 0 {
 				requireAppError(t, err, tt.wantErr)
@@ -285,4 +303,85 @@ func TestScenarioGetDetail(t *testing.T) {
 			}
 		})
 	}
+}
+
+// A draft scenario is invisible to non-admins (404) but visible to admins —
+// same rule as vocabulary items/decks and video exercises.
+func TestScenarioGetDetail_DraftVisibility(t *testing.T) {
+	scenarioID := "3a8b3191-c8a3-5855-8e05-0a268cedac3e"
+	draft := &models.Scenario{ID: scenarioID, Status: enums.PublishStatusDraft}
+
+	t.Run("hidden from non-admin", func(t *testing.T) {
+		repo := repomocks.NewMockScenarioRepository(t)
+		repo.On("GetDetail", mock.Anything, scenarioID).Return(draft, nil).Once()
+		svc := services.NewScenarioService(repo, repomocks.NewMockScenarioTopicRepository(t))
+
+		got, err := svc.GetDetail(context.Background(), scenarioID, false)
+		requireAppError(t, err, http.StatusNotFound)
+		assert.Nil(t, got)
+	})
+
+	t.Run("visible to admin", func(t *testing.T) {
+		repo := repomocks.NewMockScenarioRepository(t)
+		repo.On("GetDetail", mock.Anything, scenarioID).Return(draft, nil).Once()
+		svc := services.NewScenarioService(repo, repomocks.NewMockScenarioTopicRepository(t))
+
+		got, err := svc.GetDetail(context.Background(), scenarioID, true)
+		require.NoError(t, err)
+		require.NotNil(t, got)
+	})
+}
+
+// Create maps the nested Details document (ScenarioDetailInput ->
+// ScenarioDetail) field by field despite the two types having different
+// names — copier matches by Go field name, recursing into nested structs
+// the same way regardless of the named type. Also pins: Create always
+// starts a scenario as draft.
+func TestScenarioCreate_MapsDetailsAndStartsDraft(t *testing.T) {
+	repo := repomocks.NewMockScenarioRepository(t)
+	repo.On("Create", mock.Anything, mock.MatchedBy(func(m *models.Scenario) bool {
+		return m.Status == enums.PublishStatusDraft &&
+			m.Details.Role == "interviewer" &&
+			m.Details.InterlocutorRole == "candidate" &&
+			m.Details.GoalFormat == "pass" &&
+			assert.ObjectsAreEqual([]string{"a", "b"}, m.Details.Context) &&
+			m.Details.Opening.Label == "Hi" &&
+			m.Details.Opening.Text == "Hello there" &&
+			assert.ObjectsAreEqual([]string{"x", "y"}, m.Details.Vocab)
+	})).Return(nil).Once()
+	svc := services.NewScenarioService(repo, repomocks.NewMockScenarioTopicRepository(t))
+
+	_, err := svc.Create(context.Background(), requests.CreateScenario{
+		TopicID:     "11111111-1111-1111-1111-111111111111",
+		Title:       "Test",
+		CEFRLevel:   "B2",
+		MaxDuration: 10,
+		Details: requests.ScenarioDetailInput{
+			Role:             "interviewer",
+			InterlocutorRole: "candidate",
+			GoalFormat:       "pass",
+			Context:          []string{"a", "b"},
+			Opening:          requests.DetailOpeningInput{Label: "Hi", Text: "Hello there"},
+			Vocab:            []string{"x", "y"},
+		},
+	})
+
+	require.NoError(t, err)
+}
+
+// Update only touches Status when the request explicitly sets it.
+func TestScenarioUpdate_PublishesOnExplicitStatus(t *testing.T) {
+	scenarioID := "3a8b3191-c8a3-5855-8e05-0a268cedac3e"
+	repo := repomocks.NewMockScenarioRepository(t)
+	repo.On("GetByID", mock.Anything, scenarioID).
+		Return(&models.Scenario{ID: scenarioID, Status: enums.PublishStatusDraft}, nil).Once()
+	repo.On("Update", mock.Anything, mock.MatchedBy(func(m *models.Scenario) bool {
+		return m.Status == enums.PublishStatusPublished
+	})).Return(nil).Once()
+	svc := services.NewScenarioService(repo, repomocks.NewMockScenarioTopicRepository(t))
+
+	published := enums.PublishStatusPublished
+	_, err := svc.Update(context.Background(), scenarioID, requests.UpdateScenario{Status: &published})
+
+	require.NoError(t, err)
 }

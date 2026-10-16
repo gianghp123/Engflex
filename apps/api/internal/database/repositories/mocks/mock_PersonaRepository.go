@@ -109,6 +109,120 @@ func (_c *MockPersonaRepository_Count_Call) RunAndReturn(run func(ctx context.Co
 	return _c
 }
 
+// Create provides a mock function for the type MockPersonaRepository
+func (_mock *MockPersonaRepository) Create(ctx context.Context, p *models.Persona) error {
+	ret := _mock.Called(ctx, p)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Create")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *models.Persona) error); ok {
+		r0 = returnFunc(ctx, p)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockPersonaRepository_Create_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Create'
+type MockPersonaRepository_Create_Call struct {
+	*mock.Call
+}
+
+// Create is a helper method to define mock.On call
+//   - ctx context.Context
+//   - p *models.Persona
+func (_e *MockPersonaRepository_Expecter) Create(ctx any, p any) *MockPersonaRepository_Create_Call {
+	return &MockPersonaRepository_Create_Call{Call: _e.mock.On("Create", ctx, p)}
+}
+
+func (_c *MockPersonaRepository_Create_Call) Run(run func(ctx context.Context, p *models.Persona)) *MockPersonaRepository_Create_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 *models.Persona
+		if args[1] != nil {
+			arg1 = args[1].(*models.Persona)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockPersonaRepository_Create_Call) Return(err error) *MockPersonaRepository_Create_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockPersonaRepository_Create_Call) RunAndReturn(run func(ctx context.Context, p *models.Persona) error) *MockPersonaRepository_Create_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// Delete provides a mock function for the type MockPersonaRepository
+func (_mock *MockPersonaRepository) Delete(ctx context.Context, id string) error {
+	ret := _mock.Called(ctx, id)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Delete")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) error); ok {
+		r0 = returnFunc(ctx, id)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockPersonaRepository_Delete_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Delete'
+type MockPersonaRepository_Delete_Call struct {
+	*mock.Call
+}
+
+// Delete is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id string
+func (_e *MockPersonaRepository_Expecter) Delete(ctx any, id any) *MockPersonaRepository_Delete_Call {
+	return &MockPersonaRepository_Delete_Call{Call: _e.mock.On("Delete", ctx, id)}
+}
+
+func (_c *MockPersonaRepository_Delete_Call) Run(run func(ctx context.Context, id string)) *MockPersonaRepository_Delete_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockPersonaRepository_Delete_Call) Return(err error) *MockPersonaRepository_Delete_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockPersonaRepository_Delete_Call) RunAndReturn(run func(ctx context.Context, id string) error) *MockPersonaRepository_Delete_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetByID provides a mock function for the type MockPersonaRepository
 func (_mock *MockPersonaRepository) GetByID(ctx context.Context, id string) (*models.Persona, error) {
 	ret := _mock.Called(ctx, id)
@@ -247,6 +361,63 @@ func (_c *MockPersonaRepository_List_Call) Return(personas []*models.Persona, er
 }
 
 func (_c *MockPersonaRepository_List_Call) RunAndReturn(run func(ctx context.Context, limit int, offset int) ([]*models.Persona, error)) *MockPersonaRepository_List_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// Update provides a mock function for the type MockPersonaRepository
+func (_mock *MockPersonaRepository) Update(ctx context.Context, p *models.Persona) error {
+	ret := _mock.Called(ctx, p)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Update")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *models.Persona) error); ok {
+		r0 = returnFunc(ctx, p)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockPersonaRepository_Update_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Update'
+type MockPersonaRepository_Update_Call struct {
+	*mock.Call
+}
+
+// Update is a helper method to define mock.On call
+//   - ctx context.Context
+//   - p *models.Persona
+func (_e *MockPersonaRepository_Expecter) Update(ctx any, p any) *MockPersonaRepository_Update_Call {
+	return &MockPersonaRepository_Update_Call{Call: _e.mock.On("Update", ctx, p)}
+}
+
+func (_c *MockPersonaRepository_Update_Call) Run(run func(ctx context.Context, p *models.Persona)) *MockPersonaRepository_Update_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 *models.Persona
+		if args[1] != nil {
+			arg1 = args[1].(*models.Persona)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockPersonaRepository_Update_Call) Return(err error) *MockPersonaRepository_Update_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockPersonaRepository_Update_Call) RunAndReturn(run func(ctx context.Context, p *models.Persona) error) *MockPersonaRepository_Update_Call {
 	_c.Call.Return(run)
 	return _c
 }
