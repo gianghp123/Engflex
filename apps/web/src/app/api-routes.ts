@@ -22,6 +22,26 @@ export const API_ROUTES = {
 		LIST: "/vocabulary",
 		BY_ID: (id: ApiId) => `/vocabulary/${id}`,
 	},
+	VOCABULARY_ITEMS: {
+		LIST: "/vocabulary-items",
+		BY_ID: (id: ApiId) => `/vocabulary-items/${id}`,
+	},
+	VOCABULARY_DECKS: {
+		LIST: "/vocabulary-decks",
+		BY_ID: (id: ApiId) => `/vocabulary-decks/${id}`,
+	},
+	VOCABULARY_DECK_ITEMS: {
+		LIST: "/vocabulary-deck-items",
+		BY_ID: (id: ApiId) => `/vocabulary-deck-items/${id}`,
+	},
+	VOCABULARY_CATEGORIES: {
+		LIST: "/vocabulary-categories",
+		BY_ID: (id: ApiId) => `/vocabulary-categories/${id}`,
+	},
+	ADMIN: {
+		VOCABULARY_DECKS: "/admin/vocabulary-decks",
+		VOCABULARY_ITEMS: "/admin/vocabulary-items",
+	},
 	PERSONAS: {
 		LIST: "/personas",
 		BY_ID: (id: ApiId) => `/personas/${id}`,
