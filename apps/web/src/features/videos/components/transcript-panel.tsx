@@ -1,6 +1,6 @@
 import type { VideoTranscriptResponse } from "@engflex/contracts";
 import { cn } from "cn";
-import { SquarePen, TriangleAlert } from "lucide-react";
+import { SquarePen } from "lucide-react";
 import type { ReactNode } from "react";
 import { Button } from "#/components/ui/button";
 import { ScrollArea } from "#/components/ui/scroll-area";
@@ -22,20 +22,16 @@ export function TranscriptPanel({
 	actions,
 	onSelect,
 	onEdit,
-	onReport,
 }: {
 	transcripts: VideoTranscriptResponse[];
 	activeIndex: number;
-	/** 0–100. */
 	progress: number;
 	masked?: boolean;
 	showPhonetic?: boolean;
 	showTranslation?: boolean;
-	/** Header slot between the title and the progress chip. */
 	actions?: ReactNode;
 	onSelect?: (index: number) => void;
 	onEdit?: (index: number) => void;
-	onReport?: (index: number) => void;
 }) {
 	const value = Math.round(progress);
 	return (
@@ -102,17 +98,6 @@ export function TranscriptPanel({
 											onClick={() => onEdit?.(index)}
 										>
 											<SquarePen />
-										</Button>
-										<Button
-											type="button"
-											variant="ghost"
-											size="icon"
-											className="size-8"
-											aria-label={`${m["videos.practice.transcript.report"]()} — ${itemLabel}`}
-											title={m["videos.practice.transcript.report"]()}
-											onClick={() => onReport?.(index)}
-										>
-											<TriangleAlert />
 										</Button>
 									</div>
 								</div>

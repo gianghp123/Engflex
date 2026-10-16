@@ -9,11 +9,26 @@ export function VideoStage({
 	video,
 	onPlay,
 	className,
+	children,
 }: {
 	video: Video;
 	onPlay?: () => void;
 	className?: string;
+	children?: React.ReactNode;
 }) {
+	if (children) {
+		return (
+			<div
+				className={cn(
+					"relative aspect-video overflow-hidden rounded-xl border-2 border-primary bg-muted shadow-[0_4px_0_var(--border)]",
+					className,
+				)}
+			>
+				{children}
+			</div>
+		);
+	}
+
 	return (
 		<div
 			className={cn(

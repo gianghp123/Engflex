@@ -56,18 +56,32 @@
         "normal": "Vừa",
         "hard": "Khó"
       },
-      "answer": {
-        "label": "Gõ những gì bạn nghe được:",
-        "placeholder": "Gõ câu trả lời của bạn ở đây...",
-        "mic": "Nhập bằng giọng nói"
-      },
       "hints": {
         "reveal": "Hiện từ {index}",
         "hide": "Ẩn từ {index}",
         "note": "Các từ được tiết lộ sẽ bị tính là lỗi và ảnh hưởng đến điểm số của bạn.",
         "revealAll": "Hiện tất cả từ"
       },
-      "next": "Tiếp theo"
+      "next": "Tiếp theo",
+      "summary": {
+        "title": "Phiên học hoàn thành",
+        "body": "Bạn đã hoàn thành tất cả các câu trong video này.",
+        "accuracy": "Độ chính xác: {percent}%",
+        "correctWords": "Từ đúng: {count}",
+        "incorrectWords": "Từ sai: {count}",
+        "restart": "Luyện tập lại",
+        "backToHub": "Về thư viện video"
+      },
+      "empty": {
+        "title": "Chưa có bản chép lời",
+        "body": "Video này chưa có phụ đề để luyện tập dictation.",
+        "back": "Quay lại thư viện"
+      },
+      "input": {
+        "hint": "Gõ từng từ và nhấn phím Space để kiểm tra",
+        "sentenceDone": "Hoàn thành câu! Nhấn Enter hoặc 'Tiếp theo' để tiếp tục.",
+        "accuracy": "Đúng {correct}/{total} từ"
+      }
     },
     "practice": {
       "video": {
@@ -86,8 +100,7 @@
         "title": "Bản chép",
         "progress": "{value}%",
         "item": "Câu {index}",
-        "edit": "Sửa câu",
-        "report": "Báo lỗi"
+        "edit": "Sửa câu"
       }
     },
     "shadowing": {

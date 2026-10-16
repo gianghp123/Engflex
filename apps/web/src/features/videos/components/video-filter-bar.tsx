@@ -1,5 +1,5 @@
 import type { CEFR } from "@engflex/contracts";
-import { Filter, GraduationCap, Search, Sparkles } from "lucide-react";
+import { Filter, GraduationCap, Search } from "lucide-react";
 import { Input } from "#/components/ui/input";
 import {
 	Select,
@@ -20,7 +20,6 @@ export const DEFAULT_VIDEO_FILTERS: VideoFilters = {
 	level: "all",
 };
 
-/** CEFR codes are shown as-is in both locales. */
 const LEVELS: CEFR[] = ["A1", "A2", "B1", "B2", "C1", "C2"];
 
 export function VideoFilterBar({
@@ -71,7 +70,6 @@ export function VideoFilterBar({
 					</SelectTrigger>
 					<SelectContent>
 						<SelectItem value="all">
-							<Sparkles aria-hidden="true" />
 							{m["videos.category.filter.levelAll"]()}
 						</SelectItem>
 						{LEVELS.map((level) => (

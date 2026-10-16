@@ -4,8 +4,6 @@ import { Clock3, Eye, EyeOff, Mic, MonitorPlay } from "lucide-react";
 import { useState } from "react";
 import { APP_ROUTES } from "#/app/app-route";
 import { type CrumbItem, useBreadcrumbs } from "#/app/breadcrumbs";
-import { CefrBadge } from "#/components/common/cefr-badge";
-import { MoMascot } from "#/components/common/mo-mascot";
 import { PageLayout } from "#/components/common/page-layout";
 import { Button } from "#/components/ui/button";
 import { Toggle } from "#/components/ui/toggle";
@@ -14,14 +12,14 @@ import { ShadowingPanel } from "#/features/videos/components/shadowing/shadowing
 import { TranscriptPanel } from "#/features/videos/components/transcript-panel";
 import { pairWords } from "#/features/videos/dictation";
 import { formatDuration } from "#/features/videos/format";
-import { m } from "#/paraglide/messages";
 import { videoDetailQueryOptions } from "#/features/videos/queries";
+import { m } from "#/paraglide/messages";
 
 export const Route = createFileRoute("/_app/videos/$videoId/shadowing")({
-	loader: async ({context: {queryClient} ,params: { videoId } }) => {
+	loader: async ({ context: { queryClient }, params: { videoId } }) => {
 		try {
-			return await queryClient.query(videoDetailQueryOptions(videoId))
-		} catch (error) {
+			return await queryClient.query(videoDetailQueryOptions(videoId));
+		} catch {
 			throw notFound();
 		}
 	},
@@ -40,7 +38,7 @@ const LINE_TOGGLE =
 
 function ShadowingPage() {
 	const video = Route.useLoaderData();
-	const transcripts = video.transcripts ?? [];
+	const transcripts = video?.transcripts ?? [];
 
 	const [view, setView] = useState<View>("practice");
 	const [showTranscript, setShowTranscript] = useState(true);
@@ -52,10 +50,20 @@ function ShadowingPage() {
 
 	const crumbs: CrumbItem[] = [
 		{ label: m["nav.item.videos"](), to: APP_ROUTES.VIDEOS.LIST },
-		...(video.category ? [{ label: video.category.name }] : []),
-		{ label: video.title },
+		...(video?.category
+			? [
+					{
+						label: video.category.name,
+						to: APP_ROUTES.VIDEOS.CATEGORY,
+						params: { categorySlug: video.category.slug },
+					},
+				]
+			: []),
+		{ label: video?.title ?? "" },
 	];
 	useBreadcrumbs(crumbs);
+
+	if (!video) return null;
 
 	const line = transcripts[activeIndex];
 	const words = line ? pairWords(line.content, line.phonetic) : [];
@@ -65,13 +73,7 @@ function ShadowingPage() {
 	return (
 		<PageLayout>
 			<div className="flex flex-wrap items-center justify-end gap-3">
-				{video.cefrLevel ? (
-					<span className="chip mr-auto px-3 py-1">
-						<CefrBadge value={video.cefrLevel} />
-					</span>
-				) : null}
 				<span className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
-					<MoMascot variant="headphones" size={28} />
 					<Clock3 aria-hidden="true" className="size-4" />
 					<span aria-hidden="true">{time}</span>
 					<span className="sr-only">

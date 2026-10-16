@@ -1,7 +1,6 @@
 import { cn } from "cn";
-import { ChevronLeft, ChevronRight, Mic, Play, RotateCw } from "lucide-react";
+import { ChevronLeft, ChevronRight, Play, RotateCw } from "lucide-react";
 import { Button } from "#/components/ui/button";
-import { Textarea } from "#/components/ui/textarea";
 import { ToggleGroup, ToggleGroupItem } from "#/components/ui/toggle-group";
 import {
 	PlayerTools,
@@ -12,6 +11,7 @@ import {
 	type DictationLevel,
 } from "#/features/videos/dictation";
 import { m } from "#/paraglide/messages";
+import { DictationWordInput, type WordSlotState } from "./dictation-word-input";
 import { WordHints } from "./word-hints";
 
 const LEVEL_LABEL: Record<DictationLevel, () => string> = {
@@ -27,10 +27,17 @@ export function DictationPanel({
 	speed,
 	words,
 	revealed,
+	wordStates,
+	activeWordIndex,
+	currentInput,
+	isCompleted,
+	onInputChange,
+	onWordSubmit,
+	onWordBackspace,
+	onEnterPress,
+	onResetSentence,
 	onReveal,
 	onRevealAll,
-	answer,
-	onAnswerChange,
 	onNext,
 	onPrev,
 	onReplaySentence,
@@ -39,17 +46,23 @@ export function DictationPanel({
 	onSpeed,
 	onSettings,
 	onShortcuts,
-	onMic,
 }: {
 	level: DictationLevel;
 	onLevelChange: (level: DictationLevel) => void;
 	speed: number;
 	words: string[];
 	revealed: number[];
+	wordStates: WordSlotState[];
+	activeWordIndex: number;
+	currentInput: string;
+	isCompleted: boolean;
+	onInputChange: (val: string) => void;
+	onWordSubmit: (word: string) => void;
+	onWordBackspace: () => void;
+	onEnterPress?: () => void;
+	onResetSentence?: () => void;
 	onReveal?: (index: number) => void;
 	onRevealAll?: () => void;
-	answer: string;
-	onAnswerChange: (value: string) => void;
 	onNext?: () => void;
 	onPrev?: () => void;
 	onReplaySentence?: () => void;
@@ -58,7 +71,6 @@ export function DictationPanel({
 	onSpeed?: () => void;
 	onSettings?: () => void;
 	onShortcuts?: () => void;
-	onMic?: () => void;
 }) {
 	return (
 		<section className="surface-card flex flex-col gap-3 p-3">
@@ -115,33 +127,19 @@ export function DictationPanel({
 				/>
 			</div>
 
-			<div className="relative">
-				<label
-					htmlFor="dictation-answer"
-					className="absolute top-3 left-4 text-xs font-extrabold tracking-wide text-muted-foreground uppercase"
-				>
-					{m["videos.dictation.answer.label"]()}
-				</label>
-				<Textarea
-					id="dictation-answer"
-					value={answer}
-					onChange={(event) => onAnswerChange(event.target.value)}
-					placeholder={m["videos.dictation.answer.placeholder"]()}
-					rows={5}
-					className="field min-h-40 pt-9 pb-14 text-[15px]"
-				/>
-				<Button
-					type="button"
-					variant="outline"
-					size="icon"
-					onClick={onMic}
-					aria-label={m["videos.dictation.answer.mic"]()}
-					title={m["videos.dictation.answer.mic"]()}
-					className="absolute right-3 bottom-3 rounded-full shadow-[0_3px_0_var(--border)]"
-				>
-					<Mic />
-				</Button>
-			</div>
+			<DictationWordInput
+				words={words}
+				level={level}
+				wordStates={wordStates}
+				activeWordIndex={activeWordIndex}
+				currentInput={currentInput}
+				isCompleted={isCompleted}
+				onInputChange={onInputChange}
+				onWordSubmit={onWordSubmit}
+				onWordBackspace={onWordBackspace}
+				onEnterPress={onEnterPress}
+				onResetSentence={onResetSentence}
+			/>
 
 			<WordHints words={words} revealed={revealed} onReveal={onReveal} />
 			<p className="text-xs text-muted-foreground">

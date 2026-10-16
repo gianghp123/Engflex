@@ -56,18 +56,32 @@
         "normal": "Normal",
         "hard": "Hard"
       },
-      "answer": {
-        "label": "Type what you hear:",
-        "placeholder": "Type your answer here...",
-        "mic": "Answer by voice"
-      },
       "hints": {
         "reveal": "Reveal word {index}",
         "hide": "Hide word {index}",
         "note": "Revealed words count as mistakes and lower your score.",
         "revealAll": "Reveal all words"
       },
-      "next": "Next"
+      "next": "Next",
+      "summary": {
+        "title": "Session Completed",
+        "body": "You have completed all sentences in this video.",
+        "accuracy": "Accuracy: {percent}%",
+        "correctWords": "Correct words: {count}",
+        "incorrectWords": "Incorrect words: {count}",
+        "restart": "Practice Again",
+        "backToHub": "Back to Videos"
+      },
+      "empty": {
+        "title": "No Transcript Available",
+        "body": "This video does not have subtitles available for dictation practice.",
+        "back": "Back to Videos"
+      },
+      "input": {
+        "hint": "Type each word and press Space to check",
+        "sentenceDone": "Sentence completed! Press Enter or 'Next' to continue.",
+        "accuracy": "{correct}/{total} words correct"
+      }
     },
     "practice": {
       "video": {
@@ -86,8 +100,7 @@
         "title": "Transcript",
         "progress": "{value}%",
         "item": "Sentence {index}",
-        "edit": "Edit sentence",
-        "report": "Report a problem"
+        "edit": "Edit sentence"
       }
     },
     "shadowing": {

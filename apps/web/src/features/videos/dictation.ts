@@ -25,3 +25,27 @@ export function pairWords(
 		ipa: ipa[index],
 	}));
 }
+
+export function extractYouTubeId(url?: string): string | null {
+	if (!url) return null;
+	const match = url.match(
+		/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/,
+	);
+	return match ? match[1] : null;
+}
+
+export function cleanWordForComparison(word: string): string {
+	return word.toLowerCase().replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, "");
+}
+
+export function getWordHint(word: string, level: DictationLevel): string {
+	const clean = cleanWordForComparison(word);
+	if (level === "easy") {
+		if (clean.length <= 1) return clean;
+		return `${clean[0]}${"*".repeat(clean.length - 1)}`;
+	}
+	if (level === "normal") {
+		return "*".repeat(clean.length);
+	}
+	return "";
+}

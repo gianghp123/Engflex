@@ -13,11 +13,13 @@ export function VideoPanel({
 	currentTime,
 	onStart,
 	onReplay,
+	children,
 }: {
 	video: Video;
 	currentTime: number;
 	onStart?: () => void;
 	onReplay?: () => void;
+	children?: React.ReactNode;
 }) {
 	const time = formatDuration(currentTime);
 	return (
@@ -38,7 +40,9 @@ export function VideoPanel({
 				</span>
 			</div>
 
-			<VideoStage video={video} onPlay={onStart} />
+			<VideoStage video={video} onPlay={onStart}>
+				{children}
+			</VideoStage>
 
 			<p className="text-sm font-extrabold tracking-wide text-muted-foreground uppercase">
 				{m["videos.dictation.video.controls"]()}
