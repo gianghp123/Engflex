@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"gorm.io/gorm"
 
+	"engflex-api/internal/common/enums"
 	"engflex-api/internal/database/models"
 	"engflex-api/internal/database/repositories/mocks"
 )
@@ -18,7 +19,7 @@ func TestLessonService_GetDetail(t *testing.T) {
 	lessonID := "11111111-1111-1111-1111-111111111111"
 	graph := &models.Lesson{
 		ID: lessonID, Slug: "unit-1", Title: "Unit 1",
-		CEFRLevel: "B1",
+		CEFRLevel: "B1", Status: enums.PublishStatusPublished,
 		Activities: []*models.LessonActivity{
 			{ID: "33333333-3333-3333-3333-333333333333", LessonID: lessonID, PartNumber: 1, Title: "Part 1"},
 		},
@@ -54,7 +55,7 @@ func TestLessonService_GetDetail(t *testing.T) {
 			if tt.wantErr {
 				id = "missing"
 			}
-			res, err := svc.GetDetail(context.Background(), id)
+			res, err := svc.GetDetail(context.Background(), id, false)
 
 			if tt.wantErr {
 				requireAppError(t, err, http.StatusNotFound)
@@ -69,7 +70,7 @@ func TestLessonService_GetDetail(t *testing.T) {
 }
 
 func TestLessonService_GetDetailBySlug(t *testing.T) {
-	unit := &models.Lesson{ID: "11111111-1111-1111-1111-111111111111", Slug: "unit-1", Title: "Unit 1"}
+	unit := &models.Lesson{ID: "11111111-1111-1111-1111-111111111111", Slug: "unit-1", Title: "Unit 1", Status: enums.PublishStatusPublished}
 	tests := []struct {
 		name       string
 		slug       string
@@ -99,7 +100,7 @@ func TestLessonService_GetDetailBySlug(t *testing.T) {
 			svc, _, lessonMock := setupLesson(t)
 			tt.setupMock(lessonMock)
 
-			res, err := svc.GetDetailBySlug(context.Background(), tt.slug)
+			res, err := svc.GetDetailBySlug(context.Background(), tt.slug, false)
 
 			if tt.wantStatus == 0 {
 				require.NoError(t, err)
@@ -111,4 +112,29 @@ func TestLessonService_GetDetailBySlug(t *testing.T) {
 			assert.Nil(t, res)
 		})
 	}
+}
+
+// A draft lesson is invisible to non-admins (404) but visible to admins —
+// same rule as every other admin-curated resource.
+func TestLessonService_GetDetail_DraftVisibility(t *testing.T) {
+	lessonID := "11111111-1111-1111-1111-111111111111"
+	draft := &models.Lesson{ID: lessonID, Status: enums.PublishStatusDraft}
+
+	t.Run("hidden from non-admin", func(t *testing.T) {
+		svc, _, lessonMock := setupLesson(t)
+		lessonMock.On("GetDetail", mock.Anything, lessonID).Return(draft, nil)
+
+		res, err := svc.GetDetail(context.Background(), lessonID, false)
+		requireAppError(t, err, http.StatusNotFound)
+		assert.Nil(t, res)
+	})
+
+	t.Run("visible to admin", func(t *testing.T) {
+		svc, _, lessonMock := setupLesson(t)
+		lessonMock.On("GetDetail", mock.Anything, lessonID).Return(draft, nil)
+
+		res, err := svc.GetDetail(context.Background(), lessonID, true)
+		require.NoError(t, err)
+		require.NotNil(t, res)
+	})
 }

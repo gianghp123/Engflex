@@ -49,6 +49,120 @@ func (_m *MockLessonRepository) EXPECT() *MockLessonRepository_Expecter {
 	return &MockLessonRepository_Expecter{mock: &_m.Mock}
 }
 
+// Create provides a mock function for the type MockLessonRepository
+func (_mock *MockLessonRepository) Create(ctx context.Context, l *models.Lesson) error {
+	ret := _mock.Called(ctx, l)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Create")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *models.Lesson) error); ok {
+		r0 = returnFunc(ctx, l)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockLessonRepository_Create_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Create'
+type MockLessonRepository_Create_Call struct {
+	*mock.Call
+}
+
+// Create is a helper method to define mock.On call
+//   - ctx context.Context
+//   - l *models.Lesson
+func (_e *MockLessonRepository_Expecter) Create(ctx any, l any) *MockLessonRepository_Create_Call {
+	return &MockLessonRepository_Create_Call{Call: _e.mock.On("Create", ctx, l)}
+}
+
+func (_c *MockLessonRepository_Create_Call) Run(run func(ctx context.Context, l *models.Lesson)) *MockLessonRepository_Create_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 *models.Lesson
+		if args[1] != nil {
+			arg1 = args[1].(*models.Lesson)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockLessonRepository_Create_Call) Return(err error) *MockLessonRepository_Create_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockLessonRepository_Create_Call) RunAndReturn(run func(ctx context.Context, l *models.Lesson) error) *MockLessonRepository_Create_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// Delete provides a mock function for the type MockLessonRepository
+func (_mock *MockLessonRepository) Delete(ctx context.Context, id string) error {
+	ret := _mock.Called(ctx, id)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Delete")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) error); ok {
+		r0 = returnFunc(ctx, id)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockLessonRepository_Delete_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Delete'
+type MockLessonRepository_Delete_Call struct {
+	*mock.Call
+}
+
+// Delete is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id string
+func (_e *MockLessonRepository_Expecter) Delete(ctx any, id any) *MockLessonRepository_Delete_Call {
+	return &MockLessonRepository_Delete_Call{Call: _e.mock.On("Delete", ctx, id)}
+}
+
+func (_c *MockLessonRepository_Delete_Call) Run(run func(ctx context.Context, id string)) *MockLessonRepository_Delete_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockLessonRepository_Delete_Call) Return(err error) *MockLessonRepository_Delete_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockLessonRepository_Delete_Call) RunAndReturn(run func(ctx context.Context, id string) error) *MockLessonRepository_Delete_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetByID provides a mock function for the type MockLessonRepository
 func (_mock *MockLessonRepository) GetByID(ctx context.Context, id string) (*models.Lesson, error) {
 	ret := _mock.Called(ctx, id)
@@ -249,6 +363,63 @@ func (_c *MockLessonRepository_GetDetailBySlug_Call) Return(lesson *models.Lesso
 }
 
 func (_c *MockLessonRepository_GetDetailBySlug_Call) RunAndReturn(run func(ctx context.Context, slug string) (*models.Lesson, error)) *MockLessonRepository_GetDetailBySlug_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// Update provides a mock function for the type MockLessonRepository
+func (_mock *MockLessonRepository) Update(ctx context.Context, l *models.Lesson) error {
+	ret := _mock.Called(ctx, l)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Update")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *models.Lesson) error); ok {
+		r0 = returnFunc(ctx, l)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockLessonRepository_Update_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Update'
+type MockLessonRepository_Update_Call struct {
+	*mock.Call
+}
+
+// Update is a helper method to define mock.On call
+//   - ctx context.Context
+//   - l *models.Lesson
+func (_e *MockLessonRepository_Expecter) Update(ctx any, l any) *MockLessonRepository_Update_Call {
+	return &MockLessonRepository_Update_Call{Call: _e.mock.On("Update", ctx, l)}
+}
+
+func (_c *MockLessonRepository_Update_Call) Run(run func(ctx context.Context, l *models.Lesson)) *MockLessonRepository_Update_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 *models.Lesson
+		if args[1] != nil {
+			arg1 = args[1].(*models.Lesson)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockLessonRepository_Update_Call) Return(err error) *MockLessonRepository_Update_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockLessonRepository_Update_Call) RunAndReturn(run func(ctx context.Context, l *models.Lesson) error) *MockLessonRepository_Update_Call {
 	_c.Call.Return(run)
 	return _c
 }

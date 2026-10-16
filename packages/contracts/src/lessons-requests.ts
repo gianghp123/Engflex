@@ -42,3 +42,88 @@ export interface ScoreWriting {
   attemptId: string;
   text: string;
 }
+
+//////////
+// source: lesson_mutations.go
+
+/**
+ * LessonDetailsInput mirrors models.LessonDetails field for field so the
+ * service's hand-written mapper (not a blanket utils.Map — see
+ * toLessonDetails) can line the two up directly.
+ */
+export interface LessonDetailsInput {
+  estimatedDurationMin?: number /* int */;
+  acousticTargetPct?: number /* int */;
+  coverImageUrl: string;
+  skill?: ActivityType;
+}
+/**
+ * CreateLesson adds an admin-curated curriculum unit, starting as draft
+ * until explicitly published.
+ */
+export interface CreateLesson {
+  slug: string;
+  title: string;
+  sectionId: string;
+  cefrLevel: CEFR;
+  description: string;
+  details: LessonDetailsInput;
+}
+/**
+ * UpdateLesson edits a unit. Status only takes effect for the explicit
+ * publish/unpublish action (service-enforced, matching the other modules).
+ */
+export interface UpdateLesson {
+  slug?: string;
+  title?: string;
+  sectionId?: string;
+  cefrLevel?: CEFR;
+  description?: string;
+  details?: LessonDetailsInput;
+  status?: PublishStatus;
+}
+/**
+ * CreateLessonSection / UpdateLessonSection manage the path's ordered
+ * sections. Full replace, like video/vocabulary categories — sections have
+ * no draft concept of their own.
+ */
+export interface CreateLessonSection {
+  slug: string;
+  title: string;
+  description: string;
+  cefrBand: CEFR;
+  position: number /* int */;
+}
+export interface UpdateLessonSection {
+  slug: string;
+  title: string;
+  description: string;
+  cefrBand: CEFR;
+  position: number /* int */;
+}
+/**
+ * CreateLessonActivity / UpdateLessonActivity manage one ordered part of a
+ * lesson. Config arrives as a raw JSON document whose shape depends on
+ * Type (see activityconfig.Reading/Listening/Writing/SpeakingConfig) — the
+ * service parses and validates it against that shape before saving, so a
+ * malformed config never reaches the column.
+ */
+export interface CreateLessonActivity {
+  lessonId: string;
+  partNumber: number /* int */;
+  type: ActivityType;
+  title: string;
+  description: string;
+  skillFocus: string;
+  durationMin: number /* int */;
+  config: unknown /* json.RawMessage */;
+}
+export interface UpdateLessonActivity {
+  partNumber?: number /* int */;
+  type?: ActivityType;
+  title?: string;
+  description?: string;
+  skillFocus?: string;
+  durationMin?: number /* int */;
+  config: unknown /* json.RawMessage */;
+}

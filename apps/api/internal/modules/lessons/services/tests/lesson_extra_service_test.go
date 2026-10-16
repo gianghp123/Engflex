@@ -20,10 +20,10 @@ import (
 
 func TestLessonService_ListSections_RepoError(t *testing.T) {
 	svc, secMock, _ := setupLesson(t)
-	secMock.On("ListWithUnits", mock.Anything, mock.Anything).
+	secMock.On("ListWithUnits", mock.Anything, mock.Anything, mock.Anything).
 		Return(nil, assert.AnError)
 
-	res, err := svc.ListSections(context.Background(), requests.ListLessons{})
+	res, err := svc.ListSections(context.Background(), requests.ListLessons{}, false)
 
 	requireAppError(t, err, http.StatusInternalServerError)
 	assert.Nil(t, res)

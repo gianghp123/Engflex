@@ -15,6 +15,9 @@ type LessonRepository interface {
 	GetByID(ctx context.Context, id string) (*models.Lesson, error)
 	GetDetail(ctx context.Context, id string) (*models.Lesson, error)
 	GetDetailBySlug(ctx context.Context, slug string) (*models.Lesson, error)
+	Create(ctx context.Context, l *models.Lesson) error
+	Update(ctx context.Context, l *models.Lesson) error
+	Delete(ctx context.Context, id string) error
 	WithTx(tx *gorm.DB) LessonRepository
 }
 
@@ -61,6 +64,35 @@ func (r *lessonRepository) GetDetail(ctx context.Context, id string) (*models.Le
 	}
 	m.Activities = activities
 	return &m, nil
+}
+
+func (r *lessonRepository) Create(ctx context.Context, l *models.Lesson) error {
+	return r.db.WithContext(ctx).Create(l).Error
+}
+
+func (r *lessonRepository) Update(ctx context.Context, l *models.Lesson) error {
+	result := r.db.WithContext(ctx).Save(l)
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return gorm.ErrRecordNotFound
+	}
+	return nil
+}
+
+func (r *lessonRepository) Delete(ctx context.Context, id string) error {
+	if _, err := parseID(id, "id"); err != nil {
+		return err
+	}
+	result := r.db.WithContext(ctx).Delete(&models.Lesson{}, "id = ?", id)
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return gorm.ErrRecordNotFound
+	}
+	return nil
 }
 
 // GetDetailBySlug returns one unit by its unique slug with its section joined

@@ -11,6 +11,7 @@ import (
 
 	"engflex-api/config"
 	"engflex-api/internal/common"
+	"engflex-api/internal/database/models"
 	attemptsresponses "engflex-api/internal/modules/attempts/dtos/responses"
 	"engflex-api/internal/modules/lessons/dtos/requests"
 	"engflex-api/internal/modules/lessons/dtos/responses"
@@ -78,6 +79,97 @@ func (h *LessonActivityController) GetByID(c *gin.Context) {
 	_ = utils.Map(&dto, m)
 	ApplyPayload(&dto, m, h.media)
 	common.OK(c, "lesson activity", dto)
+}
+
+// toAdminActivity builds the admin-authoring shape: the raw config
+// verbatim. Config is explicit (not blanket utils.Map) for the same reason
+// as every other jsonb-backed field — datatypes.JSON implements
+// sql.Scanner, which utils.Map does not reliably recurse through.
+func toAdminActivity(m *models.LessonActivity) responses.AdminActivity {
+	var dto responses.AdminActivity
+	_ = utils.Map(&dto, m)
+	dto.Config = json.RawMessage(m.Config)
+	return dto
+}
+
+// AdminGetByID godoc
+// @Summary      Get one lesson activity with its raw config (admin)
+// @Tags         lesson-activities
+// @Security     BearerAuth
+// @Produce      json
+// @Param        id path string true "activity id"
+// @Success      200 {object} common.ApiResponse{data=responses.AdminActivity}
+// @Router       /admin/lesson-activities/{id} [get]
+func (h *LessonActivityController) AdminGetByID(c *gin.Context) {
+	m, err := h.activities.GetByID(c.Request.Context(), c.Param("id"))
+	if err != nil {
+		common.Fail(c, err)
+		return
+	}
+	common.OK(c, "lesson activity", toAdminActivity(m))
+}
+
+// Create godoc
+// @Summary      Add one ordered part to a lesson (admin)
+// @Tags         lesson-activities
+// @Security     BearerAuth
+// @Accept       json
+// @Produce      json
+// @Param        request body requests.CreateLessonActivity true "activity payload"
+// @Success      201 {object} common.ApiResponse{data=responses.AdminActivity}
+// @Router       /lesson-activities [post]
+func (h *LessonActivityController) Create(c *gin.Context) {
+	var req requests.CreateLessonActivity
+	if err := c.ShouldBindJSON(&req); err != nil {
+		common.Fail(c, common.BadRequest(err.Error()))
+		return
+	}
+	m, err := h.activities.Create(c.Request.Context(), req)
+	if err != nil {
+		common.Fail(c, err)
+		return
+	}
+	common.Created(c, "lesson activity created", toAdminActivity(m))
+}
+
+// Update godoc
+// @Summary      Update one lesson activity (admin)
+// @Tags         lesson-activities
+// @Security     BearerAuth
+// @Accept       json
+// @Produce      json
+// @Param        id path string true "activity id"
+// @Param        request body requests.UpdateLessonActivity true "activity payload"
+// @Success      200 {object} common.ApiResponse{data=responses.AdminActivity}
+// @Router       /lesson-activities/{id} [put]
+func (h *LessonActivityController) Update(c *gin.Context) {
+	var req requests.UpdateLessonActivity
+	if err := c.ShouldBindJSON(&req); err != nil {
+		common.Fail(c, common.BadRequest(err.Error()))
+		return
+	}
+	m, err := h.activities.Update(c.Request.Context(), c.Param("id"), req)
+	if err != nil {
+		common.Fail(c, err)
+		return
+	}
+	common.OK(c, "lesson activity updated", toAdminActivity(m))
+}
+
+// Delete godoc
+// @Summary      Delete one lesson activity (admin)
+// @Tags         lesson-activities
+// @Security     BearerAuth
+// @Produce      json
+// @Param        id path string true "activity id"
+// @Success      200 {object} common.ApiResponse
+// @Router       /lesson-activities/{id} [delete]
+func (h *LessonActivityController) Delete(c *gin.Context) {
+	if err := h.activities.Delete(c.Request.Context(), c.Param("id")); err != nil {
+		common.Fail(c, err)
+		return
+	}
+	common.OK(c, "lesson activity deleted", nil)
 }
 
 // CheckAnswer godoc

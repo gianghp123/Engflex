@@ -4,6 +4,25 @@
 // source: activity.go
 
 /**
+ * AdminActivity is the admin-authoring shape: the raw config verbatim (answer
+ * keys, voice ids, model audio keys included), unlike the learner-facing
+ * Activity above which strips those through ApplyPayload. Only ever
+ * returned from admin-gated endpoints.
+ */
+export interface AdminActivity {
+  id: string;
+  lessonId: string;
+  partNumber: number /* int */;
+  type: ActivityType;
+  title: string;
+  description: string;
+  skillFocus: string;
+  durationMin: number /* int */;
+  config: unknown /* json.RawMessage */;
+  createdAt: string /* RFC3339 */;
+  updatedAt: string /* RFC3339 */;
+}
+/**
  * QuestionOption is one multiple-choice option; correctness never crosses.
  */
 export interface QuestionOption {
@@ -216,6 +235,7 @@ export interface Lesson {
   cefrLevel: CEFR;
   description: string;
   details: LessonDetails;
+  status: PublishStatus;
 }
 /**
  * UnitSection mirrors models.LessonSection field for field, with Units
@@ -242,6 +262,7 @@ export interface LessonDetail {
   cefrLevel: CEFR;
   description: string;
   details: LessonDetails;
+  status: PublishStatus;
   activities: Activity[];
 }
 /**

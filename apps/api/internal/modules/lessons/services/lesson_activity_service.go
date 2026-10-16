@@ -4,12 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"strconv"
 	"strings"
 
 	"github.com/google/uuid"
+	"gorm.io/datatypes"
 	"gorm.io/gorm"
 
 	"engflex-api/internal/common"
@@ -19,6 +21,7 @@ import (
 	"engflex-api/internal/llm"
 	"engflex-api/internal/logger"
 	"engflex-api/internal/modules/lessons/activityconfig"
+	"engflex-api/internal/modules/lessons/dtos/requests"
 	"engflex-api/internal/modules/lessons/dtos/responses"
 	"engflex-api/internal/modules/lessons/prompts"
 	"engflex-api/internal/modules/lessons/schemas"
@@ -37,6 +40,9 @@ type LessonActivityService interface {
 	GetOpenProgress(ctx context.Context, userID, lessonID string) (*responses.AttemptProgress, error)
 	AttachPartResult(ctx context.Context, userID, attemptID, activityID string, entry PartEntry) (*models.Attempt, error)
 	ScoreWriting(ctx context.Context, userID, id, attemptID, text string) (*responses.WritingScoreResponse, error)
+	Create(ctx context.Context, req requests.CreateLessonActivity) (*models.LessonActivity, error)
+	Update(ctx context.Context, id string, req requests.UpdateLessonActivity) (*models.LessonActivity, error)
+	Delete(ctx context.Context, id string) error
 }
 
 type lessonActivityService struct {
@@ -451,4 +457,94 @@ func (s *lessonActivityService) ScoreWriting(ctx context.Context, userID, id, at
 	dto.Attempt = responses.AttemptSummary{ID: attached.ID, Status: string(attached.Status), Score: attached.Score}
 	slog.InfoContext(ctx, "writing scored", "activityID", id, "score", score)
 	return &dto, nil
+}
+
+// validateActivityConfig parses the raw config against the shape its type
+// demands, so a malformed admin-authored document never reaches the
+// column (and only ever fails loudly, not silently, at check/pronounce/
+// score time downstream).
+func validateActivityConfig(t enums.ActivityType, raw []byte) error {
+	cfg := datatypes.JSON(raw)
+	var err error
+	switch t {
+	case enums.ActivityTypeReading:
+		_, err = activityconfig.ParseReadingConfig(cfg)
+	case enums.ActivityTypeListening:
+		_, err = activityconfig.ParseListeningConfig(cfg)
+	case enums.ActivityTypeWriting:
+		_, err = activityconfig.ParseWritingConfig(cfg)
+	case enums.ActivityTypeSpeaking:
+		_, err = activityconfig.ParseSpeakingConfig(cfg)
+	default:
+		return fmt.Errorf("unknown activity type %q", t)
+	}
+	if err != nil {
+		return fmt.Errorf("invalid config for type %q: %w", t, err)
+	}
+	return nil
+}
+
+// Create adds one ordered part to a lesson (admin-only, route-gated).
+func (s *lessonActivityService) Create(ctx context.Context, req requests.CreateLessonActivity) (*models.LessonActivity, error) {
+	if err := validateActivityConfig(req.Type, req.Config); err != nil {
+		return nil, common.BadRequest(err.Error())
+	}
+	m := &models.LessonActivity{}
+	if err := utils.Map(m, req); err != nil {
+		logger.Report(ctx, "map create lesson activity failed", err)
+		return nil, common.Internal()
+	}
+	// Config is datatypes.JSON (itself a Scanner/Valuer), so it gets the
+	// same explicit []byte conversion as every other jsonb-backed field
+	// instead of riding the blanket utils.Map above.
+	m.Config = datatypes.JSON(req.Config)
+	if err := s.repo.Create(ctx, m); err != nil {
+		appErr := common.FromDBError(err, "lesson activity")
+		logger.Report(ctx, "create lesson activity failed", appErr)
+		return nil, appErr
+	}
+	slog.InfoContext(ctx, "lesson activity created", "id", m.ID)
+	return m, nil
+}
+
+func (s *lessonActivityService) Update(ctx context.Context, id string, req requests.UpdateLessonActivity) (*models.LessonActivity, error) {
+	m, err := s.repo.GetByID(ctx, id)
+	if err != nil {
+		appErr := common.FromDBError(err, "lesson activity")
+		logger.Report(ctx, "get lesson activity for update failed", appErr, "id", id)
+		return nil, appErr
+	}
+	effectiveType := m.Type
+	if req.Type != nil {
+		effectiveType = *req.Type
+	}
+	if req.Config != nil {
+		if err := validateActivityConfig(effectiveType, req.Config); err != nil {
+			return nil, common.BadRequest(err.Error())
+		}
+	}
+	if err := utils.Map(m, req); err != nil {
+		logger.Report(ctx, "map update lesson activity failed", err, "id", id)
+		return nil, common.Internal()
+	}
+	if req.Config != nil {
+		m.Config = datatypes.JSON(req.Config)
+	}
+	if err := s.repo.Update(ctx, m); err != nil {
+		appErr := common.FromDBError(err, "lesson activity")
+		logger.Report(ctx, "update lesson activity failed", appErr, "id", id)
+		return nil, appErr
+	}
+	slog.InfoContext(ctx, "lesson activity updated", "id", id)
+	return m, nil
+}
+
+func (s *lessonActivityService) Delete(ctx context.Context, id string) error {
+	if err := s.repo.Delete(ctx, id); err != nil {
+		appErr := common.FromDBError(err, "lesson activity")
+		logger.Report(ctx, "delete lesson activity failed", appErr, "id", id)
+		return appErr
+	}
+	slog.InfoContext(ctx, "lesson activity deleted", "id", id)
+	return nil
 }

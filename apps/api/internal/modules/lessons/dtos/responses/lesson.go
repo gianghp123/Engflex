@@ -30,13 +30,14 @@ type Section struct {
 // list it already fetches per card (a server-side count field is a cache
 // that lies the moment the activities change).
 type Lesson struct {
-	ID          string        `json:"id"`
-	Slug        string        `json:"slug"`
-	Title       string        `json:"title"`
-	Section     *Section      `json:"section"`
-	CEFRLevel   enums.CEFR    `json:"cefrLevel"`
-	Description string        `json:"description"`
-	Details     LessonDetails `json:"details"`
+	ID          string              `json:"id"`
+	Slug        string              `json:"slug"`
+	Title       string              `json:"title"`
+	Section     *Section            `json:"section"`
+	CEFRLevel   enums.CEFR          `json:"cefrLevel"`
+	Description string              `json:"description"`
+	Details     LessonDetails       `json:"details"`
+	Status      enums.PublishStatus `json:"status"`
 }
 
 // UnitSection mirrors models.LessonSection field for field, with Units
@@ -54,14 +55,15 @@ type UnitSection struct {
 // LessonDetail is the GET /lessons/:id shape: header + section + ordered
 // activities. No Progress in v1 (attempts stays outside the module).
 type LessonDetail struct {
-	ID          string        `json:"id"`
-	Slug        string        `json:"slug"`
-	Title       string        `json:"title"`
-	Section     *Section      `json:"section"`
-	CEFRLevel   enums.CEFR    `json:"cefrLevel"`
-	Description string        `json:"description"`
-	Details     LessonDetails `json:"details"`
-	Activities  []Activity    `json:"activities"`
+	ID          string              `json:"id"`
+	Slug        string              `json:"slug"`
+	Title       string              `json:"title"`
+	Section     *Section            `json:"section"`
+	CEFRLevel   enums.CEFR          `json:"cefrLevel"`
+	Description string              `json:"description"`
+	Details     LessonDetails       `json:"details"`
+	Status      enums.PublishStatus `json:"status"`
+	Activities  []Activity          `json:"activities"`
 }
 
 // Bookmark is one saved lesson for the caller. Go name CreatedAt matches

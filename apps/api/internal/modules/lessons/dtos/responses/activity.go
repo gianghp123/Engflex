@@ -1,8 +1,29 @@
 package responses
 
 import (
+	"encoding/json"
+	"time"
+
 	"engflex-api/internal/common/enums"
 )
+
+// AdminActivity is the admin-authoring shape: the raw config verbatim (answer
+// keys, voice ids, model audio keys included), unlike the learner-facing
+// Activity above which strips those through ApplyPayload. Only ever
+// returned from admin-gated endpoints.
+type AdminActivity struct {
+	ID          string             `json:"id"`
+	LessonID    string             `json:"lessonId"`
+	PartNumber  int                `json:"partNumber"`
+	Type        enums.ActivityType `json:"type"`
+	Title       string             `json:"title"`
+	Description string             `json:"description"`
+	SkillFocus  string             `json:"skillFocus"`
+	DurationMin int                `json:"durationMin"`
+	Config      json.RawMessage    `json:"config"`
+	CreatedAt   time.Time          `json:"createdAt"`
+	UpdatedAt   time.Time          `json:"updatedAt"`
+}
 
 // QuestionOption is one multiple-choice option; correctness never crosses.
 type QuestionOption struct {
