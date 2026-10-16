@@ -16,7 +16,6 @@ import {
 	getConversation,
 	getScenarioById,
 	listConversations,
-	listPersonas,
 	listScenarios,
 	listTopicsWithPreview,
 } from "#/features/voice/service";
@@ -136,13 +135,6 @@ export function useScenario(id: string | undefined) {
 	return useQuery({
 		...scenarioQueryOptions(id ?? "none"),
 		enabled: !!id,
-	});
-}
-
-export function usePersonas() {
-	return useQuery({
-		queryKey: ["personas"],
-		queryFn: listPersonas,
 	});
 }
 

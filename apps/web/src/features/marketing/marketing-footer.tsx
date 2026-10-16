@@ -1,7 +1,6 @@
 import type { ReactNode } from "react";
 import { APP_ROUTES } from "#/app/app-route";
 import { MoMascot } from "#/components/common/mo-mascot";
-import { useSectionHref } from "#/features/marketing/section-links";
 import { m } from "#/paraglide/messages";
 
 /**
@@ -16,8 +15,6 @@ import { m } from "#/paraglide/messages";
  * optional, so a page can end on a bare footer.
  */
 export function MarketingFooter({ children }: { children?: ReactNode }) {
-	const sectionHref = useSectionHref();
-
 	return (
 		<div className="l-ctawrap">
 			<div className="l-stage">
@@ -283,119 +280,6 @@ export function MarketingFooter({ children }: { children?: ReactNode }) {
 							</span>
 						</span>
 						<p className="l-fblurb">{m["landing.footer.blurb"]()}</p>
-						<div className="l-social">
-							<span className="l-socialspan">
-								<svg
-									aria-hidden="true"
-									width="16"
-									height="16"
-									viewBox="0 0 24 24"
-									style={{
-										stroke: "#EDE8FF",
-										fill: "none",
-										strokeWidth: "2.2",
-										strokeLinecap: "round",
-									}}
-								>
-									<path d="M4 6.5h16v9H9.6L4 20V6.5Z" />
-								</svg>
-							</span>
-							<span className="l-socialspan">
-								<svg
-									aria-hidden="true"
-									width="16"
-									height="16"
-									viewBox="0 0 24 24"
-									style={{
-										stroke: "#EDE8FF",
-										fill: "none",
-										strokeWidth: "2.2",
-										strokeLinecap: "round",
-									}}
-								>
-									<path d="M12 3v18M5 8l7-5 7 5M5 8v8l7 5 7-5V8" />
-								</svg>
-							</span>
-							<span className="l-socialspan">
-								<svg
-									aria-hidden="true"
-									width="16"
-									height="16"
-									viewBox="0 0 24 24"
-									style={{
-										stroke: "#EDE8FF",
-										fill: "none",
-										strokeWidth: "2.2",
-										strokeLinecap: "round",
-									}}
-								>
-									<rect x="2" y="5" width="20" height="14" rx="4" />
-									<path d="M11 9.5l4 2.5-4 2.5v-5Z" />
-								</svg>
-							</span>
-						</div>
-					</div>
-
-					<div className="l-fcol">
-						<h4>{m["landing.footer.practice.label"]()}</h4>
-						<ul>
-							<li>
-								<a href={sectionHref(APP_ROUTES.LANDING_SECTIONS.LEVELS)}>
-									{m["landing.footer.practice.lessons"]()}
-								</a>
-							</li>
-							<li>
-								<a href={sectionHref(APP_ROUTES.LANDING_SECTIONS.VOICE)}>
-									{m["landing.footer.practice.voice"]()}
-								</a>
-							</li>
-							<li>
-								<a href={sectionHref(APP_ROUTES.LANDING_SECTIONS.VOICE)}>
-									{m["landing.footer.practice.scenarios"]()}
-								</a>
-							</li>
-							<li>
-								<a href={sectionHref(APP_ROUTES.LANDING_SECTIONS.VOICE)}>
-									{m["landing.footer.practice.pronunciation"]()}
-								</a>
-							</li>
-						</ul>
-					</div>
-
-					<div className="l-fcol">
-						<h4>{m["landing.footer.levels.label"]()}</h4>
-						<ul>
-							<li>
-								<a href={sectionHref(APP_ROUTES.LANDING_SECTIONS.LEVELS)}>
-									{m["landing.footer.levels.a1"]()}
-								</a>
-							</li>
-							<li>
-								<a href={sectionHref(APP_ROUTES.LANDING_SECTIONS.LEVELS)}>
-									{m["landing.footer.levels.a2"]()}
-								</a>
-							</li>
-							<li>
-								<a href={sectionHref(APP_ROUTES.LANDING_SECTIONS.LEVELS)}>
-									{m["landing.footer.levels.b1"]()}
-								</a>
-							</li>
-							<li>
-								<a href={sectionHref(APP_ROUTES.LANDING_SECTIONS.LEVELS)}>
-									{m["landing.footer.levels.b2"]()}
-								</a>
-							</li>
-							<li>
-								<a href={sectionHref(APP_ROUTES.LANDING_SECTIONS.LEVELS)}>
-									{m["landing.footer.levels.c1"]()}
-								</a>
-							</li>
-							<li>
-								<a href={sectionHref(APP_ROUTES.LANDING_SECTIONS.LEVELS)}>
-									{m["landing.footer.levels.c2"]()}
-								</a>
-							</li>
-						</ul>
 					</div>
 
 					<div className="l-fcol">

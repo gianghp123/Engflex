@@ -66,22 +66,6 @@
       "blurb": "Luyện tiếng Anh ở mọi trình độ, từ A1 đến C2.",
       "tagline": "Học cùng Mo.",
       "copyright": "© 2026 Engflex",
-      "practice": {
-        "label": "Luyện tập",
-        "lessons": "Bài học",
-        "voice": "Hội thoại",
-        "scenarios": "Danh sách tình huống",
-        "pronunciation": "Luyện phát âm"
-      },
-      "levels": {
-        "label": "Trình độ",
-        "a1": "A1 · Mới bắt đầu",
-        "a2": "A2 · Sơ cấp",
-        "b1": "B1 · Trung cấp",
-        "b2": "B2 · Trung cấp cao",
-        "c1": "C1 · Nâng cao",
-        "c2": "C2 · Thành thạo"
-      },
       "account": {
         "label": "Engflex",
         "about": "Giới thiệu",

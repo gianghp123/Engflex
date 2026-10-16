@@ -526,8 +526,8 @@ Assert with `require.ErrorAs(err, &appErr)` + check `.Status`.
   work signed-out; `error-pages.tsx` keeps `RouteNotFound` /
   `RouteErrorFallback` as thin adapters for `__root.tsx` and `_app/route.tsx`.
 - `PageLayout` hero action: drill-down pages pass back navigation via the
-  `action` slot (`Button asChild` + `Link` to an `APP_ROUTES` target, label
-  from messages), never a hand-rolled button row in `children`. The slot
+  `action` slot with `components/common/BackButton` (`APP_ROUTES` target +
+  label from messages), never a hand-rolled button row in `children`. The slot
   renders as its own left-aligned row above the hero (or above the content
   when there is no hero).
 - Mutation buttons: anything driven by a `useMutation` (or equivalent async

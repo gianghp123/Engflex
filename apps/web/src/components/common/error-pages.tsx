@@ -1,7 +1,7 @@
 import * as Sentry from "@sentry/tanstackstart-react";
 import { useEffect } from "react";
 import { ErrorComponent } from "#/components/common/error-component";
-import { Button } from "#/components/ui/button";
+import { RetryButton } from "#/components/common/retry-button";
 import { m } from "#/paraglide/messages";
 
 /** Global 404 (root notFoundComponent + thrown notFound() fallbacks). */
@@ -38,11 +38,7 @@ export function RouteErrorFallback({
 			title={m["errors.server.title"]()}
 			body={m["errors.server.body"]()}
 			primaryLabel={m["common.actions.backHome"]()}
-			extraAction={
-				<Button type="button" variant="outline" onClick={() => reset()}>
-					{m["common.actions.retry"]()}
-				</Button>
-			}
+			extraAction={<RetryButton reset={reset} />}
 		/>
 	);
 }

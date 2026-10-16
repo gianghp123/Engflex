@@ -5,7 +5,6 @@ import type {
 	Feedback,
 	ListScenarios,
 	Pagination,
-	Persona,
 	Scenario,
 	ScenarioTopic,
 	StartConversation,
@@ -135,17 +134,6 @@ export function getScenarioById(id: string): Promise<Scenario> {
 	return api<Scenario>(API_ROUTES.SCENARIOS.BY_ID(id), undefined, {
 		withCredentials: true,
 	});
-}
-
-export function listPersonas(): Promise<{
-	items: Persona[];
-	pagination: Pagination;
-}> {
-	return apiPage<Persona>(
-		API_ROUTES.PERSONAS.LIST,
-		{ method: "GET" },
-		{ withCredentials: true },
-	);
 }
 
 /** One page of the caller's finished conversations, newest first. */

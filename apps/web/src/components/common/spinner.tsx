@@ -2,7 +2,7 @@ import { cn } from "cn";
 import { Loader2Icon } from "lucide-react";
 
 /**
- * The house spinner (`SubmitButton`, `CardShell`, `audio-button`, `sonner`).
+ * The house spinner (`SubmitButton`, `CardShell`, `sonner`).
  * No `size-*` class on purpose: `buttonVariants` already sizes bare svgs per
  * size variant. An explicit `className` marks the centered-overlay use, which
  * is not an inline-start icon. Always decorative: the owning control or

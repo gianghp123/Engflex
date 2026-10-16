@@ -1,3 +1,4 @@
+import { useAuth } from "@clerk/tanstack-react-start";
 import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { APP_ROUTES } from "#/app/app-route";
@@ -9,7 +10,9 @@ import { m } from "#/paraglide/messages";
  * The one error surface. Every status page passes its own copy, so no
  * status-specific string is baked in here. Rendered bare — deliberately
  * outside AppShell — because /not-found and /error must also render for
- * signed-out visitors, who never get an AppShell.
+ * signed-out visitors, who never get an AppShell. The primary CTA is
+ * session-aware: /home's route guard would bounce a signed-out clicker to
+ * sign-in, so signed-out visitors go to the landing page instead.
  *
  * Mascots are existing Mo variants (no per-status artwork): 404 uses
  * "confused" (its "?" hook matches the lost-way story), 500 uses "cry".
@@ -32,6 +35,7 @@ export function ErrorComponent({
 	/** Rendered beside the primary button (e.g. Retry on 500). */
 	extraAction?: ReactNode;
 }) {
+	const { isSignedIn } = useAuth();
 	return (
 		<div className="bg-dot-pattern flex min-h-svh flex-col items-center justify-center px-4 py-10">
 			<div className="surface-card flex w-full max-w-xl flex-col items-center rounded-2xl p-6 text-center md:p-10">
@@ -59,7 +63,9 @@ export function ErrorComponent({
 				<div className="flex w-full flex-col items-center justify-center gap-3 sm:w-auto sm:flex-row">
 					{extraAction}
 					<Button asChild size="lg">
-						<Link to={APP_ROUTES.HOME}>{primaryLabel}</Link>
+						<Link to={isSignedIn ? APP_ROUTES.HOME : APP_ROUTES.LANDING}>
+							{isSignedIn ? primaryLabel : m["common.actions.backHome"]()}
+						</Link>
 					</Button>
 				</div>
 			</div>

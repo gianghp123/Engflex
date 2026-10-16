@@ -1,12 +1,11 @@
 import type { VideoCategoryPreview } from "@engflex/contracts";
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { ArrowLeft } from "lucide-react";
+import { createFileRoute, notFound } from "@tanstack/react-router";
 import { useDeferredValue, useState } from "react";
 import { APP_ROUTES } from "#/app/app-route";
 import { useBreadcrumbs } from "#/app/breadcrumbs";
+import { BackButton } from "#/components/common/back-button";
 import { EmptyList } from "#/components/common/empty-list";
 import { PageLayout } from "#/components/common/page-layout";
-import { Button } from "#/components/ui/button";
 import { Skeleton } from "#/components/ui/skeleton";
 import { VideoCard } from "#/features/videos/components/video-card";
 import {
@@ -88,12 +87,10 @@ function VideoCategoryPage() {
 	return (
 		<PageLayout
 			action={
-				<Button asChild variant="ghost" size="sm" className="w-fit">
-					<Link to={APP_ROUTES.VIDEOS.LIST}>
-						<ArrowLeft data-icon="inline-start" />
-						{m["videos.category.back"]()}
-					</Link>
-				</Button>
+				<BackButton
+					to={APP_ROUTES.VIDEOS.LIST}
+					label={m["videos.category.back"]()}
+				/>
 			}
 		>
 			<div className="flex flex-wrap items-end justify-between gap-3">

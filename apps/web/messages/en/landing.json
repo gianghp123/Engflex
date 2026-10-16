@@ -66,22 +66,6 @@
       "blurb": "English practice for every level, from A1 to C2.",
       "tagline": "Learn with Mo.",
       "copyright": "© 2026 Engflex",
-      "practice": {
-        "label": "Practice",
-        "lessons": "Lessons",
-        "voice": "Voice roleplay",
-        "scenarios": "Scenario catalog",
-        "pronunciation": "Pronunciation drill"
-      },
-      "levels": {
-        "label": "Levels",
-        "a1": "A1 · Beginner",
-        "a2": "A2 · Elementary",
-        "b1": "B1 · Intermediate",
-        "b2": "B2 · Upper intermediate",
-        "c1": "C1 · Advanced",
-        "c2": "C2 · Proficient"
-      },
       "account": {
         "label": "Engflex",
         "about": "About",

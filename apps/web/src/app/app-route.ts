@@ -5,16 +5,6 @@ export const APP_ROUTES = {
 	HOME: "/home",
 	ABOUT: "/about",
 	PRICING: "/pricing",
-	/**
-	 * Section anchors on the landing page. The shared marketing nav turns these
-	 * into an in-page jump while it is on `/`, and into a cross-page link
-	 * (`LANDING` + fragment) on every other marketing page — the ids only exist
-	 * on the landing page, so a bare fragment elsewhere is a dead link.
-	 */
-	LANDING_SECTIONS: {
-		LEVELS: "#levels",
-		VOICE: "#voice",
-	},
 	ONBOARDING: "/onboarding",
 	LESSONS: {
 		LIST: "/lessons",
@@ -50,7 +40,6 @@ export const APP_ROUTES = {
 	},
 	VIDEOS: {
 		LIST: "/videos",
-		DETAIL: "/videos/$videoId",
 		DICTATION: "/videos/$videoId/dictation",
 		SHADOWING: "/videos/$videoId/shadowing",
 		CATEGORY: "/videos/categories/$categorySlug",
@@ -64,10 +53,5 @@ export const APP_ROUTES = {
 	AUTH: {
 		SIGN_IN: "/sign-in",
 		SIGN_UP: "/sign-up",
-	},
-	/** Dedicated status pages, both rendered by `components/common/error-page`. */
-	ERROR: {
-		NOT_FOUND: "/not-found",
-		SERVER: "/error",
 	},
 } as const;

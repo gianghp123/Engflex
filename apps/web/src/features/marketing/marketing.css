@@ -563,7 +563,7 @@
 	position: relative;
 	z-index: 2;
 	display: grid;
-	grid-template-columns: 1.6fr 1fr 1fr 1fr 1fr;
+	grid-template-columns: 1.6fr 1fr 1fr;
 	gap: 26px;
 	padding: 8px 32px 40px;
 	max-width: 1060px;
@@ -636,21 +636,6 @@
 	font-size: 14px;
 	font-weight: 700;
 	color: #fff;
-}
-.landing .l-social {
-	display: flex;
-	gap: 10px;
-	margin-top: 16px;
-}
-.landing .l-socialspan {
-	width: 34px;
-	height: 34px;
-	border-radius: 11px;
-	background: rgba(255, 255, 255, 0.1);
-	border: 2px solid var(--inkpad-line);
-	display: flex;
-	align-items: center;
-	justify-content: center;
 }
 @media (max-width: 1040px) {
 	.landing .l-r4h-inner {

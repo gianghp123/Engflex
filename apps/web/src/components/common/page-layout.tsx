@@ -67,8 +67,8 @@ export function PageLayout({
 }: {
 	hero?: PageHeroSpec | null;
 	/** Left-of-hero slot: back navigation or a page-level call to action.
-	 *  The caller owns label + link (a `Button asChild` + `Link` block) —
-	 *  this component only positions it. */
+	 *  For back navigation render `BackButton`; the caller owns the label
+	 *  and target — this component only positions it. */
 	action?: ReactNode;
 	children?: ReactNode;
 }) {
