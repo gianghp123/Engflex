@@ -14,8 +14,8 @@ import (
 // VocabularyDeckItemRepository.ListByDeck (a deck with many cards must not
 // cartesian-duplicate the parent into a join).
 type VocabularyDeckRepository interface {
-	ListByUser(ctx context.Context, userID string, limit, offset int) ([]*models.VocabularyDeck, error)
-	CountByUser(ctx context.Context, userID string) (int64, error)
+	ListByUser(ctx context.Context, userID string, isAdmin bool, limit, offset int) ([]*models.VocabularyDeck, error)
+	CountByUser(ctx context.Context, userID string, isAdmin bool) (int64, error)
 	GetByID(ctx context.Context, id string) (*models.VocabularyDeck, error)
 	GetDetail(ctx context.Context, id string) (*models.VocabularyDeck, error)
 	Create(ctx context.Context, d *models.VocabularyDeck) error
@@ -39,22 +39,29 @@ func (r *vocabularyDeckRepository) WithTx(tx *gorm.DB) VocabularyDeckRepository 
 }
 
 // visibleToUser scopes decks the caller may see: everything they own, plus
-// published system decks (IsDefault) curated by admin for every learner.
-func visibleToUser(db *gorm.DB, userID string) *gorm.DB {
+// published system decks (IsDefault) curated by admin for every learner. An
+// admin additionally sees every system deck regardless of status — the admin
+// console lists drafts other admins created, mirroring GetDetail's
+// isAdmin bypass and canManageDeck (both let any admin reach any system
+// deck once they have its id; list access must not be narrower than that).
+func visibleToUser(db *gorm.DB, userID string, isAdmin bool) *gorm.DB {
+	if isAdmin {
+		return db.Where("user_id = ? OR is_default = true", userID)
+	}
 	return db.Where("user_id = ? OR (is_default = true AND status = ?)", userID, enums.PublishStatusPublished)
 }
 
-func (r *vocabularyDeckRepository) ListByUser(ctx context.Context, userID string, limit, offset int) ([]*models.VocabularyDeck, error) {
+func (r *vocabularyDeckRepository) ListByUser(ctx context.Context, userID string, isAdmin bool, limit, offset int) ([]*models.VocabularyDeck, error) {
 	var out []*models.VocabularyDeck
-	if err := visibleToUser(r.db.WithContext(ctx), userID).Order("created_at DESC").Limit(limit).Offset(offset).Find(&out).Error; err != nil {
+	if err := visibleToUser(r.db.WithContext(ctx), userID, isAdmin).Order("created_at DESC").Limit(limit).Offset(offset).Find(&out).Error; err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (r *vocabularyDeckRepository) CountByUser(ctx context.Context, userID string) (int64, error) {
+func (r *vocabularyDeckRepository) CountByUser(ctx context.Context, userID string, isAdmin bool) (int64, error) {
 	var n int64
-	if err := visibleToUser(r.db.WithContext(ctx).Model(&models.VocabularyDeck{}), userID).Count(&n).Error; err != nil {
+	if err := visibleToUser(r.db.WithContext(ctx).Model(&models.VocabularyDeck{}), userID, isAdmin).Count(&n).Error; err != nil {
 		return 0, err
 	}
 	return n, nil

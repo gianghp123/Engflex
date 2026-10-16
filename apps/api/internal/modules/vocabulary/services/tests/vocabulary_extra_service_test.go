@@ -30,6 +30,25 @@ func TestVocabularyDeckService_Update_Forbidden(t *testing.T) {
 	assert.Nil(t, res)
 }
 
+// ListByUser must forward isAdmin to the repository unchanged — that's what
+// lets an admin's deck list include every system deck (any status, any
+// creator), not just their own. The mock's exact-args expectation fails
+// loudly if the service drops or hardcodes the flag along the way.
+func TestVocabularyDeckService_ListByUser_ForwardsIsAdmin(t *testing.T) {
+	admin := "admin_1"
+	mockRepo := mocks.NewMockVocabularyDeckRepository(t)
+	mockRepo.On("ListByUser", mock.Anything, admin, true, 20, 0).
+		Return([]*models.VocabularyDeck{}, nil)
+	mockRepo.On("CountByUser", mock.Anything, admin, true).Return(int64(0), nil)
+	svc := services.NewVocabularyDeckService(mockRepo)
+
+	res, total, err := svc.ListByUser(context.Background(), admin, true, 20, 0)
+
+	require.NoError(t, err)
+	assert.Empty(t, res)
+	assert.Zero(t, total)
+}
+
 func TestVocabularyDeckItemService_ListByDeck_EmptyReturns200(t *testing.T) {
 	owner := "user_1"
 	itemRepo := mocks.NewMockVocabularyDeckItemRepository(t)

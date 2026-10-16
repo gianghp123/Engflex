@@ -16,7 +16,7 @@ import (
 // VocabularyDeckService owns flashcard decks: personal (owner-managed) and
 // system-curated (admin-managed, gated by Status for everyone else).
 type VocabularyDeckService interface {
-	ListByUser(ctx context.Context, userID string, limit, offset int) ([]*models.VocabularyDeck, int64, error)
+	ListByUser(ctx context.Context, userID string, isAdmin bool, limit, offset int) ([]*models.VocabularyDeck, int64, error)
 	GetDetail(ctx context.Context, userID, id string, isAdmin bool) (*models.VocabularyDeck, error)
 	Create(ctx context.Context, userID string, req requests.CreateVocabularyDeck) (*models.VocabularyDeck, error)
 	CreateSystemDeck(ctx context.Context, adminUserID string, req requests.CreateVocabularyDeck) (*models.VocabularyDeck, error)
@@ -42,14 +42,14 @@ func NewVocabularyDeckService(repo repositories.VocabularyDeckRepository) Vocabu
 	return &vocabularyDeckService{repo: repo}
 }
 
-func (s *vocabularyDeckService) ListByUser(ctx context.Context, userID string, limit, offset int) ([]*models.VocabularyDeck, int64, error) {
-	items, err := s.repo.ListByUser(ctx, userID, limit, offset)
+func (s *vocabularyDeckService) ListByUser(ctx context.Context, userID string, isAdmin bool, limit, offset int) ([]*models.VocabularyDeck, int64, error) {
+	items, err := s.repo.ListByUser(ctx, userID, isAdmin, limit, offset)
 	if err != nil {
 		appErr := common.FromDBError(err, "vocabulary deck")
 		logger.Report(ctx, "list vocabulary decks failed", appErr)
 		return nil, 0, appErr
 	}
-	total, err := s.repo.CountByUser(ctx, userID)
+	total, err := s.repo.CountByUser(ctx, userID, isAdmin)
 	if err != nil {
 		appErr := common.FromDBError(err, "vocabulary deck")
 		logger.Report(ctx, "count vocabulary decks failed", appErr)

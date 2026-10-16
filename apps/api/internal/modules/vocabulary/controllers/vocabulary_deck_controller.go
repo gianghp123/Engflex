@@ -31,7 +31,7 @@ func NewVocabularyDeckController(decks services.VocabularyDeckService) *Vocabula
 // @Router       /vocabulary-decks [get]
 func (h *VocabularyDeckController) List(c *gin.Context) {
 	page, pageSize := utils.ParsePagination(c)
-	items, total, err := h.decks.ListByUser(c.Request.Context(), middleware.UserID(c), pageSize, utils.Offset(page, pageSize))
+	items, total, err := h.decks.ListByUser(c.Request.Context(), middleware.UserID(c), middleware.Role(c) == enums.UserRoleAdmin, pageSize, utils.Offset(page, pageSize))
 	if err != nil {
 		common.Fail(c, err)
 		return
