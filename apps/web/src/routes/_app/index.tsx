@@ -1,5 +1,5 @@
 import { useUser } from "@clerk/tanstack-react-start";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { Gauge } from "lucide-react";
 import { APP_ROUTES } from "#/app/app-route";
 import { useBreadcrumbs } from "#/app/breadcrumbs";
@@ -11,9 +11,20 @@ import { ActiveLessonCard } from "#/features/dashboard/components/active-lesson-
 import { LiveVoicePartnerCard } from "#/features/dashboard/components/live-voice-partner-card";
 import { SequenceCard } from "#/features/dashboard/components/sequence-card";
 import { HIGH_FRICTION_COUNT } from "#/features/dashboard/fixtures";
+import { getAuthState } from "#/lib/auth-guard";
 import { m } from "#/paraglide/messages";
 
 export const Route = createFileRoute("/_app/")({
+	// Admins land on the admin console instead of the learner dashboard.
+	// Scoped to the bare "/" landing only — navigating to a specific
+	// learner page (lessons, vocabulary, ...) is never redirected, so an
+	// admin can still browse the app as a learner would.
+	beforeLoad: async () => {
+		const { isAdmin } = await getAuthState();
+		if (isAdmin) {
+			throw redirect({ to: APP_ROUTES.ADMIN.OVERVIEW });
+		}
+	},
 	component: DashboardPage,
 });
 
