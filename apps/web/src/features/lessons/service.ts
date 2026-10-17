@@ -10,6 +10,7 @@ import type {
 } from "@engflex/contracts";
 import { API_ROUTES } from "#/app/api-routes";
 import { api } from "#/lib/api";
+import { explanationLanguage } from "#/lib/explanation-language";
 
 /** Whole path, unpaginated: sections arrive with units attached. */
 export function listSections(params?: {
@@ -85,7 +86,11 @@ export function scoreWriting(
 ): Promise<WritingScoreResponse> {
 	return api<WritingScoreResponse>(API_ROUTES.LESSONS.SCORE(activityId), {
 		method: "POST",
-		body: JSON.stringify({ attemptId, text }),
+		body: JSON.stringify({
+			attemptId,
+			text,
+			language: explanationLanguage(),
+		}),
 	});
 }
 

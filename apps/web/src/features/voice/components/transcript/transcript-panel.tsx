@@ -7,6 +7,7 @@ import { usePipecatConversation } from "@pipecat-ai/client-react";
 import { PencilLine } from "lucide-react";
 import type { ReactNode } from "react";
 import { useEffect, useRef, useState } from "react";
+import { LanguagePicker } from "#/components/common/language-picker";
 import { Avatar, AvatarFallback } from "#/components/ui/avatar";
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
@@ -29,6 +30,7 @@ import {
 	useCorrectionModal,
 } from "#/features/voice/hooks/use-correction-modal";
 import { useAnalyzeTurn, useConversation } from "#/features/voice/queries";
+import { useExplanationLanguage } from "#/hooks/use-explanation-language";
 import { cn } from "#/lib/utils";
 import { m } from "#/paraglide/messages";
 
@@ -187,6 +189,8 @@ function TranscriptPanelView({
 	canReview: boolean;
 	onReview: () => void;
 }) {
+	const { asking, withLanguage, confirm, dismiss, reopen } =
+		useExplanationLanguage("analyze");
 	const bottomRef = useRef<HTMLDivElement>(null);
 	const shown = applyCorrection(groups, applied);
 	const persistedByPosition = new Map(
@@ -218,6 +222,16 @@ function TranscriptPanelView({
 			<div className="flex items-center gap-2 px-6 text-base leading-none font-semibold">
 				{m["voice.room.transcript.title"]()}
 				<Badge variant="secondary">{shown.length}</Badge>
+				<span className="ml-auto">
+					<LanguagePicker
+						open={asking}
+						onOpenChange={(next) => {
+							if (next) reopen();
+							else dismiss();
+						}}
+						onConfirm={confirm}
+					/>
+				</span>
 			</div>
 			<div className="min-h-0 flex-1 px-6 pb-6">
 				<ScrollArea className="h-full max-h-[55vh] min-h-0 overflow-x-clip pr-3 lg:max-h-none">
@@ -272,7 +286,9 @@ function TranscriptPanelView({
 														utterance={group.text}
 														pending={analyzePending}
 														failed={analyzeFailed}
-														onAnalyze={() => onAnalyze(position)}
+														onAnalyze={() =>
+															withLanguage(() => onAnalyze(position))
+														}
 													/>
 												)}
 											</div>

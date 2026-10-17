@@ -13,6 +13,7 @@ import type {
 } from "@engflex/contracts";
 import { API_ROUTES } from "#/app/api-routes";
 import { api, apiPage } from "#/lib/api";
+import { explanationLanguage } from "#/lib/explanation-language";
 
 /** The three actions of the correction modal, in the engine's vocabulary. */
 export type TranscriptAction = "review" | "send" | "dismiss";
@@ -50,9 +51,15 @@ export function analyzeTurn(
 	conversationId: string,
 	position: number,
 ): Promise<Feedback> {
+	// The body carries only the explanation language, and it is read here at
+	// request time: the first-use pick stores the choice, so every later call
+	// picks it up without a value threaded through the call chain.
 	return api<Feedback>(
 		API_ROUTES.CONVERSATIONS.ANALYZE_TURN(conversationId, position),
-		{ method: "POST" },
+		{
+			method: "POST",
+			body: JSON.stringify({ language: explanationLanguage() }),
+		},
 		{ withCredentials: true },
 	);
 }

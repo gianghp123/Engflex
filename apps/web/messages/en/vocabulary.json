@@ -156,8 +156,6 @@
       "exampleLabel": "Contextual usage / Example sentence",
       "generate": "Generate details",
       "generateFailed": "Couldn't generate details. Please try again.",
-      "outputLanguage": "Output language",
-      "outputLanguageHint": "Definitions and tips in this language — example sentences stay English.",
       "detailsTitle": "Word details",
       "save": "Save to vocabulary",
       "required": "Term, definition, and CEFR level are required.",

@@ -12,6 +12,7 @@ import type {
 import { MaxPageSize } from "@engflex/contracts";
 import { API_ROUTES } from "#/app/api-routes";
 import { api, apiPage } from "#/lib/api";
+import { explanationLanguage } from "#/lib/explanation-language";
 import type { AddWordInput } from "./types";
 
 const JSON_HEADERS = { "content-type": "application/json" };
@@ -100,7 +101,7 @@ export function generateWordDraft(
 	return api<WordDraft>(API_ROUTES.VOCABULARY.ITEMS.GENERATE, {
 		method: "POST",
 		headers: JSON_HEADERS,
-		body: JSON.stringify(input),
+		body: JSON.stringify({ ...input, language: explanationLanguage() }),
 	});
 }
 

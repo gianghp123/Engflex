@@ -14,6 +14,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { APP_ROUTES } from "#/app/app-route";
 import { useBreadcrumbs } from "#/app/breadcrumbs";
+import { LanguagePicker } from "#/components/common/language-picker";
 import { PageSplit } from "#/components/common/page-layout";
 import { SubmitButton } from "#/components/common/submit-button";
 import { CheckQuestionPanel } from "#/features/lessons/components/check-question-panel";
@@ -40,6 +41,7 @@ import {
 } from "#/features/lessons/store";
 import { DockGuide } from "#/features/vocabulary/components/dock-guide";
 import { TextActionDock } from "#/features/vocabulary/components/text-action-dock";
+import { useExplanationLanguage } from "#/hooks/use-explanation-language";
 import { loadOr404 } from "#/lib/route-loader";
 import { m } from "#/paraglide/messages";
 
@@ -153,6 +155,9 @@ function PracticeInner({
 	// 401 and retry can only burn time on it — including seconds of SSR burn
 	// on hard loads. In-flight token dips are covered by the
 	// retry-except-404 in the query options instead.
+
+	const { asking, confirm, dismiss, reopen } =
+		useExplanationLanguage("writing");
 	const openQuery = useQuery({
 		...openAttemptQueryOptions(lessonId),
 		enabled: isLoaded,
@@ -195,7 +200,19 @@ function PracticeInner({
 				lessonId={lessonId}
 				part={currentPart}
 				onSelect={setActivePart}
-				headerExtra={<DockGuide />}
+				headerExtra={
+					<div className="flex gap-2">
+						<LanguagePicker
+							open={asking}
+							onOpenChange={(next) => {
+								if (next) reopen();
+								else dismiss();
+							}}
+							onConfirm={confirm}
+						/>
+						<DockGuide />
+					</div>
+				}
 			>
 				{currentPart === "reading" &&
 				activity?.reading &&
@@ -525,17 +542,22 @@ function WritingActivity({
 	const payload = activity.writing;
 	const [text, setText] = useState("");
 	const score = useScoreWriting();
+	const { withLanguage } = useExplanationLanguage("writing");
 	const [result, setResult] = useState<WritingScoreResponse | null>(null);
+	// The first Check writing on this browser picks the explanation language
+	// first; later submits run straight through.
 	function handleSubmit() {
 		if (!attemptId || score.isPending) return;
-		score.mutate(
-			{ activityId: activity.id, attemptId, text },
-			{
-				onSuccess: (value) => setResult(value),
-				onError: () => {
-					toast.error(m["lessons.writing.score.failed"]());
+		withLanguage(() =>
+			score.mutate(
+				{ activityId: activity.id, attemptId, text },
+				{
+					onSuccess: (value) => setResult(value),
+					onError: () => {
+						toast.error(m["lessons.writing.score.failed"]());
+					},
 				},
-			},
+			),
 		);
 	}
 	const { continueLabel, handleContinue } = useContinue(

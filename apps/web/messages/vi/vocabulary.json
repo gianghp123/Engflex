@@ -156,8 +156,6 @@
       "exampleLabel": "Câu ví dụ / ngữ cảnh",
       "generate": "Tạo chi tiết",
       "generateFailed": "Không tạo được chi tiết. Hãy thử lại.",
-      "outputLanguage": "Ngôn ngữ đầu ra",
-      "outputLanguageHint": "Phần định nghĩa và giải thích theo ngôn ngữ này — câu ví dụ vẫn là tiếng Anh.",
       "detailsTitle": "Chi tiết từ",
       "save": "Lưu vào từ vựng",
       "required": "Từ, định nghĩa và cấp độ CEFR là bắt buộc.",

@@ -12,6 +12,7 @@ import {
 import { ChevronDown, Sparkles } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { LanguagePicker } from "#/components/common/language-picker";
 import { SubmitButton } from "#/components/common/submit-button";
 import { Button } from "#/components/ui/button";
 import {
@@ -27,11 +28,6 @@ import {
 	FieldLabel,
 } from "#/components/ui/field";
 import { Input } from "#/components/ui/input";
-import {
-	Popover,
-	PopoverContent,
-	PopoverTrigger,
-} from "#/components/ui/popover";
 import {
 	Select,
 	SelectContent,
@@ -50,43 +46,13 @@ import {
 } from "#/features/vocabulary/queries";
 import { termKey } from "#/features/vocabulary/term-key";
 import type { AddWordSource } from "#/features/vocabulary/types";
+import { useExplanationLanguage } from "#/hooks/use-explanation-language";
 import { ApiError } from "#/lib/api";
 import { enumOptions } from "#/lib/enum-options";
 import { m } from "#/paraglide/messages";
-import { getLocale, locales } from "#/paraglide/runtime";
 
 const CEFR_OPTIONS = enumOptions(CEFR_VALUES);
 const POS_OPTIONS = enumOptions(VOCABULARY_PART_OF_SPEECH_VALUES, POS_LABELS);
-
-/** The last generate output language, remembered per browser. */
-const GENERATE_LANGUAGE_KEY = "engflex:vocabulary-generate-language";
-const DEFAULT_GENERATE_LANGUAGE = "en";
-
-/** The stored pick when it is still one of the app's locales, else the default. */
-function initialGenerateLanguage(): string {
-	if (typeof window === "undefined") return DEFAULT_GENERATE_LANGUAGE;
-	try {
-		const stored = window.localStorage.getItem(GENERATE_LANGUAGE_KEY);
-		return stored && (locales as readonly string[]).includes(stored)
-			? stored
-			: DEFAULT_GENERATE_LANGUAGE;
-	} catch {
-		return DEFAULT_GENERATE_LANGUAGE;
-	}
-}
-
-/**
- * Language options derive from the app's configured locales — a locale added
- * in project.inlang shows up here with no code change; the label is the
- * platform's language name in the current UI locale.
- */
-function languageLabel(locale: string): string {
-	return (
-		new Intl.DisplayNames([getLocale(), "en"], { type: "language" }).of(
-			locale,
-		) ?? locale
-	);
-}
 
 const EMPTY_FORM: {
 	term: string;
@@ -154,10 +120,8 @@ export function AddWordForm({
 	const [error, setError] = useState<string | null>(null);
 	const generate = useGenerateWordDraft();
 	const [generateError, setGenerateError] = useState<string | null>(null);
-	const [generateLanguage, setGenerateLanguage] = useState(
-		initialGenerateLanguage,
-	);
-	const [configOpen, setConfigOpen] = useState(false);
+	const { asking, withLanguage, confirm, dismiss, reopen } =
+		useExplanationLanguage("vocabulary");
 
 	/** On demand: fills the editable fields; nothing applies or saves itself. */
 	function generateDraft() {
@@ -165,7 +129,7 @@ export function AddWordForm({
 		if (!term) return;
 		setGenerateError(null);
 		generate.mutate(
-			{ term, context: form.example.trim(), outputLanguage: generateLanguage },
+			{ term, context: form.example.trim() },
 			{
 				onSuccess: (draft) => {
 					setForm((current) => ({
@@ -181,22 +145,6 @@ export function AddWordForm({
 					setGenerateError(m["vocabulary.addWord.generateFailed"]()),
 			},
 		);
-	}
-
-	/** Remember the pick for the next draft (client-only preference). */
-	function chooseLanguage(value: string) {
-		setGenerateLanguage(value);
-		try {
-			window.localStorage.setItem(GENERATE_LANGUAGE_KEY, value);
-		} catch {
-			// Private mode etc: the pick still applies to this session.
-		}
-	}
-
-	/** The config's confirm: take the pick, close the config, generate. */
-	function confirmGenerate() {
-		setConfigOpen(false);
-		generateDraft();
 	}
 
 	const typedKey = termKey(form.term);
@@ -273,61 +221,32 @@ export function AddWordForm({
 				<DialogDescription className="font-medium">
 					{m["vocabulary.addWord.description"]()}
 				</DialogDescription>
-				<Popover open={configOpen} onOpenChange={setConfigOpen}>
-					<PopoverTrigger asChild>
-						<SubmitButton
-							type="button"
-							size="sm"
-							variant="outline"
-							pending={generate.isPending}
-							// The save reuses an existing entry and never updates it, so
-							// a draft generated for an already-saved word would be
-							// silently discarded — the hint above the definition field
-							// explains the disabled state.
-							disabled={!form.term.trim() || existingInLibrary}
-						>
-							<Sparkles
-								data-icon="inline-start"
-								className="text-violet-500 dark:text-violet-400"
-							/>
-							{m["vocabulary.addWord.generate"]()}
-						</SubmitButton>
-					</PopoverTrigger>
-					<PopoverContent align="end" className="flex flex-col gap-3">
-						<div className="flex flex-col gap-2">
-							<FieldLabel htmlFor="generate-language">
-								{m["vocabulary.addWord.outputLanguage"]()}
-							</FieldLabel>
-							<Select value={generateLanguage} onValueChange={chooseLanguage}>
-								<SelectTrigger id="generate-language" className="w-full">
-									<SelectValue />
-								</SelectTrigger>
-								<SelectContent>
-									{locales.map((locale) => (
-										<SelectItem key={locale} value={locale}>
-											{languageLabel(locale)}
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
-							<p className="text-xs text-muted-foreground">
-								{m["vocabulary.addWord.outputLanguageHint"]()}
-							</p>
-						</div>
-						<SubmitButton
-							type="button"
-							size="sm"
-							pending={generate.isPending}
-							onClick={confirmGenerate}
-						>
-							<Sparkles
-								data-icon="inline-start"
-								className="text-violet-500 dark:text-violet-400"
-							/>
-							{m["vocabulary.addWord.generate"]()}
-						</SubmitButton>
-					</PopoverContent>
-				</Popover>
+				<SubmitButton
+					type="button"
+					size="sm"
+					variant="outline"
+					pending={generate.isPending}
+					// The save reuses an existing entry and never updates it, so
+					// a draft generated for an already-saved word would be
+					// silently discarded — the hint above the definition field
+					// explains the disabled state.
+					disabled={!form.term.trim() || existingInLibrary}
+					onClick={() => withLanguage(generateDraft)}
+				>
+					<Sparkles
+						data-icon="inline-start"
+						className="text-violet-500 dark:text-violet-400"
+					/>
+					{m["vocabulary.addWord.generate"]()}
+				</SubmitButton>
+				<LanguagePicker
+					open={asking}
+					onOpenChange={(next) => {
+						if (next) reopen();
+						else dismiss();
+					}}
+					onConfirm={confirm}
+				/>
 			</div>
 			{generateError ? (
 				<p className="text-xs font-bold text-destructive">{generateError}</p>

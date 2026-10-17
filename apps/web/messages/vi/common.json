@@ -22,6 +22,12 @@
       "pause": "Tạm dừng",
       "total": "Tổng"
     },
+    "language": {
+      "trigger": "Ngôn ngữ giải thích",
+      "label": "Ngôn ngữ giải thích",
+      "hint": "Định nghĩa và mẹo bằng ngôn ngữ này — câu ví dụ vẫn giữ tiếng Anh.",
+      "dontAskAgain": "Không hỏi lại"
+    },
     "pager": {
       "previous": "Trước",
       "next": "Sau"
