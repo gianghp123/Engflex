@@ -38,15 +38,30 @@ import {
 } from "#/features/onboarding/components/slide-track";
 import { TimeCommitmentCard } from "#/features/onboarding/components/time-commitment-card";
 import { TopicChip } from "#/features/onboarding/components/topic-chip";
-import { profileKeys, useUpdateProfile } from "#/features/profiles/queries";
-import { getAuthState } from "#/lib/auth-guard";
+import {
+	profileKeys,
+	profileQueryOptions,
+	useUpdateProfile,
+} from "#/features/profiles/queries";
+import { ApiError } from "#/lib/api";
 import { m } from "#/paraglide/messages";
 
 export const Route = createFileRoute("/onboarding")({
-	beforeLoad: async () => {
-		const { isAuthenticated, onboardingCompleted } = await getAuthState();
-		if (!isAuthenticated) {
-			throw redirect({ href: APP_ROUTES.AUTH.SIGN_IN });
+	beforeLoad: async ({ context: { queryClient }, preload }) => {
+		// See _app/route.tsx: a hover must not read anything.
+		if (preload) return;
+
+		let onboardingCompleted = false;
+		try {
+			const profile = await queryClient.query(profileQueryOptions());
+			onboardingCompleted = profile.onboardingCompletedAt != null;
+		} catch (err) {
+			if (err instanceof ApiError && err.status === 401) {
+				throw redirect({ href: APP_ROUTES.AUTH.SIGN_IN });
+			}
+			if (!(err instanceof ApiError && err.status === 404)) {
+				throw err;
+			}
 		}
 		if (onboardingCompleted) {
 			throw redirect({ to: APP_ROUTES.HOME });
@@ -228,6 +243,9 @@ function OnboardingPage() {
 			{
 				onSuccess: (profile) => {
 					window.localStorage.removeItem(ONBOARDING_PROGRESS_KEY);
+					// MUST precede the navigation: `_app`'s guard reads this
+					// entry for the onboarding flag, so writing it after
+					// navigating would bounce the user back here.
 					queryClient.setQueryData(profileKeys.me, profile);
 					navigate({ to: APP_ROUTES.HOME });
 				},
