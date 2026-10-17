@@ -43,7 +43,7 @@ import {
 	profileQueryOptions,
 	useUpdateProfile,
 } from "#/features/profiles/queries";
-import { ApiError } from "#/lib/api";
+import { ApiError } from "#/lib/api/api";
 import { m } from "#/paraglide/messages";
 
 export const Route = createFileRoute("/onboarding")({

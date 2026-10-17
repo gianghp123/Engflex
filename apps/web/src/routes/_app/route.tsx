@@ -4,7 +4,7 @@ import { APP_ROUTES } from "#/app/app-route";
 import { RouteErrorFallback } from "#/components/common/error-pages";
 import { AppShell } from "#/components/layout/app-shell";
 import { profileQueryOptions } from "#/features/profiles/queries";
-import { ApiError } from "#/lib/api";
+import { ApiError } from "#/lib/api/api";
 
 export const Route = createFileRoute("/_app")({
 	beforeLoad: async ({ context: { queryClient }, preload }) => {

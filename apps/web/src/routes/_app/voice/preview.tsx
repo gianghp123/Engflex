@@ -10,7 +10,7 @@ import {
 	type RoomSession,
 	VoiceRoom,
 } from "#/features/voice/components/room/voice-room";
-import { parseEnumParam } from "#/lib/search-params";
+import { parseEnumParam } from "#/lib/router/search-params";
 import { m } from "#/paraglide/messages";
 
 export const Route = createFileRoute("/_app/voice/preview")({

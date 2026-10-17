@@ -47,7 +47,7 @@ import {
 import { termKey } from "#/features/vocabulary/term-key";
 import type { AddWordSource } from "#/features/vocabulary/types";
 import { useExplanationLanguage } from "#/hooks/use-explanation-language";
-import { ApiError } from "#/lib/api";
+import { ApiError } from "#/lib/api/api";
 import { enumOptions } from "#/lib/enum-options";
 import { m } from "#/paraglide/messages";
 

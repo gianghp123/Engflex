@@ -1,7 +1,7 @@
 import type { QueryClient } from "@tanstack/react-query";
 import { notFound, redirect } from "@tanstack/react-router";
 import { APP_ROUTES } from "#/app/app-route";
-import { ApiError } from "./api";
+import { ApiError } from "../api/api";
 
 /**
  * Preload a query in a route `loader` with correct 404/error routing.

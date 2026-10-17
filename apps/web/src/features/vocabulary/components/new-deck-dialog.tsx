@@ -21,7 +21,7 @@ import {
 import { Input } from "#/components/ui/input";
 import { Textarea } from "#/components/ui/textarea";
 import { useCreateDeck, useDecks } from "#/features/vocabulary/queries";
-import { ApiError } from "#/lib/api";
+import { ApiError } from "#/lib/api/api";
 import { m } from "#/paraglide/messages";
 
 export function NewDeckDialog({

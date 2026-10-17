@@ -37,7 +37,7 @@ import {
 	parseEnumParam,
 	parseFilterParam,
 	parsePage,
-} from "#/lib/search-params";
+} from "#/lib/router/search-params";
 import { m } from "#/paraglide/messages";
 
 type WordsSearch = {

@@ -6,7 +6,7 @@ import {
 	transcribeAudio,
 	transcriptCommand,
 } from "#/features/voice/service";
-import { ApiError } from "#/lib/api";
+import { ApiError } from "#/lib/api/api";
 import { m } from "#/paraglide/messages";
 
 /**

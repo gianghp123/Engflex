@@ -5,7 +5,7 @@ import {
 	wrapMiddlewaresWithSentry,
 } from "@sentry/tanstackstart-react";
 import { createCsrfMiddleware, createStart } from "@tanstack/react-start";
-import { paraglideRequestMiddleware } from "./lib/paraglide-middleware";
+import { paraglideRequestMiddleware } from "./lib/language/paraglide-middleware";
 
 const csrfMiddleware = createCsrfMiddleware({
 	filter: (context) => context.handlerType === "serverFn",

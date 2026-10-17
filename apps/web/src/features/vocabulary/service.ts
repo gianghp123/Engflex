@@ -11,8 +11,8 @@ import type {
 } from "@engflex/contracts";
 import { MaxPageSize } from "@engflex/contracts";
 import { API_ROUTES } from "#/app/api-routes";
-import { api, apiPage } from "#/lib/api";
-import { explanationLanguage } from "#/lib/explanation-language";
+import { api, apiPage } from "#/lib/api/api";
+import { explanationLanguage } from "#/lib/language/explanation-language";
 import type { AddWordInput } from "./types";
 
 const JSON_HEADERS = { "content-type": "application/json" };

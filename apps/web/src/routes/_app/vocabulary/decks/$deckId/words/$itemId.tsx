@@ -5,7 +5,7 @@ import {
 	useDeck,
 	vocabularyItemQueryOptions,
 } from "#/features/vocabulary/queries";
-import { loadOr404 } from "#/lib/route-loader";
+import { loadOr404 } from "#/lib/router/route-loader";
 
 export const Route = createFileRoute(
 	"/_app/vocabulary/decks/$deckId/words/$itemId",

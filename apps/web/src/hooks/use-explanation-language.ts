@@ -4,7 +4,7 @@ import {
 	explanationLanguageAsked,
 	markExplanationLanguageAsked,
 	setExplanationLanguage,
-} from "#/lib/explanation-language";
+} from "#/lib/language/explanation-language";
 
 /**
  * The language control and its first-use ask, scoped to one surface.

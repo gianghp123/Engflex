@@ -10,7 +10,7 @@ import {
 	scoreWriting,
 	startLessonAttempt,
 } from "#/features/lessons/service";
-import { ApiError } from "#/lib/api";
+import { ApiError } from "#/lib/api/api";
 
 export const lessonKeys = {
 	sections: ["lesson-sections"] as const,

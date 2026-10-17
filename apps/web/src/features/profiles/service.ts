@@ -1,6 +1,6 @@
 import type { Preferences, Profile } from "@engflex/contracts";
 import { API_ROUTES } from "#/app/api-routes";
-import { api } from "#/lib/api";
+import { api } from "#/lib/api/api";
 
 /** The caller's profile, or an ApiError(404) before onboarding. */
 export function getProfile(): Promise<Profile> {

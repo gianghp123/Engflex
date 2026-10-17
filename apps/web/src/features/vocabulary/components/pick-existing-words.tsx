@@ -13,7 +13,7 @@ import {
 	useDeck,
 	useLibrarySearch,
 } from "#/features/vocabulary/queries";
-import { ApiError } from "#/lib/api";
+import { ApiError } from "#/lib/api/api";
 import { m } from "#/paraglide/messages";
 
 /**

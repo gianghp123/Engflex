@@ -19,7 +19,7 @@ import {
 	videoListQueryOptions,
 	videoPreviewQueryOptions,
 } from "#/features/videos/queries";
-import { loadOr404 } from "#/lib/route-loader";
+import { loadOr404 } from "#/lib/router/route-loader";
 import { m } from "#/paraglide/messages";
 
 export const Route = createFileRoute("/_app/videos/categories/$categorySlug")({

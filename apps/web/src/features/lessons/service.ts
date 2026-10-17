@@ -9,8 +9,8 @@ import type {
 	WritingScoreResponse,
 } from "@engflex/contracts";
 import { API_ROUTES } from "#/app/api-routes";
-import { api } from "#/lib/api";
-import { explanationLanguage } from "#/lib/explanation-language";
+import { api } from "#/lib/api/api";
+import { explanationLanguage } from "#/lib/language/explanation-language";
 
 /** Whole path, unpaginated: sections arrive with units attached. */
 export function listSections(params?: {

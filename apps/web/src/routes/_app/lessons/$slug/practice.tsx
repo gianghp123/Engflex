@@ -42,7 +42,7 @@ import {
 import { DockGuide } from "#/features/vocabulary/components/dock-guide";
 import { TextActionDock } from "#/features/vocabulary/components/text-action-dock";
 import { useExplanationLanguage } from "#/hooks/use-explanation-language";
-import { loadOr404 } from "#/lib/route-loader";
+import { loadOr404 } from "#/lib/router/route-loader";
 import { m } from "#/paraglide/messages";
 
 export const Route = createFileRoute("/_app/lessons/$slug/practice")({

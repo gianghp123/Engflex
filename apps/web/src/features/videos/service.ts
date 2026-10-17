@@ -4,7 +4,7 @@ import type {
 	VideoExerciseResponse,
 } from "@engflex/contracts";
 import { API_ROUTES } from "#/app/api-routes";
-import { api, apiPage } from "#/lib/api";
+import { api, apiPage } from "#/lib/api/api";
 
 export function listCategoryPreviews(
 	previewK: number,

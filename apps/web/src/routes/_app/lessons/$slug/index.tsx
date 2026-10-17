@@ -17,7 +17,7 @@ import {
 	getFirstIncompleteActivity,
 	partNumbersFor,
 } from "#/features/lessons/store";
-import { loadOr404 } from "#/lib/route-loader";
+import { loadOr404 } from "#/lib/router/route-loader";
 import { m } from "#/paraglide/messages";
 
 export const Route = createFileRoute("/_app/lessons/$slug/")({

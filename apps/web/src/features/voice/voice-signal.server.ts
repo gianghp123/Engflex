@@ -3,7 +3,7 @@ import "@tanstack/react-start/server-only";
 import { auth } from "@clerk/tanstack-react-start/server";
 import { getRequestHeaders } from "@tanstack/react-start/server";
 import { API_INTERNAL_URL_FALLBACK, API_ROUTES } from "#/app/api-routes";
-import { pickForwardedHeaders } from "#/lib/forward-headers.server";
+import { pickForwardedHeaders } from "#/lib/api/forward-headers.server";
 
 const INTERNAL_API_URL =
 	process.env.API_INTERNAL_URL ?? API_INTERNAL_URL_FALLBACK;

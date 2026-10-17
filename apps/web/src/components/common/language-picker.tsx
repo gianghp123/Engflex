@@ -10,7 +10,7 @@ import {
 	PopoverTrigger,
 } from "#/components/ui/popover";
 import { Switch } from "#/components/ui/switch";
-import { explanationLanguage } from "#/lib/explanation-language";
+import { explanationLanguage } from "#/lib/language/explanation-language";
 import { m } from "#/paraglide/messages";
 
 /**

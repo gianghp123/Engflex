@@ -1,7 +1,7 @@
 import type { Progress } from "@engflex/contracts";
 import { useQuery } from "@tanstack/react-query";
 import { API_ROUTES } from "#/app/api-routes";
-import { api } from "#/lib/api";
+import { api } from "#/lib/api/api";
 
 const progressKeys = {
 	summary: ["progress"] as const,

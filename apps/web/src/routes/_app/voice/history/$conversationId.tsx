@@ -3,7 +3,7 @@ import { APP_ROUTES } from "#/app/app-route";
 import { useBreadcrumbs } from "#/app/breadcrumbs";
 import { EndedReview } from "#/features/voice/components/room/ended-review";
 import { conversationQueryOptions } from "#/features/voice/queries";
-import { loadOr404 } from "#/lib/route-loader";
+import { loadOr404 } from "#/lib/router/route-loader";
 import { m } from "#/paraglide/messages";
 
 export const Route = createFileRoute("/_app/voice/history/$conversationId")({

@@ -12,8 +12,8 @@ import type {
 	TranscriptResult,
 } from "@engflex/contracts";
 import { API_ROUTES } from "#/app/api-routes";
-import { api, apiPage } from "#/lib/api";
-import { explanationLanguage } from "#/lib/explanation-language";
+import { api, apiPage } from "#/lib/api/api";
+import { explanationLanguage } from "#/lib/language/explanation-language";
 
 /** The three actions of the correction modal, in the engine's vocabulary. */
 export type TranscriptAction = "review" | "send" | "dismiss";
