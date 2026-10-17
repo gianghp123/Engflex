@@ -231,7 +231,7 @@ func (h *LessonActivityController) ScoreWriting(c *gin.Context) {
 		common.Fail(c, common.BadRequest(err.Error()))
 		return
 	}
-	res, err := h.activities.ScoreWriting(c.Request.Context(), middleware.UserID(c), c.Param("id"), req.AttemptID, req.Text)
+	res, err := h.activities.ScoreWriting(c.Request.Context(), middleware.UserID(c), c.Param("id"), req.AttemptID, req.Text, req.Language)
 	if err != nil {
 		common.Fail(c, err)
 		return

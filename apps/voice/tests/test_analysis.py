@@ -76,6 +76,23 @@ def test_prompt_carries_no_level_or_objective():
     assert "objective" not in prompt.lower()
 
 
+def test_prompt_default_matches_the_english_spelling():
+    # "" and "English" must render one brief, or the string every existing
+    # reply was written against drifts the moment a learner picks English.
+    english = _request().model_copy(update={"language": "English"})
+    assert build_feedback_prompt(_request()) == build_feedback_prompt(english)
+
+
+def test_prompt_localizes_only_the_prose():
+    # The corrected utterance and the span text are the learner's own
+    # target-language content: only the coaching prose localizes.
+    req = _request().model_copy(update={"language": "Vietnamese"})
+    prompt = build_feedback_prompt(req)
+    assert "in Vietnamese only" in prompt
+    assert "Keep corrected, every span text" in prompt
+    assert "in Vietnamese only" not in build_feedback_prompt(_request())
+
+
 def test_extract_returns_a_bare_object():
     raw = '{"corrected": "a", "spans": [], "relevance": {"status": "relevant", "reason": null}, "alternatives": {"language": null, "contextual": null}, "tip": "t"}'
     assert extract_json_object(raw) == raw

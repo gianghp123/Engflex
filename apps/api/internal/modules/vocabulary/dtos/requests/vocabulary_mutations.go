@@ -1,5 +1,9 @@
 package requests
 
+import (
+	"engflex-api/internal/llm"
+)
+
 // VocabularyDetails is the wire copy of the entry's rich content (tygo cannot
 // resolve cross-package types).
 type VocabularyDetails struct {
@@ -126,10 +130,7 @@ type ReviewUserVocabulary struct {
 // dialog. Read-only: nothing is stored; the reviewed result rides the normal
 // add-word save.
 type GenerateWordDraft struct {
-	Term    string `json:"term" binding:"required,max=120"`
-	Context string `json:"context" binding:"max=400"`
-	// OutputLanguage is a BCP-47 code ("en", "vi", …) naming the language the
-	// explanation fields are written in. Empty is English, the default; any
-	// assigned language works, so adding a UI locale needs no change here.
-	OutputLanguage string `json:"outputLanguage,omitempty" binding:"omitempty,max=16"`
+	llm.LanguageParam `tstype:",extends"`
+	Term              string `json:"term" binding:"required,max=120"`
+	Context           string `json:"context" binding:"max=400"`
 }

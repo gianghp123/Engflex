@@ -97,12 +97,18 @@ class AnalyzeRequest(BaseModel):
     Deliberately carries no CEFR level and no scenario objective: the
     conversation context already expresses what the session is about, and the
     ask "is this correct English" does not vary by level.
+
+    ``language`` is the resolved English name of the language the explanation
+    prose is written in ("" = the English brief). The corrected utterance and
+    every span text stay English regardless — they are the learner's
+    target-language content, not explanations.
     """
 
     conversationId: str
     turnId: str
     text: str
     context: list[ContextTurn] = Field(default_factory=list)
+    language: str = ""
 
 
 class AnalyzeResponse(BaseModel):
@@ -117,9 +123,29 @@ class _StructuredUnsupported(Exception):
     """Internal signal: the route accepted response_format but ignored it."""
 
 
+_LANGUAGE_RULE = (
+    "Write the span reasons, the relevance reason, the alternative reasons and "
+    "the tip in {language} only. Keep corrected, every span text and "
+    "correction, and every alternative text in English — they are the "
+    "learner's target-language content, not explanations.\n\n"
+)
+
+
+def language_brief(language: str) -> str:
+    """The explanation-language directive, or "" for the default English brief.
+
+    "" and "English" share one prompt so the brief every existing reply was
+    written against cannot drift.
+    """
+    name = (language or "").strip()
+    if not name or name.lower() == "english":
+        return ""
+    return _LANGUAGE_RULE.format(language=name)
+
+
 def build_feedback_prompt(req: AnalyzeRequest) -> str:
     context_lines = "\n".join(f"  {t.role}: {t.text}" for t in req.context) or "  (none)"
-    return (
+    return language_brief(req.language) + (
         "You are an English coach reviewing ONE learner utterance in a live "
         "spoken conversation. Judge on two axes: (1) Language — span-level "
         "problems in the utterance itself. (2) Conversation — whether the "

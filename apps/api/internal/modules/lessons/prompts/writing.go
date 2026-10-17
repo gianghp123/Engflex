@@ -14,13 +14,19 @@ import (
 // target, never copied into suggested. The learner text is the only thing
 // judged. Static few-shot examples use the Kenji brief (tested live); template
 // variables stay strictly for dynamic parts.
-func BuildWritingScorePrompt(cfg activityconfig.WritingConfig, text string, wordCount int) string {
+//
+// language names the language the explanation prose is written in ("" or
+// "English" = the default brief). Only the commentary localizes — suggested,
+// expressions and every span text/correction stay English, because those are
+// the learner's target-language content, not explanations.
+func BuildWritingScorePrompt(cfg activityconfig.WritingConfig, text string, wordCount int, language string) string {
 	checklist := make([]string, 0, len(cfg.Checklist))
 	for i, item := range cfg.Checklist {
 		checklist = append(checklist, fmt.Sprintf("%d. %s", i+1, item))
 	}
 	return "You are an English coach reviewing ONE learner writing response. " +
 		"Return feedback in exactly six sections.\n\n" +
+		languageBrief(language) +
 		"Task: " + cfg.Task + "\n" +
 		"Brief: " + cfg.Instructions + "\n" +
 		"Context: " + cfg.Stimulus + "\n" +
@@ -47,6 +53,19 @@ func BuildWritingScorePrompt(cfg activityconfig.WritingConfig, text string, word
 		"Reply with a single JSON object and nothing else, keys exactly: " +
 		"task, grammar, phrasing, expressions, suggested, tip.\n\n" +
 		writingScoreExamples
+}
+
+// languageBrief asks for the explanation prose in another language. Empty and
+// English return nothing, so the default prompt stays byte-identical to the
+// English brief every existing call and test was written against.
+func languageBrief(language string) string {
+	if language == "" || strings.EqualFold(language, "English") {
+		return ""
+	}
+	return "Write the grammar reasons, the phrasing reasons, task.answersNote and tip in " +
+		language + " only. Keep suggested, expressions, and every grammar/phrasing text and " +
+		"correction in English — they are the learner's target-language content, not " +
+		"explanations.\n\n"
 }
 
 // writingScoreExamples are static few-shot examples (sona-voice pattern): one

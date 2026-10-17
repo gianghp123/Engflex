@@ -66,14 +66,17 @@ type StartResponse struct {
 }
 
 // AnalyzeTurnRequest is the per-turn analysis payload. It carries the turn
-// text and the prior turns, and deliberately nothing else: the conversation
-// context already expresses the topic, and "is this correct English" does not
-// vary by CEFR level.
+// text and the prior turns: the conversation context already expresses the
+// topic, and "is this correct English" does not vary by CEFR level. Language
+// is the resolved English name of the language the explanation prose is
+// written in — never the corrected text, which stays English. "" selects the
+// engine's default brief.
 type AnalyzeTurnRequest struct {
 	ConversationID string
 	TurnID         string
 	Text           string
 	Context        []ContextTurn
+	Language       string
 }
 
 // ContextTurn is one prior transcript line supplied as analysis context.
@@ -144,6 +147,7 @@ func (c *httpVoiceClient) AnalyzeTurn(ctx context.Context, req AnalyzeTurnReques
 		"turnId":         req.TurnID,
 		"text":           req.Text,
 		"context":        req.Context,
+		"language":       req.Language,
 	})
 	if err != nil {
 		return nil, err

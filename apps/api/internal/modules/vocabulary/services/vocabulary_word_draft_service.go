@@ -3,11 +3,7 @@ package services
 import (
 	"context"
 	"log/slog"
-	"slices"
 	"strings"
-
-	"golang.org/x/text/language"
-	"golang.org/x/text/language/display"
 
 	"engflex-api/internal/common"
 	"engflex-api/internal/llm"
@@ -40,7 +36,7 @@ func (s *vocabularyWordDraftService) Generate(ctx context.Context, req requests.
 	if term == "" {
 		return nil, common.BadRequest("term is required")
 	}
-	languageName, ok := explanationLanguage(req.OutputLanguage)
+	languageName, ok := llm.ExplanationLanguage(req.Language)
 	if !ok {
 		return nil, common.BadRequest("unsupported output language")
 	}
@@ -62,37 +58,6 @@ func (s *vocabularyWordDraftService) Generate(ctx context.Context, req requests.
 		logger.Report(ctx, "word draft map failed", mErr, "term", term)
 		return nil, common.Internal()
 	}
-	slog.InfoContext(ctx, "word draft generated", "term", term, "outputLanguage", languageName)
+	slog.InfoContext(ctx, "word draft generated", "term", term, "language", languageName)
 	return &dto, nil
-}
-
-// explanationLanguage resolves the request's BCP-47 code to the English name
-// of the language the explanation fields are written in ("" = English, the
-// default brief). Any assigned language is accepted — the web picker loads
-// its options from the app's configured locales, so adding a locale needs no
-// change here. Unassigned tags ("zz"), malformed tags ("not a tag") and the
-// non-language codes are refused: better a 400 than a brief the model cannot
-// interpret.
-func explanationLanguage(code string) (string, bool) {
-	code = strings.TrimSpace(code)
-	if code == "" {
-		return "", true
-	}
-	tag, err := language.Parse(code)
-	if err != nil || slices.Contains(nonLanguageTags, tag) {
-		return "", false
-	}
-	name := display.English.Languages().Name(tag)
-	if name == "" || strings.EqualFold(name, code) {
-		return "", false
-	}
-	return name, true
-}
-
-// nonLanguageTags are well-formed codes that name no single language; the
-// model cannot write explanations in them.
-var nonLanguageTags = []language.Tag{
-	language.MustParse("und"), // Unknown language
-	language.MustParse("mul"), // Multiple languages
-	language.MustParse("zxx"), // No linguistic content
 }

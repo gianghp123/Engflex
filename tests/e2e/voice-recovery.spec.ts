@@ -45,6 +45,16 @@ test.beforeAll(() => {
 });
 
 test.beforeEach(async ({ context }) => {
+	// A browser's first LLM action opens the explanation-language pick, so
+	// start every test already asked and let Analyze/Check run straight through.
+	await context.addInitScript(() => {
+		for (const surface of ["vocabulary", "writing", "analyze"]) {
+			window.localStorage.setItem(
+				`engflex:explanation-language:asked:${surface}`,
+				"1",
+			);
+		}
+	});
 	await context.addCookies([
 		{
 			name: "PARAGLIDE_LOCALE",

@@ -38,7 +38,7 @@ export interface CheckAnswer {
 /**
  * ScoreWriting grades one writing part into the open lesson attempt.
  */
-export interface ScoreWriting {
+export interface ScoreWriting extends LanguageParam {
   attemptId: string;
   text: string;
 }

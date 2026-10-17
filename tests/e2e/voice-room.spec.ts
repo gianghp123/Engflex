@@ -12,6 +12,16 @@ import {
 const created: string[] = [];
 
 test.beforeEach(async ({ context }) => {
+	// A browser's first LLM action opens the explanation-language pick, so
+	// start every test already asked and let Analyze/Check run straight through.
+	await context.addInitScript(() => {
+		for (const surface of ["vocabulary", "writing", "analyze"]) {
+			window.localStorage.setItem(
+				`engflex:explanation-language:asked:${surface}`,
+				"1",
+			);
+		}
+	});
 	await context.addCookies([
 		{
 			name: "PARAGLIDE_LOCALE",
@@ -114,9 +124,11 @@ test("analyze: engine-down error, then seeded feedback card", async ({
 		tip: "Use the past tense for yesterday.",
 	});
 	await page.reload();
-	// The card renders the highlighted span, correction row, tip (the
-	// corrected string itself is shown in the repair block) plus the
-	// re-analyze affordance.
+	// The review surface shows the analysis inline and collapsed, so open the
+	// turn's disclosure first — the card is not in the DOM until then. It
+	// renders the highlighted span, correction row, tip (the corrected string
+	// itself is shown in the repair block) plus the re-analyze affordance.
+	await page.getByRole("button", { name: /Analyzed turn/ }).click();
 	await expect(page.getByText("Use the past tense for yesterday.")).toBeVisible(
 		{ timeout: 20_000 },
 	);

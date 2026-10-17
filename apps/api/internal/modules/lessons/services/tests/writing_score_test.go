@@ -101,7 +101,7 @@ func TestScoreWriting(t *testing.T) {
 					Return(nil).Once()
 				svc := services.NewLessonActivityService(repo, pronunciation.NewScorer(voicemocks.NewMockPronounceEngine(t)), llm, attempts)
 
-				got, err := svc.ScoreWriting(context.Background(), writingUserID, writingActID, writingOpenID, writingText)
+				got, err := svc.ScoreWriting(context.Background(), writingUserID, writingActID, writingOpenID, writingText, "")
 
 				require.NoError(t, err)
 				require.NotNil(t, got)
@@ -149,7 +149,7 @@ func TestScoreWriting(t *testing.T) {
 					Return(errors.New("boom")).Once()
 				svc := services.NewLessonActivityService(repo, pronunciation.NewScorer(voicemocks.NewMockPronounceEngine(t)), llm, attempts)
 
-				got, err := svc.ScoreWriting(context.Background(), writingUserID, writingActID, writingOpenID, writingText)
+				got, err := svc.ScoreWriting(context.Background(), writingUserID, writingActID, writingOpenID, writingText, "")
 
 				requireAppError(t, err, http.StatusServiceUnavailable)
 				assert.Nil(t, got)
@@ -169,7 +169,7 @@ func TestScoreWriting(t *testing.T) {
 				expectLLMCanned(llm, bad)
 				svc := services.NewLessonActivityService(repo, pronunciation.NewScorer(voicemocks.NewMockPronounceEngine(t)), llm, attempts)
 
-				got, err := svc.ScoreWriting(context.Background(), writingUserID, writingActID, writingOpenID, writingText)
+				got, err := svc.ScoreWriting(context.Background(), writingUserID, writingActID, writingOpenID, writingText, "")
 
 				requireAppError(t, err, http.StatusServiceUnavailable)
 				assert.Nil(t, got)
@@ -189,7 +189,7 @@ func TestScoreWriting(t *testing.T) {
 				expectLLMCanned(llm, bad)
 				svc := services.NewLessonActivityService(repo, pronunciation.NewScorer(voicemocks.NewMockPronounceEngine(t)), llm, attempts)
 
-				got, err := svc.ScoreWriting(context.Background(), writingUserID, writingActID, writingOpenID, writingText)
+				got, err := svc.ScoreWriting(context.Background(), writingUserID, writingActID, writingOpenID, writingText, "")
 
 				requireAppError(t, err, http.StatusServiceUnavailable)
 				assert.Nil(t, got)
@@ -206,7 +206,7 @@ func TestScoreWriting(t *testing.T) {
 				repo.EXPECT().GetByID(mock.Anything, reading.ID).Return(reading, nil).Once()
 				svc := services.NewLessonActivityService(repo, pronunciation.NewScorer(voicemocks.NewMockPronounceEngine(t)), llm, attempts)
 
-				got, err := svc.ScoreWriting(context.Background(), writingUserID, reading.ID, writingOpenID, writingText)
+				got, err := svc.ScoreWriting(context.Background(), writingUserID, reading.ID, writingOpenID, writingText, "")
 
 				requireAppError(t, err, http.StatusUnprocessableEntity)
 				assert.Nil(t, got)
@@ -222,7 +222,7 @@ func TestScoreWriting(t *testing.T) {
 				llm := llmmocks.NewMockLLMClient(t)
 				svc := services.NewLessonActivityService(repo, pronunciation.NewScorer(voicemocks.NewMockPronounceEngine(t)), llm, attempts)
 
-				got, err := svc.ScoreWriting(context.Background(), writingUserID, writingActID, writingOpenID, "   ")
+				got, err := svc.ScoreWriting(context.Background(), writingUserID, writingActID, writingOpenID, "   ", "")
 
 				requireAppError(t, err, http.StatusBadRequest)
 				assert.Nil(t, got)
@@ -238,7 +238,7 @@ func TestScoreWriting(t *testing.T) {
 				llm := llmmocks.NewMockLLMClient(t)
 				svc := services.NewLessonActivityService(repo, pronunciation.NewScorer(voicemocks.NewMockPronounceEngine(t)), llm, attempts)
 
-				got, err := svc.ScoreWriting(context.Background(), writingUserID, writingActID, writingOpenID, strings.Repeat("word ", 501))
+				got, err := svc.ScoreWriting(context.Background(), writingUserID, writingActID, writingOpenID, strings.Repeat("word ", 501), "")
 
 				requireAppError(t, err, http.StatusRequestEntityTooLarge)
 				assert.Nil(t, got)
@@ -258,7 +258,7 @@ func TestScoreWriting(t *testing.T) {
 				attempts.EXPECT().GetByID(mock.Anything, writingOpenID).Return(foreign, nil).Once()
 				svc := services.NewLessonActivityService(repo, pronunciation.NewScorer(voicemocks.NewMockPronounceEngine(t)), llm, attempts)
 
-				got, err := svc.ScoreWriting(context.Background(), writingUserID, writingActID, writingOpenID, writingText)
+				got, err := svc.ScoreWriting(context.Background(), writingUserID, writingActID, writingOpenID, writingText, "")
 
 				requireAppError(t, err, http.StatusNotFound)
 				assert.Nil(t, got)
@@ -275,7 +275,7 @@ func TestScoreWriting(t *testing.T) {
 				repo.EXPECT().GetByID(mock.Anything, writingActID).Return(nil, gorm.ErrRecordNotFound).Once()
 				svc := services.NewLessonActivityService(repo, pronunciation.NewScorer(voicemocks.NewMockPronounceEngine(t)), llm, attempts)
 
-				got, err := svc.ScoreWriting(context.Background(), writingUserID, writingActID, writingOpenID, writingText)
+				got, err := svc.ScoreWriting(context.Background(), writingUserID, writingActID, writingOpenID, writingText, "")
 
 				requireAppError(t, err, http.StatusNotFound)
 				assert.Nil(t, got)

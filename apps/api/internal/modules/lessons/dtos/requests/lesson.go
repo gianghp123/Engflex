@@ -3,6 +3,7 @@ package requests
 import (
 	"engflex-api/internal/common"
 	"engflex-api/internal/common/enums"
+	"engflex-api/internal/llm"
 )
 
 // ListLessons filters the unit hub (level, skill tab, completion status).
@@ -36,6 +37,7 @@ type CheckAnswer struct {
 
 // ScoreWriting grades one writing part into the open lesson attempt.
 type ScoreWriting struct {
-	AttemptID string `json:"attemptId" binding:"required,uuid"`
-	Text      string `json:"text" binding:"required"`
+	llm.LanguageParam `tstype:",extends"`
+	AttemptID         string `json:"attemptId" binding:"required,uuid"`
+	Text              string `json:"text" binding:"required"`
 }

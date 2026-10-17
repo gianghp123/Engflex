@@ -9,6 +9,7 @@ import (
 	"engflex-api/internal/common"
 	"engflex-api/internal/common/enums"
 	"engflex-api/internal/database/models"
+	"engflex-api/internal/llm"
 	"engflex-api/internal/logger"
 	"engflex-api/internal/utils"
 	"engflex-api/internal/voice"
@@ -52,8 +53,9 @@ func NormalizeLanguageFeedback(raw json.RawMessage) (models.TurnFeedback, error)
 // BuildAnalyzeRequest assembles the engine payload for one turn: the text
 // plus the preceding turns. No level, no objective: the conversation context
 // already expresses the topic, and "is this correct English" does not vary
-// by level.
-func (s *ConversationService) BuildAnalyzeRequest(ctx context.Context, conversationID string, position int) (voice.AnalyzeTurnRequest, error) {
+// by level. languageName is the already-resolved English name of the language
+// the explanation prose is written in ("" = the engine's default brief).
+func (s *ConversationService) BuildAnalyzeRequest(ctx context.Context, conversationID string, position int, languageName string) (voice.AnalyzeTurnRequest, error) {
 	turn, err := s.turns.GetTurnByPosition(ctx, conversationID, position)
 	if err != nil {
 		appErr := common.FromDBError(err, "conversation turn")
@@ -74,6 +76,7 @@ func (s *ConversationService) BuildAnalyzeRequest(ctx context.Context, conversat
 		TurnID:         turn.ID,
 		Text:           turn.Text,
 		Context:        priorTurns(all, turn.ID, analysisContextTurns),
+		Language:       languageName,
 	}, nil
 }
 
@@ -81,11 +84,15 @@ func (s *ConversationService) BuildAnalyzeRequest(ctx context.Context, conversat
 // upserts its feedback row. Any transport error, empty body, or
 // wrong-shaped payload returns an error and writes nothing, so a turn never
 // carries a half-decoded feedback.
-func (s *ConversationService) AnalyzeTurn(ctx context.Context, userID, conversationID string, position int) (*models.Feedback, error) {
+func (s *ConversationService) AnalyzeTurn(ctx context.Context, userID, conversationID string, position int, language string) (*models.Feedback, error) {
 	if _, err := s.getOwned(ctx, userID, conversationID); err != nil {
 		return nil, err
 	}
-	req, err := s.BuildAnalyzeRequest(ctx, conversationID, position)
+	languageName, ok := llm.ExplanationLanguage(language)
+	if !ok {
+		return nil, common.BadRequest("unsupported language")
+	}
+	req, err := s.BuildAnalyzeRequest(ctx, conversationID, position, languageName)
 	if err != nil {
 		return nil, err
 	}

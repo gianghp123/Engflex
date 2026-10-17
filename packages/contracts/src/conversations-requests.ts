@@ -12,6 +12,14 @@ export interface StartConversation {
   scenarioId?: string;
 }
 /**
+ * AnalyzeBody is the POST /conversations/{id}/turns/{position}/analyze body.
+ * The whole body is optional: the path position identifies the turn, and the
+ * language only steers the language the explanation prose is written in — an
+ * omitted or empty body keeps the default brief.
+ */
+export interface AnalyzeBody extends LanguageParam {
+}
+/**
  * ListConversations pages the caller's finished conversations, optionally
  * scoped to one scenario.
  */

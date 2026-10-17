@@ -3,14 +3,16 @@
 // may live in this package alongside the barrel.
 //
 // tygo has no cross-package type resolution, so apps/api/tygo.yaml maps
-// every `enums.*` type and `common.ListParams` to the bare names below.
-// These ambient aliases make those names resolvable inside the generated
-// files (which carry no imports — no frontmatter). They live here, not in a
-// standalone globals.d.ts, because this barrel is the package entry point
-// and is therefore always part of a consumer's TS program. Keep this list
-// in sync with apps/api/internal/common/enums and common.ListParams.
+// every `enums.*` type, `common.ListParams` and `llm.LanguageParam` to the
+// bare names below. These ambient aliases make those names resolvable inside
+// the generated files (which carry no imports — no frontmatter). They live
+// here, not in a standalone globals.d.ts, because this barrel is the package
+// entry point and is therefore always part of a consumer's TS program. Keep
+// this list in sync with apps/api/internal/common/enums, common.ListParams
+// and internal/llm.LanguageParam.
 import type * as Common from './common.ts';
 import type * as Enums from './enums.ts';
+import type * as Llm from './llm.ts';
 
 declare global {
   type ActivityType = Enums.ActivityType;
@@ -25,6 +27,7 @@ declare global {
   type LessonStatus = Enums.LessonStatus;
   type Level = Enums.Level;
   type ListParams = Common.ListParams;
+  type LanguageParam = Llm.LanguageParam;
   type ScenarioDifficulty = Enums.ScenarioDifficulty;
   type TurnRole = Enums.TurnRole;
   type SpanStatus = Enums.SpanStatus;
@@ -35,6 +38,7 @@ declare global {
 }
 
 export * from './common.ts';
+export * from './llm.ts';
 export * from './enums.ts';
 export * from './enum-values.ts';
 export * from './profiles-requests.ts';

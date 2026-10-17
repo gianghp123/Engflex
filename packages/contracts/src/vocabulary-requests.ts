@@ -174,13 +174,7 @@ export interface ReviewUserVocabulary {
  * dialog. Read-only: nothing is stored; the reviewed result rides the normal
  * add-word save.
  */
-export interface GenerateWordDraft {
+export interface GenerateWordDraft extends LanguageParam {
   term: string;
   context: string;
-  /**
-   * OutputLanguage is a BCP-47 code ("en", "vi", …) naming the language the
-   * explanation fields are written in. Empty is English, the default; any
-   * assigned language works, so adding a UI locale needs no change here.
-   */
-  outputLanguage?: string;
 }

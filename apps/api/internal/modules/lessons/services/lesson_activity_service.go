@@ -38,7 +38,7 @@ type LessonActivityService interface {
 	GetOpenProgress(ctx context.Context, userID, lessonID string) (*responses.AttemptProgress, error)
 	ListProgress(ctx context.Context, userID string) ([]*responses.LessonProgressSummary, error)
 	AttachPartResult(ctx context.Context, userID, attemptID, activityID string, entry PartEntry) (*models.Attempt, error)
-	ScoreWriting(ctx context.Context, userID, id, attemptID, text string) (*responses.WritingScoreResponse, error)
+	ScoreWriting(ctx context.Context, userID, id, attemptID, text, language string) (*responses.WritingScoreResponse, error)
 }
 
 type lessonActivityService struct {
@@ -445,7 +445,7 @@ func (s *lessonActivityService) Pronounce(ctx context.Context, userID, id, attem
 // ScoreWriting grades one writing part with a stateless LLM call and attaches
 // the result to the open lesson attempt. Any LLM or shape failure returns an
 // error and writes nothing.
-func (s *lessonActivityService) ScoreWriting(ctx context.Context, userID, id, attemptID, text string) (*responses.WritingScoreResponse, error) {
+func (s *lessonActivityService) ScoreWriting(ctx context.Context, userID, id, attemptID, text, language string) (*responses.WritingScoreResponse, error) {
 	trimmed := strings.TrimSpace(text)
 	if trimmed == "" {
 		return nil, common.BadRequest("text is required")
@@ -453,6 +453,10 @@ func (s *lessonActivityService) ScoreWriting(ctx context.Context, userID, id, at
 	words := countWords(trimmed)
 	if words > maxWritingWords {
 		return nil, common.New(http.StatusRequestEntityTooLarge, "text too long")
+	}
+	languageName, ok := llm.ExplanationLanguage(language)
+	if !ok {
+		return nil, common.BadRequest("unsupported language")
 	}
 	m, err := s.loadActivity(ctx, id)
 	if err != nil {
@@ -469,7 +473,7 @@ func (s *lessonActivityService) ScoreWriting(ctx context.Context, userID, id, at
 	if _, err := s.loadOwnedAttempt(ctx, userID, attemptID); err != nil {
 		return nil, err
 	}
-	prompt := prompts.BuildWritingScorePrompt(cfg, trimmed, words)
+	prompt := prompts.BuildWritingScorePrompt(cfg, trimmed, words, languageName)
 	var out schemas.WritingFeedback
 	if err := s.llm.CompleteStructured(ctx, prompt, &out, schemas.WritingFeedbackSchemaName, schemas.WritingFeedbackSchema); err != nil {
 		logger.Report(ctx, "writing score engine call failed", common.ServiceUnavailable("scoring unavailable"), "activityID", id)

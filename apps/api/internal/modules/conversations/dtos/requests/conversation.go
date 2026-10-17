@@ -3,6 +3,7 @@ package requests
 import (
 	"engflex-api/internal/common"
 	"engflex-api/internal/common/enums"
+	"engflex-api/internal/llm"
 )
 
 // StartConversation provisions a session. scenarioId is required for
@@ -10,6 +11,14 @@ import (
 type StartConversation struct {
 	Mode       enums.ConversationMode `json:"mode" binding:"required,oneof=free_talk roleplay"`
 	ScenarioID *string                `json:"scenarioId" binding:"omitempty,uuid"`
+}
+
+// AnalyzeBody is the POST /conversations/{id}/turns/{position}/analyze body.
+// The whole body is optional: the path position identifies the turn, and the
+// language only steers the language the explanation prose is written in — an
+// omitted or empty body keeps the default brief.
+type AnalyzeBody struct {
+	llm.LanguageParam `tstype:",extends"`
 }
 
 // ListConversations pages the caller's finished conversations, optionally

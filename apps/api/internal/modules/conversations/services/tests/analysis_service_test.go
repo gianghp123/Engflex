@@ -158,7 +158,7 @@ func TestAnalyzeTurn(t *testing.T) {
 			svc, repo, turnsRepo, engine, fb := newAnalysisService(t)
 			tt.setup(repo, turnsRepo, engine, fb)
 
-			stored, err := svc.AnalyzeTurn(context.Background(), userID, convID, 1)
+			stored, err := svc.AnalyzeTurn(context.Background(), userID, convID, 1, "")
 
 			if tt.wantStatus != 0 {
 				requireAppError(t, err, tt.wantStatus)
@@ -194,8 +194,21 @@ func TestAnalyze_SendsUpToFiveContextTurns(t *testing.T) {
 	)).Return(&voice.AnalyzeTurnResponse{Feedback: json.RawMessage(goodFeedback)}, nil)
 	fb.On("Upsert", mock.Anything, mock.Anything).Return(nil)
 
-	_, err := svc.AnalyzeTurn(context.Background(), userID, convID, 1)
+	_, err := svc.AnalyzeTurn(context.Background(), userID, convID, 1, "")
 	require.NoError(t, err)
+}
+
+// TestBuildAnalyzeRequest_CarriesTheResolvedLanguage pins the explanation
+// language reaching the engine payload. Weight and resolution live in
+// AnalyzeTurn / llm.ExplanationLanguage; this is the hand-off itself.
+func TestBuildAnalyzeRequest_CarriesTheResolvedLanguage(t *testing.T) {
+	svc, _, turnsRepo, _, _ := newAnalysisService(t)
+	turnsRepo.On("GetTurnByPosition", mock.Anything, convID, 1).Return(userTurn(), nil)
+	turnsRepo.On("ListTurns", mock.Anything, convID).Return([]*models.ConversationTurn{userTurn()}, nil)
+
+	req, err := svc.BuildAnalyzeRequest(context.Background(), convID, 1, "Vietnamese")
+	require.NoError(t, err)
+	assert.Equal(t, "Vietnamese", req.Language)
 }
 
 func TestAnalyze_RequestCarriesNoLevelOrObjective(t *testing.T) {
@@ -207,7 +220,7 @@ func TestAnalyze_RequestCarriesNoLevelOrObjective(t *testing.T) {
 	// BuildAnalyzeRequest stops before the engine call: engine and Upsert are
 	// deliberately unmocked, so any call to them would fail the test.
 
-	req, err := svc.BuildAnalyzeRequest(context.Background(), convID, 1)
+	req, err := svc.BuildAnalyzeRequest(context.Background(), convID, 1, "")
 	require.NoError(t, err)
 	raw, err := json.Marshal(req)
 	require.NoError(t, err)

@@ -27,6 +27,29 @@ func testVoiceClient(t *testing.T, handler http.HandlerFunc) voice.VoiceClient {
 	})
 }
 
+// TestVoiceClientAnalyzeCarriesLanguage pins the one thing the analyze payload
+// gained: the resolved language name rides under a `language` key the engine's
+// model reads (and safely ignores until it has been taught the field).
+func TestVoiceClientAnalyzeCarriesLanguage(t *testing.T) {
+	client := testVoiceClient(t, func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, "/analyze", r.URL.Path)
+		var body map[string]any
+		require.NoError(t, json.NewDecoder(r.Body).Decode(&body))
+		assert.Equal(t, "Vietnamese", body["language"])
+		assert.Equal(t, "conv-1", body["conversationId"])
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte(`{"feedback":{"corrected":"I went.","tip":"past tense"}}`))
+	})
+
+	_, err := client.AnalyzeTurn(context.Background(), voice.AnalyzeTurnRequest{
+		ConversationID: "conv-1",
+		TurnID:         "turn-1",
+		Text:           "I go yesterday.",
+		Language:       "Vietnamese",
+	})
+	require.NoError(t, err)
+}
+
 func TestVoiceClientStart(t *testing.T) {
 	tests := []struct {
 		name     string

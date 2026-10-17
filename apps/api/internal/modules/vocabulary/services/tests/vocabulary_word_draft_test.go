@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
+	"engflex-api/internal/llm"
 	llmmocks "engflex-api/internal/llm/mocks"
 	"engflex-api/internal/modules/vocabulary/dtos/requests"
 	"engflex-api/internal/modules/vocabulary/dtos/responses"
@@ -100,7 +101,7 @@ func TestGenerateWordDraft(t *testing.T) {
 		},
 		{
 			name: "output language vi asks for the vietnamese brief",
-			req:  requests.GenerateWordDraft{Term: "punctual", OutputLanguage: "vi"},
+			req:  requests.GenerateWordDraft{Term: "punctual", LanguageParam: llm.LanguageParam{Language: "vi"}},
 			setup: func(client *llmmocks.MockLLMClient) {
 				client.On("CompleteStructured", mock.Anything,
 					mock.MatchedBy(func(prompt string) bool {
@@ -114,7 +115,7 @@ func TestGenerateWordDraft(t *testing.T) {
 		},
 		{
 			name: "output language en keeps the english brief",
-			req:  requests.GenerateWordDraft{Term: "punctual", OutputLanguage: "en"},
+			req:  requests.GenerateWordDraft{Term: "punctual", LanguageParam: llm.LanguageParam{Language: "en"}},
 			setup: func(client *llmmocks.MockLLMClient) {
 				client.On("CompleteStructured", mock.Anything,
 					mock.MatchedBy(func(prompt string) bool {
@@ -128,13 +129,13 @@ func TestGenerateWordDraft(t *testing.T) {
 		},
 		{
 			name:    "an unassigned language code is a 400",
-			req:     requests.GenerateWordDraft{Term: "punctual", OutputLanguage: "zz"},
+			req:     requests.GenerateWordDraft{Term: "punctual", LanguageParam: llm.LanguageParam{Language: "zz"}},
 			setup:   func(client *llmmocks.MockLLMClient) {},
 			wantErr: http.StatusBadRequest,
 		},
 		{
 			name:    "a malformed language code is a 400",
-			req:     requests.GenerateWordDraft{Term: "punctual", OutputLanguage: "not a tag"},
+			req:     requests.GenerateWordDraft{Term: "punctual", LanguageParam: llm.LanguageParam{Language: "not a tag"}},
 			setup:   func(client *llmmocks.MockLLMClient) {},
 			wantErr: http.StatusBadRequest,
 		},

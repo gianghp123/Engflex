@@ -30,6 +30,8 @@ type_mappings:
   "enums.RelevanceStatus": "RelevanceStatus"
   # embedded by list request DTOs tagged `tstype:",extends"`
   "common.ListParams": "ListParams"
+  # embedded by the LLM-triggering request DTOs tagged `tstype:",extends"`
+  "llm.LanguageParam": "LanguageParam"
 
 packages:
   - path: "engflex-api/internal/common"
@@ -47,6 +49,16 @@ packages:
     # cross the wire. Same precedent as errors.go above.
     exclude_files:
       - "user_role.go"
+
+  # Shared LLM request fragments: language.go only. client.go and schema.go are
+  # runtime types — the client interface and the generated JSON schemas — and
+  # must not cross the wire, so they are excluded rather than the package split.
+  - path: "engflex-api/internal/llm"
+    output_path: "../../packages/contracts/src/llm.ts"
+    fallback_type: "unknown"
+    exclude_files:
+      - "client.go"
+      - "schema.go"
 
   # Module wire DTOs: dtos/requests + dtos/responses per module.
   - path: "engflex-api/internal/modules/profiles/dtos/requests"

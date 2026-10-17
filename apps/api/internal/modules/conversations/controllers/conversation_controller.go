@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"errors"
 	"io"
 	"net/http"
 	"strconv"
@@ -199,7 +200,16 @@ func (h *ConversationController) AnalyzeTurn(c *gin.Context) {
 		common.Fail(c, common.BadRequest("invalid position"))
 		return
 	}
-	feedback, err := h.service.AnalyzeTurn(c.Request.Context(), userID, c.Param("id"), position)
+	// The body is optional: the path identifies the turn and language only
+	// steers the language the explanation prose is written in. An absent body
+	// decodes to io.EOF — a valid "no language" — while anything else
+	// malformed is still a 400.
+	var req requests.AnalyzeBody
+	if err := c.ShouldBindJSON(&req); err != nil && !errors.Is(err, io.EOF) {
+		common.Fail(c, common.BadRequest("invalid body"))
+		return
+	}
+	feedback, err := h.service.AnalyzeTurn(c.Request.Context(), userID, c.Param("id"), position, req.Language)
 	if err != nil {
 		common.Fail(c, err)
 		return

@@ -21,6 +21,16 @@ const created: string[] = [];
 const createdScenarios: string[] = [];
 
 test.beforeEach(async ({ context }) => {
+	// A browser's first LLM action opens the explanation-language pick, so
+	// start every test already asked and let Analyze/Check run straight through.
+	await context.addInitScript(() => {
+		for (const surface of ["vocabulary", "writing", "analyze"]) {
+			window.localStorage.setItem(
+				`engflex:explanation-language:asked:${surface}`,
+				"1",
+			);
+		}
+	});
 	await context.addCookies([
 		{
 			name: "PARAGLIDE_LOCALE",
@@ -91,6 +101,13 @@ test("list rows open the persisted review, without the survey", async ({
 
 	await row.click();
 	await expect(page).toHaveURL(new RegExp(`/voice/history/${roleplayId}$`));
+	// The review surface shows analysis inline and collapsed — one disclosure
+	// per analyzed turn, never a dialog. A per-turn dialog would mount one per
+	// analyzed turn at the same instant and they would stack; the card stays
+	// out of the DOM until the row is opened.
+	const disclosure = page.getByRole("button", { name: /Analyzed turn/ });
+	await expect(disclosure).toBeVisible({ timeout: 20_000 });
+	await disclosure.click();
 	// Exact: the feedback card also renders the corrected sentence WITH a
 	// trailing period, and a substring match would be ambiguous. The raw
 	// utterance renders twice by design — transcript bubble plus the
@@ -110,12 +127,11 @@ test("list rows open the persisted review, without the survey", async ({
 		page.getByRole("button", { name: "Analyze again" }),
 	).toBeVisible();
 	// History variant: the post-session survey is gone, "Just practiced" is not the label.
-	await expect(page.getByText("Help Mo improve your experience")).toHaveCount(0);
+	await expect(page.getByText("Help Mo improve your experience")).toHaveCount(
+		0,
+	);
 	await expect(page.getByText("Just practiced")).toHaveCount(0);
 
-	// Seeded feedback auto-opens the analysis dialog on mount (same as the
-	// room review on reload); dismiss it before leaving the page.
-	await page.keyboard.press("Escape");
 	await page.getByRole("button", { name: "Back to history" }).click();
 	await expect(page).toHaveURL(/\/voice\/history$/);
 });
@@ -148,9 +164,9 @@ test("empty sessions are hidden from history, their review still renders", async
 	await expect(page.getByText("No sessions yet")).toBeVisible({
 		timeout: 20_000,
 	});
-	await expect(
-		page.locator(`a[href="/voice/history/${conv.id}"]`),
-	).toHaveCount(0);
+	await expect(page.locator(`a[href="/voice/history/${conv.id}"]`)).toHaveCount(
+		0,
+	);
 
 	// …but the detail path is unchanged and still shows the honest review.
 	await page.goto(`/voice/history/${conv.id}`);
@@ -216,9 +232,7 @@ test("scenario runs scope the history page and clear again", async ({
 	await expect(
 		page.locator(`a[href="/voice/history/${freeTalkId}"]`),
 	).toHaveCount(0);
-	await expect(
-		page.getByText("Ordering coffee to go").first(),
-	).toBeVisible();
+	await expect(page.getByText("Ordering coffee to go").first()).toBeVisible();
 
 	// Cleared: the unfiltered list is back.
 	await page.getByRole("button", { name: "Clear filter" }).click();
@@ -242,9 +256,9 @@ test("pending sessions never appear in history", async ({ page }) => {
 
 	await page.goto("/voice/history");
 	// Positive anchor: the list actually rendered.
-	await expect(
-		page.locator(`a[href="/voice/history/${endedId}"]`),
-	).toBeVisible({ timeout: 20_000 });
+	await expect(page.locator(`a[href="/voice/history/${endedId}"]`)).toBeVisible(
+		{ timeout: 20_000 },
+	);
 	// The pending session must not leak into history.
 	await expect(
 		page.locator(`a[href="/voice/history/${pending.id}"]`),

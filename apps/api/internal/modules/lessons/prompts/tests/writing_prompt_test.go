@@ -22,10 +22,57 @@ func seededWritingConfig() activityconfig.WritingConfig {
 	}
 }
 
+// TestBuildWritingScorePromptLanguage pins the explanation-language directive:
+// a translated language adds the prose-only instruction, and the two default
+// spellings ("", "English") produce a byte-identical prompt, so the English
+// brief every existing call is written against cannot drift.
+func TestBuildWritingScorePromptLanguage(t *testing.T) {
+	cfg := seededWritingConfig()
+	text := "Hello everyone, my name is Kenji Sato and I is a sales assistant."
+	defaultBrief := prompts.BuildWritingScorePrompt(cfg, text, 55, "")
+
+	tests := []struct {
+		name        string
+		language    string
+		want        []string
+		absent      []string
+		identicalTo string
+	}{
+		{
+			name:        "english is the default brief",
+			language:    "English",
+			absent:      []string{"Write the grammar reasons"},
+			identicalTo: defaultBrief,
+		},
+		{
+			name:        "vietnamese localizes only the prose",
+			language:    "Vietnamese",
+			want:        []string{"in Vietnamese only", "Keep suggested, expressions"},
+			absent:      []string{"Write everything in English"},
+			identicalTo: "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := prompts.BuildWritingScorePrompt(cfg, text, 55, tt.language)
+			for _, substr := range tt.want {
+				assert.Contains(t, got, substr)
+			}
+			for _, substr := range tt.absent {
+				assert.NotContains(t, got, substr)
+			}
+			if tt.identicalTo != "" {
+				assert.Equal(t, tt.identicalTo, got)
+			}
+		})
+	}
+}
+
 func TestBuildWritingScorePrompt(t *testing.T) {
 	cfg := seededWritingConfig()
 	text := "Hello everyone, my name is Kenji Sato and I is a sales assistant."
-	got := prompts.BuildWritingScorePrompt(cfg, text, 55)
+	got := prompts.BuildWritingScorePrompt(cfg, text, 55, "")
 
 	tests := []struct {
 		name   string
