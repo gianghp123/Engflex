@@ -15,11 +15,34 @@ import (
 type AppError struct {
 	Status  int
 	Message string
+	// cause is the underlying fault (a database error, usually) kept for logs
+	// and Sentry only. The response envelope serialises Message, so internals
+	// never reach a client — see Fail.
+	cause error
 }
 
-// Error implements the error interface.
+// Error implements the error interface. When a cause is attached it is
+// appended, because slog and Sentry render an error through Error(): the
+// response stays the hidden Message, while the record names the real fault.
+// Without this, a 500 from common.Internal() logs as "Internal Server Error"
+// and the fault is undiagnosable.
 func (e *AppError) Error() string {
+	if e.cause != nil {
+		return e.Message + ": " + e.cause.Error()
+	}
 	return e.Message
+}
+
+// Unwrap exposes the cause to errors.Is / errors.As chains (logs, tests).
+func (e *AppError) Unwrap() error { return e.cause }
+
+// withCause returns a copy of the error carrying cause for logs and Sentry.
+// It is unexported on purpose: only error constructors that already know a
+// real underlying fault (FromDBError) may attach one.
+func (e *AppError) withCause(cause error) *AppError {
+	c := *e
+	c.cause = cause
+	return &c
 }
 
 // New builds an *AppError for any HTTP status code. When msg is omitted or
@@ -84,7 +107,7 @@ func (e *InvalidIDError) Error() string {
 
 // FromDBError maps database errors to API errors: not found -> 404, unique
 // violation (23505) -> 409, foreign-key violation (23503) -> 404, anything
-// else -> 500 with the details hidden.
+// else -> 500 with the detail kept for logs/Sentry but hidden from the client.
 func FromDBError(err error, resource string) *AppError {
 	if err == nil {
 		return nil
@@ -105,7 +128,7 @@ func FromDBError(err error, resource string) *AppError {
 			return NotFound("referenced " + resource + " not found")
 		}
 	}
-	return Internal()
+	return Internal().withCause(err)
 }
 
 // ServiceUnavailable creates a 503 error.
