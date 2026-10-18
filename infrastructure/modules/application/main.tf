@@ -25,6 +25,10 @@ resource "coolify_application" "this" {
   health_check_enabled = true
   health_check_path    = var.health_check_path
   health_check_scheme  = "http"
+  # Apps with a slow warm boot (model loading behind a gated /health) raise
+  # this; the default equals the value Coolify already applies, so passing it
+  # explicitly is a no-op for everything else.
+  health_check_start_period = var.health_check_start_period
 
   # Rollout is TF-owned (coolify_deployment.this below): instant stays false.
   # instant=true + any trigger = duplicate deploys (two rollout owners race).

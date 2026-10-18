@@ -235,9 +235,19 @@ module "pronounce_app" {
   # (module default is true; nothing serves TLS locally).
   is_force_https_enabled = false
   # Stable internal DNS on the shared coolify network (same rule as api).
-  network_aliases       = "engflex-pronounce"
-  environment_variables = {}
-  deploy_commit         = data.external.origin_head.result.sha
+  network_aliases = "engflex-pronounce"
+  # Both wav2vec2 checkpoints are baked into the artifact's /models cache
+  # (proved loadable with --network none), so boot never needs the HF Hub:
+  # no metadata round-trips on start, and a model missing from the bake
+  # fails loudly instead of being silently fetched.
+  environment_variables = {
+    HF_HUB_OFFLINE = "1"
+  }
+  # The boot wrapper serves /health only once the models are warm (~20-35 s,
+  # more on a cold page cache); Coolify's 5 s default start period would have
+  # the deployment flapping against the unhealthy threshold meanwhile.
+  health_check_start_period = 120
+  deploy_commit             = data.external.origin_head.result.sha
 }
 
 module "minio" {

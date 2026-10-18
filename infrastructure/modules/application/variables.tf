@@ -66,6 +66,14 @@ variable "health_check_path" {
   type = string
 }
 
+# Mirrors Coolify's default start period; raise it for apps that refuse
+# traffic until warm (the pronounce model boot) so a deployment is not marked
+# unhealthy while the app is still loading.
+variable "health_check_start_period" {
+  type    = number
+  default = 5
+}
+
 # Stable DNS name for this app on the shared `coolify` network
 # (explicit alias: bare resource names do not resolve there).
 variable "network_aliases" {
