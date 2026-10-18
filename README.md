@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="apps/web/public/logo-lockup.svg" alt="EngFlex logo and wordmark" width="280" />
+  <img src="images/logo-lockup.svg" alt="EngFlex logo and wordmark" width="280" />
 </div>
 
 <p align="center">
