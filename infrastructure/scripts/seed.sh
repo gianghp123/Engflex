@@ -28,15 +28,18 @@ echo "== bucket + anonymous-download policy =="
 # seed_audio.py FAILS if the bucket does not exist, so the bucket is created
 # here; the anonymous-download policy is what makes media URLs servable
 # without credentials (Task 9's unauthenticated probe pins it).
-# NOTE: the minio/mc image's entrypoint IS `mc`, so the multi-step flow runs
-# via --entrypoint sh. Plain http locally — no --insecure needed.
+# NOTE: image is pgsty/mc:latest — the same local one the api dev compose's
+# minio-init uses. Docker Hub is not anonymously pullable from this host
+# (`minio/mc` pull is denied), so a Hub image would fail the documented
+# recovery command. The entrypoint is overridden via --entrypoint sh (mc
+# ships inside the image). Plain http locally — no --insecure needed.
 docker run --rm --network host \
   -e MC_CONFIG_DIR=/tmp/.mc \
   -e MINIO_ENDPOINT="$MINIO_ENDPOINT" \
   -e MINIO_ROOT_USER="$MINIO_ROOT_USER" \
   -e MINIO_ROOT_PASSWORD="$MINIO_ROOT_PASSWORD" \
   -e BUCKET="$BUCKET" \
-  --entrypoint sh minio/mc -c '
+  --entrypoint sh pgsty/mc:latest -c '
     mc alias set deploy "$MINIO_ENDPOINT" "$MINIO_ROOT_USER" "$MINIO_ROOT_PASSWORD" &&
     mc mb --ignore-existing "deploy/$BUCKET" &&
     mc anonymous set download "deploy/$BUCKET"

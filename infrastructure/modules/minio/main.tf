@@ -2,7 +2,10 @@
 # template bundle (359 keys, no minio — API answers 404 Invalid service type),
 # so the service is created from Coolify's own canonical minio compose
 # (templates/compose/minio.yaml `services:` block, comments stripped) via
-# docker_compose_raw. Image comes from the loopback registry
+# docker_compose_raw — plus one addition of ours: a one-shot `minio-init`
+# that bootstraps the media bucket + anonymous-download policy, so a
+# recreated service (fresh per-service volume) cannot serve 403/502 media
+# until someone notices. Image comes from the loopback registry
 # (127.0.0.1:5000/minio:latest — quay.io/Hub are not anonymously pullable;
 # see the SDD ledger). The service joins the shared `coolify` network with
 # the `minio` alias so same-project containers reach it at http://minio:9000
@@ -38,6 +41,36 @@ resource "coolify_service" "this" {
           interval: 5s
           timeout: 20s
           retries: 10
+      # One-shot bucket bootstrap. A recreate gives MinIO a fresh per-service
+      # volume; without the bucket + policy the first anonymous media read
+      # meets 403, the web media route maps that to 502, and Cloudflare's
+      # error page hides the cause. Idempotent: `mb --ignore-existing` +
+      # `anonymous set download` run once per compose up (restart: no).
+      # Object audio still comes from `make deploy-seed` (edge-tts synthesis
+      # is not IaC); this closes only the bucket/policy gap. The minio image
+      # bundles mc (/usr/bin/mc) — no `mc` tag in the loopback registry and
+      # Hub is not anonymously pullable from the server. Env refs follow the
+      # minio service above (single `$SERVICE_*` project values); `$$` is
+      # avoided deliberately here — it reads a service-level row this
+      # container does not have (see module header). Exec-form entrypoint +
+      # command so no compose string-splitting is involved; the retry loop
+      # covers MinIO not being ready yet (short depends_on waits for start).
+      minio-init:
+        image: 127.0.0.1:5000/minio:latest
+        depends_on:
+          - minio
+        # Explicit: Coolify's parser otherwise injects `unless-stopped`, and
+        # Docker restarts a clean-exit one-shot forever under it (verified:
+        # RestartCount 6 in 4s), turning the bootstrap into a busy loop.
+        restart: "no"
+        entrypoint: ["/bin/sh", "-c"]
+        command:
+          - |
+            until mc alias set local http://minio:9000 $SERVICE_USER_MINIO $SERVICE_PASSWORD_MINIO; do sleep 1; done;
+            mc mb -p local/${var.bucket};
+            mc anonymous set download local/${var.bucket}
+        networks:
+          - coolify
     networks:
       coolify:
         external: true

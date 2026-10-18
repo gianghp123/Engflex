@@ -247,6 +247,7 @@ module "minio" {
   server_uuid   = var.server_uuid
   minio_host    = local.minio_host
   root_password = var.minio_root_password
+  bucket        = local.minio_net.bucket
   environment_variables = {
     SERVICE_USER_MINIO         = var.minio_root_user
     MINIO_SERVER_URL           = "http://${local.minio_host}"

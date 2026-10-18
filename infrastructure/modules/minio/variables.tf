@@ -20,6 +20,12 @@ variable "root_password" {
   sensitive = true
 }
 
+# Media bucket the one-shot init creates and opens for anonymous download.
+# Same value the apps carry as MINIO_BUCKET / MEDIA_BUCKET.
+variable "bucket" {
+  type = string
+}
+
 variable "environment_variables" {
   description = "Service env map, applied via bulk upsert (no per-key resources: birth placeholders 409 POSTs)"
   type        = map(string)
