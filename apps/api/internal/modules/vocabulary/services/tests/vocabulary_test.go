@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"context"
 	"testing"
 
 	"engflex-api/internal/common"
@@ -10,20 +11,26 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func setupDeck(t *testing.T) (services.VocabularyDeckService, *mocks.MockVocabularyDeckRepository) {
-	t.Helper()
-	mockRepo := mocks.NewMockVocabularyDeckRepository(t)
-	svc := services.NewVocabularyDeckService(mockRepo, mocks.NewMockVocabularyDeckItemRepository(t))
-	return svc, mockRepo
+// fakePremiumChecker defaults to "not premium" — most tests exercise
+// free-content behavior and don't care about the subscription lookup.
+type fakePremiumChecker struct {
+	isPremium bool
 }
 
-func setupDeckItem(t *testing.T) (services.VocabularyDeckItemService, *mocks.MockVocabularyDeckItemRepository, *mocks.MockVocabularyDeckRepository, *mocks.MockVocabularyItemRepository) {
+func (f fakePremiumChecker) IsPremium(ctx context.Context, userID string) (bool, error) {
+	return f.isPremium, nil
+}
+
+func setupDeck(t *testing.T) (services.VocabularyDeckService, *mocks.MockVocabularyDeckRepository) {
 	t.Helper()
-	itemRepo := mocks.NewMockVocabularyDeckItemRepository(t)
-	deckRepo := mocks.NewMockVocabularyDeckRepository(t)
-	entryRepo := mocks.NewMockVocabularyItemRepository(t)
-	svc := services.NewVocabularyDeckItemService(itemRepo, deckRepo, entryRepo)
-	return svc, itemRepo, deckRepo, entryRepo
+	return setupDeckWithPremium(t, false)
+}
+
+func setupDeckWithPremium(t *testing.T, isPremium bool) (services.VocabularyDeckService, *mocks.MockVocabularyDeckRepository) {
+	t.Helper()
+	mockRepo := mocks.NewMockVocabularyDeckRepository(t)
+	svc := services.NewVocabularyDeckService(mockRepo, fakePremiumChecker{isPremium: isPremium})
+	return svc, mockRepo
 }
 
 func requireAppError(t *testing.T, err error, expectedStatus int) *common.AppError {

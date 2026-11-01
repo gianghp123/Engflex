@@ -11,3 +11,12 @@ dist-ssr
 .vinxi
 __unconfig*
 todos.json
+
+# e2e
+playwright/.clerk
+playwright/.fake-mic
+test-results
+playwright-report
+
+# clerk configuration (can include secrets)
+/.clerk/

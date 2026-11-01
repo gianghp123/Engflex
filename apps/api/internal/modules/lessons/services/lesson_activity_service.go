@@ -4,13 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log/slog"
 	"net/http"
-	"sort"
 	"strconv"
 	"strings"
 
 	"github.com/google/uuid"
+	"gorm.io/datatypes"
 	"gorm.io/gorm"
 
 	"engflex-api/internal/common"
@@ -20,6 +21,7 @@ import (
 	"engflex-api/internal/llm"
 	"engflex-api/internal/logger"
 	"engflex-api/internal/modules/lessons/activityconfig"
+	"engflex-api/internal/modules/lessons/dtos/requests"
 	"engflex-api/internal/modules/lessons/dtos/responses"
 	"engflex-api/internal/modules/lessons/prompts"
 	"engflex-api/internal/modules/lessons/schemas"
@@ -36,9 +38,11 @@ type LessonActivityService interface {
 	Pronounce(ctx context.Context, userID, id, attemptID string, itemIndex int, audio []byte, mime string) (*responses.PronunciationResult, error)
 	StartAttempt(ctx context.Context, userID, lessonID string) (*models.Attempt, error)
 	GetOpenProgress(ctx context.Context, userID, lessonID string) (*responses.AttemptProgress, error)
-	ListProgress(ctx context.Context, userID string) ([]*responses.LessonProgressSummary, error)
 	AttachPartResult(ctx context.Context, userID, attemptID, activityID string, entry PartEntry) (*models.Attempt, error)
-	ScoreWriting(ctx context.Context, userID, id, attemptID, text, language string) (*responses.WritingScoreResponse, error)
+	ScoreWriting(ctx context.Context, userID, id, attemptID, text string) (*responses.WritingScoreResponse, error)
+	Create(ctx context.Context, req requests.CreateLessonActivity) (*models.LessonActivity, error)
+	Update(ctx context.Context, id string, req requests.UpdateLessonActivity) (*models.LessonActivity, error)
+	Delete(ctx context.Context, id string) error
 }
 
 type lessonActivityService struct {
@@ -120,8 +124,7 @@ func (s *lessonActivityService) StartAttempt(ctx context.Context, userID, lesson
 
 // GetOpenProgress returns the open run with graded questions rehydrated so
 // the client can resume mid-lesson. 404 when no run is open (the caller then
-// starts one). Non-checkable entries are omitted from checks (their ids still
-// ride in completedParts); outcomes pointing past the
+// starts one). Non-checkable entries are omitted; outcomes pointing past the
 // current config are skipped as stale.
 func (s *lessonActivityService) GetOpenProgress(ctx context.Context, userID, lessonID string) (*responses.AttemptProgress, error) {
 	if _, err := uuid.Parse(lessonID); err != nil {
@@ -135,9 +138,8 @@ func (s *lessonActivityService) GetOpenProgress(ctx context.Context, userID, les
 		}
 		return nil, appErr
 	}
-	parts := decodePartMap(m)
 	checks := map[string][]responses.CheckedQuestion{}
-	for activityID, entry := range parts {
+	for activityID, entry := range decodePartMap(m) {
 		am, err := s.repo.GetByID(ctx, activityID)
 		if err != nil {
 			logger.Report(ctx, "progress activity missing", common.FromDBError(err, "lesson activity"), "activityID", activityID)
@@ -172,54 +174,8 @@ func (s *lessonActivityService) GetOpenProgress(ctx context.Context, userID, les
 		logger.Report(ctx, "progress map failed", common.Internal(), "attemptID", m.ID)
 		return nil, common.Internal()
 	}
-	completed := make([]string, 0, len(parts))
-	for activityID := range parts {
-		completed = append(completed, activityID)
-	}
-	sort.Strings(completed)
-	slog.InfoContext(ctx, "attempt progress loaded", "attemptID", m.ID, "activities", len(checks), "completed", len(completed))
-	return &responses.AttemptProgress{Attempt: summary, Checks: checks, CompletedParts: completed}, nil
-}
-
-// ListProgress derives one summary per lesson from the caller's lesson
-// attempts. A completed run beats any open run (newest first within each
-// status); lessons with only abandoned runs are absent — the hub renders
-// them as not started.
-func (s *lessonActivityService) ListProgress(ctx context.Context, userID string) ([]*responses.LessonProgressSummary, error) {
-	rows, err := s.attempts.ListLessonAttempts(ctx, userID)
-	if err != nil {
-		appErr := common.FromDBError(err, "attempt")
-		logger.Report(ctx, "list lesson attempts failed", appErr, "userID", userID)
-		return nil, appErr
-	}
-	byLesson := make(map[string]*responses.LessonProgressSummary, len(rows))
-	for _, m := range rows {
-		if m.LessonID == nil {
-			continue
-		}
-		lessonID := *m.LessonID
-		current, ok := byLesson[lessonID]
-		if ok && !(m.Status == enums.AttemptStatusCompleted && current.Status != enums.AttemptStatusCompleted) {
-			continue
-		}
-		ids := make([]string, 0, 4)
-		for activityID := range decodePartMap(m) {
-			ids = append(ids, activityID)
-		}
-		sort.Strings(ids)
-		byLesson[lessonID] = &responses.LessonProgressSummary{
-			LessonID:             lessonID,
-			Status:               m.Status,
-			CompletedActivityIDs: ids,
-		}
-	}
-	out := make([]*responses.LessonProgressSummary, 0, len(byLesson))
-	for _, item := range byLesson {
-		out = append(out, item)
-	}
-	sort.Slice(out, func(i, j int) bool { return out[i].LessonID < out[j].LessonID })
-	slog.InfoContext(ctx, "lesson progress listed", "userID", userID, "lessons", len(out))
-	return out, nil
+	slog.InfoContext(ctx, "attempt progress loaded", "attemptID", m.ID, "activities", len(checks))
+	return &responses.AttemptProgress{Attempt: summary, Checks: checks}, nil
 }
 
 // loadOwnedAttempt fetches one attempt and proves ownership: foreign ids
@@ -445,7 +401,7 @@ func (s *lessonActivityService) Pronounce(ctx context.Context, userID, id, attem
 // ScoreWriting grades one writing part with a stateless LLM call and attaches
 // the result to the open lesson attempt. Any LLM or shape failure returns an
 // error and writes nothing.
-func (s *lessonActivityService) ScoreWriting(ctx context.Context, userID, id, attemptID, text, language string) (*responses.WritingScoreResponse, error) {
+func (s *lessonActivityService) ScoreWriting(ctx context.Context, userID, id, attemptID, text string) (*responses.WritingScoreResponse, error) {
 	trimmed := strings.TrimSpace(text)
 	if trimmed == "" {
 		return nil, common.BadRequest("text is required")
@@ -453,10 +409,6 @@ func (s *lessonActivityService) ScoreWriting(ctx context.Context, userID, id, at
 	words := countWords(trimmed)
 	if words > maxWritingWords {
 		return nil, common.New(http.StatusRequestEntityTooLarge, "text too long")
-	}
-	languageName, ok := llm.ExplanationLanguage(language)
-	if !ok {
-		return nil, common.BadRequest("unsupported language")
 	}
 	m, err := s.loadActivity(ctx, id)
 	if err != nil {
@@ -473,7 +425,7 @@ func (s *lessonActivityService) ScoreWriting(ctx context.Context, userID, id, at
 	if _, err := s.loadOwnedAttempt(ctx, userID, attemptID); err != nil {
 		return nil, err
 	}
-	prompt := prompts.BuildWritingScorePrompt(cfg, trimmed, words, languageName)
+	prompt := prompts.BuildWritingScorePrompt(cfg, trimmed, words)
 	var out schemas.WritingFeedback
 	if err := s.llm.CompleteStructured(ctx, prompt, &out, schemas.WritingFeedbackSchemaName, schemas.WritingFeedbackSchema); err != nil {
 		logger.Report(ctx, "writing score engine call failed", common.ServiceUnavailable("scoring unavailable"), "activityID", id)
@@ -505,4 +457,94 @@ func (s *lessonActivityService) ScoreWriting(ctx context.Context, userID, id, at
 	dto.Attempt = responses.AttemptSummary{ID: attached.ID, Status: string(attached.Status), Score: attached.Score}
 	slog.InfoContext(ctx, "writing scored", "activityID", id, "score", score)
 	return &dto, nil
+}
+
+// validateActivityConfig parses the raw config against the shape its type
+// demands, so a malformed admin-authored document never reaches the
+// column (and only ever fails loudly, not silently, at check/pronounce/
+// score time downstream).
+func validateActivityConfig(t enums.ActivityType, raw []byte) error {
+	cfg := datatypes.JSON(raw)
+	var err error
+	switch t {
+	case enums.ActivityTypeReading:
+		_, err = activityconfig.ParseReadingConfig(cfg)
+	case enums.ActivityTypeListening:
+		_, err = activityconfig.ParseListeningConfig(cfg)
+	case enums.ActivityTypeWriting:
+		_, err = activityconfig.ParseWritingConfig(cfg)
+	case enums.ActivityTypeSpeaking:
+		_, err = activityconfig.ParseSpeakingConfig(cfg)
+	default:
+		return fmt.Errorf("unknown activity type %q", t)
+	}
+	if err != nil {
+		return fmt.Errorf("invalid config for type %q: %w", t, err)
+	}
+	return nil
+}
+
+// Create adds one ordered part to a lesson (admin-only, route-gated).
+func (s *lessonActivityService) Create(ctx context.Context, req requests.CreateLessonActivity) (*models.LessonActivity, error) {
+	if err := validateActivityConfig(req.Type, req.Config); err != nil {
+		return nil, common.BadRequest(err.Error())
+	}
+	m := &models.LessonActivity{}
+	if err := utils.Map(m, req); err != nil {
+		logger.Report(ctx, "map create lesson activity failed", err)
+		return nil, common.Internal()
+	}
+	// Config is datatypes.JSON (itself a Scanner/Valuer), so it gets the
+	// same explicit []byte conversion as every other jsonb-backed field
+	// instead of riding the blanket utils.Map above.
+	m.Config = datatypes.JSON(req.Config)
+	if err := s.repo.Create(ctx, m); err != nil {
+		appErr := common.FromDBError(err, "lesson activity")
+		logger.Report(ctx, "create lesson activity failed", appErr)
+		return nil, appErr
+	}
+	slog.InfoContext(ctx, "lesson activity created", "id", m.ID)
+	return m, nil
+}
+
+func (s *lessonActivityService) Update(ctx context.Context, id string, req requests.UpdateLessonActivity) (*models.LessonActivity, error) {
+	m, err := s.repo.GetByID(ctx, id)
+	if err != nil {
+		appErr := common.FromDBError(err, "lesson activity")
+		logger.Report(ctx, "get lesson activity for update failed", appErr, "id", id)
+		return nil, appErr
+	}
+	effectiveType := m.Type
+	if req.Type != nil {
+		effectiveType = *req.Type
+	}
+	if req.Config != nil {
+		if err := validateActivityConfig(effectiveType, req.Config); err != nil {
+			return nil, common.BadRequest(err.Error())
+		}
+	}
+	if err := utils.Map(m, req); err != nil {
+		logger.Report(ctx, "map update lesson activity failed", err, "id", id)
+		return nil, common.Internal()
+	}
+	if req.Config != nil {
+		m.Config = datatypes.JSON(req.Config)
+	}
+	if err := s.repo.Update(ctx, m); err != nil {
+		appErr := common.FromDBError(err, "lesson activity")
+		logger.Report(ctx, "update lesson activity failed", appErr, "id", id)
+		return nil, appErr
+	}
+	slog.InfoContext(ctx, "lesson activity updated", "id", id)
+	return m, nil
+}
+
+func (s *lessonActivityService) Delete(ctx context.Context, id string) error {
+	if err := s.repo.Delete(ctx, id); err != nil {
+		appErr := common.FromDBError(err, "lesson activity")
+		logger.Report(ctx, "delete lesson activity failed", appErr, "id", id)
+		return appErr
+	}
+	slog.InfoContext(ctx, "lesson activity deleted", "id", id)
+	return nil
 }

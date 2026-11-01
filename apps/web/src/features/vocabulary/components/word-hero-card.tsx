@@ -1,32 +1,22 @@
 import type { VocabularyItem } from "@engflex/contracts";
 import { cn } from "cn";
-import { Check, Copy } from "lucide-react";
+import { Check, Copy, Share2 } from "lucide-react";
 import { toast } from "sonner";
+import { AudioButton } from "#/components/common/audio-button";
 import { CefrBadge } from "#/components/common/cefr-badge";
 import { SourcePill } from "#/components/common/source-pill";
-import { SubmitButton } from "#/components/common/submit-button";
 import { Button } from "#/components/ui/button";
-import { posLabel } from "#/features/vocabulary/components/pos-label";
-import { SourceRef } from "#/features/vocabulary/components/source-ref";
-import { usePatchVocabulary } from "#/features/vocabulary/queries";
 import { m } from "#/paraglide/messages";
 
-export function WordHeroCard({ item }: { item: VocabularyItem }) {
-	const patch = usePatchVocabulary();
+export function WordHeroCard({
+	item,
+	onToggleMastered,
+}: {
+	item: VocabularyItem;
+	onToggleMastered: () => void;
+}) {
 	const state = item.userState;
 	const mastered = state?.mastered ?? false;
-
-	function toggleMastered() {
-		patch.mutate(
-			{
-				itemId: item.id,
-				patch: { mastered: !(item.userState?.mastered ?? false) },
-			},
-			{
-				onError: () => toast.error(m["vocabulary.card.masteredFailed"]()),
-			},
-		);
-	}
 
 	async function copy(value: string, message: string) {
 		try {
@@ -44,35 +34,29 @@ export function WordHeroCard({ item }: { item: VocabularyItem }) {
 				<CefrBadge value={item.cefr} />
 				{item.partOfSpeech ? (
 					<span className="chip px-1.5 py-0.5 text-[11px]">
-						{posLabel(item.partOfSpeech)}
+						{item.partOfSpeech}
 					</span>
 				) : null}
-				{state ? <SourcePill source={state.sourceType} /> : null}
 				{state ? (
-					<SourceRef
-						type={state.sourceType}
-						id={state.sourceId}
-						showLabel={false}
-					/>
+					<SourcePill source={state.sourceType} suffix={state.sourceId} />
 				) : null}
 			</div>
 
-			{item.details?.ipa ? (
-				<div className="flex flex-wrap items-center gap-2">
-					<span className="chip font-mono text-xs">{item.details.ipa}</span>
-				</div>
-			) : null}
+			<div className="flex flex-wrap items-center gap-2">
+				<span className="chip font-mono text-xs">{item.ipa}</span>
+				<AudioButton label={m["vocabulary.card.listenUs"]()} />
+				<AudioButton label={m["vocabulary.card.listenUk"]()} />
+			</div>
 
 			<p className="text-[15px] font-medium text-muted-foreground">
 				{item.definition}
 			</p>
 
 			<div className="flex flex-wrap items-center gap-2 border-t-2 border-border pt-4">
-				<SubmitButton
+				<Button
 					type="button"
 					variant={mastered ? "outline" : "default"}
-					pending={patch.isPending}
-					onClick={toggleMastered}
+					onClick={onToggleMastered}
 					className={cn(
 						"btn",
 						mastered ? "btn-outline" : "btn-primary",
@@ -83,7 +67,7 @@ export function WordHeroCard({ item }: { item: VocabularyItem }) {
 					{mastered
 						? m["vocabulary.card.mastered"]()
 						: m["vocabulary.card.markAsMastered"]()}
-				</SubmitButton>
+				</Button>
 				<Button
 					type="button"
 					variant="ghost"
@@ -96,6 +80,16 @@ export function WordHeroCard({ item }: { item: VocabularyItem }) {
 				>
 					<Copy data-icon="inline-start" />
 					{m["common.actions.copy"]()}
+				</Button>
+				<Button
+					type="button"
+					variant="ghost"
+					onClick={() =>
+						copy(window.location.href, m["common.toast.linkCopied"]())
+					}
+				>
+					<Share2 data-icon="inline-start" />
+					{m["vocabulary.card.share"]()}
 				</Button>
 			</div>
 		</div>

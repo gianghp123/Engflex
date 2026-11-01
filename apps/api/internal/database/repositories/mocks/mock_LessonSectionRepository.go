@@ -50,6 +50,120 @@ func (_m *MockLessonSectionRepository) EXPECT() *MockLessonSectionRepository_Exp
 	return &MockLessonSectionRepository_Expecter{mock: &_m.Mock}
 }
 
+// Create provides a mock function for the type MockLessonSectionRepository
+func (_mock *MockLessonSectionRepository) Create(ctx context.Context, s *models.LessonSection) error {
+	ret := _mock.Called(ctx, s)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Create")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *models.LessonSection) error); ok {
+		r0 = returnFunc(ctx, s)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockLessonSectionRepository_Create_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Create'
+type MockLessonSectionRepository_Create_Call struct {
+	*mock.Call
+}
+
+// Create is a helper method to define mock.On call
+//   - ctx context.Context
+//   - s *models.LessonSection
+func (_e *MockLessonSectionRepository_Expecter) Create(ctx any, s any) *MockLessonSectionRepository_Create_Call {
+	return &MockLessonSectionRepository_Create_Call{Call: _e.mock.On("Create", ctx, s)}
+}
+
+func (_c *MockLessonSectionRepository_Create_Call) Run(run func(ctx context.Context, s *models.LessonSection)) *MockLessonSectionRepository_Create_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 *models.LessonSection
+		if args[1] != nil {
+			arg1 = args[1].(*models.LessonSection)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockLessonSectionRepository_Create_Call) Return(err error) *MockLessonSectionRepository_Create_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockLessonSectionRepository_Create_Call) RunAndReturn(run func(ctx context.Context, s *models.LessonSection) error) *MockLessonSectionRepository_Create_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// Delete provides a mock function for the type MockLessonSectionRepository
+func (_mock *MockLessonSectionRepository) Delete(ctx context.Context, id string) error {
+	ret := _mock.Called(ctx, id)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Delete")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) error); ok {
+		r0 = returnFunc(ctx, id)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockLessonSectionRepository_Delete_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Delete'
+type MockLessonSectionRepository_Delete_Call struct {
+	*mock.Call
+}
+
+// Delete is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id string
+func (_e *MockLessonSectionRepository_Expecter) Delete(ctx any, id any) *MockLessonSectionRepository_Delete_Call {
+	return &MockLessonSectionRepository_Delete_Call{Call: _e.mock.On("Delete", ctx, id)}
+}
+
+func (_c *MockLessonSectionRepository_Delete_Call) Run(run func(ctx context.Context, id string)) *MockLessonSectionRepository_Delete_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockLessonSectionRepository_Delete_Call) Return(err error) *MockLessonSectionRepository_Delete_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockLessonSectionRepository_Delete_Call) RunAndReturn(run func(ctx context.Context, id string) error) *MockLessonSectionRepository_Delete_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetByID provides a mock function for the type MockLessonSectionRepository
 func (_mock *MockLessonSectionRepository) GetByID(ctx context.Context, id string) (*models.LessonSection, error) {
 	ret := _mock.Called(ctx, id)
@@ -181,8 +295,8 @@ func (_c *MockLessonSectionRepository_List_Call) RunAndReturn(run func(ctx conte
 }
 
 // ListWithUnits provides a mock function for the type MockLessonSectionRepository
-func (_mock *MockLessonSectionRepository) ListWithUnits(ctx context.Context, level enums.CEFR) ([]*models.LessonSection, error) {
-	ret := _mock.Called(ctx, level)
+func (_mock *MockLessonSectionRepository) ListWithUnits(ctx context.Context, level enums.CEFR, isAdmin bool) ([]*models.LessonSection, error) {
+	ret := _mock.Called(ctx, level, isAdmin)
 
 	if len(ret) == 0 {
 		panic("no return value specified for ListWithUnits")
@@ -190,18 +304,18 @@ func (_mock *MockLessonSectionRepository) ListWithUnits(ctx context.Context, lev
 
 	var r0 []*models.LessonSection
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, enums.CEFR) ([]*models.LessonSection, error)); ok {
-		return returnFunc(ctx, level)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, enums.CEFR, bool) ([]*models.LessonSection, error)); ok {
+		return returnFunc(ctx, level, isAdmin)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, enums.CEFR) []*models.LessonSection); ok {
-		r0 = returnFunc(ctx, level)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, enums.CEFR, bool) []*models.LessonSection); ok {
+		r0 = returnFunc(ctx, level, isAdmin)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*models.LessonSection)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, enums.CEFR) error); ok {
-		r1 = returnFunc(ctx, level)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, enums.CEFR, bool) error); ok {
+		r1 = returnFunc(ctx, level, isAdmin)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -216,11 +330,12 @@ type MockLessonSectionRepository_ListWithUnits_Call struct {
 // ListWithUnits is a helper method to define mock.On call
 //   - ctx context.Context
 //   - level enums.CEFR
-func (_e *MockLessonSectionRepository_Expecter) ListWithUnits(ctx any, level any) *MockLessonSectionRepository_ListWithUnits_Call {
-	return &MockLessonSectionRepository_ListWithUnits_Call{Call: _e.mock.On("ListWithUnits", ctx, level)}
+//   - isAdmin bool
+func (_e *MockLessonSectionRepository_Expecter) ListWithUnits(ctx any, level any, isAdmin any) *MockLessonSectionRepository_ListWithUnits_Call {
+	return &MockLessonSectionRepository_ListWithUnits_Call{Call: _e.mock.On("ListWithUnits", ctx, level, isAdmin)}
 }
 
-func (_c *MockLessonSectionRepository_ListWithUnits_Call) Run(run func(ctx context.Context, level enums.CEFR)) *MockLessonSectionRepository_ListWithUnits_Call {
+func (_c *MockLessonSectionRepository_ListWithUnits_Call) Run(run func(ctx context.Context, level enums.CEFR, isAdmin bool)) *MockLessonSectionRepository_ListWithUnits_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -230,9 +345,14 @@ func (_c *MockLessonSectionRepository_ListWithUnits_Call) Run(run func(ctx conte
 		if args[1] != nil {
 			arg1 = args[1].(enums.CEFR)
 		}
+		var arg2 bool
+		if args[2] != nil {
+			arg2 = args[2].(bool)
+		}
 		run(
 			arg0,
 			arg1,
+			arg2,
 		)
 	})
 	return _c
@@ -243,7 +363,64 @@ func (_c *MockLessonSectionRepository_ListWithUnits_Call) Return(lessonSections 
 	return _c
 }
 
-func (_c *MockLessonSectionRepository_ListWithUnits_Call) RunAndReturn(run func(ctx context.Context, level enums.CEFR) ([]*models.LessonSection, error)) *MockLessonSectionRepository_ListWithUnits_Call {
+func (_c *MockLessonSectionRepository_ListWithUnits_Call) RunAndReturn(run func(ctx context.Context, level enums.CEFR, isAdmin bool) ([]*models.LessonSection, error)) *MockLessonSectionRepository_ListWithUnits_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// Update provides a mock function for the type MockLessonSectionRepository
+func (_mock *MockLessonSectionRepository) Update(ctx context.Context, s *models.LessonSection) error {
+	ret := _mock.Called(ctx, s)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Update")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *models.LessonSection) error); ok {
+		r0 = returnFunc(ctx, s)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockLessonSectionRepository_Update_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Update'
+type MockLessonSectionRepository_Update_Call struct {
+	*mock.Call
+}
+
+// Update is a helper method to define mock.On call
+//   - ctx context.Context
+//   - s *models.LessonSection
+func (_e *MockLessonSectionRepository_Expecter) Update(ctx any, s any) *MockLessonSectionRepository_Update_Call {
+	return &MockLessonSectionRepository_Update_Call{Call: _e.mock.On("Update", ctx, s)}
+}
+
+func (_c *MockLessonSectionRepository_Update_Call) Run(run func(ctx context.Context, s *models.LessonSection)) *MockLessonSectionRepository_Update_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 *models.LessonSection
+		if args[1] != nil {
+			arg1 = args[1].(*models.LessonSection)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockLessonSectionRepository_Update_Call) Return(err error) *MockLessonSectionRepository_Update_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockLessonSectionRepository_Update_Call) RunAndReturn(run func(ctx context.Context, s *models.LessonSection) error) *MockLessonSectionRepository_Update_Call {
 	_c.Call.Return(run)
 	return _c
 }

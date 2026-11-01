@@ -1,4 +1,4 @@
-import { useUser } from "@clerk/tanstack-react-start";
+import { useAuth, useUser } from "@clerk/tanstack-react-start";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { cn } from "cn";
 import {
@@ -11,6 +11,8 @@ import {
 	GraduationCap,
 	House,
 	Info,
+	ShieldCheck,
+	Sparkles,
 } from "lucide-react";
 import { useState } from "react";
 import { APP_ROUTES } from "#/app/app-route";
@@ -39,6 +41,7 @@ import {
 } from "#/components/ui/sidebar";
 import { useProfile } from "#/features/profiles/queries";
 import { AccountButton } from "#/integrations/clerk/account-button";
+import { isAdminClaims } from "#/lib/roles";
 import { m } from "#/paraglide/messages";
 
 /**
@@ -111,24 +114,9 @@ const NAV_GROUPS = [
 		items: [
 			{
 				title: () => m["nav.item.vocabulary"](),
-				to: APP_ROUTES.VOCABULARY.DECKS.LIST,
+				to: APP_ROUTES.VOCABULARY.LIST,
 				icon: BookmarkCheck,
 				tile: "bg-nav-vocab",
-				// The section's list-level pages, which is all that earns a nav
-				// entry. Every other /vocabulary path is a drill-down — a deck or a
-				// word belongs to one of these two — so it lights the parent instead.
-				// Copy is the page's own title/breadcrumb, not a parallel nav string,
-				// so the menu and the page cannot drift apart.
-				items: [
-					{
-						title: () => m["vocabulary.decks.title"](),
-						to: APP_ROUTES.VOCABULARY.DECKS.LIST,
-					},
-					{
-						title: () => m["vocabulary.decks.allWords"](),
-						to: APP_ROUTES.VOCABULARY.WORDS.LIST,
-					},
-				],
 			},
 		],
 	},
@@ -144,6 +132,8 @@ export function AppSidebar() {
 	const pathname = useRouterState({
 		select: (state) => state.location.pathname,
 	});
+	const { sessionClaims } = useAuth();
+	const isAdmin = isAdminClaims(sessionClaims);
 
 	return (
 		<Sidebar collapsible="icon">
@@ -189,6 +179,24 @@ export function AppSidebar() {
 			</SidebarContent>
 			<SidebarFooter>
 				<SidebarMenu>
+					{isAdmin ? (
+						<SidebarMenuItem>
+							<SidebarMenuButton asChild tooltip={m["admin.nav.overview"]()}>
+								<Link to={APP_ROUTES.ADMIN.OVERVIEW} className="font-medium">
+									<ShieldCheck data-icon="inline-start" />
+									<span>{m["admin.nav.overview"]()}</span>
+								</Link>
+							</SidebarMenuButton>
+						</SidebarMenuItem>
+					) : null}
+					<SidebarMenuItem>
+						<SidebarMenuButton asChild tooltip={m["payments.pricing.crumb"]()}>
+							<Link to={APP_ROUTES.PAYMENTS.PRICING} className="font-medium">
+								<Sparkles data-icon="inline-start" />
+								<span>{m["payments.pricing.crumb"]()}</span>
+							</Link>
+						</SidebarMenuButton>
+					</SidebarMenuItem>
 					<SidebarMenuItem>
 						<SidebarMenuButton asChild tooltip={m["about.crumb"]()}>
 							<Link to={APP_ROUTES.ABOUT} className="font-medium">

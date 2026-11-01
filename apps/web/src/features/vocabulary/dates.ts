@@ -1,25 +1,8 @@
-/** A saved word is due when its schedule date has passed. */
+/** A word is due once its SRS date has arrived. No fixture clock: the
+ *  backend never sets srsDueAt yet (no scheduler), so this always reads
+ *  false until that lands — which is the honest state, not a bug here. */
 export function isDue(srsDueAt: string | undefined): boolean {
 	if (!srsDueAt) return false;
-	return new Date(srsDueAt).getTime() <= Date.now();
-}
-
-/** The reader's local midnight — the boundary "today" means to them. */
-export function startOfLocalDay(): Date {
-	const start = new Date();
-	start.setHours(0, 0, 0, 0);
-	return start;
-}
-
-/**
- * True when an RFC3339 instant falls on the reader's local day. The next
- * midnight is derived by date arithmetic (not +24h), so a DST day is right.
- */
-export function isToday(iso: string | undefined): boolean {
-	if (!iso) return false;
-	const start = startOfLocalDay();
-	const next = new Date(start);
-	next.setDate(next.getDate() + 1);
-	const at = new Date(iso).getTime();
-	return at >= start.getTime() && at < next.getTime();
+	const today = new Date().toISOString().slice(0, 10);
+	return srsDueAt.slice(0, 10) <= today;
 }

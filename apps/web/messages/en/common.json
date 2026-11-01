@@ -18,6 +18,7 @@
       "save": "Save"
     },
     "audio": {
+      "playPronunciation": "Play pronunciation",
       "play": "Play audio",
       "pause": "Pause audio",
       "total": "Total"
@@ -34,8 +35,10 @@
     },
     "toast": {
       "copiedClipboard": "Copied to clipboard",
+      "linkCopied": "Link copied",
       "clipboardUnavailable": "Clipboard unavailable in this browser",
-      "addedToVocabulary": "Added to your vocabulary"
+      "addedToVocabulary": "Added to your vocabulary",
+      "error": "Something went wrong, please try again"
     },
     "a11y": {
       "more": "More",
@@ -50,6 +53,10 @@
       "light": "Light",
       "dark": "Dark",
       "auto": "System"
+    },
+    "premium": {
+      "badge": "Premium",
+      "upgradeAction": "Upgrade to unlock"
     },
     "guide": {
       "dismiss": "Don't show this tip again"

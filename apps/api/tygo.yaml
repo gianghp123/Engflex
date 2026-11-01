@@ -23,14 +23,19 @@ type_mappings:
   "enums.InterestTopic": "InterestTopic"
   "enums.LessonStatus": "LessonStatus"
   "enums.Level": "Level"
+  "enums.PublishStatus": "PublishStatus"
   "enums.ScenarioDifficulty": "ScenarioDifficulty"
   "enums.TurnRole": "TurnRole"
   "enums.VocabularySort": "VocabularySort"
   "enums.VocabularySource": "VocabularySource"
+  "enums.VocabularyDomain": "VocabularyDomain"
   "enums.VocabularyPartOfSpeech": "VocabularyPartOfSpeech"
   "enums.ContentType": "ContentType"
   "enums.SpanStatus": "SpanStatus"
   "enums.RelevanceStatus": "RelevanceStatus"
+  "enums.SubscriptionStatus": "SubscriptionStatus"
+  "enums.SubscriptionPlan": "SubscriptionPlan"
+  "enums.PaymentTransactionStatus": "PaymentTransactionStatus"
   # embedded by list request DTOs tagged `tstype:",extends"`
   "common.ListParams": "ListParams"
   # embedded by the LLM-triggering request DTOs tagged `tstype:",extends"`
@@ -85,6 +90,13 @@ packages:
     output_path: "../../packages/contracts/src/scenarios-responses.ts"
     fallback_type: "unknown"
 
+  - path: "engflex-api/internal/modules/videos/dtos/requests"
+    output_path: "../../packages/contracts/src/videos-requests.ts"
+    fallback_type: "unknown"
+  - path: "engflex-api/internal/modules/videos/dtos/responses"
+    output_path: "../../packages/contracts/src/videos-responses.ts"
+    fallback_type: "unknown"
+
   - path: "engflex-api/internal/modules/conversations/dtos/requests"
     output_path: "../../packages/contracts/src/conversations-requests.ts"
     fallback_type: "unknown"
@@ -97,6 +109,20 @@ packages:
     fallback_type: "unknown"
   - path: "engflex-api/internal/modules/vocabulary/dtos/responses"
     output_path: "../../packages/contracts/src/vocabulary-responses.ts"
+    fallback_type: "unknown"
+
+  - path: "engflex-api/internal/modules/users/dtos/requests"
+    output_path: "../../packages/contracts/src/users-requests.ts"
+    fallback_type: "unknown"
+  - path: "engflex-api/internal/modules/users/dtos/responses"
+    output_path: "../../packages/contracts/src/users-responses.ts"
+    fallback_type: "unknown"
+
+  - path: "engflex-api/internal/modules/payments/dtos/requests"
+    output_path: "../../packages/contracts/src/payments-requests.ts"
+    fallback_type: "unknown"
+  - path: "engflex-api/internal/modules/payments/dtos/responses"
+    output_path: "../../packages/contracts/src/payments-responses.ts"
     fallback_type: "unknown"
 
   - path: "engflex-api/internal/modules/attempts/dtos/requests"
@@ -113,13 +139,6 @@ packages:
     output_path: "../../packages/contracts/src/exams-responses.ts"
     fallback_type: "unknown"
     optional_type: "null"
-    
-  - path: "engflex-api/internal/modules/videos/dtos/requests"
-    output_path: "../../packages/contracts/src/videos-requests.ts"
-    fallback_type: "unknown"
-  - path: "engflex-api/internal/modules/videos/dtos/responses"
-    output_path: "../../packages/contracts/src/videos-responses.ts"
-    fallback_type: "unknown"
 
   - path: "engflex-api/internal/modules/bookmarks/dtos/requests"
     output_path: "../../packages/contracts/src/bookmarks-requests.ts"

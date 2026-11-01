@@ -11,7 +11,6 @@ import {
 	storyDetailBySlugQueryOptions,
 	useStoryDetail,
 } from "#/features/stories/queries";
-import { TextActionDock } from "#/features/vocabulary/components/text-action-dock";
 import { loadOr404 } from "#/lib/router/route-loader";
 import { m } from "#/paraglide/messages";
 
@@ -108,56 +107,54 @@ function StoryDetailPage() {
 				</div>
 
 				<div className="flex flex-1 flex-col md:w-7/12 lg:w-1/2">
-					<TextActionDock source={{ type: "story", id: story.id }}>
-						<div className="flex flex-col gap-5 py-1">
-							{sentences.map((sent) => {
-								const isActive =
-									mode === "listen"
-										? currentTime >= sent.startTimestamp &&
-											currentTime < sent.endTimestamp
-										: activeSentence?.id === sent.id;
+					<div className="flex flex-col gap-5 py-1">
+						{sentences.map((sent) => {
+							const isActive =
+								mode === "listen"
+									? currentTime >= sent.startTimestamp &&
+										currentTime < sent.endTimestamp
+									: activeSentence?.id === sent.id;
 
-								return (
-									<button
-										type="button"
-										key={sent.id}
-										onClick={() => handleSentenceClick(sent.startTimestamp)}
-										className={cn(
-											"group relative w-full cursor-pointer rounded-xl p-3 text-left transition-colors",
-											isActive
-												? "border-l-4 border-primary bg-primary/10 shadow-xs"
-												: "hover:bg-muted/50",
-										)}
-									>
-										<div className="flex items-start justify-between gap-3">
-											<p
-												className={cn(
-													"font-medium leading-relaxed transition-colors",
-													isActive
-														? "font-semibold text-foreground text-lg"
-														: "text-foreground/90 text-base",
-												)}
-											>
-												{sent.englishText}
-											</p>
-											<span
-												className="mt-1 flex shrink-0 items-center justify-center rounded-full p-1 text-muted-foreground/60 transition-colors group-hover:text-primary"
-												aria-hidden="true"
-											>
-												<Volume2 className="size-4" />
-											</span>
-										</div>
+							return (
+								<button
+									type="button"
+									key={sent.id}
+									onClick={() => handleSentenceClick(sent.startTimestamp)}
+									className={cn(
+										"group relative w-full cursor-pointer rounded-xl p-3 text-left transition-colors",
+										isActive
+											? "border-l-4 border-primary bg-primary/10 shadow-xs"
+											: "hover:bg-muted/50",
+									)}
+								>
+									<div className="flex items-start justify-between gap-3">
+										<p
+											className={cn(
+												"font-medium leading-relaxed transition-colors",
+												isActive
+													? "font-semibold text-foreground text-lg"
+													: "text-foreground/90 text-base",
+											)}
+										>
+											{sent.englishText}
+										</p>
+										<span
+											className="mt-1 flex shrink-0 items-center justify-center rounded-full p-1 text-muted-foreground/60 transition-colors group-hover:text-primary"
+											aria-hidden="true"
+										>
+											<Volume2 className="size-4" />
+										</span>
+									</div>
 
-										{showTranslation && sent.vietnameseText ? (
-											<p className="mt-1.5 text-muted-foreground text-sm leading-normal italic">
-												{sent.vietnameseText}
-											</p>
-										) : null}
-									</button>
-								);
-							})}
-						</div>
-					</TextActionDock>
+									{showTranslation && sent.vietnameseText ? (
+										<p className="mt-1.5 text-muted-foreground text-sm leading-normal italic">
+											{sent.vietnameseText}
+										</p>
+									) : null}
+								</button>
+							);
+						})}
+					</div>
 				</div>
 			</main>
 

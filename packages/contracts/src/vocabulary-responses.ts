@@ -30,7 +30,6 @@ export interface WordForm {
  * word-detail screen renders beyond the core columns.
  */
 export interface VocabularyDetails {
-  ipa: string;
   audioUs: string;
   audioUk: string;
   syllables: string;
@@ -53,9 +52,6 @@ export interface UserVocabularyState {
   note?: string;
   mastered: boolean;
   srsDueAt?: string /* RFC3339 */;
-  intervalDays: number /* int */;
-  reviewCount: number /* int */;
-  lastReviewedAt?: string /* RFC3339 */;
   createdAt: string /* RFC3339 */;
 }
 /**
@@ -64,14 +60,19 @@ export interface UserVocabularyState {
 export interface VocabularyItem {
   id: string;
   term: string;
+  ipa: string;
+  partOfSpeech: string;
   cefr: CEFR;
-  partOfSpeech?: VocabularyPartOfSpeech;
+  domain?: VocabularyDomain;
   definition: string;
+  status: PublishStatus;
+  isPremium: boolean;
   details?: VocabularyDetails;
   userState?: UserVocabularyState;
 }
 /**
- * VocabularyStats aggregates the hub's stat cards.
+ * VocabularyStats aggregates the hub's four stat cards (computed by
+ * services from user_vocabulary).
  */
 export interface VocabularyStats {
   totalSaved: number /* int */;
@@ -79,11 +80,7 @@ export interface VocabularyStats {
   needsReview: number /* int */;
   customAdditions: number /* int */;
   dueToday: number /* int */;
-  /**
-   * SavedToday counts words saved in the caller's local day (the request's
-   * dayStart, or the UTC day when it is omitted).
-   */
-  savedToday: number /* int */;
+  retentionPct: number /* int */;
 }
 
 //////////
@@ -102,45 +99,33 @@ export interface VocabularyCategoryResponse {
 
 /**
  * VocabularyDeckDetail is the GET /vocabulary-decks/:id shape: deck header
- * plus its category and rows.
+ * plus its category. Items page separately via /vocabulary-deck-items.
  */
 export interface VocabularyDeckDetail {
   id: string;
-  userId?: string;
   categoryId?: string;
   name: string;
   description: string;
   thumbnailUrl: string;
   level: string;
+  isDefault: boolean;
+  status: PublishStatus;
+  isPremium: boolean;
   category?: VocabularyCategoryResponse;
-  items?: VocabularyDeckItemResponse[];
   createdAt: string /* RFC3339 */;
   updatedAt: string /* RFC3339 */;
 }
 /**
- * VocabularyDeckItemResponse is one flashcard row with its entry attached.
+ * VocabularyDeckItemResponse is one flashcard row.
  */
 export interface VocabularyDeckItemResponse {
   id: string;
   deckId: string;
-  itemId: string;
-  sequence: number /* int */;
+  videoExerciseId?: string;
+  videoTranscriptId?: string;
+  phrase: string;
+  normalizedPhrase: string;
+  meaning: string;
   exampleSentence: string;
   note: string;
-  item?: VocabularyItem;
-}
-
-//////////
-// source: vocabulary_word_draft.go
-
-/**
- * WordDraft is the generated draft the add-word dialog fills itself with.
- * Details is the same wire shape as a saved item's details, minus audio — an
- * LLM cannot produce audio, so those fields stay empty.
- */
-export interface WordDraft {
-  definition: string;
-  cefr: string;
-  partOfSpeech: string;
-  details: VocabularyDetails;
 }

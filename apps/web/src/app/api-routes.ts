@@ -7,23 +7,66 @@ export const API_ROUTES = {
 		BY_ID: (id: ApiId) => `/profiles/${id}`,
 	},
 	VOCABULARY: {
-		ITEMS: {
-			LIST: "/vocabulary-items",
-			BY_ID: (id: ApiId) => `/vocabulary-items/${id}`,
-			GENERATE: "/vocabulary-items/generate",
-		},
-		LIBRARY: {
-			LIST: "/user-vocabulary",
-			STATS: "/user-vocabulary/stats",
-			ADD: "/user-vocabulary/words",
-			BY_ID: (itemId: ApiId) => `/user-vocabulary/${itemId}`,
-		},
-		DECKS: {
-			LIST: "/vocabulary-decks",
-			BY_ID: (id: ApiId) => `/vocabulary-decks/${id}`,
-			ITEMS: "/vocabulary-deck-items",
-			ITEM_BY_ID: (id: ApiId) => `/vocabulary-deck-items/${id}`,
-		},
+		LIST: "/vocabulary",
+		BY_ID: (id: ApiId) => `/vocabulary/${id}`,
+	},
+	VOCABULARY_ITEMS: {
+		LIST: "/vocabulary-items",
+		BY_ID: (id: ApiId) => `/vocabulary-items/${id}`,
+	},
+	VOCABULARY_DECKS: {
+		LIST: "/vocabulary-decks",
+		BY_ID: (id: ApiId) => `/vocabulary-decks/${id}`,
+	},
+	VOCABULARY_DECK_ITEMS: {
+		LIST: "/vocabulary-deck-items",
+		BY_ID: (id: ApiId) => `/vocabulary-deck-items/${id}`,
+	},
+	VOCABULARY_CATEGORIES: {
+		LIST: "/vocabulary-categories",
+		BY_ID: (id: ApiId) => `/vocabulary-categories/${id}`,
+	},
+	USER_VOCABULARY: {
+		LIST: "/user-vocabulary",
+		BY_ITEM_ID: (itemId: ApiId) => `/user-vocabulary/${itemId}`,
+	},
+	VIDEO_EXERCISES: {
+		LIST: "/video-exercises",
+		BY_ID: (id: ApiId) => `/video-exercises/${id}`,
+	},
+	VIDEO_CATEGORIES: {
+		LIST: "/video-categories",
+		BY_ID: (id: ApiId) => `/video-categories/${id}`,
+	},
+	LESSON_SECTIONS: {
+		LIST: "/lesson-sections",
+		BY_ID: (id: ApiId) => `/lesson-sections/${id}`,
+	},
+	LESSON_ACTIVITIES: {
+		LIST: "/lesson-activities",
+		BY_ID: (id: ApiId) => `/lesson-activities/${id}`,
+	},
+	ADMIN: {
+		VOCABULARY_DECKS: "/admin/vocabulary-decks",
+		VOCABULARY_ITEMS: "/admin/vocabulary-items",
+		LESSON_ACTIVITY: (id: ApiId) => `/admin/lesson-activities/${id}`,
+		USERS: "/admin/users",
+		USER_ROLE: (id: ApiId) => `/admin/users/${id}/role`,
+		USER_SUBSCRIPTIONS: (id: ApiId) => `/admin/users/${id}/subscriptions`,
+		PREMIUM_PLANS: "/admin/premium/plans",
+		PREMIUM_PLAN: (plan: ApiId) => `/admin/premium/plans/${plan}`,
+		PREMIUM_FEATURES: "/admin/premium/features",
+		PREMIUM_FEATURE: (id: ApiId) => `/admin/premium/features/${id}`,
+		PREMIUM_SUBSCRIPTIONS: "/admin/premium/subscriptions",
+	},
+	PAYMENTS: {
+		PLANS: "/payments/vnpay/plans",
+		CHECKOUT: "/payments/vnpay/checkout",
+		ME: "/premium/me",
+	},
+	PERSONAS: {
+		LIST: "/personas",
+		BY_ID: (id: ApiId) => `/personas/${id}`,
 	},
 	SCENARIOS: {
 		LIST: "/scenarios",

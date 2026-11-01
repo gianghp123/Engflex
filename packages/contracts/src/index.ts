@@ -29,6 +29,7 @@ declare global {
   type LessonStatus = Enums.LessonStatus;
   type Level = Enums.Level;
   type ListParams = Common.ListParams;
+  type PublishStatus = Enums.PublishStatus;
   type LanguageParam = Llm.LanguageParam;
   type ScenarioDifficulty = Enums.ScenarioDifficulty;
   type TurnRole = Enums.TurnRole;
@@ -36,6 +37,10 @@ declare global {
   type RelevanceStatus = Enums.RelevanceStatus;
   type VocabularySort = Enums.VocabularySort;
   type VocabularySource = Enums.VocabularySource;
+  type VocabularyDomain = Enums.VocabularyDomain;
+  type SubscriptionStatus = Enums.SubscriptionStatus;
+  type SubscriptionPlan = Enums.SubscriptionPlan;
+  type PaymentTransactionStatus = Enums.PaymentTransactionStatus;
   type VocabularyPartOfSpeech = Enums.VocabularyPartOfSpeech;
   type ContentType = Enums.ContentType;
 }
@@ -54,8 +59,6 @@ export * from './conversations-requests.ts';
 export * from './conversations-responses.ts';
 export * from './vocabulary-requests.ts';
 export * from './vocabulary-responses.ts';
-export * from './attempts-requests.ts';
-export * from './attempts-responses.ts';
 export type {
   PatchAttempt as PatchExamAttempt,
   StartAttempt as StartExamAttempt,
@@ -76,6 +79,12 @@ export type {
 } from './exams-responses.ts';
 export * from './videos-requests.ts';
 export * from './videos-responses.ts';
+export * from './attempts-requests.ts';
+export * from './attempts-responses.ts';
+export * from './users-requests.ts';
+export * from './users-responses.ts';
+export * from './payments-requests.ts';
+export * from './payments-responses.ts';
 export * from './bookmarks-requests.ts';
 export * from './bookmarks-responses.ts';
 export * from './stories-requests.ts';

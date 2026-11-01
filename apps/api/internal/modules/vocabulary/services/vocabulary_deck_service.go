@@ -3,9 +3,9 @@ package services
 import (
 	"context"
 	"log/slog"
-	"strings"
 
 	"engflex-api/internal/common"
+	"engflex-api/internal/common/enums"
 	"engflex-api/internal/database/models"
 	"engflex-api/internal/database/repositories"
 	"engflex-api/internal/logger"
@@ -13,36 +13,44 @@ import (
 	"engflex-api/internal/utils"
 )
 
-// VocabularyDeckService owns flashcard decks. Curated decks (user_id NULL)
-// are readable by everyone but writable by no one; private decks are
-// readable and writable only by their owner.
+// VocabularyDeckService owns flashcard decks: personal (owner-managed) and
+// system-curated (admin-managed, gated by Status for everyone else).
 type VocabularyDeckService interface {
-	ListVisible(ctx context.Context, userID string, limit, offset int) ([]*models.VocabularyDeck, int64, error)
-	ListVisibleWithPreview(ctx context.Context, userID string, previewK, limit, offset int) ([]*models.VocabularyDeck, int64, error)
-	GetDetail(ctx context.Context, userID, id string) (*models.VocabularyDeck, error)
+	ListByUser(ctx context.Context, userID string, isAdmin bool, limit, offset int) ([]*models.VocabularyDeck, int64, error)
+	GetDetail(ctx context.Context, userID, id string, isAdmin bool) (*models.VocabularyDeck, error)
 	Create(ctx context.Context, userID string, req requests.CreateVocabularyDeck) (*models.VocabularyDeck, error)
-	Update(ctx context.Context, userID, id string, req requests.UpdateVocabularyDeck) (*models.VocabularyDeck, error)
-	Delete(ctx context.Context, userID, id string) error
+	CreateSystemDeck(ctx context.Context, adminUserID string, req requests.CreateVocabularyDeck) (*models.VocabularyDeck, error)
+	Update(ctx context.Context, userID, id string, isAdmin bool, req requests.UpdateVocabularyDeck) (*models.VocabularyDeck, error)
+	Delete(ctx context.Context, userID, id string, isAdmin bool) error
+}
+
+// canManage enforces: system decks (IsDefault) are admin-only; personal
+// decks are owner-only.
+func canManageDeck(d *models.VocabularyDeck, userID string, isAdmin bool) bool {
+	if d.IsDefault {
+		return isAdmin
+	}
+	return d.UserID == userID
 }
 
 type vocabularyDeckService struct {
-	repo      repositories.VocabularyDeckRepository
-	deckItems repositories.VocabularyDeckItemRepository
+	repo    repositories.VocabularyDeckRepository
+	premium common.PremiumChecker
 }
 
-// NewVocabularyDeckService builds the service over both repositories.
-func NewVocabularyDeckService(repo repositories.VocabularyDeckRepository, deckItems repositories.VocabularyDeckItemRepository) VocabularyDeckService {
-	return &vocabularyDeckService{repo: repo, deckItems: deckItems}
+// NewVocabularyDeckService builds the service over the repository interface.
+func NewVocabularyDeckService(repo repositories.VocabularyDeckRepository, premium common.PremiumChecker) VocabularyDeckService {
+	return &vocabularyDeckService{repo: repo, premium: premium}
 }
 
-func (s *vocabularyDeckService) ListVisible(ctx context.Context, userID string, limit, offset int) ([]*models.VocabularyDeck, int64, error) {
-	items, err := s.repo.ListVisible(ctx, userID, limit, offset)
+func (s *vocabularyDeckService) ListByUser(ctx context.Context, userID string, isAdmin bool, limit, offset int) ([]*models.VocabularyDeck, int64, error) {
+	items, err := s.repo.ListByUser(ctx, userID, isAdmin, limit, offset)
 	if err != nil {
 		appErr := common.FromDBError(err, "vocabulary deck")
 		logger.Report(ctx, "list vocabulary decks failed", appErr)
 		return nil, 0, appErr
 	}
-	total, err := s.repo.CountVisible(ctx, userID)
+	total, err := s.repo.CountByUser(ctx, userID, isAdmin)
 	if err != nil {
 		appErr := common.FromDBError(err, "vocabulary deck")
 		logger.Report(ctx, "count vocabulary decks failed", appErr)
@@ -52,96 +60,43 @@ func (s *vocabularyDeckService) ListVisible(ctx context.Context, userID string, 
 	return items, total, nil
 }
 
-// ListVisibleWithPreview returns every visible deck with up to previewK of its
-// words attached, each carrying the caller's review state. previewK is clamped
-// because the landing is a preview; full rows stay on the deck detail.
-func (s *vocabularyDeckService) ListVisibleWithPreview(ctx context.Context, userID string, previewK, limit, offset int) ([]*models.VocabularyDeck, int64, error) {
-	if previewK < 1 {
-		previewK = 6
-	}
-	if previewK > 12 {
-		previewK = 12
-	}
-	decks, err := s.repo.ListVisible(ctx, userID, limit, offset)
-	if err != nil {
-		appErr := common.FromDBError(err, "vocabulary deck")
-		logger.Report(ctx, "list vocabulary decks failed", appErr)
-		return nil, 0, appErr
-	}
-	total, err := s.repo.CountVisible(ctx, userID)
-	if err != nil {
-		appErr := common.FromDBError(err, "vocabulary deck")
-		logger.Report(ctx, "count vocabulary decks failed", appErr)
-		return nil, 0, appErr
-	}
-	// Every deck keeps a non-nil Items, so a deck with no words still renders.
-	for _, d := range decks {
-		d.Items = make([]*models.VocabularyDeckItem, 0)
-	}
-	if len(decks) > 0 {
-		ids := make([]string, 0, len(decks))
-		byID := make(map[string]*models.VocabularyDeck, len(decks))
-		for _, d := range decks {
-			ids = append(ids, d.ID)
-			byID[d.ID] = d
-		}
-		rows, rErr := s.deckItems.ListPreviewByDeckIDs(ctx, userID, ids, previewK)
-		if rErr != nil {
-			appErr := common.FromDBError(rErr, "vocabulary deck item")
-			logger.Report(ctx, "list deck previews failed", appErr)
-			return nil, 0, appErr
-		}
-		for _, row := range rows {
-			if d := byID[row.DeckID]; d != nil {
-				d.Items = append(d.Items, row)
-			}
-		}
-	}
-	slog.InfoContext(ctx, "vocabulary decks listed with preview", "count", len(decks), "total", total, "previewK", previewK)
-	return decks, total, nil
-}
-
-func (s *vocabularyDeckService) GetDetail(ctx context.Context, userID, id string) (*models.VocabularyDeck, error) {
-	m, err := s.repo.GetDetail(ctx, userID, id)
+// GetDetail: a draft system deck is invisible to non-admins (404, not 403 —
+// its existence itself isn't disclosed), matching the "what's allowed to
+// show to learners" scope. Personal decks keep the prior owner-only check.
+func (s *vocabularyDeckService) GetDetail(ctx context.Context, userID, id string, isAdmin bool) (*models.VocabularyDeck, error) {
+	m, err := s.repo.GetDetail(ctx, id)
 	if err != nil {
 		appErr := common.FromDBError(err, "vocabulary deck")
 		logger.Report(ctx, "get vocabulary deck detail failed", appErr, "id", id)
 		return nil, appErr
 	}
-	if m.UserID != nil && *m.UserID != userID {
+	if m.IsDefault {
+		if m.Status != enums.PublishStatusPublished && !isAdmin {
+			return nil, common.NotFound("vocabulary deck not found")
+		}
+		if err := common.RequirePremiumAccess(ctx, s.premium, userID, isAdmin, m.IsPremium); err != nil {
+			return nil, err
+		}
+	} else if m.UserID != userID {
 		return nil, common.Forbidden("not your deck")
 	}
 	slog.InfoContext(ctx, "vocabulary deck found", "id", m.ID)
 	return m, nil
 }
 
+// Create makes a personal deck for the caller. Always published: there is
+// no review step for a learner's own content.
 func (s *vocabularyDeckService) Create(ctx context.Context, userID string, req requests.CreateVocabularyDeck) (*models.VocabularyDeck, error) {
-	// Names are unique per user (lower(name) index): trim before the blank
-	// guard so "   " can never reach the unique index as a distinct name.
-	name := strings.TrimSpace(req.Name)
-	if name == "" {
-		return nil, common.BadRequest("name is required")
-	}
-	req.Name = name
-	// Product cap; curated decks (user_id NULL) are shared and never count.
-	// Checked without a transaction: concurrent creates could land one over —
-	// the cap is a product guard, not a constraint.
-	owned, err := s.repo.CountByUser(ctx, userID)
-	if err != nil {
-		appErr := common.FromDBError(err, "vocabulary deck")
-		logger.Report(ctx, "count user decks failed", appErr)
-		return nil, appErr
-	}
-	if owned >= common.MaxUserDecks {
-		return nil, common.UnprocessableEntity("deck limit reached")
-	}
 	d := &models.VocabularyDeck{}
 	if err := utils.Map(d, req); err != nil {
 		logger.Report(ctx, "map create vocabulary deck failed", err)
 		return nil, common.Internal()
 	}
-	uid := userID
-	d.UserID = &uid
+	d.UserID = userID
+	d.Status = enums.PublishStatusPublished
+	// Personal decks are never premium-gated, regardless of what the
+	// shared DTO carried — IsPremium is an admin-only concept.
+	d.IsPremium = false
 	if err := s.repo.Create(ctx, d); err != nil {
 		appErr := common.FromDBError(err, "vocabulary deck")
 		logger.Report(ctx, "create vocabulary deck failed", appErr)
@@ -151,17 +106,34 @@ func (s *vocabularyDeckService) Create(ctx context.Context, userID string, req r
 	return d, nil
 }
 
-func (s *vocabularyDeckService) Update(ctx context.Context, userID, id string, req requests.UpdateVocabularyDeck) (*models.VocabularyDeck, error) {
+// CreateSystemDeck makes an admin-curated deck, starting as draft until
+// explicitly published.
+func (s *vocabularyDeckService) CreateSystemDeck(ctx context.Context, adminUserID string, req requests.CreateVocabularyDeck) (*models.VocabularyDeck, error) {
+	d := &models.VocabularyDeck{}
+	if err := utils.Map(d, req); err != nil {
+		logger.Report(ctx, "map create system vocabulary deck failed", err)
+		return nil, common.Internal()
+	}
+	d.UserID = adminUserID
+	d.IsDefault = true
+	d.Status = enums.PublishStatusDraft
+	if err := s.repo.Create(ctx, d); err != nil {
+		appErr := common.FromDBError(err, "vocabulary deck")
+		logger.Report(ctx, "create system vocabulary deck failed", appErr)
+		return nil, appErr
+	}
+	slog.InfoContext(ctx, "system vocabulary deck created", "id", d.ID)
+	return d, nil
+}
+
+func (s *vocabularyDeckService) Update(ctx context.Context, userID, id string, isAdmin bool, req requests.UpdateVocabularyDeck) (*models.VocabularyDeck, error) {
 	d, err := s.repo.GetByID(ctx, id)
 	if err != nil {
 		appErr := common.FromDBError(err, "vocabulary deck")
 		logger.Report(ctx, "get vocabulary deck for update failed", appErr, "id", id)
 		return nil, appErr
 	}
-	if d.UserID == nil {
-		return nil, common.Forbidden("curated deck is read-only")
-	}
-	if *d.UserID != userID {
+	if !canManageDeck(d, userID, isAdmin) {
 		return nil, common.Forbidden("not your deck")
 	}
 	// Partial update: UpdateVocabularyDeck fields are all pointers and copier
@@ -172,11 +144,7 @@ func (s *vocabularyDeckService) Update(ctx context.Context, userID, id string, r
 		d.CategoryID = req.CategoryID
 	}
 	if req.Name != nil {
-		name := strings.TrimSpace(*req.Name)
-		if name == "" {
-			return nil, common.BadRequest("name is required")
-		}
-		d.Name = name
+		d.Name = *req.Name
 	}
 	if req.Description != nil {
 		d.Description = *req.Description
@@ -187,6 +155,15 @@ func (s *vocabularyDeckService) Update(ctx context.Context, userID, id string, r
 	if req.Level != nil {
 		d.Level = *req.Level
 	}
+	// Status and IsPremium only mean anything for a system deck, and only
+	// an admin can touch either — canManageDeck above already guarantees
+	// that.
+	if req.Status != nil && d.IsDefault {
+		d.Status = *req.Status
+	}
+	if req.IsPremium != nil && d.IsDefault {
+		d.IsPremium = *req.IsPremium
+	}
 	if err := s.repo.Update(ctx, d); err != nil {
 		appErr := common.FromDBError(err, "vocabulary deck")
 		logger.Report(ctx, "update vocabulary deck failed", appErr, "id", id)
@@ -196,17 +173,14 @@ func (s *vocabularyDeckService) Update(ctx context.Context, userID, id string, r
 	return d, nil
 }
 
-func (s *vocabularyDeckService) Delete(ctx context.Context, userID, id string) error {
+func (s *vocabularyDeckService) Delete(ctx context.Context, userID, id string, isAdmin bool) error {
 	d, err := s.repo.GetByID(ctx, id)
 	if err != nil {
 		appErr := common.FromDBError(err, "vocabulary deck")
 		logger.Report(ctx, "get vocabulary deck for delete failed", appErr, "id", id)
 		return appErr
 	}
-	if d.UserID == nil {
-		return common.Forbidden("curated deck is read-only")
-	}
-	if *d.UserID != userID {
+	if !canManageDeck(d, userID, isAdmin) {
 		return common.Forbidden("not your deck")
 	}
 	if err := s.repo.Delete(ctx, id); err != nil {

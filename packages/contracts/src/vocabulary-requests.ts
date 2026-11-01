@@ -31,56 +31,10 @@ export interface UpdateVocabularyCategory {
 // source: vocabulary_mutations.go
 
 /**
- * VocabularyDetails is the wire copy of the entry's rich content (tygo cannot
- * resolve cross-package types).
- */
-export interface VocabularyDetails {
-  ipa: string;
-  audioUs: string;
-  audioUk: string;
-  syllables: string;
-  stressTip: string;
-  commonSlip: string;
-  longDefinition: string;
-  etymology: string;
-  contexts: VocabularyContext[];
-  collocations: Collocation[];
-  wordForms: WordForm[];
-}
-/**
- * VocabularyContext is one labeled usage quote.
- */
-export interface VocabularyContext {
-  label: string;
-  quote: string;
-}
-/**
- * Collocation is a fixed phrase with its pattern.
- */
-export interface Collocation {
-  phrase: string;
-  pattern: string;
-  example: string;
-}
-/**
- * WordForm is one morphology entry.
- */
-export interface WordForm {
-  formType: string;
-  forms: string[];
-}
-/**
- * CreateVocabularyItem adds a private (user-owned) dictionary entry.
- */
-export interface CreateVocabularyItem {
-  term: string;
-  definition: string;
-  cefr: string;
-  partOfSpeech?: string;
-  details?: VocabularyDetails;
-}
-/**
- * CreateVocabularyDeck creates a user-owned flashcard deck.
+ * CreateVocabularyDeck creates a flashcard deck (personal via
+ * /vocabulary-decks, or system-curated via the admin endpoint — the service
+ * method called decides which). IsPremium is only ever honored on the
+ * system-deck path (service-enforced); a personal deck ignores it.
  */
 export interface CreateVocabularyDeck {
   categoryId?: string;
@@ -88,9 +42,12 @@ export interface CreateVocabularyDeck {
   description: string;
   thumbnailUrl: string;
   level: string;
+  isPremium: boolean;
 }
 /**
- * UpdateVocabularyDeck renames or re-categorises a deck.
+ * UpdateVocabularyDeck renames or re-categorises a deck. Status and
+ * IsPremium only take effect for a system deck updated by an admin
+ * (service-enforced).
  */
 export interface UpdateVocabularyDeck {
   categoryId?: string;
@@ -98,24 +55,54 @@ export interface UpdateVocabularyDeck {
   description?: string;
   thumbnailUrl?: string;
   level?: string;
+  status?: PublishStatus;
+  isPremium?: boolean;
 }
 /**
- * CreateVocabularyDeckItem adds one flashcard row to a deck: a reference to
- * a visible dictionary entry plus per-row presentation.
+ * CreateVocabularyDeckItem adds one flashcard row to a deck.
  */
 export interface CreateVocabularyDeckItem {
   deckId: string;
-  itemId: string;
-  sequence: number /* int */;
+  videoExerciseId?: string;
+  videoTranscriptId?: string;
+  phrase: string;
+  meaning: string;
   exampleSentence: string;
   note: string;
 }
 /**
- * UpdateVocabularyDeckItem edits a flashcard row's presentation.
+ * UpdateVocabularyDeckItem edits a flashcard row.
  */
 export interface UpdateVocabularyDeckItem {
+  phrase?: string;
+  meaning?: string;
   exampleSentence?: string;
   note?: string;
+}
+/**
+ * CreateVocabularyItem adds a shared dictionary entry or a custom word.
+ * IsPremium is only ever honored on the admin system-entry path
+ * (service-enforced); a personal custom word ignores it.
+ */
+export interface CreateVocabularyItem {
+  term: string;
+  definition: string;
+  cefr: string;
+  domain?: string;
+  isPremium: boolean;
+}
+/**
+ * UpdateVocabularyItem edits a shared dictionary entry (admin-only, and
+ * only entries with no CreatedByUserID — a user's custom word stays theirs
+ * to manage, this never touches it).
+ */
+export interface UpdateVocabularyItem {
+  term?: string;
+  definition?: string;
+  cefr?: string;
+  domain?: string;
+  status?: PublishStatus;
+  isPremium?: boolean;
 }
 /**
  * SaveUserVocabulary saves per-user state over a shared item (idempotent).
@@ -126,55 +113,4 @@ export interface SaveUserVocabulary {
   sourceId?: string;
   note?: string;
   mastered?: boolean;
-}
-/**
- * AddUserVocabularyWord adds a word to the caller's library by content: the
- * server find-or-creates a private dictionary entry (unique per user by
- * lower(term)) and enrols it. Idempotent — re-adding an existing term
- * re-enrols it rather than 409ing.
- */
-export interface AddUserVocabularyWord {
-  term: string;
-  definition: string;
-  cefr: string;
-  partOfSpeech?: string;
-  /**
-   * DeckID optionally enrols the word and drops it straight into one of the
-   * caller's private decks — the deck page's "add a word" path.
-   */
-  deckId?: string;
-  details?: VocabularyDetails;
-  /**
-   * SourceType/SourceID record where the word came from when the save was
-   * started from content (the lesson/video context dock). Omitted = manual.
-   */
-  sourceType: string;
-  sourceId?: string;
-}
-/**
- * PatchUserVocabulary updates one saved word's mutable state. Both fields are
- * optional pointers: omitted means "leave unchanged", so a PATCH never clears
- * a note or un-masters a word by accident. An empty body is rejected by the
- * service.
- */
-export interface PatchUserVocabulary {
-  mastered?: boolean;
-  note?: string;
-}
-/**
- * ReviewUserVocabulary grades one review (0 = again … 3 = easy). Grade is a
- * pointer so that a missing grade fails `required`: with a plain int the zero
- * value is indistinguishable from "again" and `{}` would bind successfully.
- */
-export interface ReviewUserVocabulary {
-  grade?: number /* int */;
-}
-/**
- * GenerateWordDraft asks for an LLM-authored word draft for the add-word
- * dialog. Read-only: nothing is stored; the reviewed result rides the normal
- * add-word save.
- */
-export interface GenerateWordDraft extends LanguageParam {
-  term: string;
-  context: string;
 }

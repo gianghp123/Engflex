@@ -8,9 +8,13 @@ import (
 	"gorm.io/gorm"
 )
 
+// LessonActivityRepository is the DB access layer for the lesson_activities table.
 type LessonActivityRepository interface {
 	ListByLesson(ctx context.Context, lessonID string) ([]*models.LessonActivity, error)
 	GetByID(ctx context.Context, id string) (*models.LessonActivity, error)
+	Create(ctx context.Context, a *models.LessonActivity) error
+	Update(ctx context.Context, a *models.LessonActivity) error
+	Delete(ctx context.Context, id string) error
 	WithTx(tx *gorm.DB) LessonActivityRepository
 }
 
@@ -18,10 +22,12 @@ type lessonActivityRepository struct {
 	db *gorm.DB
 }
 
+// NewLessonActivityRepository builds the repository over the shared DB handle.
 func NewLessonActivityRepository(db *gorm.DB) LessonActivityRepository {
 	return &lessonActivityRepository{db: db}
 }
 
+// WithTx returns the repository bound to the given transaction handle.
 func (r *lessonActivityRepository) WithTx(tx *gorm.DB) LessonActivityRepository {
 	return &lessonActivityRepository{db: tx}
 }
@@ -46,4 +52,33 @@ func (r *lessonActivityRepository) GetByID(ctx context.Context, id string) (*mod
 		return nil, err
 	}
 	return &m, nil
+}
+
+func (r *lessonActivityRepository) Create(ctx context.Context, a *models.LessonActivity) error {
+	return r.db.WithContext(ctx).Create(a).Error
+}
+
+func (r *lessonActivityRepository) Update(ctx context.Context, a *models.LessonActivity) error {
+	result := r.db.WithContext(ctx).Save(a)
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return gorm.ErrRecordNotFound
+	}
+	return nil
+}
+
+func (r *lessonActivityRepository) Delete(ctx context.Context, id string) error {
+	if _, err := parseID(id, "id"); err != nil {
+		return err
+	}
+	result := r.db.WithContext(ctx).Delete(&models.LessonActivity{}, "id = ?", id)
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return gorm.ErrRecordNotFound
+	}
+	return nil
 }

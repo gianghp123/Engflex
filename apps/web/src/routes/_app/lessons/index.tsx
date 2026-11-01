@@ -1,4 +1,3 @@
-import type { LessonProgressSummary } from "@engflex/contracts";
 import { createFileRoute } from "@tanstack/react-router";
 import { useStore } from "@tanstack/react-store";
 import { useMemo, useState } from "react";
@@ -15,7 +14,6 @@ import {
 import { UnitSection } from "#/features/lessons/components/unit-section";
 import {
 	lessonSectionsQueryOptions,
-	useLessonProgress,
 	useLessonSections,
 } from "#/features/lessons/queries";
 import { lessonsStore, progressFrom } from "#/features/lessons/store";
@@ -41,27 +39,11 @@ function LessonsPage() {
 		[sections],
 	);
 
-	const progressQuery = useLessonProgress();
-	const serverById = useMemo(() => {
-		const byId: Record<string, LessonProgressSummary | undefined> = {};
-		for (const item of progressQuery.data ?? []) byId[item.lessonId] = item;
-		return byId;
-	}, [progressQuery.data]);
-
 	const progressById = useMemo(() => {
 		return Object.fromEntries(
-			units.map((lesson) => {
-				const server = serverById[lesson.id];
-				return [
-					lesson.id,
-					progressFrom(storeState, lesson.id, undefined, {
-						count: server?.completedActivityIds.length ?? 0,
-						completed: server?.status === "completed",
-					}),
-				];
-			}),
+			units.map((lesson) => [lesson.id, progressFrom(storeState, lesson.id)]),
 		);
-	}, [storeState, units, serverById]);
+	}, [storeState, units]);
 
 	const visible = useMemo(() => {
 		const search = filters.search.trim().toLowerCase();
@@ -102,6 +84,20 @@ function LessonsPage() {
 		};
 	}, [sections, progressById]);
 
+	const unlocksAfterById = useMemo(() => {
+		const unlocks: Record<string, string | undefined> = {};
+		for (const section of sections) {
+			let gate: string | undefined;
+			for (const lesson of section.units) {
+				if (progressById[lesson.id]?.status === "unstarted") {
+					if (gate !== undefined) unlocks[lesson.id] = gate;
+					gate ??= lesson.title;
+				}
+			}
+		}
+		return unlocks;
+	}, [sections, progressById]);
+
 	// A failed fetch is an error: without this the empty state below
 	// masquerades every outage as "no lessons". Thrown after all hooks so
 	// hook order stays stable across renders.
@@ -110,7 +106,7 @@ function LessonsPage() {
 	return (
 		<PageLayout
 			hero={{
-				icon: <MoMascot variant="nice" size={84} />,
+				icon: <MoMascot variant="open" size={84} />,
 				title: m["lessons.hub.title"](),
 				description: m["lessons.hub.moBody"](),
 			}}
@@ -137,7 +133,7 @@ function LessonsPage() {
 						key={section.id}
 						section={section}
 						units={section.units}
-						serverById={serverById}
+						unlocksAfterById={unlocksAfterById}
 						recommendedId={
 							section.id === hero.section?.id ? hero.recommendedId : undefined
 						}

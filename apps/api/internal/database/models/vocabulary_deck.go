@@ -1,24 +1,29 @@
 package models
 
-import "time"
+import (
+	"time"
 
-// VocabularyDeck is a user-owned flashcard deck (dev vocabulary stack).
+	"engflex-api/internal/common/enums"
+)
+
+// VocabularyDeck is a flashcard deck: either personal (IsDefault false,
+// owned by UserID, managed by that user) or system-curated (IsDefault true,
+// UserID is the admin who authored it, managed by admin only, gated by
+// Status before learners other than the author can see it).
 type VocabularyDeck struct {
 	ID           string              `gorm:"type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
-	UserID       *string             `json:"userId"`
+	UserID       string              `gorm:"not null" json:"userId"`
 	CategoryID   *string             `gorm:"type:uuid" json:"categoryId"`
 	Name         string              `gorm:"not null" json:"name"`
 	Description  string              `gorm:"not null;default:''" json:"description"`
 	ThumbnailURL string              `json:"thumbnailUrl"`
 	Level        string              `json:"level"`
+	IsDefault    bool                `gorm:"default:false" json:"isDefault"`
+	Status       enums.PublishStatus `gorm:"not null;default:draft" json:"status"`
+	IsPremium    bool                `gorm:"not null;default:false" json:"isPremium"`
 	CreatedAt    time.Time           `gorm:"autoCreateTime" json:"createdAt"`
 	UpdatedAt    time.Time           `gorm:"autoUpdateTime" json:"updatedAt"`
 	Category     *VocabularyCategory `gorm:"->;foreignKey:CategoryID;references:ID" json:"category,omitempty"`
-
-	// Items is the deck's rows, filled by a **second query** in GetDetail — never
-	// Joins("Items"): a has-many join cartesian-duplicates the parent and breaks
-	// Limit/Offset and counts (same pattern as VideoExercise.Transcripts).
-	Items []*VocabularyDeckItem `gorm:"->;foreignKey:DeckID;references:ID" json:"items,omitempty"`
 }
 
 func (VocabularyDeck) TableName() string { return "vocabulary_decks" }

@@ -12,18 +12,8 @@ export const APP_ROUTES = {
 		PRACTICE: "/lessons/$slug/practice",
 	},
 	VOCABULARY: {
-		/** My decks — the section's landing. */
-		DECKS: {
-			LIST: "/vocabulary/decks",
-			DETAIL: "/vocabulary/decks/$deckId",
-			/** A word opened from a deck: the deck stays in the URL so back works. */
-			WORD: "/vocabulary/decks/$deckId/words/$itemId",
-		},
-		/** The flat word grid and one word's detail. */
-		WORDS: {
-			LIST: "/vocabulary/words",
-			DETAIL: "/vocabulary/words/$itemId",
-		},
+		LIST: "/vocabulary",
+		DETAIL: "/vocabulary/$itemId",
 	},
 	VOICE: {
 		LIST: "/voice",
@@ -70,5 +60,23 @@ export const APP_ROUTES = {
 	AUTH: {
 		SIGN_IN: "/sign-in",
 		SIGN_UP: "/sign-up",
+	},
+	/** Dedicated status pages, both rendered by `components/common/error-page`. */
+	ERROR: {
+		NOT_FOUND: "/not-found",
+		SERVER: "/error",
+	},
+	ADMIN: {
+		OVERVIEW: "/admin",
+		VOCABULARY: "/admin/vocabulary",
+		VIDEOS: "/admin/videos",
+		SCENARIOS: "/admin/scenarios",
+		LESSONS: "/admin/lessons",
+		USERS: "/admin/users",
+		PREMIUM: "/admin/premium",
+	},
+	PAYMENTS: {
+		PRICING: "/payments/pricing",
+		RETURN: "/payments/vnpay/return",
 	},
 } as const;

@@ -1,121 +1,29 @@
-import { MaxPageSize } from "@engflex/contracts";
+import type {
+	CreateVocabularyItem,
+	SaveUserVocabulary,
+	UserVocabularyState,
+	VocabularyItem,
+} from "@engflex/contracts";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-	addExistingWordToDeck,
-	addVocabularyWord,
-	addWordToDeck,
-	createDeck,
-	deleteDeck,
-	generateWordDraft,
-	getDeck,
+	createVocabularyItem,
 	getVocabularyItem,
-	getVocabularyStats,
-	listDecks,
-	listMyVocabulary,
-	patchUserVocabulary,
-	removeDeckItem,
-	updateDeck,
-} from "./service";
-import type { AddWordInput, VocabFilters } from "./types";
+	listUserVocabulary,
+	listVocabularyItems,
+	saveUserVocabulary,
+	unsaveUserVocabulary,
+} from "#/features/vocabulary/service";
+
+// Large, single-page fetches: the catalog and a learner's saved set are
+// both admin/personal-curated and small (tens to low hundreds of rows), so
+// one page covers "my vocabulary" without its own pagination UI.
+const CATALOG_PAGE_SIZE = 200;
 
 export const vocabularyKeys = {
-	library: ["vocabulary", "library"] as const,
-	// Searches nest under the library prefix, so library invalidations reach
-	// them without a second invalidate call.
-	librarySearch: (search: string) =>
-		["vocabulary", "library", "search", search] as const,
-	// The hub's numbered pages. Filters are part of the identity — a chip
-	// change is a different list, not a refetch of the old one — and the key
-	// still nests under `library`, so library invalidations reach it.
-	libraryPage: (filters: VocabFilters, page: number) =>
-		[
-			"vocabulary",
-			"library",
-			"page",
-			page,
-			filters.search,
-			filters.sort,
-			filters.source,
-			filters.cefr,
-		] as const,
-	// The stats response depends on the reader's local day, so that day is part
-	// of the key — a new day is a different query, not a stale cache hit.
-	stats: (dayStart?: string) =>
-		dayStart
-			? (["vocabulary", "stats", dayStart] as const)
-			: (["vocabulary", "stats"] as const),
-	item: (id: string) => ["vocabulary", "item", id] as const,
-	decks: (previewK: number) => ["vocabulary", "decks", previewK] as const,
-	deck: (id: string) => ["vocabulary", "deck", id] as const,
+	catalog: ["vocabulary-items"] as const,
+	item: (id: string) => ["vocabulary-item", id] as const,
+	userVocabulary: ["user-vocabulary"] as const,
 };
-
-/** Every stats read shares this prefix, so one invalidate covers every day. */
-const statsPrefix = ["vocabulary", "stats"] as const;
-
-/** Every deck read shares this prefix, so one invalidate covers list + detail. */
-const decksPrefix = ["vocabulary", "decks"] as const;
-const deckPrefix = ["vocabulary", "deck"] as const;
-
-/** Cards per page on the All-words grid: a full row on the 2- and 3-col grids. */
-const WORDS_PAGE_SIZE = 24;
-
-export function decksQueryOptions(previewK: number) {
-	return {
-		queryKey: vocabularyKeys.decks(previewK),
-		queryFn: () => listDecks(previewK),
-	};
-}
-
-export function deckQueryOptions(id: string) {
-	return { queryKey: vocabularyKeys.deck(id), queryFn: () => getDeck(id) };
-}
-
-export function useDecks(previewK: number) {
-	return useQuery(decksQueryOptions(previewK));
-}
-
-export function useDeck(id: string) {
-	return useQuery(deckQueryOptions(id));
-}
-
-export function useCreateDeck() {
-	const queryClient = useQueryClient();
-	return useMutation({
-		mutationFn: createDeck,
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: decksPrefix });
-		},
-	});
-}
-
-export function useUpdateDeck(id: string) {
-	const queryClient = useQueryClient();
-	return useMutation({
-		mutationFn: (patch: { name?: string; description?: string }) =>
-			updateDeck(id, patch),
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: deckPrefix });
-			queryClient.invalidateQueries({ queryKey: decksPrefix });
-		},
-	});
-}
-
-export function useDeleteDeck() {
-	const queryClient = useQueryClient();
-	return useMutation({
-		mutationFn: deleteDeck,
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: decksPrefix });
-		},
-	});
-}
-
-export function vocabularyStatsQueryOptions(dayStart?: string) {
-	return {
-		queryKey: vocabularyKeys.stats(dayStart),
-		queryFn: () => getVocabularyStats(dayStart),
-	};
-}
 
 export function vocabularyItemQueryOptions(id: string) {
 	return {
@@ -124,111 +32,105 @@ export function vocabularyItemQueryOptions(id: string) {
 	};
 }
 
-/**
- * One page of my words matching `%search%` over term or definition. The deck
- * picker submits it explicitly; the add-word form debounces the typed term
- * through it. `null` disables the query — nothing is fetched until a needle
- * exists.
- */
-export function useLibrarySearch(search: string | null) {
+export function useVocabularyItem(id: string | undefined) {
 	return useQuery({
-		queryKey: vocabularyKeys.librarySearch(search ?? ""),
-		queryFn: () =>
-			listMyVocabulary({ search: search ?? undefined, pageSize: MaxPageSize }),
-		enabled: search !== null,
+		...vocabularyItemQueryOptions(id ?? "none"),
+		enabled: !!id,
 	});
 }
 
-/** One numbered page of my words under the given filters. */
-export function libraryPageQueryOptions(filters: VocabFilters, page: number) {
+function userVocabularyListQueryOptions() {
 	return {
-		queryKey: vocabularyKeys.libraryPage(filters, page),
-		queryFn: () =>
-			listMyVocabulary({
-				page,
-				pageSize: WORDS_PAGE_SIZE,
-				search: filters.search || undefined,
-				sort: filters.sort,
-				cefr: filters.cefr === "all" ? undefined : filters.cefr,
-				source: filters.source === "all" ? undefined : filters.source,
-			}),
+		queryKey: vocabularyKeys.userVocabulary,
+		queryFn: () => listUserVocabulary(1, CATALOG_PAGE_SIZE),
 	};
 }
 
-export function useLibraryPage(filters: VocabFilters, page: number) {
-	return useQuery(libraryPageQueryOptions(filters, page));
+function catalogQueryOptions() {
+	return {
+		queryKey: vocabularyKeys.catalog,
+		queryFn: () => listVocabularyItems(1, CATALOG_PAGE_SIZE),
+	};
 }
 
-export function useVocabularyStats(dayStart?: string) {
-	return useQuery(vocabularyStatsQueryOptions(dayStart));
+function attachUserState(
+	item: VocabularyItem,
+	state: UserVocabularyState | undefined,
+): VocabularyItem {
+	return state ? { ...item, userState: state } : item;
 }
 
-export function useVocabularyItem(id: string) {
-	return useQuery(vocabularyItemQueryOptions(id));
+/** "My vocabulary": every word the caller saved, joined with its dictionary
+ *  entry. A saved row whose item lookup is missing (deleted entry) is
+ *  dropped rather than rendered half-empty. */
+export function useMyVocabularyItems() {
+	const savedQuery = useQuery(userVocabularyListQueryOptions());
+	const catalogQuery = useQuery(catalogQueryOptions());
+
+	const saved = savedQuery.data?.items ?? [];
+	const catalog = catalogQuery.data?.items ?? [];
+	const catalogById = new Map(catalog.map((item) => [item.id, item]));
+
+	const items: VocabularyItem[] = saved.flatMap((state) => {
+		const item = catalogById.get(state.itemId);
+		return item ? [attachUserState(item, state)] : [];
+	});
+
+	return {
+		items,
+		isPending: savedQuery.isPending || catalogQuery.isPending,
+		isError: savedQuery.isError || catalogQuery.isError,
+	};
 }
 
-/** Mastery and note writes share one endpoint; both refresh the hub + detail. */
-export function usePatchVocabulary() {
+/** One word's detail, with the caller's saved state attached if present
+ *  (shares the cache key with useMyVocabularyItems' saved-list fetch). */
+export function useVocabularyItemDetail(id: string | undefined) {
+	const itemQuery = useVocabularyItem(id);
+	const savedQuery = useQuery(userVocabularyListQueryOptions());
+	const state = savedQuery.data?.items.find((row) => row.itemId === id);
+	return {
+		...itemQuery,
+		data: itemQuery.data ? attachUserState(itemQuery.data, state) : undefined,
+	};
+}
+
+function useInvalidateVocabulary() {
 	const queryClient = useQueryClient();
+	return () => {
+		void queryClient.invalidateQueries({ queryKey: vocabularyKeys.catalog });
+		void queryClient.invalidateQueries({
+			queryKey: vocabularyKeys.userVocabulary,
+		});
+	};
+}
+
+export function useSaveUserVocabulary() {
+	const invalidate = useInvalidateVocabulary();
 	return useMutation({
-		mutationFn: ({
-			itemId,
-			patch,
-		}: {
-			itemId: string;
-			patch: { mastered?: boolean; note?: string };
-		}) => patchUserVocabulary(itemId, patch),
-		onSuccess: (_data, { itemId }) => {
-			queryClient.invalidateQueries({ queryKey: vocabularyKeys.library });
-			queryClient.invalidateQueries({ queryKey: statsPrefix });
-			queryClient.invalidateQueries({ queryKey: vocabularyKeys.item(itemId) });
-			// Deck pages render these same items, so their reads must refresh too
-			// — otherwise the card's mastered state never flips there.
-			queryClient.invalidateQueries({ queryKey: deckPrefix });
-			queryClient.invalidateQueries({ queryKey: decksPrefix });
-		},
+		mutationFn: (payload: SaveUserVocabulary) => saveUserVocabulary(payload),
+		onSuccess: invalidate,
 	});
 }
 
-export function useAddWord() {
-	const queryClient = useQueryClient();
+export function useUnsaveUserVocabulary() {
+	const invalidate = useInvalidateVocabulary();
 	return useMutation({
-		mutationFn: (input: AddWordInput & { deckId?: string }) =>
-			input.deckId
-				? addWordToDeck(input.deckId, input)
-				: addVocabularyWord(input),
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: vocabularyKeys.library });
-			queryClient.invalidateQueries({ queryKey: statsPrefix });
-			queryClient.invalidateQueries({ queryKey: deckPrefix });
-			queryClient.invalidateQueries({ queryKey: decksPrefix });
-		},
+		mutationFn: (itemId: string) => unsaveUserVocabulary(itemId),
+		onSuccess: invalidate,
 	});
 }
 
-/** Generation writes nothing, so there is nothing to invalidate. */
-export function useGenerateWordDraft() {
-	return useMutation({ mutationFn: generateWordDraft });
-}
-
-export function useAddExistingWordToDeck(deckId: string) {
-	const queryClient = useQueryClient();
+/** Create a personal word, then save it so it shows up in "my vocabulary"
+ *  immediately — the backend has no implicit self-save on create. */
+export function useCreateCustomWord() {
+	const invalidate = useInvalidateVocabulary();
 	return useMutation({
-		mutationFn: (itemId: string) => addExistingWordToDeck(deckId, itemId),
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: deckPrefix });
-			queryClient.invalidateQueries({ queryKey: decksPrefix });
+		mutationFn: async (payload: Omit<CreateVocabularyItem, "isPremium">) => {
+			const item = await createVocabularyItem(payload);
+			await saveUserVocabulary({ itemId: item.id, sourceType: "manual" });
+			return item;
 		},
-	});
-}
-
-export function useRemoveDeckItem() {
-	const queryClient = useQueryClient();
-	return useMutation({
-		mutationFn: removeDeckItem,
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: deckPrefix });
-			queryClient.invalidateQueries({ queryKey: decksPrefix });
-		},
+		onSuccess: invalidate,
 	});
 }

@@ -2,7 +2,6 @@ package repositories
 
 import (
 	"context"
-	"time"
 
 	"engflex-api/internal/database/models"
 
@@ -10,17 +9,15 @@ import (
 	"gorm.io/gorm/clause"
 )
 
+// UserVocabularyRepository is the DB access layer for the user_vocabulary table.
+//
+// The read surface arrives with the module that needs it: the vocabulary
+// module now queries this table, so the methods below are declared.
 type UserVocabularyRepository interface {
+	ListByUser(ctx context.Context, userID string, limit, offset int) ([]*models.UserVocabulary, error)
 	Get(ctx context.Context, userID, itemID string) (*models.UserVocabulary, error)
-	Upsert(ctx context.Context, u *models.UserVocabulary, updateMastered bool) error
-	Patch(ctx context.Context, userID, itemID string, mastered *bool, note *string) error
-	UpdateSchedule(ctx context.Context, u *models.UserVocabulary) error
+	Upsert(ctx context.Context, u *models.UserVocabulary) error
 	Delete(ctx context.Context, userID, itemID string) error
-	CountByUser(ctx context.Context, userID string) (int64, error)
-	CountMastered(ctx context.Context, userID string) (int64, error)
-	CountDue(ctx context.Context, userID string, now time.Time) (int64, error)
-
-	CountSavedBetween(ctx context.Context, userID string, from, to time.Time) (int64, error)
 	WithTx(tx *gorm.DB) UserVocabularyRepository
 }
 
@@ -28,12 +25,22 @@ type userVocabularyRepository struct {
 	db *gorm.DB
 }
 
+// NewUserVocabularyRepository builds the repository over the shared DB handle.
 func NewUserVocabularyRepository(db *gorm.DB) UserVocabularyRepository {
 	return &userVocabularyRepository{db: db}
 }
 
+// WithTx returns the repository bound to the given transaction handle.
 func (r *userVocabularyRepository) WithTx(tx *gorm.DB) UserVocabularyRepository {
 	return &userVocabularyRepository{db: tx}
+}
+
+func (r *userVocabularyRepository) ListByUser(ctx context.Context, userID string, limit, offset int) ([]*models.UserVocabulary, error) {
+	var out []*models.UserVocabulary
+	if err := r.db.WithContext(ctx).Where("user_id = ?", userID).Order("created_at DESC").Limit(limit).Offset(offset).Find(&out).Error; err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (r *userVocabularyRepository) Get(ctx context.Context, userID, itemID string) (*models.UserVocabulary, error) {
@@ -47,66 +54,16 @@ func (r *userVocabularyRepository) Get(ctx context.Context, userID, itemID strin
 	return &m, nil
 }
 
-func (r *userVocabularyRepository) Upsert(ctx context.Context, u *models.UserVocabulary, updateMastered bool) error {
+// Upsert saves per-user state over a shared item, replacing any previous
+// row. The (user_id, item_id) PK makes re-saving idempotent.
+func (r *userVocabularyRepository) Upsert(ctx context.Context, u *models.UserVocabulary) error {
 	if _, err := parseID(u.ItemID, "itemId"); err != nil {
 		return err
-	}
-	cols := []string{"source_type", "source_id", "note", "updated_at"}
-	if updateMastered {
-		cols = append(cols, "mastered")
 	}
 	return r.db.WithContext(ctx).Clauses(clause.OnConflict{
 		Columns:   []clause.Column{{Name: "user_id"}, {Name: "item_id"}},
-		DoUpdates: clause.AssignmentColumns(cols),
+		DoUpdates: clause.AssignmentColumns([]string{"source_type", "source_id", "note", "mastered", "srs_due_at", "updated_at"}),
 	}).Create(u).Error
-}
-
-func (r *userVocabularyRepository) Patch(ctx context.Context, userID, itemID string, mastered *bool, note *string) error {
-	if _, err := parseID(itemID, "itemId"); err != nil {
-		return err
-	}
-	updates := map[string]any{}
-	if mastered != nil {
-		updates["mastered"] = *mastered
-	}
-	if note != nil {
-		updates["note"] = *note
-	}
-	if len(updates) == 0 {
-
-		return nil
-	}
-	res := r.db.WithContext(ctx).Model(&models.UserVocabulary{}).
-		Where("user_id = ? AND item_id = ?", userID, itemID).
-		Updates(updates)
-	if res.Error != nil {
-		return res.Error
-	}
-	if res.RowsAffected == 0 {
-		return gorm.ErrRecordNotFound
-	}
-	return nil
-}
-
-func (r *userVocabularyRepository) UpdateSchedule(ctx context.Context, u *models.UserVocabulary) error {
-	if _, err := parseID(u.ItemID, "itemId"); err != nil {
-		return err
-	}
-	res := r.db.WithContext(ctx).Model(&models.UserVocabulary{}).
-		Where("user_id = ? AND item_id = ?", u.UserID, u.ItemID).
-		Updates(map[string]any{
-			"srs_due_at":       u.SRSDueAt,
-			"interval_days":    u.IntervalDays,
-			"review_count":     u.ReviewCount,
-			"last_reviewed_at": u.LastReviewedAt,
-		})
-	if res.Error != nil {
-		return res.Error
-	}
-	if res.RowsAffected == 0 {
-		return gorm.ErrRecordNotFound
-	}
-	return nil
 }
 
 func (r *userVocabularyRepository) Delete(ctx context.Context, userID, itemID string) error {
@@ -121,33 +78,4 @@ func (r *userVocabularyRepository) Delete(ctx context.Context, userID, itemID st
 		return gorm.ErrRecordNotFound
 	}
 	return nil
-}
-
-func (r *userVocabularyRepository) CountByUser(ctx context.Context, userID string) (int64, error) {
-	var n int64
-	err := r.db.WithContext(ctx).Model(&models.UserVocabulary{}).Where("user_id = ?", userID).Count(&n).Error
-	return n, err
-}
-
-func (r *userVocabularyRepository) CountMastered(ctx context.Context, userID string) (int64, error) {
-	var n int64
-	err := r.db.WithContext(ctx).Model(&models.UserVocabulary{}).
-		Where("user_id = ? AND mastered = true", userID).Count(&n).Error
-	return n, err
-}
-
-func (r *userVocabularyRepository) CountDue(ctx context.Context, userID string, now time.Time) (int64, error) {
-	var n int64
-	err := r.db.WithContext(ctx).Model(&models.UserVocabulary{}).
-		Where("user_id = ? AND mastered = false AND srs_due_at IS NOT NULL AND srs_due_at <= ?", userID, now).
-		Count(&n).Error
-	return n, err
-}
-
-func (r *userVocabularyRepository) CountSavedBetween(ctx context.Context, userID string, from, to time.Time) (int64, error) {
-	var n int64
-	err := r.db.WithContext(ctx).Model(&models.UserVocabulary{}).
-		Where("user_id = ? AND created_at >= ? AND created_at < ?", userID, from, to).
-		Count(&n).Error
-	return n, err
 }

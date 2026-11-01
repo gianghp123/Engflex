@@ -1,0 +1,32 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "payments": {
+    "pricing": {
+      "crumb": "Premium",
+      "title": "Nâng cấp lên Premium",
+      "subtitle": "Chọn gói phù hợp để mở khoá toàn bộ tính năng luyện nói.",
+      "loading": "Đang tải các gói...",
+      "error": "Không thể tải các gói. Vui lòng thử lại.",
+      "plan": {
+        "1m": "1 tháng",
+        "3m": "3 tháng",
+        "12m": "12 tháng"
+      },
+      "perMonth": "{amount}/tháng",
+      "cta": "Thanh toán với VNPay",
+      "redirecting": "Đang chuyển đến VNPay...",
+      "checkoutError": "Không thể tạo thanh toán. Vui lòng thử lại."
+    },
+    "return": {
+      "crumb": "Kết quả thanh toán",
+      "successTitle": "Thanh toán thành công",
+      "successBody": "Tài khoản của bạn đã được nâng cấp lên Premium.",
+      "failedTitle": "Thanh toán không thành công",
+      "failedBody": "Giao dịch chưa hoàn tất. Bạn có thể thử lại.",
+      "pendingTitle": "Đang xử lý",
+      "pendingBody": "Chúng tôi đang xác nhận giao dịch của bạn.",
+      "backHome": "Về trang chủ",
+      "tryAgain": "Thử lại"
+    }
+  }
+}

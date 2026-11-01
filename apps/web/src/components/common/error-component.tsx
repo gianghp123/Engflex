@@ -24,6 +24,7 @@ export function ErrorComponent({
 	title,
 	body,
 	primaryLabel,
+	primaryTo,
 	extraAction,
 }: {
 	badge: string;
@@ -32,6 +33,12 @@ export function ErrorComponent({
 	title: string;
 	body: string;
 	primaryLabel: string;
+	/**
+	 * Where the primary button links to. Defaults to home (signed in) or
+	 * the landing page (signed out) — pass to override, e.g. the premium
+	 * upgrade prompt pointing at /payments/pricing regardless of session.
+	 */
+	primaryTo?: string;
 	/** Rendered beside the primary button (e.g. Retry on 500). */
 	extraAction?: ReactNode;
 }) {
@@ -63,8 +70,14 @@ export function ErrorComponent({
 				<div className="flex w-full flex-col items-center justify-center gap-3 sm:w-auto sm:flex-row">
 					{extraAction}
 					<Button asChild size="lg">
-						<Link to={isSignedIn ? APP_ROUTES.HOME : APP_ROUTES.LANDING}>
-							{isSignedIn ? primaryLabel : m["common.actions.backHome"]()}
+						<Link
+							to={
+								primaryTo ?? (isSignedIn ? APP_ROUTES.HOME : APP_ROUTES.LANDING)
+							}
+						>
+							{primaryTo || isSignedIn
+								? primaryLabel
+								: m["common.actions.backHome"]()}
 						</Link>
 					</Button>
 				</div>

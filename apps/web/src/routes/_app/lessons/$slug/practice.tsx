@@ -39,8 +39,6 @@ import {
 	completePart,
 	getFirstIncompleteActivity,
 } from "#/features/lessons/store";
-import { DockGuide } from "#/features/vocabulary/components/dock-guide";
-import { TextActionDock } from "#/features/vocabulary/components/text-action-dock";
 import { useExplanationLanguage } from "#/hooks/use-explanation-language";
 import { loadOr404 } from "#/lib/router/route-loader";
 import { m } from "#/paraglide/messages";
@@ -181,7 +179,6 @@ function PracticeInner({
 				lessonId={lessonId}
 				part={currentPart}
 				onSelect={setActivePart}
-				headerExtra={<DockGuide />}
 			>
 				<NoOpenRunCard
 					lessonId={lessonId}
@@ -195,75 +192,68 @@ function PracticeInner({
 	}
 
 	return (
-		<TextActionDock source={{ type: "lesson", id: lessonId }}>
-			<PartShell
-				lessonId={lessonId}
-				part={currentPart}
-				onSelect={setActivePart}
-				headerExtra={
-					<div className="flex gap-2">
-						<LanguagePicker
-							open={asking}
-							onOpenChange={(next) => {
-								if (next) reopen();
-								else dismiss();
-							}}
-							onConfirm={confirm}
-						/>
-						<DockGuide />
-					</div>
-				}
-			>
-				{currentPart === "reading" &&
-				activity?.reading &&
-				attemptId !== null ? (
-					<ReadingActivity
-						key={`${activity.id}:${attemptId}`}
-						lessonId={lessonId}
-						slug={slug}
-						activity={activity}
-						activities={detail.activities}
-						onAdvance={setActivePart}
-						attemptId={attemptId}
-						seed={seeds[activity.id] ?? { answers: {}, results: {} }}
-					/>
-				) : null}
-				{currentPart === "listening" &&
-				activity?.listening &&
-				attemptId !== null ? (
-					<ListeningActivity
-						key={`${activity.id}:${attemptId}`}
-						lessonId={lessonId}
-						slug={slug}
-						activity={activity}
-						activities={detail.activities}
-						onAdvance={setActivePart}
-						attemptId={attemptId}
-						seed={seeds[activity.id] ?? { answers: {}, results: {} }}
-					/>
-				) : null}
-				{currentPart === "writing" && activity?.writing ? (
-					<WritingActivity
-						lessonId={lessonId}
-						slug={slug}
-						activity={activity}
-						activities={detail.activities}
-						onAdvance={setActivePart}
-						attemptId={attemptId}
-					/>
-				) : null}
-				{currentPart === "speaking" && activity?.speaking ? (
-					<SpeakingBranch
-						lessonId={lessonId}
-						slug={slug}
-						activity={activity}
-						activities={detail.activities}
-						onAdvance={setActivePart}
-						attemptId={attemptId}
-					/>
-				) : null}
-			</PartShell>
-		</TextActionDock>
+		<PartShell
+			lessonId={lessonId}
+			part={currentPart}
+			onSelect={setActivePart}
+			headerExtra={
+				<LanguagePicker
+					open={asking}
+					onOpenChange={(next) => {
+						if (next) reopen();
+						else dismiss();
+					}}
+					onConfirm={confirm}
+				/>
+			}
+		>
+			{currentPart === "reading" && activity?.reading && attemptId !== null ? (
+				<ReadingActivity
+					key={`${activity.id}:${attemptId}`}
+					lessonId={lessonId}
+					slug={slug}
+					activity={activity}
+					activities={detail.activities}
+					onAdvance={setActivePart}
+					attemptId={attemptId}
+					seed={seeds[activity.id] ?? { answers: {}, results: {} }}
+				/>
+			) : null}
+			{currentPart === "listening" &&
+			activity?.listening &&
+			attemptId !== null ? (
+				<ListeningActivity
+					key={`${activity.id}:${attemptId}`}
+					lessonId={lessonId}
+					slug={slug}
+					activity={activity}
+					activities={detail.activities}
+					onAdvance={setActivePart}
+					attemptId={attemptId}
+					seed={seeds[activity.id] ?? { answers: {}, results: {} }}
+				/>
+			) : null}
+			{currentPart === "writing" && activity?.writing ? (
+				<WritingActivity
+					lessonId={lessonId}
+					slug={slug}
+					activity={activity}
+					activities={detail.activities}
+					onAdvance={setActivePart}
+					attemptId={attemptId}
+				/>
+			) : null}
+			{currentPart === "speaking" && activity?.speaking ? (
+				<SpeakingBranch
+					lessonId={lessonId}
+					slug={slug}
+					activity={activity}
+					activities={detail.activities}
+					onAdvance={setActivePart}
+					attemptId={attemptId}
+				/>
+			) : null}
+		</PartShell>
 	);
 }
 

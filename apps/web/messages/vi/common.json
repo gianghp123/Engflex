@@ -18,6 +18,7 @@
       "save": "Lưu"
     },
     "audio": {
+      "playPronunciation": "Nghe phát âm",
       "play": "Phát âm thanh",
       "pause": "Tạm dừng",
       "total": "Tổng"
@@ -34,8 +35,10 @@
     },
     "toast": {
       "copiedClipboard": "Đã sao chép",
+      "linkCopied": "Đã sao chép liên kết",
       "clipboardUnavailable": "Không thể sao chép trong trình duyệt này",
-      "addedToVocabulary": "Đã thêm vào từ vựng của bạn"
+      "addedToVocabulary": "Đã thêm vào từ vựng của bạn",
+      "error": "Có lỗi xảy ra, vui lòng thử lại"
     },
     "a11y": {
       "more": "Xem thêm",
@@ -50,6 +53,10 @@
       "light": "Sáng",
       "dark": "Tối",
       "auto": "Hệ thống"
+    },
+    "premium": {
+      "badge": "Premium",
+      "upgradeAction": "Nâng cấp để mở khoá"
     },
     "guide": {
       "dismiss": "Đừng hiện mẹo này nữa"

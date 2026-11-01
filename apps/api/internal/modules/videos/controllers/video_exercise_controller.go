@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"engflex-api/internal/common"
+	"engflex-api/internal/common/enums"
 	"engflex-api/internal/modules/videos/dtos/requests"
 	"engflex-api/internal/modules/videos/dtos/responses"
 	"engflex-api/internal/modules/videos/services"
@@ -12,12 +13,11 @@ import (
 )
 
 type VideoExerciseController struct {
-	service  services.VideoExerciseService
-	attempts services.VideoAttemptService
+	service services.VideoExerciseService
 }
 
-func NewVideoExerciseController(service services.VideoExerciseService, attempts services.VideoAttemptService) *VideoExerciseController {
-	return &VideoExerciseController{service: service, attempts: attempts}
+func NewVideoExerciseController(service services.VideoExerciseService) *VideoExerciseController {
+	return &VideoExerciseController{service: service}
 }
 
 // Create godoc
@@ -25,7 +25,6 @@ func NewVideoExerciseController(service services.VideoExerciseService, attempts 
 //	@Summary		Create lesson
 //	@Description	Create a new lesson
 //	@Tags			Video Exercises
-//	@Security		BearerAuth
 //	@Accept			json
 //	@Produce		json
 //	@Param			request	body		requests.CreateVideoExercise								true	"Lesson payload"
@@ -55,7 +54,6 @@ func (h *VideoExerciseController) Create(c *gin.Context) {
 //	@Summary		Update lesson
 //	@Description	Update an existing lesson by its ID
 //	@Tags			Video Exercises
-//	@Security		BearerAuth
 //	@Accept			json
 //	@Produce		json
 //	@Param			id		path		string												true	"Lesson ID"
@@ -87,7 +85,6 @@ func (h *VideoExerciseController) Update(c *gin.Context) {
 //	@Summary		Delete lesson
 //	@Description	Delete a lesson by its ID
 //	@Tags			Video Exercises
-//	@Security		BearerAuth
 //	@Produce		json
 //	@Param			id	path		string				true	"Lesson ID"
 //	@Success		200	{object}	common.ApiResponse	"Lesson deleted successfully"
@@ -107,76 +104,48 @@ func (h *VideoExerciseController) Delete(c *gin.Context) {
 
 // GetByID godoc
 //
-//	@Summary		Get video exercise by ID
-//	@Description	Retrieve one video exercise with its category and its transcripts ordered by sequence
+//	@Summary		Get lesson by ID
+//	@Description	Retrieve details of a lesson by its ID
 //	@Tags			Video Exercises
-//	@Security		BearerAuth
 //	@Produce		json
-//	@Param			id	path		string												true	"Video exercise ID"
-//	@Success		200	{object}	common.ApiResponse{data=responses.VideoExerciseResponse}	"Video exercise retrieved successfully"
+//	@Param			id	path		string												true	"Lesson ID"
+//	@Success		200	{object}	common.ApiResponse{data=responses.VideoExerciseResponse}	"Lesson retrieved successfully"
 //	@Failure		400	{object}	common.ApiResponse									"Invalid ID"
-//	@Failure		404	{object}	common.ApiResponse									"Video exercise not found"
+//	@Failure		404	{object}	common.ApiResponse									"Lesson not found"
 //	@Failure		500	{object}	common.ApiResponse									"Internal server error"
 //	@Router			/video-exercises/{id} [get]
 func (h *VideoExerciseController) GetByID(c *gin.Context) {
 	id := c.Param("id")
-	m, err := h.service.GetByID(c.Request.Context(), id)
+	m, err := h.service.GetByID(c.Request.Context(), id, middleware.UserID(c), middleware.Role(c) == enums.UserRoleAdmin)
 	if err != nil {
 		common.Fail(c, err)
 		return
 	}
 	var dto responses.VideoExerciseResponse
 	_ = utils.Map(&dto, m)
-	if h.attempts != nil {
-		userID := middleware.UserID(c)
-		if userID != "" {
-			_ = h.attempts.AttachPracticeStatus(c.Request.Context(), userID, []*responses.VideoExerciseResponse{&dto})
-		}
-	}
 	common.OK(c, "video exercise found", dto)
 }
 
 // List godoc
 //
-//	@Summary		List video exercises
-//	@Description	Get a paginated list of video exercises, newest first, each with its category
+//	@Summary		List lessons
+//	@Description	Get paginated list of lessons
 //	@Tags			Video Exercises
-//	@Security		BearerAuth
 //	@Produce		json
 //	@Param			page		query		int													false	"Page number (1-based)"	default(1)
 //	@Param			pageSize	query		int													false	"Page size"				default(20)
-//	@Param			search		query		string												false	"Case-insensitive match on title or description"
-//	@Param			categoryId	query		string												false	"Category ID (uuid)"
-//	@Param			cefrLevel	query		string												false	"CEFR level"	Enums(A1, A2, B1, B2, C1, C2)
-//	@Success		200			{object}	common.ApiResponse{data=[]responses.VideoExerciseResponse}	"Video exercises retrieved successfully"
-//	@Failure		400			{object}	common.ApiResponse									"Invalid filter"
+//	@Success		200			{object}	common.ApiResponse{data=[]responses.VideoExerciseResponse}	"Lessons retrieved successfully"
 //	@Failure		500			{object}	common.ApiResponse									"Internal server error"
 //	@Router			/video-exercises [get]
 func (h *VideoExerciseController) List(c *gin.Context) {
 	page, pageSize := utils.ParsePagination(c)
-	var req requests.ListVideoExercises
-	if err := c.ShouldBindQuery(&req); err != nil {
-		common.Fail(c, common.BadRequest(err.Error()))
-		return
-	}
-	// The clamped values win over the raw query: pageSize is capped at
-	// common.MaxPageSize by ParsePagination, never by the client.
-	req.Page, req.PageSize = page, pageSize
-	lessons, total, err := h.service.List(c.Request.Context(), req)
+	offset := utils.Offset(page, pageSize)
+	lessons, total, err := h.service.List(c.Request.Context(), pageSize, offset, middleware.Role(c) == enums.UserRoleAdmin)
 	if err != nil {
 		common.Fail(c, err)
 		return
 	}
-	// Non-nil so an empty page encodes as `"data": []`: a nil slice inside
-	// the `any` Data field encodes as `null`, which the typed web client
-	// would read as a missing array.
-	dtos := make([]*responses.VideoExerciseResponse, 0, len(lessons))
+	var dtos []responses.VideoExerciseResponse
 	_ = utils.MapSlice(&dtos, lessons)
-	if h.attempts != nil {
-		userID := middleware.UserID(c)
-		if userID != "" {
-			_ = h.attempts.AttachPracticeStatus(c.Request.Context(), userID, dtos)
-		}
-	}
 	common.Paginated(c, "video exercises retrieved", dtos, page, pageSize, total)
 }

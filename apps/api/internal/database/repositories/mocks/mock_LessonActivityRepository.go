@@ -49,6 +49,120 @@ func (_m *MockLessonActivityRepository) EXPECT() *MockLessonActivityRepository_E
 	return &MockLessonActivityRepository_Expecter{mock: &_m.Mock}
 }
 
+// Create provides a mock function for the type MockLessonActivityRepository
+func (_mock *MockLessonActivityRepository) Create(ctx context.Context, a *models.LessonActivity) error {
+	ret := _mock.Called(ctx, a)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Create")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *models.LessonActivity) error); ok {
+		r0 = returnFunc(ctx, a)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockLessonActivityRepository_Create_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Create'
+type MockLessonActivityRepository_Create_Call struct {
+	*mock.Call
+}
+
+// Create is a helper method to define mock.On call
+//   - ctx context.Context
+//   - a *models.LessonActivity
+func (_e *MockLessonActivityRepository_Expecter) Create(ctx any, a any) *MockLessonActivityRepository_Create_Call {
+	return &MockLessonActivityRepository_Create_Call{Call: _e.mock.On("Create", ctx, a)}
+}
+
+func (_c *MockLessonActivityRepository_Create_Call) Run(run func(ctx context.Context, a *models.LessonActivity)) *MockLessonActivityRepository_Create_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 *models.LessonActivity
+		if args[1] != nil {
+			arg1 = args[1].(*models.LessonActivity)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockLessonActivityRepository_Create_Call) Return(err error) *MockLessonActivityRepository_Create_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockLessonActivityRepository_Create_Call) RunAndReturn(run func(ctx context.Context, a *models.LessonActivity) error) *MockLessonActivityRepository_Create_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// Delete provides a mock function for the type MockLessonActivityRepository
+func (_mock *MockLessonActivityRepository) Delete(ctx context.Context, id string) error {
+	ret := _mock.Called(ctx, id)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Delete")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) error); ok {
+		r0 = returnFunc(ctx, id)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockLessonActivityRepository_Delete_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Delete'
+type MockLessonActivityRepository_Delete_Call struct {
+	*mock.Call
+}
+
+// Delete is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id string
+func (_e *MockLessonActivityRepository_Expecter) Delete(ctx any, id any) *MockLessonActivityRepository_Delete_Call {
+	return &MockLessonActivityRepository_Delete_Call{Call: _e.mock.On("Delete", ctx, id)}
+}
+
+func (_c *MockLessonActivityRepository_Delete_Call) Run(run func(ctx context.Context, id string)) *MockLessonActivityRepository_Delete_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockLessonActivityRepository_Delete_Call) Return(err error) *MockLessonActivityRepository_Delete_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockLessonActivityRepository_Delete_Call) RunAndReturn(run func(ctx context.Context, id string) error) *MockLessonActivityRepository_Delete_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetByID provides a mock function for the type MockLessonActivityRepository
 func (_mock *MockLessonActivityRepository) GetByID(ctx context.Context, id string) (*models.LessonActivity, error) {
 	ret := _mock.Called(ctx, id)
@@ -181,6 +295,63 @@ func (_c *MockLessonActivityRepository_ListByLesson_Call) Return(lessonActivitys
 }
 
 func (_c *MockLessonActivityRepository_ListByLesson_Call) RunAndReturn(run func(ctx context.Context, lessonID string) ([]*models.LessonActivity, error)) *MockLessonActivityRepository_ListByLesson_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// Update provides a mock function for the type MockLessonActivityRepository
+func (_mock *MockLessonActivityRepository) Update(ctx context.Context, a *models.LessonActivity) error {
+	ret := _mock.Called(ctx, a)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Update")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *models.LessonActivity) error); ok {
+		r0 = returnFunc(ctx, a)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockLessonActivityRepository_Update_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Update'
+type MockLessonActivityRepository_Update_Call struct {
+	*mock.Call
+}
+
+// Update is a helper method to define mock.On call
+//   - ctx context.Context
+//   - a *models.LessonActivity
+func (_e *MockLessonActivityRepository_Expecter) Update(ctx any, a any) *MockLessonActivityRepository_Update_Call {
+	return &MockLessonActivityRepository_Update_Call{Call: _e.mock.On("Update", ctx, a)}
+}
+
+func (_c *MockLessonActivityRepository_Update_Call) Run(run func(ctx context.Context, a *models.LessonActivity)) *MockLessonActivityRepository_Update_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 *models.LessonActivity
+		if args[1] != nil {
+			arg1 = args[1].(*models.LessonActivity)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockLessonActivityRepository_Update_Call) Return(err error) *MockLessonActivityRepository_Update_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockLessonActivityRepository_Update_Call) RunAndReturn(run func(ctx context.Context, a *models.LessonActivity) error) *MockLessonActivityRepository_Update_Call {
 	_c.Call.Return(run)
 	return _c
 }

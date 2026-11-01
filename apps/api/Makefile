@@ -11,7 +11,7 @@ ifneq (,$(wildcard .env))
 	DATABASE_URL ?= $(strip $(firstword $(PARSED_DB_URL)))
 endif
 
-.PHONY: migration-create migration-up migration-down migration-status migration-reset mocks contracts swagger seed-audio pronounce-image pronounce-warm
+.PHONY: migration-create migration-up migration-down migration-status migration-reset mocks contracts swagger seed-audio pronounce-image pronounce-warm run
 
 # usage: make migration-create name=your_migration_name
 migration-create:
@@ -64,3 +64,7 @@ pronounce-image:
 # Load the container's models now (~20 s once) instead of on the first attempt.
 pronounce-warm:
 	@python3 scripts/warm_pronounce.py
+
+# run the server
+run:
+	@go run cmd/server/main.go

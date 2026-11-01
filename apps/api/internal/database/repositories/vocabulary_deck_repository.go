@@ -3,18 +3,21 @@ package repositories
 import (
 	"context"
 
+	"engflex-api/internal/common/enums"
 	"engflex-api/internal/database/models"
 
 	"gorm.io/gorm"
 )
 
+// VocabularyDeckRepository is the DB access layer for the vocabulary_decks table.
+// GetDetail joins the category in one round trip. Items page separately via
+// VocabularyDeckItemRepository.ListByDeck (a deck with many cards must not
+// cartesian-duplicate the parent into a join).
 type VocabularyDeckRepository interface {
-	ListVisible(ctx context.Context, userID string, limit, offset int) ([]*models.VocabularyDeck, error)
-	CountVisible(ctx context.Context, userID string) (int64, error)
-
-	CountByUser(ctx context.Context, userID string) (int64, error)
+	ListByUser(ctx context.Context, userID string, isAdmin bool, limit, offset int) ([]*models.VocabularyDeck, error)
+	CountByUser(ctx context.Context, userID string, isAdmin bool) (int64, error)
 	GetByID(ctx context.Context, id string) (*models.VocabularyDeck, error)
-	GetDetail(ctx context.Context, userID, id string) (*models.VocabularyDeck, error)
+	GetDetail(ctx context.Context, id string) (*models.VocabularyDeck, error)
 	Create(ctx context.Context, d *models.VocabularyDeck) error
 	Update(ctx context.Context, d *models.VocabularyDeck) error
 	Delete(ctx context.Context, id string) error
@@ -25,37 +28,43 @@ type vocabularyDeckRepository struct {
 	db *gorm.DB
 }
 
+// NewVocabularyDeckRepository builds the repository over the shared DB handle.
 func NewVocabularyDeckRepository(db *gorm.DB) VocabularyDeckRepository {
 	return &vocabularyDeckRepository{db: db}
 }
 
+// WithTx returns the repository bound to the given transaction handle.
 func (r *vocabularyDeckRepository) WithTx(tx *gorm.DB) VocabularyDeckRepository {
 	return &vocabularyDeckRepository{db: tx}
 }
 
-func (r *vocabularyDeckRepository) ListVisible(ctx context.Context, userID string, limit, offset int) ([]*models.VocabularyDeck, error) {
-	out := make([]*models.VocabularyDeck, 0)
-	if err := r.db.WithContext(ctx).
-		Where("user_id IS NULL OR user_id = ?", userID).
-		Order("user_id IS NULL desc, created_at DESC").
-		Limit(limit).Offset(offset).Find(&out).Error; err != nil {
+// visibleToUser scopes decks the caller may see: everything they own, plus
+// published system decks (IsDefault) curated by admin for every learner. An
+// admin additionally sees every system deck regardless of status — the admin
+// console lists drafts other admins created, mirroring GetDetail's
+// isAdmin bypass and canManageDeck (both let any admin reach any system
+// deck once they have its id; list access must not be narrower than that).
+func visibleToUser(db *gorm.DB, userID string, isAdmin bool) *gorm.DB {
+	if isAdmin {
+		return db.Where("user_id = ? OR is_default = true", userID)
+	}
+	return db.Where("user_id = ? OR (is_default = true AND status = ?)", userID, enums.PublishStatusPublished)
+}
+
+func (r *vocabularyDeckRepository) ListByUser(ctx context.Context, userID string, isAdmin bool, limit, offset int) ([]*models.VocabularyDeck, error) {
+	var out []*models.VocabularyDeck
+	if err := visibleToUser(r.db.WithContext(ctx), userID, isAdmin).Order("created_at DESC").Limit(limit).Offset(offset).Find(&out).Error; err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (r *vocabularyDeckRepository) CountVisible(ctx context.Context, userID string) (int64, error) {
+func (r *vocabularyDeckRepository) CountByUser(ctx context.Context, userID string, isAdmin bool) (int64, error) {
 	var n int64
-	err := r.db.WithContext(ctx).Model(&models.VocabularyDeck{}).
-		Where("user_id IS NULL OR user_id = ?", userID).Count(&n).Error
-	return n, err
-}
-
-func (r *vocabularyDeckRepository) CountByUser(ctx context.Context, userID string) (int64, error) {
-	var n int64
-	err := r.db.WithContext(ctx).Model(&models.VocabularyDeck{}).
-		Where("user_id = ?", userID).Count(&n).Error
-	return n, err
+	if err := visibleToUser(r.db.WithContext(ctx).Model(&models.VocabularyDeck{}), userID, isAdmin).Count(&n).Error; err != nil {
+		return 0, err
+	}
+	return n, nil
 }
 
 func (r *vocabularyDeckRepository) GetByID(ctx context.Context, id string) (*models.VocabularyDeck, error) {
@@ -69,7 +78,7 @@ func (r *vocabularyDeckRepository) GetByID(ctx context.Context, id string) (*mod
 	return &m, nil
 }
 
-func (r *vocabularyDeckRepository) GetDetail(ctx context.Context, userID, id string) (*models.VocabularyDeck, error) {
+func (r *vocabularyDeckRepository) GetDetail(ctx context.Context, id string) (*models.VocabularyDeck, error) {
 	if _, err := parseID(id, "id"); err != nil {
 		return nil, err
 	}
@@ -77,19 +86,6 @@ func (r *vocabularyDeckRepository) GetDetail(ctx context.Context, userID, id str
 	if err := r.db.WithContext(ctx).Joins("Category").First(&m, "vocabulary_decks.id = ?", id).Error; err != nil {
 		return nil, err
 	}
-
-	items := make([]*models.VocabularyDeckItem, 0)
-	if err := r.db.WithContext(ctx).
-		Joins("Item").
-		Where("vocabulary_deck_items.deck_id = ?", id).
-		Order("vocabulary_deck_items.sequence asc, vocabulary_deck_items.created_at asc").
-		Find(&items).Error; err != nil {
-		return nil, err
-	}
-	if err := attachUserState(ctx, r.db, userID, items); err != nil {
-		return nil, err
-	}
-	m.Items = items
 	return &m, nil
 }
 

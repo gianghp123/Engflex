@@ -1,60 +1,10 @@
 {
   "$schema": "https://inlang.com/schema/inlang-message-format",
   "vocabulary": {
-    "deck": {
-      "back": "Bộ thẻ của tôi",
-      "itemCount": "{count} từ trong bộ thẻ này",
-      "emptyTitle": "Bộ thẻ này chưa có từ nào",
-      "edit": "Sửa",
-      "editTitle": "Sửa bộ thẻ",
-      "editDescription": "Đổi tên hoặc cập nhật mô tả.",
-      "updated": "Đã cập nhật bộ thẻ",
-      "updateFailed": "Không cập nhật được bộ thẻ. Hãy thử lại.",
-      "delete": "Xóa",
-      "deleteTitle": "Xóa bộ thẻ này?",
-      "deleteBody": "Bộ thẻ sẽ bị xóa; các từ vẫn còn trong thư viện của bạn.",
-      "deleted": "Đã xóa bộ thẻ",
-      "deleteFailed": "Không xóa được bộ thẻ. Hãy thử lại.",
-      "addFromLibrary": "Thêm từ trong thư viện",
-      "pickerDescription": "Chọn từ đã có trong danh sách của bạn.",
-      "pickerSearch": "Tìm trong từ của tôi",
-      "pickerHint": "Nhập một từ rồi nhấn Enter để tìm trong thư viện của bạn.",
-      "pickerNoResults": "Không có từ nào khớp với \"{term}\".",
-      "pickerEmpty": "Không còn gì để thêm — mọi từ đã có trong bộ thẻ này.",
-      "pickerFailed": "Không tải được danh sách từ. Hãy thử lại.",
-      "added": "Đã thêm vào bộ thẻ",
-      "addFailed": "Không thêm được từ đó. Hãy thử lại.",
-      "limitReached": "Bộ thẻ này đã đầy ({max} từ) — dùng bộ khác hoặc xoá bớt một từ.",
-      "remove": "Bỏ ra",
-      "removed": "Đã bỏ khỏi bộ thẻ",
-      "removeFailed": "Không bỏ được từ đó. Hãy thử lại."
-    },
-    "decks": {
-      "title": "Bộ thẻ của tôi",
-      "subtitle": "Gom từ của bạn thành các bộ thẻ và theo dõi tiến độ từng bộ.",
-      "new": "Bộ thẻ mới",
-      "allWords": "Tất cả từ",
-      "seeDeck": "Xem bộ thẻ",
-      "wordCount": "{count} từ",
-      "wordCountMore": "{count}+ từ",
-      "sectionEmpty": "Bộ thẻ này chưa có từ nào.",
-      "emptyTitle": "Chưa có bộ thẻ nào",
-      "emptyBody": "Tạo một bộ thẻ để nhóm những từ bạn muốn học cùng nhau.",
-      "createTitle": "Tạo bộ thẻ",
-      "createDescription": "Đặt tên trước, thêm từ lúc nào cũng được.",
-      "nameLabel": "Tên",
-      "descriptionLabel": "Mô tả",
-      "create": "Tạo bộ thẻ",
-      "created": "Đã tạo bộ thẻ",
-      "createFailed": "Không tạo được bộ thẻ. Hãy thử lại.",
-      "required": "Cần có tên bộ thẻ.",
-      "nameTaken": "Bạn đã có một bộ thẻ với tên này.",
-      "limitReached": "Bạn đã đạt giới hạn {max} bộ thẻ — xoá một bộ để tạo bộ mới."
-    },
     "detail": {
       "saveNote": "Lưu ghi chú",
-      "contextsTitle": "Ví dụ ngoài đời thật",
-      "collocationsTitle": "Cụm từ hay đi với nhau",
+      "contextsTitle": "Bối cảnh kỹ thuật thực tế",
+      "collocationsTitle": "Các cụm từ kỹ thuật thiết yếu",
       "morphologyTitle": "Cấu tạo & nguồn gốc từ",
       "origin": "Nguồn gốc",
       "acousticTitle": "Phân tích âm thanh",
@@ -65,49 +15,52 @@
       "addedOn": "Đã thêm {date}",
       "noNote": "Chưa có ghi chú.",
       "editNote": "Sửa ghi chú",
-      "deleteNote": "Xóa ghi chú",
-      "noteFailed": "Không lưu được ghi chú. Hãy thử lại."
+      "deleteNote": "Xóa ghi chú"
     },
     "card": {
+      "listenUs": "Nghe phát âm (Mỹ)",
+      "listenUk": "Nghe (Anh)",
+      "playTerm": "Nghe {term}",
       "markMastered": "Đánh dấu đã thuộc",
       "retained": "Đã thuộc",
       "dueToday": "Đến hạn hôm nay",
       "review": "Ôn tập",
       "mastered": "Đã thuộc",
       "markAsMastered": "Đánh dấu đã thuộc",
-      "fullDefinition": "Định nghĩa đầy đủ",
-      "masteredFailed": "Không cập nhật được trạng thái thuộc. Hãy thử lại."
+      "share": "Chia sẻ",
+      "fullDefinition": "Định nghĩa đầy đủ"
     },
     "hub": {
       "title": "Thư viện từ vựng",
-      "subtitle": "Ôn lại từ của bạn, giữ từ bạn tự thêm, càng học càng nhớ lâu.",
-      "emptyTitle": "Không tìm thấy từ nào hợp bộ lọc",
-      "showing": "Đang xem {shown}/{total} thẻ từ",
-      "showingRange": "Đang xem {from}–{to}/{total} thẻ từ",
-      "showingAll": "{total} thẻ từ",
+      "subtitle": "Ôn thuật ngữ kỹ thuật, quản lý cụm từ bạn tự thêm và theo dõi mức độ ghi nhớ.",
+      "emptyTitle": "Không có thuật ngữ nào khớp bộ lọc",
+      "showing": "Hiển thị {shown}/{total} thẻ thuật ngữ",
       "reviewNow": "Ôn ngay",
       "masteredOf": "{done} trên {total} đã thuộc"
     },
     "stats": {
       "mastered": "Từ đã thuộc",
       "needsReview": "Cần ôn",
-      "needsReviewSub": "từ đến hạn hôm nay",
+      "needsReviewSub": "{count} từ đến hạn hôm nay",
       "custom": "Từ tự thêm",
-      "customSub": "Ghi chú của bạn",
-      "savedToday": "Đã lưu hôm nay",
-      "savedTodaySub": "Số từ bạn thêm hôm nay",
-      "decks": "Bộ thẻ",
-      "decksSub": "Các bộ từ của bạn"
+      "customSub": "Ghi chú của bạn"
     },
     "filter": {
-      "search": "Tìm từ…",
+      "search": "Tìm thuật ngữ",
       "source": {
         "all": "Tất cả từ vựng",
         "lesson": "Từ bài học",
         "conversation": "Từ hội thoại AI",
-        "video": "Từ video",
-        "manual": "Tùy chỉnh",
-        "story": "Từ truyện"
+        "manual": "Tùy chỉnh"
+      },
+      "domainLabel": "Lĩnh vực:",
+      "domainAll": "Mọi lĩnh vực",
+      "domain": {
+        "backendDb": "Backend & CSDL",
+        "distributedSystems": "Hệ phân tán",
+        "devopsCloud": "DevOps & Cloud",
+        "frontendUi": "Frontend & UI",
+        "aiMl": "AI & Học máy"
       },
       "cefrLabel": "CEFR:",
       "cefrAll": "Tất cả",
@@ -125,98 +78,24 @@
       "manual": "Tùy chỉnh",
       "story": "Từ truyện"
     },
-    "pos": {
-      "noun": "Danh từ",
-      "verb": "Động từ",
-      "adjective": "Tính từ",
-      "adverb": "Trạng từ",
-      "pronoun": "Đại từ",
-      "preposition": "Giới từ",
-      "conjunction": "Liên từ",
-      "interjection": "Thán từ",
-      "determiner": "Hạn định từ",
-      "phrase": "Cụm từ",
-      "idiom": "Thành ngữ",
-      "phrasalVerb": "Cụm động từ"
+    "sourceLine": {
+      "lesson": "Từ bài học: {id}",
+      "note": "Ghi chú: {id}"
     },
     "addWord": {
-      "button": "Thêm từ",
-      "title": "Thêm một từ",
-      "description": "Lưu vào danh sách cá nhân dưới dạng từ tự thêm.",
-      "tabs": {
-        "word": "Thêm từ"
-      },
-      "alreadyInLibrary": "Đã có trong danh sách của bạn — khi lưu sẽ dùng lại từ này.",
-      "limitReached": "Danh sách từ của bạn đã đầy ({max} từ) — xoá bớt một từ để lưu thêm.",
+      "button": "Thêm từ tùy chỉnh",
+      "title": "Thêm cụm từ kỹ thuật tùy chỉnh",
+      "description": "Lưu vào danh sách cá nhân của bạn.",
       "termLabel": "Từ hoặc cụm từ",
       "cefrLabel": "Cấp độ CEFR",
-      "cefrPlaceholder": "Chọn cấp độ",
-      "posLabel": "Từ loại",
-      "deckLabel": "Bộ thẻ",
-      "noDeck": "Không thêm vào bộ thẻ",
+      "cefrOptions": {
+        "b1": "B1 (Giao tiếp)",
+        "b2": "B2 (Kỹ thuật)",
+        "c1": "C1 (Kiến trúc)"
+      },
       "definitionLabel": "Định nghĩa",
-      "exampleLabel": "Câu ví dụ / ngữ cảnh",
-      "generate": "Tạo chi tiết",
-      "generateFailed": "Không tạo được chi tiết. Hãy thử lại.",
-      "detailsTitle": "Chi tiết từ",
       "save": "Lưu vào từ vựng",
-      "required": "Từ, định nghĩa và cấp độ CEFR là bắt buộc.",
-      "failed": "Không lưu được từ này. Hãy thử lại."
-    },
-    "dock": {
-      "saveWord": "Lưu từ",
-      "createDeck": "Tạo bộ thẻ",
-      "copy": "Sao chép",
-      "copied": "Đã sao chép",
-      "copyFailed": "Không sao chép được — hãy bôi đen và nhấn Ctrl/Cmd+C.",
-      "guide": {
-        "eyebrow": "Mẹo nhanh",
-        "title": "Lưu từ ngay từ văn bản",
-        "subtitle": "Nhấn chuột phải vào bất kỳ từ nào trong bài học hoặc bản chép video — một thanh hành động nhỏ hiện ra ngay tại con trỏ. Tính năng này dùng trên máy tính.",
-        "cta": "Rõ rồi",
-        "reopen": "Xem hướng dẫn lưu từ nhanh",
-        "step1": {
-          "title": "Nhấn chuột phải vào từ hoặc cụm từ",
-          "body": "Trong bài học và bản chép video, %icon% một từ — hoặc bôi đen cụm từ trước. Thanh hành động hiện ngay tại con trỏ.",
-          "action": "Chuột phải"
-        },
-        "step2": {
-          "title": "Lưu từ",
-          "body": "%icon% mở hộp thoại thêm từ đã điền sẵn từ và câu bạn gặp nó — soạn bằng AI, xem lại, lưu."
-        },
-        "step3": {
-          "title": "Tạo bộ thẻ",
-          "body": "%icon% tạo bộ thẻ mới ngay tại chỗ — đặt tên và từ đó nằm trong bộ."
-        },
-        "step4": {
-          "title": "Sao chép",
-          "body": "%icon% giữ đoạn chọn trong bộ nhớ tạm cho ghi chú của bạn."
-        }
-      }
-    },
-    "guide": {
-      "eyebrow": "Trước khi bắt đầu",
-      "title": "Từ vựng hoạt động như thế nào",
-      "subtitle": "Lưu từ ở bất cứ đâu, để AI soạn chi tiết, và sắp xếp mọi thứ vào các bộ thẻ bạn ôn tập.",
-      "cta": "Rõ rồi",
-      "reopen": "Xem hướng dẫn từ vựng",
-      "step1": {
-        "title": "Thêm một từ",
-        "body": "Nhấn %icon% để lưu bất kỳ từ hay cụm từ nào vào danh sách cá nhân — chỉ cần từ, định nghĩa và trình độ."
-      },
-      "step2": {
-        "title": "Soạn chi tiết bằng AI",
-        "body": "Nhấn %icon% để AI điền định nghĩa, trình độ, từ loại, phiên âm và ví dụ. Chọn ngôn ngữ đầu ra trong phần cấu hình trước — xem lại mọi thứ trước khi lưu."
-      },
-      "step3": {
-        "title": "Gom từ vào bộ thẻ",
-        "body": "Lưu thẳng vào một bộ thẻ ngay trong hộp thoại, hoặc tạo bộ mới bằng %icon% ở trang bộ thẻ. Bộ thẻ giữ những gì bạn ôn cùng nhau."
-      },
-      "step4": {
-        "title": "Ôn tập và theo dõi",
-        "body": "Lọc theo trình độ hoặc nguồn, đánh dấu từ %icon% sau khi ôn, và mở từ bất kỳ để xem chi tiết đầy đủ.",
-        "footer": "Từ lưu từ bài học và video có liên kết về nơi bạn gặp chúng."
-      }
+      "required": "Từ và định nghĩa là bắt buộc."
     }
   }
 }

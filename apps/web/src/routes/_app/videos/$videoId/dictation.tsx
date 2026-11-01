@@ -45,8 +45,6 @@ import {
 	videoDetailQueryOptions,
 	videoKeys,
 } from "#/features/videos/queries";
-import { DockGuide } from "#/features/vocabulary/components/dock-guide";
-import { TextActionDock } from "#/features/vocabulary/components/text-action-dock";
 import { m } from "#/paraglide/messages";
 
 export const Route = createFileRoute("/_app/videos/$videoId/dictation")({
@@ -571,9 +569,6 @@ function DictationWorkspace({
 	return (
 		<PageLayout>
 			<div className="flex flex-wrap items-center justify-end gap-2">
-				<div className="mr-auto">
-					<DockGuide />
-				</div>
 				<Button
 					type="button"
 					variant="outline"
@@ -608,63 +603,61 @@ function DictationWorkspace({
 				</Button>
 			</div>
 
-			<TextActionDock source={{ type: "video", id: video.id }}>
-				<div className={cn("grid items-start gap-3", layout)}>
-					{showMedia ? (
-						<VideoPanel
-							video={video}
-							youtubeId={youtubeId}
-							playerRef={playerRef}
-							activeSegment={
-								currentLine
-									? {
-											start: currentLine.startTimestamp,
-											end: currentLine.endTimestamp,
-										}
-									: null
-							}
-							onPlayerReady={handlePlayerReady}
-							onStart={handlePlaySentence}
-							onReplay={handleReplaySentence}
-							onPlayPastEnd={handleNextSentence}
-						/>
-					) : null}
-
-					<DictationPanel
-						level={level}
-						onLevelChange={handleLevelChange}
-						speed={speed}
-						words={words}
-						revealed={revealed}
-						wordStates={currentSentenceState.wordStates}
-						activeWordIndex={activeWordIndex}
-						currentInput={currentInput}
-						isCompleted={isSentenceCompleted}
-						onInputChange={setCurrentInput}
-						onWordSubmit={handleWordSubmit}
-						onWordBackspace={handleWordBackspace}
-						onEnterPress={handleNextSentence}
-						onResetSentence={handleResetSentence}
-						onReveal={handleReveal}
-						onRevealAll={handleRevealAll}
-						onPrev={handlePrevSentence}
-						onNextSentence={handleNextSentence}
-						onNext={handleNextSentence}
-						onPlaySentence={handlePlaySentence}
-						onReplaySentence={handleReplaySentence}
-						onSpeed={handleSpeedCycle}
+			<div className={cn("grid items-start gap-3", layout)}>
+				{showMedia ? (
+					<VideoPanel
+						video={video}
+						youtubeId={youtubeId}
+						playerRef={playerRef}
+						activeSegment={
+							currentLine
+								? {
+										start: currentLine.startTimestamp,
+										end: currentLine.endTimestamp,
+									}
+								: null
+						}
+						onPlayerReady={handlePlayerReady}
+						onStart={handlePlaySentence}
+						onReplay={handleReplaySentence}
+						onPlayPastEnd={handleNextSentence}
 					/>
+				) : null}
 
-					{showTranscript ? (
-						<TranscriptPanel
-							transcripts={transcripts}
-							activeIndex={activeIndex}
-							progress={overallProgress}
-							onSelect={selectLine}
-						/>
-					) : null}
-				</div>
-			</TextActionDock>
+				<DictationPanel
+					level={level}
+					onLevelChange={handleLevelChange}
+					speed={speed}
+					words={words}
+					revealed={revealed}
+					wordStates={currentSentenceState.wordStates}
+					activeWordIndex={activeWordIndex}
+					currentInput={currentInput}
+					isCompleted={isSentenceCompleted}
+					onInputChange={setCurrentInput}
+					onWordSubmit={handleWordSubmit}
+					onWordBackspace={handleWordBackspace}
+					onEnterPress={handleNextSentence}
+					onResetSentence={handleResetSentence}
+					onReveal={handleReveal}
+					onRevealAll={handleRevealAll}
+					onPrev={handlePrevSentence}
+					onNextSentence={handleNextSentence}
+					onNext={handleNextSentence}
+					onPlaySentence={handlePlaySentence}
+					onReplaySentence={handleReplaySentence}
+					onSpeed={handleSpeedCycle}
+				/>
+
+				{showTranscript ? (
+					<TranscriptPanel
+						transcripts={transcripts}
+						activeIndex={activeIndex}
+						progress={overallProgress}
+						onSelect={selectLine}
+					/>
+				) : null}
+			</div>
 
 			<DictationSummaryDialog
 				open={showSummary}

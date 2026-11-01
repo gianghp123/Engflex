@@ -50,8 +50,8 @@ func (_m *MockVocabularyDeckRepository) EXPECT() *MockVocabularyDeckRepository_E
 }
 
 // CountByUser provides a mock function for the type MockVocabularyDeckRepository
-func (_mock *MockVocabularyDeckRepository) CountByUser(ctx context.Context, userID string) (int64, error) {
-	ret := _mock.Called(ctx, userID)
+func (_mock *MockVocabularyDeckRepository) CountByUser(ctx context.Context, userID string, isAdmin bool) (int64, error) {
+	ret := _mock.Called(ctx, userID, isAdmin)
 
 	if len(ret) == 0 {
 		panic("no return value specified for CountByUser")
@@ -59,16 +59,16 @@ func (_mock *MockVocabularyDeckRepository) CountByUser(ctx context.Context, user
 
 	var r0 int64
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string) (int64, error)); ok {
-		return returnFunc(ctx, userID)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, bool) (int64, error)); ok {
+		return returnFunc(ctx, userID, isAdmin)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string) int64); ok {
-		r0 = returnFunc(ctx, userID)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, bool) int64); ok {
+		r0 = returnFunc(ctx, userID, isAdmin)
 	} else {
 		r0 = ret.Get(0).(int64)
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, string) error); ok {
-		r1 = returnFunc(ctx, userID)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, bool) error); ok {
+		r1 = returnFunc(ctx, userID, isAdmin)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -83,11 +83,12 @@ type MockVocabularyDeckRepository_CountByUser_Call struct {
 // CountByUser is a helper method to define mock.On call
 //   - ctx context.Context
 //   - userID string
-func (_e *MockVocabularyDeckRepository_Expecter) CountByUser(ctx any, userID any) *MockVocabularyDeckRepository_CountByUser_Call {
-	return &MockVocabularyDeckRepository_CountByUser_Call{Call: _e.mock.On("CountByUser", ctx, userID)}
+//   - isAdmin bool
+func (_e *MockVocabularyDeckRepository_Expecter) CountByUser(ctx any, userID any, isAdmin any) *MockVocabularyDeckRepository_CountByUser_Call {
+	return &MockVocabularyDeckRepository_CountByUser_Call{Call: _e.mock.On("CountByUser", ctx, userID, isAdmin)}
 }
 
-func (_c *MockVocabularyDeckRepository_CountByUser_Call) Run(run func(ctx context.Context, userID string)) *MockVocabularyDeckRepository_CountByUser_Call {
+func (_c *MockVocabularyDeckRepository_CountByUser_Call) Run(run func(ctx context.Context, userID string, isAdmin bool)) *MockVocabularyDeckRepository_CountByUser_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -97,9 +98,14 @@ func (_c *MockVocabularyDeckRepository_CountByUser_Call) Run(run func(ctx contex
 		if args[1] != nil {
 			arg1 = args[1].(string)
 		}
+		var arg2 bool
+		if args[2] != nil {
+			arg2 = args[2].(bool)
+		}
 		run(
 			arg0,
 			arg1,
+			arg2,
 		)
 	})
 	return _c
@@ -110,73 +116,7 @@ func (_c *MockVocabularyDeckRepository_CountByUser_Call) Return(n int64, err err
 	return _c
 }
 
-func (_c *MockVocabularyDeckRepository_CountByUser_Call) RunAndReturn(run func(ctx context.Context, userID string) (int64, error)) *MockVocabularyDeckRepository_CountByUser_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
-// CountVisible provides a mock function for the type MockVocabularyDeckRepository
-func (_mock *MockVocabularyDeckRepository) CountVisible(ctx context.Context, userID string) (int64, error) {
-	ret := _mock.Called(ctx, userID)
-
-	if len(ret) == 0 {
-		panic("no return value specified for CountVisible")
-	}
-
-	var r0 int64
-	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string) (int64, error)); ok {
-		return returnFunc(ctx, userID)
-	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string) int64); ok {
-		r0 = returnFunc(ctx, userID)
-	} else {
-		r0 = ret.Get(0).(int64)
-	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, string) error); ok {
-		r1 = returnFunc(ctx, userID)
-	} else {
-		r1 = ret.Error(1)
-	}
-	return r0, r1
-}
-
-// MockVocabularyDeckRepository_CountVisible_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CountVisible'
-type MockVocabularyDeckRepository_CountVisible_Call struct {
-	*mock.Call
-}
-
-// CountVisible is a helper method to define mock.On call
-//   - ctx context.Context
-//   - userID string
-func (_e *MockVocabularyDeckRepository_Expecter) CountVisible(ctx any, userID any) *MockVocabularyDeckRepository_CountVisible_Call {
-	return &MockVocabularyDeckRepository_CountVisible_Call{Call: _e.mock.On("CountVisible", ctx, userID)}
-}
-
-func (_c *MockVocabularyDeckRepository_CountVisible_Call) Run(run func(ctx context.Context, userID string)) *MockVocabularyDeckRepository_CountVisible_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 context.Context
-		if args[0] != nil {
-			arg0 = args[0].(context.Context)
-		}
-		var arg1 string
-		if args[1] != nil {
-			arg1 = args[1].(string)
-		}
-		run(
-			arg0,
-			arg1,
-		)
-	})
-	return _c
-}
-
-func (_c *MockVocabularyDeckRepository_CountVisible_Call) Return(n int64, err error) *MockVocabularyDeckRepository_CountVisible_Call {
-	_c.Call.Return(n, err)
-	return _c
-}
-
-func (_c *MockVocabularyDeckRepository_CountVisible_Call) RunAndReturn(run func(ctx context.Context, userID string) (int64, error)) *MockVocabularyDeckRepository_CountVisible_Call {
+func (_c *MockVocabularyDeckRepository_CountByUser_Call) RunAndReturn(run func(ctx context.Context, userID string, isAdmin bool) (int64, error)) *MockVocabularyDeckRepository_CountByUser_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -364,8 +304,8 @@ func (_c *MockVocabularyDeckRepository_GetByID_Call) RunAndReturn(run func(ctx c
 }
 
 // GetDetail provides a mock function for the type MockVocabularyDeckRepository
-func (_mock *MockVocabularyDeckRepository) GetDetail(ctx context.Context, userID string, id string) (*models.VocabularyDeck, error) {
-	ret := _mock.Called(ctx, userID, id)
+func (_mock *MockVocabularyDeckRepository) GetDetail(ctx context.Context, id string) (*models.VocabularyDeck, error) {
+	ret := _mock.Called(ctx, id)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetDetail")
@@ -373,18 +313,18 @@ func (_mock *MockVocabularyDeckRepository) GetDetail(ctx context.Context, userID
 
 	var r0 *models.VocabularyDeck
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string) (*models.VocabularyDeck, error)); ok {
-		return returnFunc(ctx, userID, id)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) (*models.VocabularyDeck, error)); ok {
+		return returnFunc(ctx, id)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string) *models.VocabularyDeck); ok {
-		r0 = returnFunc(ctx, userID, id)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) *models.VocabularyDeck); ok {
+		r0 = returnFunc(ctx, id)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*models.VocabularyDeck)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, string, string) error); ok {
-		r1 = returnFunc(ctx, userID, id)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = returnFunc(ctx, id)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -398,13 +338,12 @@ type MockVocabularyDeckRepository_GetDetail_Call struct {
 
 // GetDetail is a helper method to define mock.On call
 //   - ctx context.Context
-//   - userID string
 //   - id string
-func (_e *MockVocabularyDeckRepository_Expecter) GetDetail(ctx any, userID any, id any) *MockVocabularyDeckRepository_GetDetail_Call {
-	return &MockVocabularyDeckRepository_GetDetail_Call{Call: _e.mock.On("GetDetail", ctx, userID, id)}
+func (_e *MockVocabularyDeckRepository_Expecter) GetDetail(ctx any, id any) *MockVocabularyDeckRepository_GetDetail_Call {
+	return &MockVocabularyDeckRepository_GetDetail_Call{Call: _e.mock.On("GetDetail", ctx, id)}
 }
 
-func (_c *MockVocabularyDeckRepository_GetDetail_Call) Run(run func(ctx context.Context, userID string, id string)) *MockVocabularyDeckRepository_GetDetail_Call {
+func (_c *MockVocabularyDeckRepository_GetDetail_Call) Run(run func(ctx context.Context, id string)) *MockVocabularyDeckRepository_GetDetail_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -414,14 +353,9 @@ func (_c *MockVocabularyDeckRepository_GetDetail_Call) Run(run func(ctx context.
 		if args[1] != nil {
 			arg1 = args[1].(string)
 		}
-		var arg2 string
-		if args[2] != nil {
-			arg2 = args[2].(string)
-		}
 		run(
 			arg0,
 			arg1,
-			arg2,
 		)
 	})
 	return _c
@@ -432,54 +366,55 @@ func (_c *MockVocabularyDeckRepository_GetDetail_Call) Return(vocabularyDeck *mo
 	return _c
 }
 
-func (_c *MockVocabularyDeckRepository_GetDetail_Call) RunAndReturn(run func(ctx context.Context, userID string, id string) (*models.VocabularyDeck, error)) *MockVocabularyDeckRepository_GetDetail_Call {
+func (_c *MockVocabularyDeckRepository_GetDetail_Call) RunAndReturn(run func(ctx context.Context, id string) (*models.VocabularyDeck, error)) *MockVocabularyDeckRepository_GetDetail_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
-// ListVisible provides a mock function for the type MockVocabularyDeckRepository
-func (_mock *MockVocabularyDeckRepository) ListVisible(ctx context.Context, userID string, limit int, offset int) ([]*models.VocabularyDeck, error) {
-	ret := _mock.Called(ctx, userID, limit, offset)
+// ListByUser provides a mock function for the type MockVocabularyDeckRepository
+func (_mock *MockVocabularyDeckRepository) ListByUser(ctx context.Context, userID string, isAdmin bool, limit int, offset int) ([]*models.VocabularyDeck, error) {
+	ret := _mock.Called(ctx, userID, isAdmin, limit, offset)
 
 	if len(ret) == 0 {
-		panic("no return value specified for ListVisible")
+		panic("no return value specified for ListByUser")
 	}
 
 	var r0 []*models.VocabularyDeck
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, int, int) ([]*models.VocabularyDeck, error)); ok {
-		return returnFunc(ctx, userID, limit, offset)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, bool, int, int) ([]*models.VocabularyDeck, error)); ok {
+		return returnFunc(ctx, userID, isAdmin, limit, offset)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, int, int) []*models.VocabularyDeck); ok {
-		r0 = returnFunc(ctx, userID, limit, offset)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, bool, int, int) []*models.VocabularyDeck); ok {
+		r0 = returnFunc(ctx, userID, isAdmin, limit, offset)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*models.VocabularyDeck)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, string, int, int) error); ok {
-		r1 = returnFunc(ctx, userID, limit, offset)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, bool, int, int) error); ok {
+		r1 = returnFunc(ctx, userID, isAdmin, limit, offset)
 	} else {
 		r1 = ret.Error(1)
 	}
 	return r0, r1
 }
 
-// MockVocabularyDeckRepository_ListVisible_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ListVisible'
-type MockVocabularyDeckRepository_ListVisible_Call struct {
+// MockVocabularyDeckRepository_ListByUser_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ListByUser'
+type MockVocabularyDeckRepository_ListByUser_Call struct {
 	*mock.Call
 }
 
-// ListVisible is a helper method to define mock.On call
+// ListByUser is a helper method to define mock.On call
 //   - ctx context.Context
 //   - userID string
+//   - isAdmin bool
 //   - limit int
 //   - offset int
-func (_e *MockVocabularyDeckRepository_Expecter) ListVisible(ctx any, userID any, limit any, offset any) *MockVocabularyDeckRepository_ListVisible_Call {
-	return &MockVocabularyDeckRepository_ListVisible_Call{Call: _e.mock.On("ListVisible", ctx, userID, limit, offset)}
+func (_e *MockVocabularyDeckRepository_Expecter) ListByUser(ctx any, userID any, isAdmin any, limit any, offset any) *MockVocabularyDeckRepository_ListByUser_Call {
+	return &MockVocabularyDeckRepository_ListByUser_Call{Call: _e.mock.On("ListByUser", ctx, userID, isAdmin, limit, offset)}
 }
 
-func (_c *MockVocabularyDeckRepository_ListVisible_Call) Run(run func(ctx context.Context, userID string, limit int, offset int)) *MockVocabularyDeckRepository_ListVisible_Call {
+func (_c *MockVocabularyDeckRepository_ListByUser_Call) Run(run func(ctx context.Context, userID string, isAdmin bool, limit int, offset int)) *MockVocabularyDeckRepository_ListByUser_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -489,30 +424,35 @@ func (_c *MockVocabularyDeckRepository_ListVisible_Call) Run(run func(ctx contex
 		if args[1] != nil {
 			arg1 = args[1].(string)
 		}
-		var arg2 int
+		var arg2 bool
 		if args[2] != nil {
-			arg2 = args[2].(int)
+			arg2 = args[2].(bool)
 		}
 		var arg3 int
 		if args[3] != nil {
 			arg3 = args[3].(int)
+		}
+		var arg4 int
+		if args[4] != nil {
+			arg4 = args[4].(int)
 		}
 		run(
 			arg0,
 			arg1,
 			arg2,
 			arg3,
+			arg4,
 		)
 	})
 	return _c
 }
 
-func (_c *MockVocabularyDeckRepository_ListVisible_Call) Return(vocabularyDecks []*models.VocabularyDeck, err error) *MockVocabularyDeckRepository_ListVisible_Call {
+func (_c *MockVocabularyDeckRepository_ListByUser_Call) Return(vocabularyDecks []*models.VocabularyDeck, err error) *MockVocabularyDeckRepository_ListByUser_Call {
 	_c.Call.Return(vocabularyDecks, err)
 	return _c
 }
 
-func (_c *MockVocabularyDeckRepository_ListVisible_Call) RunAndReturn(run func(ctx context.Context, userID string, limit int, offset int) ([]*models.VocabularyDeck, error)) *MockVocabularyDeckRepository_ListVisible_Call {
+func (_c *MockVocabularyDeckRepository_ListByUser_Call) RunAndReturn(run func(ctx context.Context, userID string, isAdmin bool, limit int, offset int) ([]*models.VocabularyDeck, error)) *MockVocabularyDeckRepository_ListByUser_Call {
 	_c.Call.Return(run)
 	return _c
 }

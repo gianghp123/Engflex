@@ -14,6 +14,13 @@
       "badge": "Đã xảy ra lỗi · Lỗi 500",
       "caption": "Mo đang xử lý"
     },
+    "premiumRequired": {
+      "title": "Nội dung dành cho Premium",
+      "body": "Nội dung này yêu cầu tài khoản Premium. Nâng cấp để mở khoá ngay.",
+      "badge": "Yêu cầu Premium",
+      "caption": "Mo giữ chỗ cho bạn",
+      "primary": "Nâng cấp Premium"
+    },
     "quote": "Tiến bộ đều đặn mỗi ngày đáng giá hơn tốc độ."
   }
 }

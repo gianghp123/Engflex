@@ -30,7 +30,7 @@ func TestLessonService_ListSections(t *testing.T) {
 			name: "unfiltered returns sections with units attached",
 			req:  requests.ListLessons{},
 			setupMock: func(m *mocks.MockLessonSectionRepository) {
-				m.On("ListWithUnits", mock.Anything, enums.CEFR("")).
+				m.On("ListWithUnits", mock.Anything, enums.CEFR(""), false).
 					Return([]*models.LessonSection{
 						{ID: b1.ID, Slug: b1.Slug, Title: b1.Title, Position: b1.Position,
 							Units: []*models.Lesson{{ID: "u1", SectionID: b1.ID}}},
@@ -45,7 +45,7 @@ func TestLessonService_ListSections(t *testing.T) {
 			name: "level filter passes through to the repository",
 			req:  requests.ListLessons{Level: enums.CEFR("B1")},
 			setupMock: func(m *mocks.MockLessonSectionRepository) {
-				m.On("ListWithUnits", mock.Anything, enums.CEFR("B1")).
+				m.On("ListWithUnits", mock.Anything, enums.CEFR("B1"), false).
 					Return([]*models.LessonSection{
 						{ID: b1.ID, Slug: b1.Slug, Title: b1.Title, Position: b1.Position,
 							Units: []*models.Lesson{{ID: "u1", SectionID: b1.ID}}},
@@ -60,9 +60,9 @@ func TestLessonService_ListSections(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			secMock := mocks.NewMockLessonSectionRepository(t)
 			tt.setupMock(secMock)
-			svc := services.NewLessonService(secMock, mocks.NewMockLessonRepository(t))
+			svc := services.NewLessonService(secMock, mocks.NewMockLessonRepository(t), fakePremiumChecker{})
 
-			got, err := svc.ListSections(context.Background(), tt.req)
+			got, err := svc.ListSections(context.Background(), tt.req, false)
 
 			require.NoError(t, err)
 			require.Len(t, got, tt.wantSecs)

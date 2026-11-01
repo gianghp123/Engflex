@@ -1,59 +1,37 @@
 import type { VocabularyItem } from "@engflex/contracts";
 import { Link } from "@tanstack/react-router";
 import { cn } from "cn";
-import { Check, CircleCheck, X } from "lucide-react";
-import { toast } from "sonner";
+import { Check, CircleCheck } from "lucide-react";
 import { APP_ROUTES } from "#/app/app-route";
+import { AudioButton } from "#/components/common/audio-button";
 import { CefrBadge } from "#/components/common/cefr-badge";
+import { PremiumBadge } from "#/components/common/premium-badge";
 import { SourcePill } from "#/components/common/source-pill";
-import { SubmitButton } from "#/components/common/submit-button";
 import { Button } from "#/components/ui/button";
-import { posLabel } from "#/features/vocabulary/components/pos-label";
-import { SourceRef } from "#/features/vocabulary/components/source-ref";
+import { useCanAccessPremium } from "#/features/payments/queries";
 import { isDue } from "#/features/vocabulary/dates";
-import { usePatchVocabulary } from "#/features/vocabulary/queries";
 import { m } from "#/paraglide/messages";
 
 export function VocabCard({
 	item,
-	deckId,
-	onRemove,
-	removePending,
+	onToggleMastered,
 }: {
 	item: VocabularyItem;
-	/** Set inside a deck: the card links to that deck's word URL. */
-	deckId?: string;
-	/** Present only on a deck page: removes the membership, not the word. */
-	onRemove?: () => void;
-	/** The removal mutation's pending state, so the control shows progress. */
-	removePending?: boolean;
+	onToggleMastered: () => void;
 }) {
-	const patch = usePatchVocabulary();
 	const state = item.userState;
 	const mastered = state?.mastered ?? false;
 	const due = isDue(state?.srsDueAt);
 	const context = item.details?.contexts?.[0];
-
-	function toggleMastered() {
-		patch.mutate(
-			{
-				itemId: item.id,
-				patch: { mastered: !(item.userState?.mastered ?? false) },
-			},
-			{
-				onError: () => toast.error(m["vocabulary.card.masteredFailed"]()),
-			},
-		);
-	}
+	const canAccessPremium = useCanAccessPremium();
+	const premiumBlocked = item.isPremium && !canAccessPremium;
 
 	return (
 		<article className="surface-card flex flex-col gap-3 p-5">
 			<div className="flex items-start justify-between gap-2">
 				<div className="min-w-0">
 					<h3 className="text-base font-bold text-foreground">{item.term}</h3>
-					<p className="font-mono text-xs text-muted-foreground">
-						{item.details?.ipa}
-					</p>
+					<p className="font-mono text-xs text-muted-foreground">{item.ipa}</p>
 				</div>
 				{mastered ? (
 					<span className="chip shrink-0 border-cefr-b1-border bg-cefr-b1-bg px-2 py-0.5 text-xs text-cefr-b1">
@@ -61,52 +39,34 @@ export function VocabCard({
 						{m["vocabulary.card.mastered"]()}
 					</span>
 				) : due ? (
-					<SubmitButton
+					<button
 						type="button"
-						variant="ghost"
-						size="sm"
-						pending={patch.isPending}
-						onClick={toggleMastered}
+						onClick={onToggleMastered}
 						className="chip chip-accent shrink-0 px-2 py-0.5 text-xs"
 					>
 						<CircleCheck className="size-3.5" />
 						{m["vocabulary.card.markMastered"]()}
-					</SubmitButton>
+					</button>
 				) : (
-					<SubmitButton
+					<button
 						type="button"
-						variant="ghost"
-						size="sm"
-						pending={patch.isPending}
-						onClick={toggleMastered}
+						onClick={onToggleMastered}
 						className="chip shrink-0 px-2 py-0.5 text-xs hover:border-primary"
 					>
 						<Check className="size-3.5" />
 						{m["vocabulary.card.markMastered"]()}
-					</SubmitButton>
+					</button>
 				)}
 			</div>
 
 			<div className="flex flex-wrap items-center gap-1.5">
+				{item.isPremium ? <PremiumBadge /> : null}
 				{item.partOfSpeech ? (
 					<span className="chip bg-accent px-1.5 py-0 text-[11px]">
-						{posLabel(item.partOfSpeech)}
+						{item.partOfSpeech}
 					</span>
 				) : null}
 				{state ? <SourcePill source={state.sourceType} /> : null}
-				{onRemove ? (
-					<SubmitButton
-						type="button"
-						variant="ghost"
-						size="sm"
-						pending={removePending ?? false}
-						onClick={onRemove}
-						className="chip shrink-0 px-2 py-0.5 text-xs hover:border-primary"
-					>
-						<X className="size-3.5" />
-						{m["vocabulary.deck.remove"]()}
-					</SubmitButton>
-				) : null}
 			</div>
 
 			<p className="text-[15px] font-medium text-muted-foreground">
@@ -120,21 +80,25 @@ export function VocabCard({
 			) : null}
 
 			<div className="mt-auto flex items-center gap-2 pt-1">
+				<AudioButton
+					label={m["vocabulary.card.playTerm"]({ term: item.term })}
+				/>
 				<CefrBadge value={item.cefr} />
-				{state ? (
-					<SourceRef type={state.sourceType} id={state.sourceId} />
+				{state?.sourceId ? (
+					<span className="truncate text-[11px] font-medium text-muted-foreground">
+						{state.sourceType === "lesson"
+							? m["vocabulary.sourceLine.lesson"]({ id: state.sourceId })
+							: m["vocabulary.sourceLine.note"]({ id: state.sourceId })}
+					</span>
 				) : null}
 				<Button asChild size="sm" className="btn btn-primary ml-auto">
-					{deckId ? (
-						<Link
-							to={APP_ROUTES.VOCABULARY.DECKS.WORD}
-							params={{ deckId, itemId: item.id }}
-						>
-							{m["vocabulary.card.review"]()}
+					{premiumBlocked ? (
+						<Link to={APP_ROUTES.PAYMENTS.PRICING}>
+							{m["common.premium.upgradeAction"]()}
 						</Link>
 					) : (
 						<Link
-							to={APP_ROUTES.VOCABULARY.WORDS.DETAIL}
+							to={APP_ROUTES.VOCABULARY.DETAIL}
 							params={{ itemId: item.id }}
 						>
 							{m["vocabulary.card.review"]()}

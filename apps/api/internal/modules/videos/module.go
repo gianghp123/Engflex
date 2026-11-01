@@ -8,6 +8,7 @@ import (
 	"gorm.io/gorm"
 
 	"engflex-api/internal/database/repositories"
+	paymentservices "engflex-api/internal/modules/payments/services"
 	"engflex-api/internal/modules/videos/controllers"
 	"engflex-api/internal/modules/videos/services"
 	"engflex-api/internal/server/middleware"
@@ -15,11 +16,13 @@ import (
 
 // RegisterRoutes mounts the video endpoints under /api/v1.
 func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB) {
+	premiumSvc := paymentservices.NewSubscriptionService(
+		repositories.NewSubscriptionRepository(db), repositories.NewPlanRepository(db))
+	exerciseSvc := services.NewVideoExerciseService(repositories.NewVideoExerciseRepository(db), premiumSvc)
+	exerciseCtl := controllers.NewVideoExerciseController(exerciseSvc)
+
 	attemptSvc := services.NewVideoAttemptService(repositories.NewAttemptRepository(db), repositories.NewVideoExerciseRepository(db))
 	attemptCtl := controllers.NewVideoAttemptController(attemptSvc)
-
-	exerciseSvc := services.NewVideoExerciseService(repositories.NewVideoExerciseRepository(db))
-	exerciseCtl := controllers.NewVideoExerciseController(exerciseSvc, attemptSvc)
 
 	transcriptSvc := services.NewVideoTranscriptService(repositories.NewVideoTranscriptRepository(db))
 	transcriptCtl := controllers.NewVideoTranscriptController(transcriptSvc)
@@ -27,6 +30,11 @@ func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB) {
 	categorySvc := services.NewVideoCategoryService(repositories.NewVideoCategoryRepository(db))
 	categoryCtl := controllers.NewVideoCategoryController(categorySvc)
 
+	// All three resources are 100% admin-curated (no user-owned variant like
+	// vocabulary decks have), so mutations are admin-gated outright; reads
+	// stay open to any authenticated user, filtered to published content by
+	// the service for video-exercises (video-categories/transcripts are
+	// pure taxonomy/captions with no draft concept of their own).
 	e := rg.Group("/video-exercises")
 	e.GET("", middleware.RequireAuth(), exerciseCtl.List)
 	e.GET("/:id", middleware.RequireAuth(), exerciseCtl.GetByID)

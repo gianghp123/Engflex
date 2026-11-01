@@ -40,6 +40,9 @@ export interface PreviewVideoCategories {
  * ListVideoExercises pages the video catalog. Pagination and the title /
  * description search come from the embedded common.ListParams; categoryId
  * and cefrLevel narrow the rows and mirror the response field names.
+ * TODO: not yet wired into VideoExerciseController.List/Service/Repository
+ * — CategoryID/CEFRLevel bind but are currently ignored server-side. Added
+ * now so the contract/frontend shape exists; filtering lands separately.
  */
 export interface ListVideoExercises extends ListParams {
   categoryId?: string;
@@ -54,7 +57,13 @@ export interface CreateVideoExercise {
   thumbnailUrl: string;
   cefrLevel?: CEFR;
   duration: number /* float64 */;
+  isPremium: boolean;
 }
+/**
+ * UpdateVideoExercise replaces every field below Status. Status is the one
+ * pointer field — optional, so a plain content edit never has to resend it
+ * (mirrors UpdateVocabularyItem/UpdateVocabularyDeck).
+ */
 export interface UpdateVideoExercise {
   categoryId?: string;
   title: string;
@@ -64,6 +73,8 @@ export interface UpdateVideoExercise {
   thumbnailUrl: string;
   cefrLevel?: CEFR;
   duration: number /* float64 */;
+  status?: PublishStatus;
+  isPremium?: boolean;
 }
 
 //////////

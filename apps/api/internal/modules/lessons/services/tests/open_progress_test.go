@@ -53,12 +53,11 @@ func TestGetOpenProgress(t *testing.T) {
 	}
 
 	tests := []struct {
-		name          string
-		lessonID      string
-		setup         func(repo *mocks.MockLessonActivityRepository, attempts *mocks.MockAttemptRepository)
-		wantStatus    int
-		want          *responses.AttemptProgress
-		wantCompleted []string
+		name       string
+		lessonID   string
+		setup      func(repo *mocks.MockLessonActivityRepository, attempts *mocks.MockAttemptRepository)
+		wantStatus int
+		want       *responses.AttemptProgress
 	}{
 		{
 			name:       "invalid lesson id",
@@ -98,10 +97,9 @@ func TestGetOpenProgress(t *testing.T) {
 					},
 				},
 			},
-			wantCompleted: []string{readID},
 		},
 		{
-			name:     "non-checkable entry omitted from checks but listed in completed parts",
+			name:     "non-checkable entry omitted",
 			lessonID: lessonID,
 			setup: func(repo *mocks.MockLessonActivityRepository, attempts *mocks.MockAttemptRepository) {
 				attempts.EXPECT().GetOpenAttempt(mock.Anything, userID, lessonID).Return(openWith(`{"`+writeID+`":{"type":"writing","score":80,"detail":{}}}`), nil).Once()
@@ -111,7 +109,6 @@ func TestGetOpenProgress(t *testing.T) {
 				Attempt: responses.AttemptSummary{ID: openID, Status: string(enums.AttemptStatusInProgress)},
 				Checks:  map[string][]responses.CheckedQuestion{},
 			},
-			wantCompleted: []string{writeID},
 		},
 		{
 			name:     "stale index skipped",
@@ -128,7 +125,6 @@ func TestGetOpenProgress(t *testing.T) {
 					},
 				},
 			},
-			wantCompleted: []string{readID},
 		},
 		{
 			name:     "missing activity skipped",
@@ -146,7 +142,6 @@ func TestGetOpenProgress(t *testing.T) {
 					},
 				},
 			},
-			wantCompleted: []string{readID, goneID},
 		},
 	}
 
@@ -166,7 +161,6 @@ func TestGetOpenProgress(t *testing.T) {
 			assert.Equal(t, tt.want.Attempt.ID, got.Attempt.ID)
 			assert.Equal(t, tt.want.Attempt.Status, got.Attempt.Status)
 			assert.Equal(t, tt.want.Checks, got.Checks)
-			assert.Equal(t, tt.wantCompleted, got.CompletedParts)
 		})
 	}
 }

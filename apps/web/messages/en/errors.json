@@ -14,6 +14,13 @@
       "badge": "Something went wrong · Error 500",
       "caption": "Mo is on it"
     },
+    "premiumRequired": {
+      "title": "Premium content",
+      "body": "This content requires a Premium subscription. Upgrade to unlock it now.",
+      "badge": "Premium required",
+      "caption": "Mo is holding your spot",
+      "primary": "Upgrade to Premium"
+    },
     "quote": "Steady progress beats speed every single day."
   }
 }

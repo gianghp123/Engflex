@@ -35,6 +35,8 @@ export interface Scenario {
   cefrLevel: ScenarioDifficulty;
   maxDuration: number /* int */;
   details: ScenarioDetail;
+  status: PublishStatus;
+  isPremium: boolean;
 }
 /**
  * ScenarioDetail mirrors models.ScenarioDetail field for field so copier
