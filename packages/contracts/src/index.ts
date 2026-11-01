@@ -59,9 +59,6 @@ export * from './conversations-requests.ts';
 export * from './conversations-responses.ts';
 export * from './vocabulary-requests.ts';
 export * from './vocabulary-responses.ts';
-
-export * from './attempts-requests.ts';
-export * from './attempts-responses.ts';
 export type {
   PatchAttempt as PatchExamAttempt,
   StartAttempt as StartExamAttempt,
