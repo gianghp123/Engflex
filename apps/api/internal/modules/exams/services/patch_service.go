@@ -158,10 +158,12 @@ func finalize(m *models.Attempt, questions map[string]toeic.Question, now time.T
 		end = *m.DeadlineAt
 	}
 	correct := 0
+	correctByID := make(map[string]bool, len(m.ParsedResult.Answers))
 	for _, a := range m.ParsedResult.Answers {
 		q := questions[a.QuestionID]
 		if a.SelectedKey != nil && q.CorrectKey != nil && *a.SelectedKey == *q.CorrectKey {
 			correct++
+			correctByID[a.QuestionID] = true
 		}
 	}
 	accuracy := 100 * float64(correct) / float64(len(questions))
@@ -176,4 +178,35 @@ func finalize(m *models.Attempt, questions map[string]toeic.Question, now time.T
 	m.ParsedResult.CorrectCount = &correct
 	m.ParsedResult.AccuracyPct = &accuracy
 	m.ParsedResult.ScaledScore = nil
+	version := toeic.ScoringVersion
+	m.ParsedResult.ScoringVersion = &version
+	sections := &toeic.ResultSections{}
+	for _, part := range m.ExamTest.ParsedContent.Parts {
+		section := &sections.Reading
+		if part.Section == "listening" {
+			section = &sections.Listening
+		}
+		if *section == nil {
+			*section = &toeic.SectionResult{}
+		}
+		for _, item := range part.Items {
+			for _, question := range item.Questions {
+				(*section).QuestionCount++
+				if correctByID[question.ID] {
+					(*section).CorrectCount++
+				}
+			}
+		}
+	}
+	for _, section := range []*toeic.SectionResult{sections.Listening, sections.Reading} {
+		if section != nil && section.QuestionCount == 100 {
+			score, _ := toeic.EstimateScore(section.CorrectCount)
+			section.ScaledScore = &score
+		}
+	}
+	m.ParsedResult.Sections = sections
+	if sections.Listening != nil && sections.Reading != nil && sections.Listening.ScaledScore != nil && sections.Reading.ScaledScore != nil {
+		score := *sections.Listening.ScaledScore + *sections.Reading.ScaledScore
+		m.Score = &score
+	}
 }

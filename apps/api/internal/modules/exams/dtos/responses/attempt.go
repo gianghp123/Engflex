@@ -13,6 +13,18 @@ type Category struct {
 	Type  enums.ExamType `json:"type"`
 }
 
+type CategoryCatalog struct {
+	Category   `tstype:",extends"`
+	TestsCount int64 `json:"testsCount"`
+}
+
+type ExamAttemptStats struct {
+	CompletedTests int64    `json:"completedTests"`
+	HighestScore   *float64 `json:"highestScore"`
+	AverageScore   *float64 `json:"averageScore"`
+	LatestScore    *float64 `json:"latestScore"`
+}
+
 type ExamAttemptSummary struct {
 	ParsedResult  *ResultSummary      `json:"result"`
 	ID            string              `json:"id"`

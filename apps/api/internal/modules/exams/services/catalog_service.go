@@ -42,7 +42,7 @@ func (s *CatalogService) GetTest(ctx context.Context, testID string) (*models.Ex
 	return test, nil
 }
 
-func (s *CatalogService) ListCategories(ctx context.Context, examType enums.ExamType) ([]*models.ExamCategory, error) {
+func (s *CatalogService) ListCategories(ctx context.Context, examType enums.ExamType) ([]*models.ExamCategoryCatalog, error) {
 	if examType != "" && examType != enums.ExamTypeTOEIC {
 		return nil, common.BadRequest("invalid exam type")
 	}

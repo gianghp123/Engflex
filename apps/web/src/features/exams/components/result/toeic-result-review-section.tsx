@@ -1,8 +1,10 @@
 import type { ExamReviewContent } from "@engflex/contracts";
+import { Bookmark } from "lucide-react";
 import { CardShell } from "#/components/common/card-shell";
 import { Badge } from "#/components/ui/badge";
 import {
 	type AnswersById,
+	matchesReviewFilter,
 	mediaSource,
 	questionStatus,
 	type ReviewFilter,
@@ -27,17 +29,14 @@ function ReviewItemCard({
 	filter: ReviewFilter;
 	focusedQuestion: string | null;
 }) {
-	const questions = item.questions.filter(
-		(question) =>
-			filter === "all" ||
-			(filter === "correct"
-				? questionStatus(question, answers) === "correct"
-				: questionStatus(question, answers) !== "correct"),
+	const questions = item.questions.filter((question) =>
+		matchesReviewFilter(question, answers, filter),
 	);
 	const numbers = new Map(
 		item.questions.map((question) => [question.id, question.questionNumber]),
 	);
 	if (!questions.length) return null;
+	const audio = item.itemAudio ?? item.stimulusAudio;
 	return (
 		<div className="flex flex-col gap-5 rounded-xl border p-5">
 			<ToeicReviewBlocks
@@ -45,20 +44,12 @@ function ReviewItemCard({
 				assets={assets}
 				numbers={numbers}
 			/>
-			{item.itemAudio && (
+			{audio && (
 				<ToeicReviewAudio
-					key={`item-${item.id}`}
-					range={item.itemAudio}
-					src={mediaSource(item.itemAudio.assetId, assets)}
+					key={`audio-${item.id}`}
+					range={audio}
+					src={mediaSource(audio.assetId, assets)}
 					label={m["exams.toeic.result.review.itemAudio"]()}
-				/>
-			)}
-			{item.stimulusAudio && (
-				<ToeicReviewAudio
-					key={`stimulus-${item.id}`}
-					range={item.stimulusAudio}
-					src={mediaSource(item.stimulusAudio.assetId, assets)}
-					label={m["exams.toeic.result.review.stimulusAudio"]()}
 				/>
 			)}
 			{item.passages.map((passage) => (
@@ -106,12 +97,21 @@ function ReviewItemCard({
 								node.scrollIntoView({ behavior: "smooth", block: "start" });
 						}}
 					>
-						<div className="flex items-center gap-3">
+						<div className="flex flex-wrap items-center gap-3">
 							<h4 className="font-bold">
 								{m["exams.toeic.result.review.question"]({
 									number: question.questionNumber,
 								})}
 							</h4>
+							{answers.get(question.id)?.flagged && (
+								<Badge variant="outline">
+									<Bookmark
+										className="size-3 fill-amber-400"
+										aria-hidden="true"
+									/>
+									{m["exams.toeic.result.flagged"]()}
+								</Badge>
+							)}
 							<Badge variant="outline">
 								{status === "correct"
 									? m["exams.toeic.result.correctBadge"]()
@@ -209,12 +209,8 @@ export function ToeicResultReviewSection({
 }) {
 	const part = parts.find((entry) => entry.partNumber === activePart);
 	const hasQuestions = part?.items.some((item) =>
-		item.questions.some(
-			(question) =>
-				selectedFilter === "all" ||
-				(selectedFilter === "correct"
-					? questionStatus(question, answers) === "correct"
-					: questionStatus(question, answers) !== "correct"),
+		item.questions.some((question) =>
+			matchesReviewFilter(question, answers, selectedFilter),
 		),
 	);
 	return (
@@ -244,6 +240,14 @@ export function ToeicResultReviewSection({
 					onClick={() => onSelectFilter("correct")}
 				>
 					{m["exams.toeic.result.filterCorrect"]()}
+				</button>
+				<button
+					type="button"
+					aria-pressed={selectedFilter === "skipped"}
+					className="rounded-lg border px-3 py-2 text-sm aria-pressed:bg-primary/10"
+					onClick={() => onSelectFilter("skipped")}
+				>
+					{m["exams.toeic.result.filterSkipped"]()}
 				</button>
 			</div>
 			<div className="flex flex-wrap gap-2 border-b pb-4">

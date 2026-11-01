@@ -1,4 +1,8 @@
-import { EXAM_MODE_VALUES, type ExamMode } from "@engflex/contracts";
+import {
+	EXAM_MODE_VALUES,
+	ExamDurationMinutes,
+	type ExamMode,
+} from "@engflex/contracts";
 import { SubmitButton } from "#/components/common/submit-button";
 import { enumOptions } from "#/lib/enum-options";
 import { m } from "#/paraglide/messages";
@@ -139,7 +143,7 @@ export function ToeicConfigPanel({
 					? m["exams.toeic.test.config.summary"]({
 							parts: selectedParts.length,
 							questions: questionCount,
-							duration: 120,
+							duration: ExamDurationMinutes,
 						})
 					: m["exams.toeic.test.config.practiceSummary"]({
 							parts: selectedParts.length,

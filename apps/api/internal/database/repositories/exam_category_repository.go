@@ -10,7 +10,7 @@ import (
 )
 
 type ExamCategoryRepository interface {
-	List(ctx context.Context, examType enums.ExamType) ([]*models.ExamCategory, error)
+	List(ctx context.Context, examType enums.ExamType) ([]*models.ExamCategoryCatalog, error)
 	GetByID(ctx context.Context, id string) (*models.ExamCategory, error)
 }
 
@@ -20,13 +20,14 @@ func NewExamCategoryRepository(db *gorm.DB) ExamCategoryRepository {
 	return &examCategoryRepository{db: db}
 }
 
-func (r *examCategoryRepository) List(ctx context.Context, examType enums.ExamType) ([]*models.ExamCategory, error) {
-	var categories []*models.ExamCategory
-	query := r.db.WithContext(ctx)
+func (r *examCategoryRepository) List(ctx context.Context, examType enums.ExamType) ([]*models.ExamCategoryCatalog, error) {
+	var categories []*models.ExamCategoryCatalog
+	count := r.db.Model(&models.ExamTest{}).Select("COUNT(*)").Where("exam_tests.category_id = exam_categories.id")
+	query := r.db.WithContext(ctx).Table("exam_categories").Select("exam_categories.*, (?) AS tests_count", count)
 	if examType != "" {
-		query = query.Where("type = ?", examType)
+		query = query.Where("exam_categories.type = ?", examType)
 	}
-	err := query.Order("title ASC").Order("id ASC").Find(&categories).Error
+	err := query.Order("exam_categories.title ASC").Order("exam_categories.id ASC").Find(&categories).Error
 	return categories, err
 }
 

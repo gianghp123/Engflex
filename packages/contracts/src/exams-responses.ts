@@ -9,6 +9,15 @@ export interface Category {
   title: string;
   type: ExamType;
 }
+export interface CategoryCatalog extends Category {
+  testsCount: number /* int64 */;
+}
+export interface ExamAttemptStats {
+  completedTests: number /* int64 */;
+  highestScore: number /* float64 */ | null;
+  averageScore: number /* float64 */ | null;
+  latestScore: number /* float64 */ | null;
+}
 export interface ExamAttemptSummary {
   result: ResultSummary | null;
   id: string;
@@ -241,10 +250,24 @@ export interface Vocabulary {
   raw: string | null;
 }
 export interface Result {
+  scoringVersion: string | null;
+  sections: ResultSections | null;
   revision: number /* int */;
   answers: Answer[];
   correctCount: number /* int */ | null;
   accuracyPct: number /* float64 */ | null;
+  /**
+   * Deprecated: read the total from the parent attempt's score instead.
+   */
+  scaledScore: number /* float64 */ | null;
+}
+export interface ResultSections {
+  listening: SectionResult | null;
+  reading: SectionResult | null;
+}
+export interface SectionResult {
+  questionCount: number /* int */;
+  correctCount: number /* int */;
   scaledScore: number /* float64 */ | null;
 }
 export interface Answer {

@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowRight, BookOpen, Users } from "lucide-react";
+import { ArrowRight, BookOpen } from "lucide-react";
 import { APP_ROUTES } from "#/app/app-route";
 import { m } from "#/paraglide/messages";
 
@@ -8,7 +8,6 @@ export interface ToeicCategoryCardItem {
 	title: string;
 	tags: string[];
 	testsCount: number;
-	attemptsCount: number;
 	iconBgColor: string;
 }
 
@@ -35,10 +34,6 @@ export function ToeicCategoryCard({ item }: { item: ToeicCategoryCardItem }) {
 					<span className="inline-flex items-center gap-1.5">
 						<BookOpen className="size-4" aria-hidden="true" />
 						{m["exams.toeic.hub.testsCount"]({ count: item.testsCount })}
-					</span>
-					<span className="inline-flex items-center gap-1.5">
-						<Users className="size-4" aria-hidden="true" />
-						{m["exams.toeic.hub.attemptsCount"]({ count: item.attemptsCount })}
 					</span>
 				</div>
 

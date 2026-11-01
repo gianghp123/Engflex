@@ -11,7 +11,15 @@ export type ReviewAnswer = NonNullable<
 	ExamReviewAttempt["result"]
 >["answers"][number];
 export type AnswersById = ReadonlyMap<string, ReviewAnswer>;
-export type ReviewFilter = "all" | "incorrect" | "correct";
+export type ReviewFilter = "all" | "incorrect" | "correct" | "skipped";
+
+export function matchesReviewFilter(
+	question: ReviewQuestion,
+	answers: AnswersById,
+	filter: ReviewFilter,
+): boolean {
+	return filter === "all" || questionStatus(question, answers) === filter;
+}
 
 export function questionStatus(
 	question: ReviewQuestion,

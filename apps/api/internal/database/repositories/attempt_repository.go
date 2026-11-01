@@ -10,9 +10,11 @@ import (
 
 	"engflex-api/internal/common/enums"
 	"engflex-api/internal/database/models"
+	"engflex-api/internal/exams/toeic"
 )
 
 type AttemptRepository interface {
+	GetExamStats(ctx context.Context, userID string) (*models.ExamAttemptStats, error)
 	GetExamAttemptForUpdate(context.Context, string, string) (*models.Attempt, error)
 	SaveExamAttempt(context.Context, *models.Attempt, int) error
 	Create(ctx context.Context, m *models.Attempt) error
@@ -28,6 +30,26 @@ type AttemptRepository interface {
 	CountExamAttempts(ctx context.Context, userID string) (int64, error)
 	GetExamAttempt(ctx context.Context, userID, attemptID string) (*models.Attempt, error)
 	WithTx(tx *gorm.DB) AttemptRepository
+}
+
+func (r *attemptRepository) GetExamStats(ctx context.Context, userID string) (*models.ExamAttemptStats, error) {
+	stats := &models.ExamAttemptStats{}
+	err := r.db.WithContext(ctx).Raw(`
+		WITH completed AS (
+			SELECT a.id, a.score, a.submitted_at, a.result->>'scoringVersion' AS scoring_version
+			FROM attempts a
+			JOIN exam_tests t ON t.id = a.exam_test_id
+			JOIN exam_categories c ON c.id = t.category_id
+			WHERE a.user_id = ? AND a.type = ? AND a.mode = ? AND a.status = ? AND c.type = ?
+		), scored AS (
+			SELECT id, score, submitted_at FROM completed
+			WHERE score IS NOT NULL AND scoring_version = ?
+		)
+		SELECT (SELECT COUNT(*) FROM completed) AS completed_tests,
+			MAX(score) AS highest_score, AVG(score) AS average_score,
+			(SELECT score FROM scored ORDER BY submitted_at DESC, id DESC LIMIT 1) AS latest_score
+		FROM scored`, userID, enums.AttemptTypeExam, enums.ExamModeExam, enums.AttemptStatusCompleted, enums.ExamTypeTOEIC, toeic.ScoringVersion).Scan(stats).Error
+	return stats, err
 }
 
 func (r *attemptRepository) ListExamAttempts(ctx context.Context, userID string, limit, offset int) ([]*models.Attempt, error) {

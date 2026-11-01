@@ -1,7 +1,9 @@
 import type {
 	ExamAnswer,
 	ExamAttempt,
+	ExamAttemptStats,
 	ExamAttemptSummary,
+	ExamCatalogCategory,
 	ExamCategory,
 	ExamReviewAttempt,
 	ExamReviewContent,
@@ -18,10 +20,18 @@ import { api, apiPage } from "#/lib/api/api";
 
 export function listExamCategories(params?: {
 	type?: ExamType;
-}): Promise<ExamCategory[]> {
-	return api<ExamCategory[]>(API_ROUTES.EXAMS.CATEGORIES.LIST, undefined, {
-		query: params?.type ? { type: params.type } : undefined,
-	});
+}): Promise<ExamCatalogCategory[]> {
+	return api<ExamCatalogCategory[]>(
+		API_ROUTES.EXAMS.CATEGORIES.LIST,
+		undefined,
+		{
+			query: params?.type ? { type: params.type } : undefined,
+		},
+	);
+}
+
+export function getExamStats(): Promise<ExamAttemptStats> {
+	return api<ExamAttemptStats>(API_ROUTES.EXAMS.ATTEMPTS.STATS);
 }
 
 export function listExamTests(

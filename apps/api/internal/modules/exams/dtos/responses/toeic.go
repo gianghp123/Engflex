@@ -157,11 +157,23 @@ type Vocabulary struct {
 	Raw     *string `json:"raw"`
 }
 type Result struct {
-	Revision     int      `json:"revision"`
-	Answers      []Answer `json:"answers"`
-	CorrectCount *int     `json:"correctCount"`
-	AccuracyPct  *float64 `json:"accuracyPct"`
-	ScaledScore  *float64 `json:"scaledScore"`
+	ScoringVersion *string         `json:"scoringVersion"`
+	Sections       *ResultSections `json:"sections"`
+	Revision       int             `json:"revision"`
+	Answers        []Answer        `json:"answers"`
+	CorrectCount   *int            `json:"correctCount"`
+	AccuracyPct    *float64        `json:"accuracyPct"`
+	// Deprecated: read the total from the parent attempt's score instead.
+	ScaledScore *float64 `json:"scaledScore"`
+}
+type ResultSections struct {
+	Listening *SectionResult `json:"listening"`
+	Reading   *SectionResult `json:"reading"`
+}
+type SectionResult struct {
+	QuestionCount int      `json:"questionCount"`
+	CorrectCount  int      `json:"correctCount"`
+	ScaledScore   *float64 `json:"scaledScore"`
 }
 type Answer struct {
 	QuestionID  string  `json:"questionId"`

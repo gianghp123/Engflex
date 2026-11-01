@@ -98,11 +98,25 @@ type Vocabulary struct {
 
 // Result is specific to exam attempts; lesson/video result documents remain untouched.
 type Result struct {
-	QuestionCount int      `json:"-"`
-	Revision      int      `json:"revision"`
-	Answers       []Answer `json:"answers"`
-	CorrectCount  *int     `json:"correctCount"`
-	AccuracyPct   *float64 `json:"accuracyPct"`
+	ScoringVersion *string         `json:"scoringVersion"`
+	Sections       *ResultSections `json:"sections"`
+	QuestionCount  int             `json:"-"`
+	Revision       int             `json:"revision"`
+	Answers        []Answer        `json:"answers"`
+	CorrectCount   *int            `json:"correctCount"`
+	AccuracyPct    *float64        `json:"accuracyPct"`
+	// Deprecated: the total is stored only in Attempt.Score; this stays null.
+	ScaledScore *float64 `json:"scaledScore"`
+}
+
+type ResultSections struct {
+	Listening *SectionResult `json:"listening"`
+	Reading   *SectionResult `json:"reading"`
+}
+
+type SectionResult struct {
+	QuestionCount int      `json:"questionCount"`
+	CorrectCount  int      `json:"correctCount"`
 	ScaledScore   *float64 `json:"scaledScore"`
 }
 type Answer struct {
@@ -139,6 +153,9 @@ func ParseResult(raw []byte) (*Result, error) {
 		return nil, fmt.Errorf("invalid TOEIC accuracy")
 	}
 	result.QuestionCount = len(result.Answers)
+	if err := validateScoring(&result); err != nil {
+		return nil, err
+	}
 	return &result, nil
 }
 

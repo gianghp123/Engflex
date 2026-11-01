@@ -10,16 +10,24 @@ export function SessionAudio({
 	src,
 	range,
 	speed,
+	locked,
 	onPlay,
 }: {
 	src: string | null;
 	range: AudioRange;
 	speed: number;
+	locked: boolean;
 	onPlay: (audio: HTMLAudioElement) => void;
 }) {
 	const ref = useRef<HTMLAudioElement>(null);
 	const [failed, setFailed] = useState(false);
 	const { startTime: start, endTime: end } = range;
+	useEffect(() => {
+		const audio = ref.current;
+		if (!audio) return;
+		audio.playbackRate = speed;
+		if (locked) audio.pause();
+	}, [speed, locked]);
 	const attachAudio = useCallback(
 		(audio: HTMLAudioElement | null) => {
 			ref.current = audio;
@@ -67,7 +75,7 @@ export function SessionAudio({
 		<audio
 			ref={attachAudio}
 			src={src}
-			controls
+			controls={!locked}
 			preload="metadata"
 			className="w-full"
 			aria-label={m["exams.toeic.take.audio"]()}
@@ -76,6 +84,10 @@ export function SessionAudio({
 			}}
 			onPlay={(event) => {
 				const audio = event.currentTarget;
+				if (locked) {
+					audio.pause();
+					return;
+				}
 				if (audio.currentTime < start || audio.currentTime >= end)
 					audio.currentTime = start;
 				onPlay(audio);

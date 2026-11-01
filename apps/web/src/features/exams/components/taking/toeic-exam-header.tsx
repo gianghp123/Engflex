@@ -1,4 +1,5 @@
 import { Clock } from "lucide-react";
+import { Logo } from "#/components/common/logo";
 import { SubmitButton } from "#/components/common/submit-button";
 import { Button } from "#/components/ui/button";
 import { m } from "#/paraglide/messages";
@@ -34,9 +35,7 @@ export function ToeicExamHeader({
 		<header className="flex h-14 w-full shrink-0 items-center justify-between border-b border-border/80 bg-background px-4 md:px-6">
 			{/* Left: Test Branding */}
 			<div className="flex items-center gap-2.5 min-w-0">
-				<div className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-sky-500 text-white font-bold text-xs shadow-xs">
-					🦜
-				</div>
+				<Logo variant="mark" className="shrink-0" />
 				<h1 className="truncate text-sm font-bold text-foreground md:text-base">
 					{testTitle}
 				</h1>

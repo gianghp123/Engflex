@@ -2,7 +2,7 @@ import { useAuth } from "@clerk/tanstack-react-start";
 import type { ExamAttemptSummary, Pagination } from "@engflex/contracts";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { History, TrendingUp } from "lucide-react";
+import { History } from "lucide-react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { APP_ROUTES } from "#/app/app-route";
@@ -29,14 +29,12 @@ import {
 	type ToeicAttemptItem,
 	ToeicHistoryPanel,
 } from "#/features/exams/components/toeic-history-panel";
-import {
-	type ToeicStats,
-	ToeicStatsPanel,
-} from "#/features/exams/components/toeic-stats-panel";
+import { ToeicStatsPanel } from "#/features/exams/components/toeic-stats-panel";
 import {
 	examAttemptsQueryOptions,
 	examCategoriesQueryOptions,
 	examKeys,
+	examStatsQueryOptions,
 	useCancelExamAttempt,
 } from "#/features/exams/queries";
 import { ApiError } from "#/lib/api/api";
@@ -49,13 +47,6 @@ const CATEGORY_COLORS = [
 	"bg-[#9333ea]",
 	"bg-[#2563eb]",
 ];
-
-const MOCK_STATS: ToeicStats = {
-	completedTests: 1,
-	highestScore: 0,
-	averageScore: 0,
-	latestScore: 0,
-};
 
 function formatAttemptDate(iso: string | null | undefined): string {
 	if (!iso) return "";
@@ -161,6 +152,11 @@ function ToeicHubPage() {
 		enabled: isLoaded,
 		retry: retryHubRead,
 	});
+	const statsQuery = useQuery({
+		...examStatsQueryOptions(),
+		enabled: isLoaded,
+		retry: retryHubRead,
+	});
 
 	async function handleCancel() {
 		if (!attemptToCancel || cancelLock.current) return;
@@ -215,9 +211,8 @@ function ToeicHubPage() {
 		(cat, idx) => ({
 			id: cat.id,
 			title: cat.title,
-			tags: ["TOEIC", "Practice"],
-			testsCount: 10,
-			attemptsCount: 25000,
+			tags: ["TOEIC", m["exams.toeic.category.practiceTag"]()],
+			testsCount: cat.testsCount,
 			iconBgColor: CATEGORY_COLORS[idx % CATEGORY_COLORS.length],
 		}),
 	);
@@ -229,7 +224,10 @@ function ToeicHubPage() {
 			mode: (att.mode ?? "exam") as "exam" | "practice",
 			status: att.status,
 			date: formatAttemptDate(att.startedAt ?? att.createdAt),
-			scorePct: att.score != null ? Math.round(att.score) : undefined,
+			scorePct:
+				att.result?.accuracyPct != null
+					? Math.round(att.result.accuracyPct)
+					: undefined,
 		}),
 	);
 
@@ -250,13 +248,6 @@ function ToeicHubPage() {
 						<History className="size-4" aria-hidden="true" />
 						<span>{m["exams.toeic.hub.historyButton"]()}</span>
 					</Link>
-					<button
-						type="button"
-						className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-xs font-bold text-white shadow-sm transition-colors hover:bg-emerald-700"
-					>
-						<TrendingUp className="size-4" aria-hidden="true" />
-						<span>{m["exams.toeic.hub.analyticsButton"]()}</span>
-					</button>
 				</div>
 			</div>
 
@@ -284,7 +275,20 @@ function ToeicHubPage() {
 			</div>
 
 			<div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-				<ToeicStatsPanel stats={MOCK_STATS} />
+				{statsQuery.isError ? (
+					<HubQueryError
+						message={m["exams.toeic.hub.load.statsFailed"]()}
+						pending={statsQuery.isFetching}
+						onRetry={() => {
+							void statsQuery.refetch();
+						}}
+					/>
+				) : (
+					<ToeicStatsPanel
+						stats={statsQuery.data}
+						pending={statsQuery.isPending}
+					/>
+				)}
 				{attemptsQuery.isError ? (
 					<HubQueryError
 						message={m["exams.toeic.hub.load.attemptsFailed"]()}

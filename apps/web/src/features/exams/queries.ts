@@ -1,12 +1,15 @@
+import { useAuth } from "@clerk/tanstack-react-start";
 import type {
 	ExamType,
 	PatchExamAttempt,
 	StartExamAttempt,
 } from "@engflex/contracts";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { clearAudioPosition } from "#/features/exams/audio-position";
 import {
 	cancelExamAttempt,
 	getExamAttempt,
+	getExamStats,
 	getExamTest,
 	listExamAttempts,
 	listExamCategories,
@@ -17,6 +20,7 @@ import {
 
 export const examKeys = {
 	all: ["exams"] as const,
+	stats: ["exams", "stats"] as const,
 	categories: (params?: { type?: ExamType }) =>
 		[...examKeys.all, "categories", params?.type ?? "all"] as const,
 	tests: (categoryId: string, params?: { page?: number; pageSize?: number }) =>
@@ -27,12 +31,49 @@ export const examKeys = {
 	test: (id: string) => [...examKeys.all, "test", id] as const,
 };
 
+export function examStatsQueryOptions() {
+	return {
+		queryKey: examKeys.stats,
+		queryFn: getExamStats,
+		staleTime: 0,
+		refetchOnMount: "always" as const,
+	};
+}
+
 export function useCancelExamAttempt() {
-	return useMutation({ mutationFn: cancelExamAttempt, retry: false });
+	const queryClient = useQueryClient();
+	const { userId } = useAuth();
+	return useMutation({
+		mutationFn: cancelExamAttempt,
+		retry: false,
+		onSuccess: (attempt) => {
+			if (
+				userId &&
+				(attempt.status === "completed" || attempt.status === "abandoned")
+			)
+				clearAudioPosition(userId, attempt.id);
+			void queryClient.invalidateQueries({ queryKey: examKeys.stats });
+		},
+	});
 }
 
 export function useContinueExamAttempt() {
-	return useMutation({ mutationFn: getExamAttempt, retry: false });
+	const queryClient = useQueryClient();
+	const { userId } = useAuth();
+	return useMutation({
+		mutationFn: getExamAttempt,
+		retry: false,
+		onSuccess: (attempt) => {
+			if (
+				userId &&
+				(attempt.status === "completed" || attempt.status === "abandoned")
+			)
+				clearAudioPosition(userId, attempt.id);
+			if (attempt.status === "completed") {
+				void queryClient.invalidateQueries({ queryKey: examKeys.stats });
+			}
+		},
+	});
 }
 
 export function examTestQueryOptions(id: string) {

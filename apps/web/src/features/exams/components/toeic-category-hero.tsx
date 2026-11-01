@@ -1,18 +1,16 @@
-import { BookOpen, Users } from "lucide-react";
+import { BookOpen } from "lucide-react";
 import { m } from "#/paraglide/messages";
 
 export interface ToeicCategoryHeroProps {
 	title: string;
 	tags: string[];
 	testsCount: number;
-	attemptsCount: number;
 }
 
 export function ToeicCategoryHero({
 	title,
 	tags,
 	testsCount,
-	attemptsCount,
 }: ToeicCategoryHeroProps) {
 	return (
 		<div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-600 via-blue-500 to-sky-500 p-6 text-white shadow-md md:p-8">
@@ -42,10 +40,6 @@ export function ToeicCategoryHero({
 					<span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 backdrop-blur-sm">
 						<BookOpen className="size-4" aria-hidden="true" />
 						{m["exams.toeic.hub.testsCount"]({ count: testsCount })}
-					</span>
-					<span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 backdrop-blur-sm">
-						<Users className="size-4" aria-hidden="true" />
-						{m["exams.toeic.hub.attemptsCount"]({ count: attemptsCount })}
 					</span>
 				</div>
 			</div>

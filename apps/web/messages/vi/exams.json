@@ -6,17 +6,16 @@
         "title": "Luyện thi TOEIC",
         "description": "Luyện thi TOEIC online miễn phí với các đề thi thử đầy đủ theo chuẩn TOEIC. Mỗi đề gồm đủ 7 phần Nghe và Đọc, tự động chấm điểm, kèm giải thích đáp án chi tiết và theo dõi tiến độ để giúp bạn nâng điểm nhanh hơn.",
         "historyButton": "Lịch sử làm bài",
-        "analyticsButton": "Phân tích kết quả",
         "startPractice": "Vào luyện",
         "testsCount": "{count} đề",
-        "attemptsCount": "{count} lượt làm",
         "analytics": {
           "title": "Phân tích kết quả",
-          "viewAll": "Xem tất cả",
-          "completedTests": "SỐ BÀI ĐÃ LÀM",
+          "completedTests": "LƯỢT THI ĐÃ HOÀN THÀNH",
           "highestScore": "ĐIỂM CAO NHẤT",
           "averageScore": "ĐIỂM TRUNG BÌNH",
-          "latestScore": "LẦN GẦN NHẤT"
+          "latestScore": "ĐIỂM GẦN NHẤT",
+          "score": "{value}/990",
+          "scope": "Chỉ tính lượt thi ở chế độ Thi thử. Thống kê điểm dùng lượt có điểm ước tính hiện hành; không tính Luyện tập và các lượt cũ chưa có điểm vào thống kê điểm."
         },
         "history": {
           "title": "Lịch sử làm bài",
@@ -38,7 +37,8 @@
         "load": {
           "categoriesFailed": "Không tải được các bộ đề. Vui lòng thử lại.",
           "attemptsFailed": "Không tải được lịch sử làm bài. Vui lòng thử lại.",
-          "retry": "Thử lại"
+          "retry": "Thử lại",
+          "statsFailed": "Không tải được thống kê thi. Vui lòng thử lại."
         }
       },
       "category": {
@@ -55,7 +55,10 @@
         "pagination": {
           "range": "Hiển thị {from}–{to} trong {total} đề",
           "all": "{count} đề"
-        }
+        },
+        "practiceTag": "Luyện tập",
+        "fullExamDuration": "Thi đầy đủ: {count} phút",
+        "unlimitedDuration": "Không giới hạn thời gian"
       },
       "test": {
         "back": "Bộ đề thi",
@@ -130,7 +133,8 @@
         "saved": "Đã lưu mọi thay đổi",
         "saveFailed": "Chưa xác nhận được thay đổi. Vui lòng thử lại trước khi rời trang.",
         "retry": "Thử lại",
-        "navigationFailed": "Lượt làm đã kết thúc nhưng chưa mở được trang tiếp theo. Vui lòng thử lại."
+        "navigationFailed": "Lượt làm đã kết thúc nhưng chưa mở được trang tiếp theo. Vui lòng thử lại.",
+        "fullListening": "Audio toàn bài Listening"
       },
       "result": {
         "back": "Quay về danh sách",
@@ -163,13 +167,15 @@
           "insertion": "[↳]",
           "imageAlt": "Hình minh họa của đề thi",
           "mediaFailed": "Không thể tải media này. Bạn vẫn có thể xem nội dung chữ.",
-          "itemAudio": "Nghe nội dung của nhóm câu hỏi",
-          "stimulusAudio": "Nghe đoạn hội thoại hoặc bài nói",
+          "itemAudio": "Nghe nội dung câu hỏi",
           "transcript": "Bản chép lời",
           "reference": "Câu {number} liên quan đến phần được đánh dấu hoặc chỗ trống trong bài đọc.",
           "vocabulary": "Từ vựng",
           "empty": "Không có câu hỏi nào khớp với bộ lọc này."
-        }
+        },
+        "estimatedScore": "Điểm ước tính: {score}/{max}",
+        "filterSkipped": "Câu bỏ qua",
+        "flagged": "Đã đánh dấu xem lại"
       },
       "history": {
         "status": {

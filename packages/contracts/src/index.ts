@@ -64,10 +64,12 @@ export type {
 
 export type {
   Category as ExamCategory,
+  CategoryCatalog as ExamCatalogCategory,
   TestMetadata as ExamTestMetadata,
   TestDetail as ExamTestDetail,
   ExamAttempt,
   ExamAttemptSummary,
+  ExamAttemptStats,
   ReviewAttempt as ExamReviewAttempt,
   TakingContent as ExamTakingContent,
   ReviewContent as ExamReviewContent,

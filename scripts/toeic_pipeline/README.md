@@ -339,7 +339,7 @@ Kết quả và giới hạn cụ thể nằm trong `data/test_02/pilot_report.j
 
 ## 13. Lưu trữ một bảng đề và mở rộng attempts — phương án được chọn
 
-Đặc tả chi tiết hiện hành: [Thiết kế DB đề thi và lượt làm bài](database/README.md). Phương án đã chốt chỉ thêm `exam_tests`, mở rộng `attempts`; thay thế đề xuất tách bảng version/part/item/question/answer trước đó. Đây là thiết kế cho bước tích hợp sau; chưa tạo migration, model Go hoặc ghi vào DB.
+Phương án đã chốt chỉ thêm `exam_tests`, mở rộng `attempts`; thay thế đề xuất tách bảng version/part/item/question/answer trước đó. Đây là thiết kế cho bước tích hợp sau; chưa tạo migration, model Go hoặc ghi vào DB.
 
 | Đơn vị dự kiến | Cột quan hệ/tra cứu | Nội dung phức tạp |
 | --- | --- | --- |

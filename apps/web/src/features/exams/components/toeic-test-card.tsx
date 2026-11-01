@@ -1,5 +1,6 @@
+import { ExamDurationMinutes } from "@engflex/contracts";
 import { Link } from "@tanstack/react-router";
-import { Clock, FileText, Users } from "lucide-react";
+import { Clock, FileText } from "lucide-react";
 import { APP_ROUTES } from "#/app/app-route";
 import { m } from "#/paraglide/messages";
 
@@ -7,10 +8,7 @@ export interface ToeicTestItem {
 	id: string;
 	categoryId: string;
 	title: string;
-	isFree: boolean;
 	questionsCount: number;
-	attemptsCount: number;
-	durationMinutes: number;
 }
 
 export function ToeicTestCard({ item }: { item: ToeicTestItem }) {
@@ -21,11 +19,10 @@ export function ToeicTestCard({ item }: { item: ToeicTestItem }) {
 					<h3 className="truncate text-sm font-bold text-card-foreground md:text-base">
 						{item.title}
 					</h3>
-					{item.isFree && (
-						<span className="inline-flex items-center rounded bg-emerald-600 px-2 py-0.5 text-[11px] font-bold text-white">
-							{m["exams.toeic.category.freeBadge"]()}
-						</span>
-					)}
+
+					<span className="inline-flex items-center rounded bg-emerald-600 px-2 py-0.5 text-[11px] font-bold text-white">
+						{m["exams.toeic.category.freeBadge"]()}
+					</span>
 				</div>
 
 				<div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground md:gap-4">
@@ -36,13 +33,9 @@ export function ToeicTestCard({ item }: { item: ToeicTestItem }) {
 						})}
 					</span>
 					<span className="inline-flex items-center gap-1.5">
-						<Users className="size-3.5" aria-hidden="true" />
-						{m["exams.toeic.hub.attemptsCount"]({ count: item.attemptsCount })}
-					</span>
-					<span className="inline-flex items-center gap-1.5">
 						<Clock className="size-3.5" aria-hidden="true" />
-						{m["exams.toeic.category.durationMinutes"]({
-							count: item.durationMinutes,
+						{m["exams.toeic.category.fullExamDuration"]({
+							count: ExamDurationMinutes,
 						})}
 					</span>
 				</div>

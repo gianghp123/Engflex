@@ -1,3 +1,4 @@
+import { useAuth } from "@clerk/tanstack-react-start";
 import type {
 	ExamAnswer,
 	ExamAttempt,
@@ -12,6 +13,7 @@ import { CardShell } from "#/components/common/card-shell";
 import { SubmitButton } from "#/components/common/submit-button";
 import { Button } from "#/components/ui/button";
 import { Skeleton } from "#/components/ui/skeleton";
+import { clearAudioPosition } from "#/features/exams/audio-position";
 import { toeicPartLabel } from "#/features/exams/parts";
 import {
 	examAttemptQueryOptions,
@@ -54,6 +56,9 @@ export function ToeicSession({
 	initialAttempt: ExamAttempt;
 }) {
 	const { id } = initialAttempt;
+	const { userId } = useAuth();
+	const audioOwner = useRef(userId);
+	audioOwner.current = userId;
 	const queryClient = useQueryClient();
 	const navigate = useNavigate();
 	const patch = usePatchExamAttempt();
@@ -138,9 +143,11 @@ export function ToeicSession({
 				) => {
 					departing.current = true;
 					audio.current?.pause();
+					if (audioOwner.current) clearAudioPosition(audioOwner.current, id);
 					void queryClient.invalidateQueries({
 						queryKey: [...examKeys.all, "attempts"],
 					});
+					void queryClient.invalidateQueries({ queryKey: examKeys.stats });
 					openClosed(value.status === "completed" ? "completed" : "abandoned");
 				},
 			}),
@@ -194,7 +201,10 @@ export function ToeicSession({
 		if (deadline === null) return;
 		// External deadline timer, independent of modal state or background tab throttling.
 		const finish = () => {
-			if (Date.now() >= deadline) void controller.run("submit");
+			if (Date.now() >= deadline) {
+				audio.current?.pause();
+				void controller.run("submit");
+			}
 		};
 		const timer = setTimeout(finish, Math.max(0, deadline - Date.now()));
 		document.addEventListener("visibilitychange", finish);
@@ -249,7 +259,7 @@ export function ToeicSession({
 			<ToeicExamHeader
 				testTitle={attempt.examTest?.title ?? content.title}
 				timeLeft={seconds}
-				practice={deadline === null}
+				practice={attempt.mode === "practice"}
 				speed={speed}
 				pending={terminalBusy}
 				locked={locked}
@@ -309,10 +319,15 @@ export function ToeicSession({
 								assets={content.assets}
 								answers={answers}
 								speed={speed}
+								locked={locked}
 								onEdit={(answer) => {
 									if (!locked) controller.edit(answer);
 								}}
 								onPlay={(next) => {
+									if (locked) {
+										next.pause();
+										return;
+									}
 									if (audio.current !== next) audio.current?.pause();
 									audio.current = next;
 								}}
@@ -368,7 +383,10 @@ export function ToeicSession({
 					blocker.reset?.();
 				}}
 				onConfirm={() => {
-					if (currentAction) void controller.run(currentAction);
+					if (currentAction) {
+						audio.current?.pause();
+						void controller.run(currentAction);
+					}
 				}}
 			/>
 		</div>

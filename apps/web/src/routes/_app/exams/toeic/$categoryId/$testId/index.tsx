@@ -1,4 +1,5 @@
 import type { ExamMode, ExamTestDetail } from "@engflex/contracts";
+import { ExamDurationMinutes } from "@engflex/contracts";
 import { useQueryClient } from "@tanstack/react-query";
 import {
 	createFileRoute,
@@ -6,7 +7,7 @@ import {
 	notFound,
 	useNavigate,
 } from "@tanstack/react-router";
-import { Clock, FileText, Users } from "lucide-react";
+import { Clock, FileText } from "lucide-react";
 import { useRef, useState } from "react";
 import { z } from "zod";
 import { APP_ROUTES } from "#/app/app-route";
@@ -18,7 +19,6 @@ import { Button } from "#/components/ui/button";
 import { Skeleton } from "#/components/ui/skeleton";
 import { ToeicConfigPanel } from "#/features/exams/components/toeic-config-panel";
 import { ToeicPartsBreakdown } from "#/features/exams/components/toeic-parts-breakdown";
-import { MOCK_TEST_ATTEMPT_COUNTS } from "#/features/exams/fixtures";
 import { toeicParts } from "#/features/exams/parts";
 import {
 	examKeys,
@@ -160,14 +160,12 @@ function TestConfiguration({ test }: { test: ExamTestDetail }) {
 						})}
 					</span>
 					<span className="inline-flex items-center gap-1.5">
-						<Users className="size-4" aria-hidden="true" />
-						{m["exams.toeic.hub.attemptsCount"]({
-							count: MOCK_TEST_ATTEMPT_COUNTS[0],
-						})}
-					</span>
-					<span className="inline-flex items-center gap-1.5">
 						<Clock className="size-4" aria-hidden="true" />
-						{m["exams.toeic.category.durationMinutes"]({ count: 120 })}
+						{selectedMode === "exam"
+							? m["exams.toeic.category.durationMinutes"]({
+									count: ExamDurationMinutes,
+								})
+							: m["exams.toeic.category.unlimitedDuration"]()}
 					</span>
 				</div>
 			</div>

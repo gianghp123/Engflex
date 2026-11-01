@@ -92,7 +92,7 @@ func (s *AttemptService) Start(ctx context.Context, userID, testID string, req r
 		now := time.Now().UTC()
 		attempt.UserID, attempt.ExamTestID, attempt.Mode = userID, &test.ID, &mode
 		if req.Mode == enums.ExamModeExam {
-			deadline := now.Add(120 * time.Minute)
+			deadline := now.Add(time.Duration(common.ExamDurationMinutes) * time.Minute)
 			attempt.DeadlineAt = &deadline
 		}
 		attempt.Type, attempt.Status, attempt.StartedAt = enums.AttemptTypeExam, enums.AttemptStatusInProgress, &now
@@ -154,6 +154,17 @@ func (s *AttemptService) List(ctx context.Context, userID string, page, pageSize
 
 func (s *AttemptService) Get(ctx context.Context, userID, attemptID string) (*models.Attempt, error) {
 	return s.change(ctx, userID, attemptID, nil, false)
+}
+
+func (s *AttemptService) Stats(ctx context.Context, userID string) (*models.ExamAttemptStats, error) {
+	stats, err := s.attempts.GetExamStats(ctx, userID)
+	if err != nil {
+		appErr := common.FromDBError(err, "exam statistics")
+		logger.Report(ctx, "get exam statistics failed", appErr)
+		return nil, appErr
+	}
+	slog.InfoContext(ctx, "exam statistics retrieved", "completedTests", stats.CompletedTests)
+	return stats, nil
 }
 
 func filterSelectedParts(content *toeic.Content, selectedParts pq.Int64Array) {

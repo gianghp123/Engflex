@@ -29,7 +29,7 @@ func NewExamController(catalog *services.CatalogService, attempts *services.Atte
 // @Security BearerAuth
 // @Produce json
 // @Param type query string false "exam type"
-// @Success 200 {object} common.ApiResponse{data=[]responses.Category}
+// @Success 200 {object} common.ApiResponse{data=[]responses.CategoryCatalog}
 // @Router /exam-categories [get]
 func (h *ExamController) ListCategories(c *gin.Context) {
 	items, err := h.catalog.ListCategories(c.Request.Context(), enums.ExamType(c.Query("type")))
@@ -37,7 +37,7 @@ func (h *ExamController) ListCategories(c *gin.Context) {
 		common.Fail(c, err)
 		return
 	}
-	dtos := make([]responses.Category, 0, len(items))
+	dtos := make([]responses.CategoryCatalog, 0, len(items))
 	if err := utils.MapSlice(&dtos, items); err != nil {
 		common.Fail(c, common.Internal())
 		return
@@ -152,6 +152,31 @@ func (h *ExamController) ListAttempts(c *gin.Context) {
 	common.Paginated(c, "exam attempts", dtos, page, pageSize, total)
 }
 
+// Stats godoc
+// @Summary Get my TOEIC exam statistics
+// @Description Counts completed exam-mode runs, including legacy unscored runs. Score metrics only include the current estimated scoring policy; practice is excluded.
+// @Tags exams
+// @Security BearerAuth
+// @Produce json
+// @Success 200 {object} common.ApiResponse{data=responses.ExamAttemptStats}
+// @Failure 401 {object} common.ApiResponse
+// @Failure 500 {object} common.ApiResponse
+// @Router /exam-attempts/stats [get]
+func (h *ExamController) Stats(c *gin.Context) {
+	c.Header("Cache-Control", "private, no-store")
+	stats, err := h.attempts.Stats(c.Request.Context(), middleware.UserID(c))
+	if err != nil {
+		common.Fail(c, err)
+		return
+	}
+	var dto responses.ExamAttemptStats
+	if err := utils.Map(&dto, stats); err != nil {
+		common.Fail(c, common.Internal())
+		return
+	}
+	common.OK(c, "exam statistics", dto)
+}
+
 // CancelAttempt godoc
 // @Summary Cancel my exam attempt
 // @Description Preserves saved answers. Expired exams are finalized instead. Closed attempts return their existing state.
@@ -216,7 +241,7 @@ func (h *ExamController) GetAttempt(c *gin.Context) {
 
 // PatchAttempt godoc
 // @Summary Save answers or submit and grade my attempt
-// @Description revision is required. Each answer replaces selectedKey and flagged. Use selectedKey:null to clear. submit:true applies the final batch and grades atomically. Completed submit retries return the previous snapshot. Stale revisions return 409; GET again. Late saves return 409 after finalization; late submit grades saved answers only. score/scaledScore remain null.
+// @Description revision is required. Each answer replaces selectedKey and flagged. Use selectedKey:null to clear. submit:true applies the final batch and grades atomically. Completed submit retries return the previous snapshot. Stale revisions return 409; GET again. Late saves return 409 after finalization; late submit grades saved answers only. Estimated section scores require 100 questions per skill; score is the total when both skills are complete. Legacy result.scaledScore remains null.
 // @Tags exams
 // @Security BearerAuth
 // @Accept json

@@ -1,6 +1,7 @@
+import { useAuth } from "@clerk/tanstack-react-start";
 import type { ExamReviewAttempt } from "@engflex/contracts";
 import { createFileRoute, notFound, redirect } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { z } from "zod";
 import { APP_ROUTES } from "#/app/app-route";
 import { useBreadcrumbs } from "#/app/breadcrumbs";
@@ -8,6 +9,7 @@ import { BackButton } from "#/components/common/back-button";
 import { CardShell } from "#/components/common/card-shell";
 import { PageLayout } from "#/components/common/page-layout";
 import { Skeleton } from "#/components/ui/skeleton";
+import { clearAudioPosition } from "#/features/exams/audio-position";
 import { ToeicResultHeaderCard } from "#/features/exams/components/result/toeic-result-header-card";
 import { ToeicResultPaletteCard } from "#/features/exams/components/result/toeic-result-palette-card";
 import { ToeicResultPartsCard } from "#/features/exams/components/result/toeic-result-parts-card";
@@ -88,6 +90,10 @@ function ToeicExamResultPage() {
 	return <ResultContent key={attempt.id} attempt={attempt} />;
 }
 function ResultContent({ attempt }: { attempt: ExamReviewAttempt }) {
+	const { userId } = useAuth();
+	useEffect(() => {
+		if (userId) clearAudioPosition(userId, attempt.id);
+	}, [userId, attempt.id]);
 	const content = attempt.examTest?.content;
 	const parts = content?.parts ?? [];
 	const answers = new Map(

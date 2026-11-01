@@ -37,6 +37,14 @@ export const MaxDeckWords = 50;
 export const MaxUserWords = 100;
 
 //////////
+// source: exams.go
+
+/**
+ * ExamDurationMinutes is the deadline policy for a full TOEIC exam.
+ */
+export const ExamDurationMinutes = 120;
+
+//////////
 // source: list.go
 
 /**

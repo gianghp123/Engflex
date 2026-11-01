@@ -20,6 +20,7 @@ func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB) {
 	rg.GET("/exam-tests/:id", middleware.RequireAuth(), ctl.GetTest)
 	rg.POST("/exam-tests/:id/attempts", middleware.RequireAuth(), ctl.Start)
 	rg.GET("/exam-attempts", middleware.RequireAuth(), ctl.ListAttempts)
+	rg.GET("/exam-attempts/stats", middleware.RequireAuth(), ctl.Stats)
 	rg.POST("/exam-attempts/:id/cancel", middleware.RequireAuth(), ctl.CancelAttempt)
 	rg.PATCH("/exam-attempts/:id", middleware.RequireAuth(), ctl.PatchAttempt)
 	rg.GET("/exam-attempts/:id", middleware.RequireAuth(), ctl.GetAttempt)

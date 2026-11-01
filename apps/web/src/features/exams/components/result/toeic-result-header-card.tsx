@@ -24,6 +24,7 @@ export function ToeicResultHeaderCard({
 			.map((part) => partStatistics(part, answers));
 		return {
 			section,
+			scaledScore: result?.sections?.[section]?.scaledScore,
 			correct: scores.reduce((sum, part) => sum + part.correctCount, 0),
 			total: scores.reduce((sum, part) => sum + part.totalQuestions, 0),
 		};
@@ -57,7 +58,12 @@ export function ToeicResultHeaderCard({
 					</p>
 					<p className="text-xs text-muted-foreground">
 						{m["exams.toeic.result.totalScore"]()}:{" "}
-						{m["exams.toeic.result.scaledUnavailable"]()}
+						{attempt.score != null
+							? m["exams.toeic.result.estimatedScore"]({
+									score: attempt.score,
+									max: 990,
+								})
+							: m["exams.toeic.result.scaledUnavailable"]()}
 					</p>
 				</StatCard>
 				{sections.map((section) => (
@@ -78,7 +84,12 @@ export function ToeicResultHeaderCard({
 						}
 					>
 						<p className="text-xs text-muted-foreground">
-							{m["exams.toeic.result.scaledUnavailable"]()}
+							{section.scaledScore != null
+								? m["exams.toeic.result.estimatedScore"]({
+										score: section.scaledScore,
+										max: 495,
+									})
+								: m["exams.toeic.result.scaledUnavailable"]()}
 						</p>
 					</StatCard>
 				))}

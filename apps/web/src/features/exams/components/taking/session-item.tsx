@@ -14,6 +14,7 @@ export function SessionItem({
 	speed,
 	onEdit,
 	onPlay,
+	locked,
 }: {
 	item: Item;
 	assets: ExamTakingContent["assets"];
@@ -21,6 +22,7 @@ export function SessionItem({
 	speed: number;
 	onEdit: (answer: ExamAnswer) => void;
 	onPlay: (audio: HTMLAudioElement) => void;
+	locked: boolean;
 }) {
 	const numbers = new Map(
 		item.questions.map((question) => [question.id, question.questionNumber]),
@@ -34,21 +36,22 @@ export function SessionItem({
 	};
 	return (
 		<div className="flex flex-col gap-5 rounded-2xl border bg-card p-4 md:p-6">
-			<ToeicContentBlocks
-				blocks={item.media}
-				assets={assets}
-				numbers={numbers}
-				copy={copy}
-			/>
 			{audio && (
 				<SessionAudio
 					key={item.id}
 					range={audio}
 					src={mediaSource(audio.assetId, assets)}
 					speed={speed}
+					locked={locked}
 					onPlay={onPlay}
 				/>
 			)}
+			<ToeicContentBlocks
+				blocks={item.media}
+				assets={assets}
+				numbers={numbers}
+				copy={copy}
+			/>
 			{item.passages.map((passage) => (
 				<div key={passage.id} className="rounded-xl border bg-muted/20 p-4">
 					<ToeicContentBlocks
