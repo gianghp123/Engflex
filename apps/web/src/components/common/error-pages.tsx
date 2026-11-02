@@ -33,13 +33,64 @@ export function RouteErrorFallback({
 	error: unknown;
 	reset: () => void;
 }) {
-	const isPremiumRequired = error instanceof ApiError && error.status === 403;
+	const status = error instanceof ApiError ? error.status : undefined;
+	const isPremiumRequired =
+		status === 403 && error instanceof Error && /premium/i.test(error.message);
 
 	useEffect(() => {
 		if (!isPremiumRequired) {
 			Sentry.captureException(error);
 		}
 	}, [error, isPremiumRequired]);
+
+	if (status === 404) return <RouteNotFound />;
+	if (status === 401)
+		return (
+			<ErrorComponent
+				badge={m["errors.unauthorized.badge"]()}
+				mascot="confused"
+				caption={m["errors.unauthorized.caption"]()}
+				title={m["errors.unauthorized.title"]()}
+				body={m["errors.unauthorized.body"]()}
+				primaryLabel={m["errors.unauthorized.primary"]()}
+				primaryTo={APP_ROUTES.AUTH.SIGN_IN}
+			/>
+		);
+	if (status === 403 && !isPremiumRequired)
+		return (
+			<ErrorComponent
+				badge={m["errors.forbidden.badge"]()}
+				mascot="confused"
+				caption={m["errors.forbidden.caption"]()}
+				title={m["errors.forbidden.title"]()}
+				body={m["errors.forbidden.body"]()}
+				primaryLabel={m["common.actions.backHome"]()}
+			/>
+		);
+	if (status === 409)
+		return (
+			<ErrorComponent
+				badge={m["errors.conflict.badge"]()}
+				mascot="confused"
+				caption={m["errors.conflict.caption"]()}
+				title={m["errors.conflict.title"]()}
+				body={m["errors.conflict.body"]()}
+				primaryLabel={m["common.actions.backHome"]()}
+				extraAction={<RetryButton reset={reset} />}
+			/>
+		);
+	if (status === 503)
+		return (
+			<ErrorComponent
+				badge={m["errors.unavailable.badge"]()}
+				mascot="sad"
+				caption={m["errors.unavailable.caption"]()}
+				title={m["errors.unavailable.title"]()}
+				body={m["errors.unavailable.body"]()}
+				primaryLabel={m["common.actions.backHome"]()}
+				extraAction={<RetryButton reset={reset} />}
+			/>
+		);
 
 	if (isPremiumRequired) {
 		return (

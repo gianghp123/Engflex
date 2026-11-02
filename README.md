@@ -585,6 +585,25 @@ make swagger
 
 Migration changes should be reviewed before deployment. SQL migration files, rather than automatic ORM schema generation, remain the authoritative record of schema changes.
 
+The release runner provisions data resources, waits for PostgreSQL, applies Goose
+migrations once, then rolls out applications. API liveness is `/health` or
+`/healthz`; traffic readiness is `/readyz` (database check, 503 while draining).
+Do not run migrations independently inside every API replica.
+
+`infrastructure/scripts/deploy.sh` requires authenticated smoke settings before
+it changes infrastructure: `SMOKE_LEARNER_TOKEN` (non-admin, no premium),
+`SMOKE_PREMIUM_TOKEN` (active premium learner), `SMOKE_PUBLIC_CONTENT_PATH` and
+`SMOKE_PREMIUM_CONTENT_PATH` (existing published API detail paths),
+`VOICE_INTERNAL_SECRET`, and `VNPAY_HASH_SECRET`. Supply short-lived test tokens
+through the release environment. The probe checks access policy, internal
+callback authentication and signed unknown-order IPN handling without inference
+or checkout. To run it independently, also set `SMOKE_API_URL` to the API origin
+and run `python3 infrastructure/scripts/smoke.py`.
+
+Voice runs as one process/replica in this phase. Allow its 120-second termination
+grace period for session drain and callback flushing. Public media URLs remain
+public; Voice data not yet acknowledged by Go can be lost on process crash.
+
 ## Roadmap
 
 Potential future improvements include:

@@ -19,7 +19,7 @@ type ScenarioTopic struct {
 	Name      string      `gorm:"not null" json:"name"`
 	ShortName string      `gorm:"column:short_name;not null;default:''" json:"shortName"`
 	Position  int         `gorm:"not null" json:"position"`
-	Scenarios []*Scenario `gorm:"foreignKey:TopicID;references:ID" json:"scenarios,omitempty"`
+	Scenarios []*Scenario `gorm:"->;foreignKey:TopicID;references:ID" json:"scenarios,omitempty"`
 	CreatedAt time.Time   `gorm:"autoCreateTime" json:"createdAt"`
 	UpdatedAt time.Time   `gorm:"autoUpdateTime" json:"updatedAt"`
 }

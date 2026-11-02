@@ -20,16 +20,20 @@ type UserVocabularyService interface {
 	Unsave(ctx context.Context, userID, itemID string) error
 }
 
+type VocabularyAccessPolicy interface {
+	CheckAccess(ctx context.Context, userID, id string) error
+}
+
 type userVocabularyService struct {
-	repo  repositories.UserVocabularyRepository
-	items repositories.VocabularyItemRepository
+	repo   repositories.UserVocabularyRepository
+	access VocabularyAccessPolicy
 }
 
 // NewUserVocabularyService builds the service over both repository
 // interfaces: items is needed to gate Save on the referenced item's
 // publish status (SRS must never pick up a draft entry).
-func NewUserVocabularyService(repo repositories.UserVocabularyRepository, items repositories.VocabularyItemRepository) UserVocabularyService {
-	return &userVocabularyService{repo: repo, items: items}
+func NewUserVocabularyService(repo repositories.UserVocabularyRepository, access VocabularyAccessPolicy) UserVocabularyService {
+	return &userVocabularyService{repo: repo, access: access}
 }
 
 func (s *userVocabularyService) ListByUser(ctx context.Context, userID string, limit, offset int) ([]*models.UserVocabulary, error) {
@@ -48,14 +52,8 @@ func (s *userVocabularyService) ListByUser(ctx context.Context, userID string, l
 // item id itself is valid, so a half-reviewed dictionary entry can never
 // reach a learner's deck through the save path.
 func (s *userVocabularyService) Save(ctx context.Context, userID string, req requests.SaveUserVocabulary) (*models.UserVocabulary, error) {
-	item, err := s.items.GetByID(ctx, req.ItemID)
-	if err != nil {
-		appErr := common.FromDBError(err, "vocabulary item")
-		logger.Report(ctx, "get vocabulary item for save failed", appErr, "itemID", req.ItemID)
-		return nil, appErr
-	}
-	if item.Status != enums.PublishStatusPublished {
-		return nil, common.UnprocessableEntity("word is not published yet")
+	if err := s.access.CheckAccess(ctx, userID, req.ItemID); err != nil {
+		return nil, err
 	}
 
 	u := &models.UserVocabulary{UserID: userID}

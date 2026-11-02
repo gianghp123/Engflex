@@ -81,6 +81,14 @@
         "hint": "Gõ từng từ và nhấn phím Space để kiểm tra",
         "sentenceDone": "Hoàn thành câu! Nhấn Enter hoặc 'Tiếp theo' để tiếp tục.",
         "accuracy": "Đúng {correct}/{total} từ"
+      },
+      "persistence": {
+        "conflict": "Tiến trình đã thay đổi ở phiên khác. Bản nháp vẫn được giữ tại đây. Hãy tải tiến trình đã lưu trước khi tiếp tục.",
+        "denied": "Bạn không còn quyền truy cập. Bản nháp vẫn được giữ tại đây; hãy khôi phục quyền trước khi tiếp tục.",
+        "failed": "Không thể lưu tiến trình. Bản nháp vẫn được giữ tại đây.",
+        "reload": "Tải tiến trình đã lưu (thay bản nháp này)",
+        "retry": "Thử lại với bản nháp này",
+        "renew": "Khôi phục quyền premium"
       }
     },
     "practice": {

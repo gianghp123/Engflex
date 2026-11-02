@@ -10,6 +10,7 @@ frames may surface to the client and end the pipeline.
 
 import asyncio
 from typing import Any, cast
+from unittest.mock import AsyncMock
 
 from pipecat.frames.frames import EndWorkerFrame, ErrorFrame
 
@@ -50,6 +51,7 @@ def _registered_worker():
         body=RunnerBody(userId="u1", conversationId="c1", maxDuration=300),
         start_time=0.0,
         collector=TurnCollector(),
+        publisher=AsyncMock(),
     )
     return worker
 
@@ -67,6 +69,7 @@ def _registered_with_collector():
         body=RunnerBody(userId="u1", conversationId="c1", maxDuration=300),
         start_time=0.0,
         collector=collector,
+        publisher=AsyncMock(),
     )
     return worker, collector
 

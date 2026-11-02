@@ -1,4 +1,8 @@
-import type { SubscriptionPlan, User } from "@engflex/contracts";
+import {
+	SUBSCRIPTION_PLAN_VALUES,
+	type SubscriptionPlan,
+	type User,
+} from "@engflex/contracts";
 import { useState } from "react";
 import { toast } from "sonner";
 import {
@@ -28,6 +32,7 @@ import {
 	type DataTableColumn,
 } from "#/features/admin/components/data-table";
 import { ResourceFormDialog } from "#/features/admin/components/resource-form-dialog";
+import { UserAttemptsDialog } from "#/features/admin/users/components/user-attempts-dialog";
 import {
 	useAdminUsers,
 	useGrantSubscription,
@@ -35,8 +40,22 @@ import {
 	useUpdateUserRole,
 } from "#/features/admin/users/queries";
 import { m } from "#/paraglide/messages";
+import { getLocale } from "#/paraglide/runtime";
+
+function hasActiveSubscription(user: User): boolean {
+	const sub = user.subscription;
+	return (
+		sub?.status === "active" &&
+		!!sub.expiresAt &&
+		new Date(sub.expiresAt).getTime() > Date.now()
+	);
+}
 
 type GrantPlanChoice = SubscriptionPlan | "none";
+const grantPlanChoices: readonly GrantPlanChoice[] = [
+	"none",
+	...SUBSCRIPTION_PLAN_VALUES,
+];
 
 function planLabel(plan: GrantPlanChoice): string {
 	switch (plan) {
@@ -53,7 +72,7 @@ function planLabel(plan: GrantPlanChoice): string {
 
 function formatDate(iso: string | undefined): string {
 	if (!iso) return "—";
-	return new Date(iso).toLocaleDateString();
+	return new Date(iso).toLocaleDateString(getLocale());
 }
 
 export function UsersPanel() {
@@ -73,6 +92,7 @@ export function UsersPanel() {
 	const [grantTarget, setGrantTarget] = useState<User | null>(null);
 	const [grantPlan, setGrantPlan] = useState<GrantPlanChoice>("1m");
 	const [grantNote, setGrantNote] = useState("");
+	const [attemptsTarget, setAttemptsTarget] = useState<User | null>(null);
 
 	function confirmRoleChange() {
 		if (!roleTarget) return;
@@ -156,15 +176,15 @@ export function UsersPanel() {
 			header: m["admin.users.premium.column"](),
 			cell: (row) => (
 				<div className="flex flex-col gap-1">
-					<Badge variant={row.premium ? "default" : "secondary"}>
-						{row.premium
+					<Badge variant={hasActiveSubscription(row) ? "default" : "secondary"}>
+						{hasActiveSubscription(row)
 							? m["admin.users.premium.badgeActive"]()
 							: m["admin.users.premium.badgeNone"]()}
 					</Badge>
-					{row.premium && row.premiumExpiresAt && (
+					{hasActiveSubscription(row) && row.subscription?.expiresAt && (
 						<span className="text-xs text-muted-foreground">
 							{m["admin.users.premium.expiresOn"]({
-								date: formatDate(row.premiumExpiresAt),
+								date: formatDate(row.subscription?.expiresAt),
 							})}
 						</span>
 					)}
@@ -196,6 +216,14 @@ export function UsersPanel() {
 						onClick={() => openGrantDialog(row)}
 					>
 						{m["admin.users.premium.grantAction"]()}
+					</Button>
+					<Button
+						type="button"
+						variant="outline"
+						size="sm"
+						onClick={() => setAttemptsTarget(row)}
+					>
+						{m["admin.users.attempts.action"]()}
 					</Button>
 				</div>
 			),
@@ -277,7 +305,7 @@ export function UsersPanel() {
 							<SelectValue />
 						</SelectTrigger>
 						<SelectContent>
-							{(["none", "1m", "3m", "12m"] as const).map((plan) => (
+							{grantPlanChoices.map((plan) => (
 								<SelectItem key={plan} value={plan}>
 									{planLabel(plan)}
 								</SelectItem>
@@ -298,6 +326,12 @@ export function UsersPanel() {
 					</Field>
 				)}
 			</ResourceFormDialog>
+			<UserAttemptsDialog
+				key={attemptsTarget?.id}
+				user={attemptsTarget}
+				open={Boolean(attemptsTarget)}
+				onOpenChange={(open) => !open && setAttemptsTarget(null)}
+			/>
 		</div>
 	);
 }

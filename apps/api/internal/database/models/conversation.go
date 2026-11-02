@@ -11,10 +11,13 @@ import (
 // Conversation is one voice session (free talk or roleplay). Duration is
 // derived from started_at/ended_at.
 type Conversation struct {
-	ID         string                 `gorm:"type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
-	UserID     string                 `gorm:"not null" json:"userId"`
-	Mode       enums.ConversationMode `gorm:"not null" json:"mode"`
-	ScenarioID *string                `gorm:"type:uuid" json:"scenarioId"`
+	TranscriptRevision  int64                  `gorm:"not null;default:0" json:"-"`
+	TranscriptHash      string                 `gorm:"not null;default:''" json:"-"`
+	TranscriptFinalized bool                   `gorm:"not null;default:false" json:"-"`
+	ID                  string                 `gorm:"type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
+	UserID              string                 `gorm:"not null" json:"userId"`
+	Mode                enums.ConversationMode `gorm:"not null" json:"mode"`
+	ScenarioID          *string                `gorm:"type:uuid" json:"scenarioId"`
 	// Scenario is the practice scenario this conversation ran, filled by
 	// Joins("Scenario") on read. "->" keeps it read-only: a conversation
 	// write never auto-saves the scenario. Nil for free talk and for a

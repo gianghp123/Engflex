@@ -25,13 +25,11 @@ type VocabularyDeckDetail struct {
 
 // VocabularyDeckItemResponse is one flashcard row.
 type VocabularyDeckItemResponse struct {
-	ID                string  `json:"id"`
-	DeckID            string  `json:"deckId"`
-	VideoExerciseID   *string `json:"videoExerciseId"`
-	VideoTranscriptID *string `json:"videoTranscriptId"`
-	Phrase            string  `json:"phrase"`
-	NormalizedPhrase  string  `json:"normalizedPhrase"`
-	Meaning           string  `json:"meaning"`
-	ExampleSentence   string  `json:"exampleSentence"`
-	Note              string  `json:"note"`
+	ID              string         `json:"id"`
+	DeckID          string         `json:"deckId"`
+	ItemID          string         `json:"itemId"`
+	Sequence        int            `json:"sequence"`
+	Item            VocabularyItem `json:"item"`
+	ExampleSentence string         `json:"exampleSentence"`
+	Note            string         `json:"note"`
 }

@@ -77,7 +77,7 @@ func (h *VocabularyDeckItemController) GetByID(c *gin.Context) {
 func (h *VocabularyDeckItemController) Create(c *gin.Context) {
 	var req requests.CreateVocabularyDeckItem
 	if err := c.ShouldBindJSON(&req); err != nil {
-		common.Fail(c, common.BadRequest(err.Error()))
+		common.Fail(c, common.InvalidRequest(err))
 		return
 	}
 	m, err := h.items.Create(c.Request.Context(), middleware.UserID(c), middleware.Role(c) == enums.UserRoleAdmin, req)
@@ -103,7 +103,7 @@ func (h *VocabularyDeckItemController) Create(c *gin.Context) {
 func (h *VocabularyDeckItemController) Update(c *gin.Context) {
 	var req requests.UpdateVocabularyDeckItem
 	if err := c.ShouldBindJSON(&req); err != nil {
-		common.Fail(c, common.BadRequest(err.Error()))
+		common.Fail(c, common.InvalidRequest(err))
 		return
 	}
 	m, err := h.items.Update(c.Request.Context(), middleware.UserID(c), c.Param("id"), middleware.Role(c) == enums.UserRoleAdmin, req)

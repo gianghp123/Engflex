@@ -1,9 +1,11 @@
 import type {
 	CreateVocabularyItem,
 	Pagination,
+	SavedVocabulary,
 	SaveUserVocabulary,
 	UserVocabularyState,
 	VocabularyItem,
+	VocabularyItemSummary,
 } from "@engflex/contracts";
 import { API_ROUTES } from "#/app/api-routes";
 import { api, apiPage } from "#/lib/api";
@@ -11,10 +13,14 @@ import { api, apiPage } from "#/lib/api";
 export function listVocabularyItems(
 	page: number,
 	pageSize: number,
-): Promise<{ items: VocabularyItem[]; pagination: Pagination }> {
-	return apiPage<VocabularyItem>(API_ROUTES.VOCABULARY_ITEMS.LIST, undefined, {
-		query: { page, pageSize },
-	});
+): Promise<{ items: VocabularyItemSummary[]; pagination: Pagination }> {
+	return apiPage<VocabularyItemSummary>(
+		API_ROUTES.VOCABULARY_ITEMS.LIST,
+		undefined,
+		{
+			query: { page, pageSize },
+		},
+	);
 }
 
 export function getVocabularyItem(id: string): Promise<VocabularyItem> {
@@ -33,12 +39,10 @@ export function createVocabularyItem(
 export function listUserVocabulary(
 	page: number,
 	pageSize: number,
-): Promise<{ items: UserVocabularyState[]; pagination: Pagination }> {
-	return apiPage<UserVocabularyState>(
-		API_ROUTES.USER_VOCABULARY.LIST,
-		undefined,
-		{ query: { page, pageSize } },
-	);
+): Promise<{ items: SavedVocabulary[]; pagination: Pagination }> {
+	return apiPage<SavedVocabulary>(API_ROUTES.USER_VOCABULARY.LIST, undefined, {
+		query: { page, pageSize },
+	});
 }
 
 export function saveUserVocabulary(

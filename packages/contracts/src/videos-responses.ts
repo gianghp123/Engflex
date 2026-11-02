@@ -11,6 +11,7 @@ export interface VideoProgressPayload {
   transcripts: { [key: string]: unknown};
 }
 export interface VideoAttemptResponse {
+  revision: number /* int */;
   id: string;
   userId: string;
   videoExerciseId?: string;

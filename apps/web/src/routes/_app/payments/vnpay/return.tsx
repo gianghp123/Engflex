@@ -1,4 +1,6 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect } from "react";
 import { APP_ROUTES } from "#/app/app-route";
 import { useBreadcrumbs } from "#/app/breadcrumbs";
 import { MoMascot, type MoVariant } from "#/components/common/mo-mascot";
@@ -23,6 +25,12 @@ export const Route = createFileRoute("/_app/payments/vnpay/return")({
 function ReturnPage() {
 	useBreadcrumbs([{ label: m["payments.return.crumb"]() }]);
 	const { vnp_ResponseCode: responseCode } = Route.useSearch();
+	const queryClient = useQueryClient();
+	useEffect(() => {
+		// Refresh entitlement from the API after returning from the gateway.
+		// The browser's response code never grants access by itself.
+		void queryClient.invalidateQueries({ queryKey: ["payments"] });
+	}, [queryClient]);
 
 	// The response code on this page is UX-only: the browser redirect can be
 	// tampered with, so it only decides what to *show*, never what access the

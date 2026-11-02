@@ -7,6 +7,7 @@ export interface StartVideoAttempt {
   type: AttemptType;
 }
 export interface SaveVideoProgress {
+  revision: number /* int */;
   activeSequence: number /* int */;
   activeTranscriptId?: string;
   level?: string;

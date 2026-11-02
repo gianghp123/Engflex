@@ -3,7 +3,9 @@ package tests
 import (
 	"context"
 	"encoding/json"
+	"engflex-api/internal/modules/conversations/dtos/callbacks"
 	"errors"
+	"fmt"
 	"net/http"
 	"testing"
 
@@ -16,7 +18,6 @@ import (
 	"engflex-api/internal/database/models"
 	repomocks "engflex-api/internal/database/repositories/mocks"
 	"engflex-api/internal/modules/conversations/dtos/requests"
-	"engflex-api/internal/modules/conversations/dtos/responses"
 	"engflex-api/internal/modules/conversations/services"
 	"engflex-api/internal/voice"
 	voicemocks "engflex-api/internal/voice/mocks"
@@ -41,7 +42,7 @@ func newService(t *testing.T) (*services.ConversationService, *repomocks.MockCon
 	engine := voicemocks.NewMockVoiceClient(t)
 	pronounce := voicemocks.NewMockPronounceEngine(t)
 	scenarios := repomocks.NewMockScenarioRepository(t)
-	return services.NewConversationService(repo, turns, engine, pronounce, 300, repomocks.NewMockFeedbackRepository(t), scenarios, repomocks.NewMockPersonaRepository(t)), repo, turns, engine, scenarios
+	return services.NewConversationService(repo, turns, engine, pronounce, 300, repomocks.NewMockFeedbackRepository(t), scenarios, repomocks.NewMockPersonaRepository(t), allowScenarioAccess{}), repo, turns, engine, scenarios
 }
 
 func pendingConv() *models.Conversation {
@@ -136,16 +137,18 @@ func TestStart(t *testing.T) {
 		wantStatus int
 	}{
 		{
-			name: "cached response skips the engine",
+			name: "cached session is confirmed with the engine",
 			setup: func(repo *repomocks.MockConversationRepository, engine *voicemocks.MockVoiceClient, _ *repomocks.MockScenarioRepository) {
 				raw, _ := json.Marshal(voice.StartResponse{
 					SessionID: "eng-1",
-					ICEConfig: &responses.IceConfig{IceServers: []responses.IceServer{{URLs: []string{"stun:x"}}}},
+					ICEConfig: &voice.IceConfig{IceServers: []voice.IceServer{{URLs: []string{"stun:x"}}}},
 				})
 				repo.On("GetByID", mock.Anything, convID).Return(&models.Conversation{
 					ID: convID, UserID: userID, Status: enums.ConversationStatusPending,
 					SpeechSessionID: "eng-1", SpeechStartResponse: raw,
 				}, nil).Once()
+				engine.On("Start", mock.Anything, mock.AnythingOfType("voice.StartRequest")).Return(&voice.StartResponse{SessionID: "eng-after-restart"}, nil).Once()
+				repo.On("SetSpeechStart", mock.Anything, convID, "eng-after-restart", mock.Anything).Return(int64(1), nil).Once()
 			},
 		},
 		{
@@ -344,46 +347,26 @@ func TestEnd(t *testing.T) {
 }
 
 func TestFinalize(t *testing.T) {
-	tests := []struct {
-		name         string
-		status       enums.ConversationStatus
-		duration     int
-		deleted      bool
-		deleteErr    error
-		wantSetEnded bool
-		wantStatus   int
-	}{
-		{name: "live conversation records duration", status: enums.ConversationStatusLive, duration: 120, wantSetEnded: true},
-		{name: "finalize after end keeps duration", status: enums.ConversationStatusEnded, duration: 42, wantSetEnded: true},
-		{name: "empty conversation is discarded without SetEnded", status: enums.ConversationStatusLive, duration: 60, deleted: true},
-		{name: "empty-check failure surfaces 500", status: enums.ConversationStatusLive, duration: 60, deleteErr: errBoom(), wantStatus: http.StatusInternalServerError},
-		{name: "negative duration is rejected", status: enums.ConversationStatusLive, duration: -1, wantStatus: http.StatusBadRequest},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	for _, duration := range []int{0, 42, -1} {
+		t.Run(fmt.Sprint(duration), func(t *testing.T) {
 			svc, repo, _, _, _ := newService(t)
-			if tt.wantStatus == 0 || tt.deleteErr != nil {
-				repo.On("GetByID", mock.Anything, convID).Return(&models.Conversation{
-					ID: convID, UserID: userID, Status: tt.status,
-				}, nil).Once()
-				repo.On("DeleteIfEmpty", mock.Anything, convID).Return(tt.deleted, tt.deleteErr).Once()
+			req := callbacks.FinalizeConversation{IngestTurns: callbacks.IngestTurns{EngineSessionID: "engine-1", Revision: 1, Turns: []callbacks.IngestTurn{}}, DurationSec: duration}
+			if duration >= 0 {
+				repo.On("ApplySnapshot", mock.Anything, convID, "engine-1", int64(1), mock.Anything, mock.Anything, &duration).Return(&models.Conversation{ID: convID}, nil).Once()
 			}
-			if tt.wantSetEnded {
-				repo.On("SetEnded", mock.Anything, convID, mock.MatchedBy(func(d *int) bool {
-					return d != nil && *d == tt.duration
-				})).Return(int64(1), nil).Once()
+			err := svc.Finalize(context.Background(), convID, req)
+			if duration < 0 {
+				requireAppError(t, err, http.StatusBadRequest)
+			} else {
+				require.NoError(t, err)
 			}
-
-			err := svc.Finalize(context.Background(), convID, tt.duration)
-			if tt.wantStatus != 0 {
-				requireAppError(t, err, tt.wantStatus)
-				return
-			}
-			require.NoError(t, err)
 		})
 	}
 }
 
 func errNotFound() error { return gorm.ErrRecordNotFound }
 func errBoom() error     { return errors.New("boom") }
+
+type allowScenarioAccess struct{}
+
+func (allowScenarioAccess) CheckAccess(context.Context, string, string) error { return nil }

@@ -13,6 +13,7 @@ import (
 )
 
 type VideoExerciseService interface {
+	CheckAccess(ctx context.Context, userID, id string) error
 	List(ctx context.Context, limit int, offset int, isAdmin bool) ([]*models.VideoExercise, int64, error)
 	GetByID(ctx context.Context, id, userID string, isAdmin bool) (*models.VideoExercise, error)
 	Create(ctx context.Context, req requests.CreateVideoExercise) (*models.VideoExercise, error)
@@ -30,7 +31,7 @@ func NewVideoExerciseService(repo repositories.VideoExerciseRepository, premium 
 }
 
 func (s *videoExerciseService) List(ctx context.Context, limit, offset int, isAdmin bool) ([]*models.VideoExercise, int64, error) {
-	lessons, err := s.repo.List(ctx, limit, offset, !isAdmin)
+	lessons, err := s.repo.ListWithPractice(ctx, common.ActorFromContext(ctx).UserID, limit, offset, !isAdmin)
 	if err != nil {
 		appErr := common.FromDBError(err, "video exercise")
 		logger.Report(ctx, "failed to list video exercises", appErr)
@@ -117,5 +118,23 @@ func (s *videoExerciseService) Delete(ctx context.Context, id string) error {
 		return appErr
 	}
 	slog.InfoContext(ctx, "video exercise deleted", "id", id)
+	return nil
+}
+
+func (s *videoExerciseService) CheckAccess(ctx context.Context, userID, id string) error {
+	m, err := s.repo.GetByID(ctx, id)
+	if err != nil {
+		appErr := common.FromDBError(err, "video exercise")
+		logger.Report(ctx, "video access lookup failed", appErr, "id", id)
+		return appErr
+	}
+	admin := common.ActorFromContext(ctx).Admin
+	if !admin && m.Status != enums.PublishStatusPublished {
+		return common.NotFound("video exercise not found")
+	}
+	if err := common.RequirePremiumAccess(ctx, s.premium, userID, admin, m.IsPremium); err != nil {
+		return err
+	}
+	slog.InfoContext(ctx, "video access allowed", "videoExerciseID", id)
 	return nil
 }

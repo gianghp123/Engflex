@@ -58,12 +58,11 @@ export function progressFrom(
 		partsTotal === 0
 			? 0
 			: Math.min(100, Math.round((partsCompleted / partsTotal) * 100));
-	const status: LessonStatus =
-		server?.completed || percent >= 100
-			? "completed"
-			: percent > 0
-				? "in_progress"
-				: "unstarted";
+	const status: LessonStatus = server?.completed
+		? "completed"
+		: percent > 0
+			? "in_progress"
+			: "unstarted";
 	return {
 		status,
 		percent,

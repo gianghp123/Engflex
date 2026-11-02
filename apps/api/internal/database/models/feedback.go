@@ -14,13 +14,14 @@ import (
 // user_id is denormalized because the polymorphic pair has no foreign key;
 // it keeps "all my feedback" and "delete my data" answerable.
 type Feedback struct {
-	ID          string                    `gorm:"type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
-	UserID      string                    `gorm:"not null" json:"userId"`
-	SubjectType enums.FeedbackSubjectType `gorm:"not null" json:"subjectType"`
-	SubjectID   string                    `gorm:"not null" json:"subjectId"`
-	Payload     TurnFeedback              `gorm:"type:jsonb;not null" json:"payload"`
-	CreatedAt   time.Time                 `gorm:"autoCreateTime" json:"createdAt"`
-	UpdatedAt   time.Time                 `gorm:"autoUpdateTime" json:"updatedAt"`
+	InputFingerprint string                    `gorm:"not null;default:''" json:"-"`
+	ID               string                    `gorm:"type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
+	UserID           string                    `gorm:"not null" json:"userId"`
+	SubjectType      enums.FeedbackSubjectType `gorm:"not null" json:"subjectType"`
+	SubjectID        string                    `gorm:"not null" json:"subjectId"`
+	Payload          TurnFeedback              `gorm:"type:jsonb;not null" json:"payload"`
+	CreatedAt        time.Time                 `gorm:"autoCreateTime" json:"createdAt"`
+	UpdatedAt        time.Time                 `gorm:"autoUpdateTime" json:"updatedAt"`
 }
 
 func (Feedback) TableName() string { return "feedbacks" }

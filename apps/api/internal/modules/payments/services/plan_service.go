@@ -11,7 +11,6 @@ import (
 	"engflex-api/internal/database/repositories"
 	"engflex-api/internal/logger"
 	"engflex-api/internal/modules/payments/dtos/requests"
-	"engflex-api/internal/modules/payments/dtos/responses"
 )
 
 // PlanService owns the admin-editable price of each fixed-duration
@@ -19,11 +18,11 @@ import (
 // values (migration-seeded) — List/Update only, no Create/Delete.
 type PlanService interface {
 	// List returns every plan, active or not (admin view).
-	List(ctx context.Context) ([]*responses.Plan, error)
+	List(ctx context.Context) ([]*models.Plan, error)
 	// ListActive returns only plans the learner can currently buy
 	// (public pricing page).
-	ListActive(ctx context.Context) ([]*responses.Plan, error)
-	Update(ctx context.Context, plan enums.SubscriptionPlan, req requests.UpdatePlan) (*responses.Plan, error)
+	ListActive(ctx context.Context) ([]*models.Plan, error)
+	Update(ctx context.Context, plan enums.SubscriptionPlan, req requests.UpdatePlan) (*models.Plan, error)
 }
 
 type planService struct {
@@ -35,49 +34,36 @@ func NewPlanService(repo repositories.PlanRepository) PlanService {
 	return &planService{repo: repo}
 }
 
-func toPlanResponse(m *models.Plan) *responses.Plan {
-	return &responses.Plan{
-		Plan:      m.Plan,
-		Months:    m.Months,
-		Amount:    m.Amount,
-		Currency:  m.Currency,
-		IsActive:  m.IsActive,
-		UpdatedAt: m.UpdatedAt,
-	}
-}
-
-func (s *planService) List(ctx context.Context) ([]*responses.Plan, error) {
+func (s *planService) List(ctx context.Context) ([]*models.Plan, error) {
 	items, err := s.repo.List(ctx)
 	if err != nil {
 		appErr := common.FromDBError(err, "plan")
 		logger.Report(ctx, "list plans failed", appErr)
 		return nil, appErr
 	}
-	out := make([]*responses.Plan, 0, len(items))
-	for _, m := range items {
-		out = append(out, toPlanResponse(m))
-	}
-	return out, nil
+	slog.InfoContext(ctx, "plan list completed", "count", len(items))
+	return items, nil
 }
 
-func (s *planService) ListActive(ctx context.Context) ([]*responses.Plan, error) {
+func (s *planService) ListActive(ctx context.Context) ([]*models.Plan, error) {
 	items, err := s.repo.List(ctx)
 	if err != nil {
 		appErr := common.FromDBError(err, "plan")
 		logger.Report(ctx, "list active plans failed", appErr)
 		return nil, appErr
 	}
-	out := make([]*responses.Plan, 0, len(items))
+	out := make([]*models.Plan, 0, len(items))
 	for _, m := range items {
 		if !m.IsActive {
 			continue
 		}
-		out = append(out, toPlanResponse(m))
+		out = append(out, m)
 	}
+	slog.InfoContext(ctx, "plan list completed", "count", len(out))
 	return out, nil
 }
 
-func (s *planService) Update(ctx context.Context, plan enums.SubscriptionPlan, req requests.UpdatePlan) (*responses.Plan, error) {
+func (s *planService) Update(ctx context.Context, plan enums.SubscriptionPlan, req requests.UpdatePlan) (*models.Plan, error) {
 	m := &models.Plan{
 		Plan:     plan,
 		Months:   req.Months,
@@ -97,5 +83,5 @@ func (s *planService) Update(ctx context.Context, plan enums.SubscriptionPlan, r
 		return nil, appErr
 	}
 	slog.InfoContext(ctx, "plan updated", "plan", plan, "amount", req.Amount, "months", req.Months, "is_active", req.IsActive)
-	return toPlanResponse(updated), nil
+	return updated, nil
 }

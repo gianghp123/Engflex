@@ -1,7 +1,8 @@
-import type { GrantSubscription } from "@engflex/contracts";
+import type { AttemptType, GrantSubscription } from "@engflex/contracts";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
 	grantSubscription,
+	listUserAttempts,
 	listUsers,
 	revokeSubscription,
 	updateUserRole,
@@ -10,6 +11,12 @@ import {
 const keys = {
 	list: (page: number, pageSize: number, search: string) =>
 		["admin", "users", page, pageSize, search] as const,
+	attempts: (
+		userId: string,
+		page: number,
+		pageSize: number,
+		type?: AttemptType,
+	) => ["admin", "users", userId, "attempts", page, pageSize, type] as const,
 };
 
 export function useAdminUsers(page: number, pageSize: number, search: string) {
@@ -19,13 +26,30 @@ export function useAdminUsers(page: number, pageSize: number, search: string) {
 	});
 }
 
+export function useAdminUserAttempts(
+	userId: string,
+	page: number,
+	pageSize: number,
+	type?: AttemptType,
+) {
+	return useQuery({
+		queryKey: keys.attempts(userId, page, pageSize, type),
+		queryFn: () => listUserAttempts(userId, page, pageSize, type),
+		enabled: Boolean(userId),
+	});
+}
+
 export function useUpdateUserRole() {
 	const queryClient = useQueryClient();
 	return useMutation({
 		mutationFn: ({ id, role }: { id: string; role: string }) =>
 			updateUserRole(id, role),
 		onSuccess: () =>
-			queryClient.invalidateQueries({ queryKey: ["admin", "users"] }),
+			Promise.all([
+				queryClient.invalidateQueries({ queryKey: ["admin", "users"] }),
+				queryClient.invalidateQueries({ queryKey: ["admin", "premium"] }),
+				queryClient.invalidateQueries({ queryKey: ["payments"] }),
+			]),
 	});
 }
 
@@ -40,7 +64,11 @@ export function useGrantSubscription() {
 			body: GrantSubscription;
 		}) => grantSubscription(userId, body),
 		onSuccess: () =>
-			queryClient.invalidateQueries({ queryKey: ["admin", "users"] }),
+			Promise.all([
+				queryClient.invalidateQueries({ queryKey: ["admin", "users"] }),
+				queryClient.invalidateQueries({ queryKey: ["admin", "premium"] }),
+				queryClient.invalidateQueries({ queryKey: ["payments"] }),
+			]),
 	});
 }
 
@@ -49,6 +77,10 @@ export function useRevokeSubscription() {
 	return useMutation({
 		mutationFn: (userId: string) => revokeSubscription(userId),
 		onSuccess: () =>
-			queryClient.invalidateQueries({ queryKey: ["admin", "users"] }),
+			Promise.all([
+				queryClient.invalidateQueries({ queryKey: ["admin", "users"] }),
+				queryClient.invalidateQueries({ queryKey: ["admin", "premium"] }),
+				queryClient.invalidateQueries({ queryKey: ["payments"] }),
+			]),
 	});
 }

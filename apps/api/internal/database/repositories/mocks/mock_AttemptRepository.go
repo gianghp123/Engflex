@@ -51,6 +51,78 @@ func (_m *MockAttemptRepository) EXPECT() *MockAttemptRepository_Expecter {
 	return &MockAttemptRepository_Expecter{mock: &_m.Mock}
 }
 
+// CountByUser provides a mock function for the type MockAttemptRepository
+func (_mock *MockAttemptRepository) CountByUser(ctx context.Context, userID string, attemptType *enums.AttemptType) (int64, error) {
+	ret := _mock.Called(ctx, userID, attemptType)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CountByUser")
+	}
+
+	var r0 int64
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, *enums.AttemptType) (int64, error)); ok {
+		return returnFunc(ctx, userID, attemptType)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, *enums.AttemptType) int64); ok {
+		r0 = returnFunc(ctx, userID, attemptType)
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, *enums.AttemptType) error); ok {
+		r1 = returnFunc(ctx, userID, attemptType)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockAttemptRepository_CountByUser_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CountByUser'
+type MockAttemptRepository_CountByUser_Call struct {
+	*mock.Call
+}
+
+// CountByUser is a helper method to define mock.On call
+//   - ctx context.Context
+//   - userID string
+//   - attemptType *enums.AttemptType
+func (_e *MockAttemptRepository_Expecter) CountByUser(ctx any, userID any, attemptType any) *MockAttemptRepository_CountByUser_Call {
+	return &MockAttemptRepository_CountByUser_Call{Call: _e.mock.On("CountByUser", ctx, userID, attemptType)}
+}
+
+func (_c *MockAttemptRepository_CountByUser_Call) Run(run func(ctx context.Context, userID string, attemptType *enums.AttemptType)) *MockAttemptRepository_CountByUser_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 *enums.AttemptType
+		if args[2] != nil {
+			arg2 = args[2].(*enums.AttemptType)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockAttemptRepository_CountByUser_Call) Return(n int64, err error) *MockAttemptRepository_CountByUser_Call {
+	_c.Call.Return(n, err)
+	return _c
+}
+
+func (_c *MockAttemptRepository_CountByUser_Call) RunAndReturn(run func(ctx context.Context, userID string, attemptType *enums.AttemptType) (int64, error)) *MockAttemptRepository_CountByUser_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // CountCompleted provides a mock function for the type MockAttemptRepository
 func (_mock *MockAttemptRepository) CountCompleted(ctx context.Context, userID string) (int64, error) {
 	ret := _mock.Called(ctx, userID)
@@ -236,6 +308,63 @@ func (_c *MockAttemptRepository_Create_Call) Return(err error) *MockAttemptRepos
 }
 
 func (_c *MockAttemptRepository_Create_Call) RunAndReturn(run func(ctx context.Context, m *models.Attempt) error) *MockAttemptRepository_Create_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// CreateOpen provides a mock function for the type MockAttemptRepository
+func (_mock *MockAttemptRepository) CreateOpen(ctx context.Context, m *models.Attempt) error {
+	ret := _mock.Called(ctx, m)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CreateOpen")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *models.Attempt) error); ok {
+		r0 = returnFunc(ctx, m)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockAttemptRepository_CreateOpen_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CreateOpen'
+type MockAttemptRepository_CreateOpen_Call struct {
+	*mock.Call
+}
+
+// CreateOpen is a helper method to define mock.On call
+//   - ctx context.Context
+//   - m *models.Attempt
+func (_e *MockAttemptRepository_Expecter) CreateOpen(ctx any, m any) *MockAttemptRepository_CreateOpen_Call {
+	return &MockAttemptRepository_CreateOpen_Call{Call: _e.mock.On("CreateOpen", ctx, m)}
+}
+
+func (_c *MockAttemptRepository_CreateOpen_Call) Run(run func(ctx context.Context, m *models.Attempt)) *MockAttemptRepository_CreateOpen_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 *models.Attempt
+		if args[1] != nil {
+			arg1 = args[1].(*models.Attempt)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockAttemptRepository_CreateOpen_Call) Return(err error) *MockAttemptRepository_CreateOpen_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockAttemptRepository_CreateOpen_Call) RunAndReturn(run func(ctx context.Context, m *models.Attempt) error) *MockAttemptRepository_CreateOpen_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -524,6 +653,74 @@ func (_c *MockAttemptRepository_GetExamStats_Call) RunAndReturn(run func(ctx con
 	return _c
 }
 
+// GetForUpdate provides a mock function for the type MockAttemptRepository
+func (_mock *MockAttemptRepository) GetForUpdate(ctx context.Context, id string) (*models.Attempt, error) {
+	ret := _mock.Called(ctx, id)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetForUpdate")
+	}
+
+	var r0 *models.Attempt
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) (*models.Attempt, error)); ok {
+		return returnFunc(ctx, id)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) *models.Attempt); ok {
+		r0 = returnFunc(ctx, id)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.Attempt)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = returnFunc(ctx, id)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockAttemptRepository_GetForUpdate_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetForUpdate'
+type MockAttemptRepository_GetForUpdate_Call struct {
+	*mock.Call
+}
+
+// GetForUpdate is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id string
+func (_e *MockAttemptRepository_Expecter) GetForUpdate(ctx any, id any) *MockAttemptRepository_GetForUpdate_Call {
+	return &MockAttemptRepository_GetForUpdate_Call{Call: _e.mock.On("GetForUpdate", ctx, id)}
+}
+
+func (_c *MockAttemptRepository_GetForUpdate_Call) Run(run func(ctx context.Context, id string)) *MockAttemptRepository_GetForUpdate_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockAttemptRepository_GetForUpdate_Call) Return(attempt *models.Attempt, err error) *MockAttemptRepository_GetForUpdate_Call {
+	_c.Call.Return(attempt, err)
+	return _c
+}
+
+func (_c *MockAttemptRepository_GetForUpdate_Call) RunAndReturn(run func(ctx context.Context, id string) (*models.Attempt, error)) *MockAttemptRepository_GetForUpdate_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetOpenAttempt provides a mock function for the type MockAttemptRepository
 func (_mock *MockAttemptRepository) GetOpenAttempt(ctx context.Context, userID string, lessonID string) (*models.Attempt, error) {
 	ret := _mock.Called(ctx, userID, lessonID)
@@ -594,6 +791,80 @@ func (_c *MockAttemptRepository_GetOpenAttempt_Call) Return(attempt *models.Atte
 }
 
 func (_c *MockAttemptRepository_GetOpenAttempt_Call) RunAndReturn(run func(ctx context.Context, userID string, lessonID string) (*models.Attempt, error)) *MockAttemptRepository_GetOpenAttempt_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetOpenLessonGraph provides a mock function for the type MockAttemptRepository
+func (_mock *MockAttemptRepository) GetOpenLessonGraph(ctx context.Context, userID string, lessonID string) (*models.Attempt, error) {
+	ret := _mock.Called(ctx, userID, lessonID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetOpenLessonGraph")
+	}
+
+	var r0 *models.Attempt
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string) (*models.Attempt, error)); ok {
+		return returnFunc(ctx, userID, lessonID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string) *models.Attempt); ok {
+		r0 = returnFunc(ctx, userID, lessonID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.Attempt)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, string) error); ok {
+		r1 = returnFunc(ctx, userID, lessonID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockAttemptRepository_GetOpenLessonGraph_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetOpenLessonGraph'
+type MockAttemptRepository_GetOpenLessonGraph_Call struct {
+	*mock.Call
+}
+
+// GetOpenLessonGraph is a helper method to define mock.On call
+//   - ctx context.Context
+//   - userID string
+//   - lessonID string
+func (_e *MockAttemptRepository_Expecter) GetOpenLessonGraph(ctx any, userID any, lessonID any) *MockAttemptRepository_GetOpenLessonGraph_Call {
+	return &MockAttemptRepository_GetOpenLessonGraph_Call{Call: _e.mock.On("GetOpenLessonGraph", ctx, userID, lessonID)}
+}
+
+func (_c *MockAttemptRepository_GetOpenLessonGraph_Call) Run(run func(ctx context.Context, userID string, lessonID string)) *MockAttemptRepository_GetOpenLessonGraph_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 string
+		if args[2] != nil {
+			arg2 = args[2].(string)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockAttemptRepository_GetOpenLessonGraph_Call) Return(attempt *models.Attempt, err error) *MockAttemptRepository_GetOpenLessonGraph_Call {
+	_c.Call.Return(attempt, err)
+	return _c
+}
+
+func (_c *MockAttemptRepository_GetOpenLessonGraph_Call) RunAndReturn(run func(ctx context.Context, userID string, lessonID string) (*models.Attempt, error)) *MockAttemptRepository_GetOpenLessonGraph_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -674,6 +945,92 @@ func (_c *MockAttemptRepository_GetVideoAttempt_Call) Return(attempt *models.Att
 }
 
 func (_c *MockAttemptRepository_GetVideoAttempt_Call) RunAndReturn(run func(ctx context.Context, userID string, videoExerciseID string, attemptType enums.AttemptType) (*models.Attempt, error)) *MockAttemptRepository_GetVideoAttempt_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// ListByUser provides a mock function for the type MockAttemptRepository
+func (_mock *MockAttemptRepository) ListByUser(ctx context.Context, userID string, attemptType *enums.AttemptType, limit int, offset int) ([]*models.Attempt, error) {
+	ret := _mock.Called(ctx, userID, attemptType, limit, offset)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ListByUser")
+	}
+
+	var r0 []*models.Attempt
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, *enums.AttemptType, int, int) ([]*models.Attempt, error)); ok {
+		return returnFunc(ctx, userID, attemptType, limit, offset)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, *enums.AttemptType, int, int) []*models.Attempt); ok {
+		r0 = returnFunc(ctx, userID, attemptType, limit, offset)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.Attempt)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, *enums.AttemptType, int, int) error); ok {
+		r1 = returnFunc(ctx, userID, attemptType, limit, offset)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockAttemptRepository_ListByUser_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ListByUser'
+type MockAttemptRepository_ListByUser_Call struct {
+	*mock.Call
+}
+
+// ListByUser is a helper method to define mock.On call
+//   - ctx context.Context
+//   - userID string
+//   - attemptType *enums.AttemptType
+//   - limit int
+//   - offset int
+func (_e *MockAttemptRepository_Expecter) ListByUser(ctx any, userID any, attemptType any, limit any, offset any) *MockAttemptRepository_ListByUser_Call {
+	return &MockAttemptRepository_ListByUser_Call{Call: _e.mock.On("ListByUser", ctx, userID, attemptType, limit, offset)}
+}
+
+func (_c *MockAttemptRepository_ListByUser_Call) Run(run func(ctx context.Context, userID string, attemptType *enums.AttemptType, limit int, offset int)) *MockAttemptRepository_ListByUser_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 *enums.AttemptType
+		if args[2] != nil {
+			arg2 = args[2].(*enums.AttemptType)
+		}
+		var arg3 int
+		if args[3] != nil {
+			arg3 = args[3].(int)
+		}
+		var arg4 int
+		if args[4] != nil {
+			arg4 = args[4].(int)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+			arg4,
+		)
+	})
+	return _c
+}
+
+func (_c *MockAttemptRepository_ListByUser_Call) Return(attempts []*models.Attempt, err error) *MockAttemptRepository_ListByUser_Call {
+	_c.Call.Return(attempts, err)
+	return _c
+}
+
+func (_c *MockAttemptRepository_ListByUser_Call) RunAndReturn(run func(ctx context.Context, userID string, attemptType *enums.AttemptType, limit int, offset int) ([]*models.Attempt, error)) *MockAttemptRepository_ListByUser_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -974,6 +1331,74 @@ func (_c *MockAttemptRepository_ListLessonAttempts_Call) RunAndReturn(run func(c
 	return _c
 }
 
+// ListLessonProgress provides a mock function for the type MockAttemptRepository
+func (_mock *MockAttemptRepository) ListLessonProgress(ctx context.Context, userID string) ([]*models.Attempt, error) {
+	ret := _mock.Called(ctx, userID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ListLessonProgress")
+	}
+
+	var r0 []*models.Attempt
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) ([]*models.Attempt, error)); ok {
+		return returnFunc(ctx, userID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) []*models.Attempt); ok {
+		r0 = returnFunc(ctx, userID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.Attempt)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = returnFunc(ctx, userID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockAttemptRepository_ListLessonProgress_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ListLessonProgress'
+type MockAttemptRepository_ListLessonProgress_Call struct {
+	*mock.Call
+}
+
+// ListLessonProgress is a helper method to define mock.On call
+//   - ctx context.Context
+//   - userID string
+func (_e *MockAttemptRepository_Expecter) ListLessonProgress(ctx any, userID any) *MockAttemptRepository_ListLessonProgress_Call {
+	return &MockAttemptRepository_ListLessonProgress_Call{Call: _e.mock.On("ListLessonProgress", ctx, userID)}
+}
+
+func (_c *MockAttemptRepository_ListLessonProgress_Call) Run(run func(ctx context.Context, userID string)) *MockAttemptRepository_ListLessonProgress_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockAttemptRepository_ListLessonProgress_Call) Return(attempts []*models.Attempt, err error) *MockAttemptRepository_ListLessonProgress_Call {
+	_c.Call.Return(attempts, err)
+	return _c
+}
+
+func (_c *MockAttemptRepository_ListLessonProgress_Call) RunAndReturn(run func(ctx context.Context, userID string) ([]*models.Attempt, error)) *MockAttemptRepository_ListLessonProgress_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // SaveExamAttempt provides a mock function for the type MockAttemptRepository
 func (_mock *MockAttemptRepository) SaveExamAttempt(context1 context.Context, attempt *models.Attempt, n int) error {
 	ret := _mock.Called(context1, attempt, n)
@@ -1033,6 +1458,69 @@ func (_c *MockAttemptRepository_SaveExamAttempt_Call) Return(err error) *MockAtt
 }
 
 func (_c *MockAttemptRepository_SaveExamAttempt_Call) RunAndReturn(run func(context1 context.Context, attempt *models.Attempt, n int) error) *MockAttemptRepository_SaveExamAttempt_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// SaveVideo provides a mock function for the type MockAttemptRepository
+func (_mock *MockAttemptRepository) SaveVideo(ctx context.Context, m *models.Attempt, revision int) error {
+	ret := _mock.Called(ctx, m, revision)
+
+	if len(ret) == 0 {
+		panic("no return value specified for SaveVideo")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *models.Attempt, int) error); ok {
+		r0 = returnFunc(ctx, m, revision)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockAttemptRepository_SaveVideo_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'SaveVideo'
+type MockAttemptRepository_SaveVideo_Call struct {
+	*mock.Call
+}
+
+// SaveVideo is a helper method to define mock.On call
+//   - ctx context.Context
+//   - m *models.Attempt
+//   - revision int
+func (_e *MockAttemptRepository_Expecter) SaveVideo(ctx any, m any, revision any) *MockAttemptRepository_SaveVideo_Call {
+	return &MockAttemptRepository_SaveVideo_Call{Call: _e.mock.On("SaveVideo", ctx, m, revision)}
+}
+
+func (_c *MockAttemptRepository_SaveVideo_Call) Run(run func(ctx context.Context, m *models.Attempt, revision int)) *MockAttemptRepository_SaveVideo_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 *models.Attempt
+		if args[1] != nil {
+			arg1 = args[1].(*models.Attempt)
+		}
+		var arg2 int
+		if args[2] != nil {
+			arg2 = args[2].(int)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockAttemptRepository_SaveVideo_Call) Return(err error) *MockAttemptRepository_SaveVideo_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockAttemptRepository_SaveVideo_Call) RunAndReturn(run func(ctx context.Context, m *models.Attempt, revision int) error) *MockAttemptRepository_SaveVideo_Call {
 	_c.Call.Return(run)
 	return _c
 }

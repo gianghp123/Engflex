@@ -6,7 +6,9 @@ import (
 	"engflex-api/internal/common"
 	"engflex-api/internal/common/enums"
 	"engflex-api/internal/modules/payments/dtos/requests"
+	"engflex-api/internal/modules/payments/dtos/responses"
 	"engflex-api/internal/modules/payments/services"
+	"engflex-api/internal/utils"
 )
 
 // PlanController exposes admin CRUD over the three fixed-duration
@@ -33,7 +35,9 @@ func (h *PlanController) List(c *gin.Context) {
 		common.Fail(c, err)
 		return
 	}
-	common.OK(c, "plans listed", items)
+	var dto []*responses.Plan
+	_ = utils.MapSlice(&dto, items)
+	common.OK(c, "plans listed", dto)
 }
 
 // Update godoc
@@ -49,7 +53,7 @@ func (h *PlanController) List(c *gin.Context) {
 func (h *PlanController) Update(c *gin.Context) {
 	var req requests.UpdatePlan
 	if err := c.ShouldBindJSON(&req); err != nil {
-		common.Fail(c, common.BadRequest(err.Error()))
+		common.Fail(c, common.InvalidRequest(err))
 		return
 	}
 	plan := enums.SubscriptionPlan(c.Param("plan"))
@@ -58,5 +62,7 @@ func (h *PlanController) Update(c *gin.Context) {
 		common.Fail(c, err)
 		return
 	}
-	common.OK(c, "plan updated", updated)
+	var dto responses.Plan
+	_ = utils.Map(&dto, updated)
+	common.OK(c, "plan updated", dto)
 }

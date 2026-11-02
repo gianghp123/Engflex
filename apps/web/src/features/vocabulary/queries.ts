@@ -9,7 +9,6 @@ import {
 	createVocabularyItem,
 	getVocabularyItem,
 	listUserVocabulary,
-	listVocabularyItems,
 	saveUserVocabulary,
 	unsaveUserVocabulary,
 } from "#/features/vocabulary/service";
@@ -46,13 +45,6 @@ function userVocabularyListQueryOptions() {
 	};
 }
 
-function catalogQueryOptions() {
-	return {
-		queryKey: vocabularyKeys.catalog,
-		queryFn: () => listVocabularyItems(1, CATALOG_PAGE_SIZE),
-	};
-}
-
 function attachUserState(
 	item: VocabularyItem,
 	state: UserVocabularyState | undefined,
@@ -65,21 +57,15 @@ function attachUserState(
  *  dropped rather than rendered half-empty. */
 export function useMyVocabularyItems() {
 	const savedQuery = useQuery(userVocabularyListQueryOptions());
-	const catalogQuery = useQuery(catalogQueryOptions());
-
-	const saved = savedQuery.data?.items ?? [];
-	const catalog = catalogQuery.data?.items ?? [];
-	const catalogById = new Map(catalog.map((item) => [item.id, item]));
-
-	const items: VocabularyItem[] = saved.flatMap((state) => {
-		const item = catalogById.get(state.itemId);
-		return item ? [attachUserState(item, state)] : [];
-	});
+	const items = (savedQuery.data?.items ?? []).map((state) => ({
+		...state.item,
+		userState: state,
+	}));
 
 	return {
 		items,
-		isPending: savedQuery.isPending || catalogQuery.isPending,
-		isError: savedQuery.isError || catalogQuery.isError,
+		isPending: savedQuery.isPending,
+		isError: savedQuery.isError,
 	};
 }
 

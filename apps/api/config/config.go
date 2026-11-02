@@ -31,7 +31,7 @@ func Load(dotEnvPaths ...string) (Config, error) {
 	}
 
 	server := LoadServerConfig()
-	return Config{
+	cfg := Config{
 		Server:    server,
 		Database:  LoadDatabaseConfig(),
 		Auth:      LoadAuthConfig(),
@@ -44,5 +44,6 @@ func Load(dotEnvPaths ...string) (Config, error) {
 		RateLimit: LoadRateLimitConfig(),
 		Media:     LoadMediaConfig(),
 		Payment:   LoadPaymentConfig(),
-	}, nil
+	}
+	return cfg, cfg.Validate()
 }

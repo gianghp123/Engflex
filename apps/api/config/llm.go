@@ -24,7 +24,7 @@ func LoadLLMConfig() LLMConfig {
 	}
 	return LLMConfig{
 		BaseURL: utils.GetEnv("LLM_BASE_URL", "https://api.openai.com/v1"),
-		APIKey:  utils.MustGetEnv("LLM_API_KEY"),
+		APIKey:  utils.GetEnv("LLM_API_KEY", ""),
 		Model:   model,
 		Timeout: time.Duration(utils.GetEnvInt("LLM_TIMEOUT_MS", 60000)) * time.Millisecond,
 	}

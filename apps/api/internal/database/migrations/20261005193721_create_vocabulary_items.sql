@@ -8,6 +8,8 @@ CREATE TABLE vocabulary_items (
     term_key           text GENERATED ALWAYS AS
         (lower(regexp_replace(btrim(term), '\s+', ' ', 'g'))) STORED,
     definition         text NOT NULL DEFAULT '',
+    domain             text CONSTRAINT chk_vocabulary_items_domain CHECK (domain IN
+        ('backend_db', 'distributed_systems', 'devops_cloud', 'frontend_ui', 'ai_ml')),
     cefr               text NOT NULL CONSTRAINT chk_vocabulary_items_cefr
         CHECK (cefr IN ('A1', 'A2', 'B1', 'B2', 'C1', 'C2')),
     part_of_speech     text CONSTRAINT chk_vocabulary_items_part_of_speech

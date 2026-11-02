@@ -76,7 +76,7 @@ def _install(*, records=(), session=True) -> _Harness:
 
 
 def _post(action: str, **body):
-    return TestClient(runner_app).post(
+    return TestClient(runner_app, headers={"X-Internal-Secret": "test"}).post(
         "/transcript", json={"conversationId": CONV, "action": action, **body}
     )
 
@@ -89,16 +89,13 @@ def _clean_registry():
 
 @pytest.fixture(autouse=True)
 def _capture_turn_posts(monkeypatch):
-    """Record the engine's turn posts instead of calling Go."""
-    from clients import go_turns
-
-    posted: list[list[object]] = []
-
-    async def fake_post(conversation_id, records):
-        posted.append(list(records))
-        return True
-
-    monkeypatch.setattr(go_turns, "post_turn_batch", fake_post)
+    """Observe copied snapshots at the mutation boundary, including corrections."""
+    posted = []
+    original = TurnCollector._changed
+    def changed(self):
+        original(self)
+        posted.append(list(self.snapshot()[1]))
+    monkeypatch.setattr(TurnCollector, "_changed", changed)
     return posted
 
 
@@ -209,23 +206,18 @@ def test_send_reposts_the_corrected_turn_for_go(_capture_turn_posts):
     _install(records=RECORDS)
     _post("review")
     assert _post("send", text="i went yesterday").status_code == 200
-    assert len(_capture_turn_posts) == 1
-    (record,) = _capture_turn_posts[0]
+    (record,) = _capture_turn_posts[-1]
     assert record.position == 1
     assert record.text == "i went yesterday"
 
 
-def test_a_failed_repost_does_not_fail_the_correction(monkeypatch):
-    from clients import go_turns
-
-    async def boom(conversation_id, records):
-        raise RuntimeError("go is down")
-
-    monkeypatch.setattr(go_turns, "post_turn_batch", boom)
+def test_correction_notifies_the_session_publisher():
     h = _install(records=RECORDS)
+    notified = []
+    h.collector.on_change = lambda: notified.append(h.collector.snapshot())
     _post("review")
     assert _post("send", text="i went yesterday").status_code == 200
-    assert h.texts() == ["i went yesterday"]
+    assert notified[-1][1][0].text == "i went yesterday"
 
 
 def test_the_regenerated_reply_replaces_the_stale_one_on_the_reserved_slot():

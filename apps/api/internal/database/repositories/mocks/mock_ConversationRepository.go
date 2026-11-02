@@ -51,6 +51,104 @@ func (_m *MockConversationRepository) EXPECT() *MockConversationRepository_Expec
 	return &MockConversationRepository_Expecter{mock: &_m.Mock}
 }
 
+// ApplySnapshot provides a mock function for the type MockConversationRepository
+func (_mock *MockConversationRepository) ApplySnapshot(ctx context.Context, id string, sessionID string, revision int64, fingerprint string, turns []*models.ConversationTurn, duration *int) (*models.Conversation, error) {
+	ret := _mock.Called(ctx, id, sessionID, revision, fingerprint, turns, duration)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ApplySnapshot")
+	}
+
+	var r0 *models.Conversation
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string, int64, string, []*models.ConversationTurn, *int) (*models.Conversation, error)); ok {
+		return returnFunc(ctx, id, sessionID, revision, fingerprint, turns, duration)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string, int64, string, []*models.ConversationTurn, *int) *models.Conversation); ok {
+		r0 = returnFunc(ctx, id, sessionID, revision, fingerprint, turns, duration)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.Conversation)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, string, int64, string, []*models.ConversationTurn, *int) error); ok {
+		r1 = returnFunc(ctx, id, sessionID, revision, fingerprint, turns, duration)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockConversationRepository_ApplySnapshot_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ApplySnapshot'
+type MockConversationRepository_ApplySnapshot_Call struct {
+	*mock.Call
+}
+
+// ApplySnapshot is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id string
+//   - sessionID string
+//   - revision int64
+//   - fingerprint string
+//   - turns []*models.ConversationTurn
+//   - duration *int
+func (_e *MockConversationRepository_Expecter) ApplySnapshot(ctx any, id any, sessionID any, revision any, fingerprint any, turns any, duration any) *MockConversationRepository_ApplySnapshot_Call {
+	return &MockConversationRepository_ApplySnapshot_Call{Call: _e.mock.On("ApplySnapshot", ctx, id, sessionID, revision, fingerprint, turns, duration)}
+}
+
+func (_c *MockConversationRepository_ApplySnapshot_Call) Run(run func(ctx context.Context, id string, sessionID string, revision int64, fingerprint string, turns []*models.ConversationTurn, duration *int)) *MockConversationRepository_ApplySnapshot_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 string
+		if args[2] != nil {
+			arg2 = args[2].(string)
+		}
+		var arg3 int64
+		if args[3] != nil {
+			arg3 = args[3].(int64)
+		}
+		var arg4 string
+		if args[4] != nil {
+			arg4 = args[4].(string)
+		}
+		var arg5 []*models.ConversationTurn
+		if args[5] != nil {
+			arg5 = args[5].([]*models.ConversationTurn)
+		}
+		var arg6 *int
+		if args[6] != nil {
+			arg6 = args[6].(*int)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+			arg4,
+			arg5,
+			arg6,
+		)
+	})
+	return _c
+}
+
+func (_c *MockConversationRepository_ApplySnapshot_Call) Return(conversation *models.Conversation, err error) *MockConversationRepository_ApplySnapshot_Call {
+	_c.Call.Return(conversation, err)
+	return _c
+}
+
+func (_c *MockConversationRepository_ApplySnapshot_Call) RunAndReturn(run func(ctx context.Context, id string, sessionID string, revision int64, fingerprint string, turns []*models.ConversationTurn, duration *int) (*models.Conversation, error)) *MockConversationRepository_ApplySnapshot_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // CountByUser provides a mock function for the type MockConversationRepository
 func (_mock *MockConversationRepository) CountByUser(ctx context.Context, userID string, scenarioID *string) (int64, error) {
 	ret := _mock.Called(ctx, userID, scenarioID)
@@ -755,6 +853,75 @@ func (_c *MockConversationRepository_SetStatus_Call) Return(n int64, err error) 
 }
 
 func (_c *MockConversationRepository_SetStatus_Call) RunAndReturn(run func(ctx context.Context, id string, from enums.ConversationStatus, to enums.ConversationStatus) (int64, error)) *MockConversationRepository_SetStatus_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// StoreAnalysis provides a mock function for the type MockConversationRepository
+func (_mock *MockConversationRepository) StoreAnalysis(ctx context.Context, id string, revision int64, feedback *models.Feedback) error {
+	ret := _mock.Called(ctx, id, revision, feedback)
+
+	if len(ret) == 0 {
+		panic("no return value specified for StoreAnalysis")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, int64, *models.Feedback) error); ok {
+		r0 = returnFunc(ctx, id, revision, feedback)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockConversationRepository_StoreAnalysis_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'StoreAnalysis'
+type MockConversationRepository_StoreAnalysis_Call struct {
+	*mock.Call
+}
+
+// StoreAnalysis is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id string
+//   - revision int64
+//   - feedback *models.Feedback
+func (_e *MockConversationRepository_Expecter) StoreAnalysis(ctx any, id any, revision any, feedback any) *MockConversationRepository_StoreAnalysis_Call {
+	return &MockConversationRepository_StoreAnalysis_Call{Call: _e.mock.On("StoreAnalysis", ctx, id, revision, feedback)}
+}
+
+func (_c *MockConversationRepository_StoreAnalysis_Call) Run(run func(ctx context.Context, id string, revision int64, feedback *models.Feedback)) *MockConversationRepository_StoreAnalysis_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 int64
+		if args[2] != nil {
+			arg2 = args[2].(int64)
+		}
+		var arg3 *models.Feedback
+		if args[3] != nil {
+			arg3 = args[3].(*models.Feedback)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+		)
+	})
+	return _c
+}
+
+func (_c *MockConversationRepository_StoreAnalysis_Call) Return(err error) *MockConversationRepository_StoreAnalysis_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockConversationRepository_StoreAnalysis_Call) RunAndReturn(run func(ctx context.Context, id string, revision int64, feedback *models.Feedback) error) *MockConversationRepository_StoreAnalysis_Call {
 	_c.Call.Return(run)
 	return _c
 }

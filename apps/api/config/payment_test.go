@@ -34,10 +34,10 @@ func TestLoadPaymentConfig(t *testing.T) {
 		assert.Equal(t, "https://app.example.com/return", cfg.VNPayReturnURL)
 	})
 
-	t.Run("panics when hash secret is unset", func(t *testing.T) {
+	t.Run("validation rejects missing credentials", func(t *testing.T) {
 		t.Setenv("VNPAY_TMN_CODE", "TMN01")
 		t.Setenv("VNPAY_HASH_SECRET", "")
 
-		require.Panics(t, func() { LoadPaymentConfig() })
+		require.ErrorContains(t, (Config{Payment: LoadPaymentConfig()}).Validate(), "VNPAY_HASH_SECRET")
 	})
 }

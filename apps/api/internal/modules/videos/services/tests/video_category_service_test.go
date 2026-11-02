@@ -100,9 +100,9 @@ func TestVideoCategoryService_ListWithPreview(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			svc, mockRepo := setup(t)
 			if tt.repoErr != nil {
-				mockRepo.On("ListWithPreview", mock.Anything, tt.wantRepoK).Return(nil, tt.repoErr)
+				mockRepo.On("ListWithPracticePreview", mock.Anything, "", tt.wantRepoK).Return(nil, tt.repoErr)
 			} else {
-				mockRepo.On("ListWithPreview", mock.Anything, tt.wantRepoK).Return(categories, nil)
+				mockRepo.On("ListWithPracticePreview", mock.Anything, "", tt.wantRepoK).Return(categories, nil)
 			}
 
 			got, err := svc.ListWithPreview(context.Background(), tt.previewK)

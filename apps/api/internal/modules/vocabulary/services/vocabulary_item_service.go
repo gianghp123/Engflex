@@ -19,7 +19,8 @@ import (
 // words). Update/Delete only ever touch admin-curated entries; a user's
 // custom word is never reachable through them.
 type VocabularyItemService interface {
-	List(ctx context.Context, limit, offset int, isAdmin bool) ([]*models.VocabularyItem, int64, error)
+	CheckAccess(ctx context.Context, userID, id string) error
+	List(ctx context.Context, limit, offset int, isAdmin bool, userID, search string) ([]*models.VocabularyItem, int64, error)
 	GetByID(ctx context.Context, id, userID string, isAdmin bool) (*models.VocabularyItem, error)
 	Create(ctx context.Context, userID string, req requests.CreateVocabularyItem) (*models.VocabularyItem, error)
 	CreateSystemEntry(ctx context.Context, req requests.CreateVocabularyItem) (*models.VocabularyItem, error)
@@ -38,14 +39,14 @@ func NewVocabularyItemService(repo repositories.VocabularyItemRepository, premiu
 	return &vocabularyItemService{repo: repo, premium: premium}
 }
 
-func (s *vocabularyItemService) List(ctx context.Context, limit, offset int, isAdmin bool) ([]*models.VocabularyItem, int64, error) {
-	items, err := s.repo.List(ctx, limit, offset, !isAdmin)
+func (s *vocabularyItemService) List(ctx context.Context, limit, offset int, isAdmin bool, userID, search string) ([]*models.VocabularyItem, int64, error) {
+	items, err := s.repo.List(ctx, limit, offset, !isAdmin, userID, search)
 	if err != nil {
 		appErr := common.FromDBError(err, "vocabulary item")
 		logger.Report(ctx, "list vocabulary items failed", appErr)
 		return nil, 0, appErr
 	}
-	total, err := s.repo.Count(ctx, !isAdmin)
+	total, err := s.repo.Count(ctx, !isAdmin, userID, search)
 	if err != nil {
 		appErr := common.FromDBError(err, "vocabulary item")
 		logger.Report(ctx, "count vocabulary items failed", appErr)
@@ -65,6 +66,9 @@ func (s *vocabularyItemService) GetByID(ctx context.Context, id, userID string, 
 		logger.Report(ctx, "get vocabulary item failed", appErr, "id", id)
 		return nil, appErr
 	}
+	if m.CreatedByUserID != nil && *m.CreatedByUserID != userID {
+		return nil, common.NotFound("vocabulary item not found")
+	}
 	if m.Status != enums.PublishStatusPublished && !isAdmin {
 		return nil, common.NotFound("vocabulary item not found")
 	}
@@ -82,6 +86,12 @@ func (s *vocabularyItemService) Create(ctx context.Context, userID string, req r
 	if err := utils.Map(i, req); err != nil {
 		logger.Report(ctx, "map create vocabulary item failed", err)
 		return nil, common.Internal()
+	}
+	if req.Details != nil {
+		if err := utils.Map(&i.Details, req.Details); err != nil {
+			logger.Report(ctx, "map vocabulary details failed", err)
+			return nil, common.Internal()
+		}
 	}
 	i.CEFR = enums.CEFR(req.CEFR)
 	if req.Domain != nil {
@@ -112,6 +122,12 @@ func (s *vocabularyItemService) CreateSystemEntry(ctx context.Context, req reque
 	if err := utils.Map(i, req); err != nil {
 		logger.Report(ctx, "map create system vocabulary item failed", err)
 		return nil, common.Internal()
+	}
+	if req.Details != nil {
+		if err := utils.Map(&i.Details, req.Details); err != nil {
+			logger.Report(ctx, "map vocabulary details failed", err)
+			return nil, common.Internal()
+		}
 	}
 	i.CEFR = enums.CEFR(req.CEFR)
 	if req.Domain != nil {
@@ -151,6 +167,9 @@ func (s *vocabularyItemService) Update(ctx context.Context, id string, req reque
 	if req.CEFR != nil {
 		i.CEFR = enums.CEFR(*req.CEFR)
 	}
+	if req.DomainSpecified && req.Domain == nil {
+		i.Domain = nil
+	}
 	if req.Domain != nil {
 		d := enums.VocabularyDomain(*req.Domain)
 		i.Domain = &d
@@ -158,8 +177,20 @@ func (s *vocabularyItemService) Update(ctx context.Context, id string, req reque
 	if req.Status != nil {
 		i.Status = *req.Status
 	}
+	if req.PartOfSpeechSpecified && req.PartOfSpeech == nil {
+		i.PartOfSpeech = nil
+	}
+	if req.PartOfSpeech != nil {
+		i.PartOfSpeech = req.PartOfSpeech
+	}
 	if req.IsPremium != nil {
 		i.IsPremium = *req.IsPremium
+	}
+	if req.Details != nil {
+		if err := utils.Map(&i.Details, req.Details); err != nil {
+			logger.Report(ctx, "map vocabulary details failed", err)
+			return nil, common.Internal()
+		}
 	}
 	if err := s.repo.Update(ctx, i); err != nil {
 		appErr := common.FromDBError(err, "vocabulary item")
@@ -187,4 +218,9 @@ func (s *vocabularyItemService) Delete(ctx context.Context, id string) error {
 	}
 	slog.InfoContext(ctx, "vocabulary item deleted", "id", id)
 	return nil
+}
+
+func (s *vocabularyItemService) CheckAccess(ctx context.Context, userID, id string) error {
+	_, err := s.GetByID(ctx, id, userID, common.ActorFromContext(ctx).Admin)
+	return err
 }

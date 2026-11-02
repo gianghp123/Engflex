@@ -2,7 +2,6 @@ package voice
 
 import (
 	"encoding/json"
-	"engflex-api/internal/modules/conversations/dtos/responses"
 	"math"
 )
 
@@ -86,8 +85,8 @@ func downsampleCurve(values []float64) []float64 {
 // groupReferencePhones folds /phonemes tokens into one entry per word:
 // consecutive runs of the same word merge (same word, same phones is
 // display-equivalent), multi-token words concatenate. Never returns nil.
-func groupReferencePhones(phonemes, words []string) []responses.ReferencePhone {
-	out := []responses.ReferencePhone{}
+func groupReferencePhones(phonemes, words []string) []ReferencePhone {
+	out := []ReferencePhone{}
 	for i, word := range words {
 		token := ""
 		if i < len(phonemes) {
@@ -97,7 +96,7 @@ func groupReferencePhones(phonemes, words []string) []responses.ReferencePhone {
 			out[n-1].Phones += token
 			continue
 		}
-		out = append(out, responses.ReferencePhone{Word: word, Phones: token})
+		out = append(out, ReferencePhone{Word: word, Phones: token})
 	}
 	return out
 }
@@ -110,7 +109,7 @@ func heardString(v any) string {
 // mapContainerAssessment ports the old Python mapper onto the wire DTO. A
 // missing differences object yields zero values, never a panic; every list
 // stays non-nil so JSON emits [].
-func mapContainerAssessment(assessmentRaw, phonemesRaw []byte) (*responses.PronounceResult, error) {
+func mapContainerAssessment(assessmentRaw, phonemesRaw []byte) (*PronounceResult, error) {
 	var assessment containerAssessment
 	if err := json.Unmarshal(assessmentRaw, &assessment); err != nil {
 		return nil, err
@@ -121,17 +120,17 @@ func mapContainerAssessment(assessmentRaw, phonemesRaw []byte) (*responses.Prono
 	}
 
 	diffs := assessment.Differences
-	errors := []responses.MispronouncedWord{}
+	errors := []MispronouncedWord{}
 	for _, entry := range diffs.Errors {
-		phones := []responses.PhoneDetail{}
+		phones := []PhoneDetail{}
 		for _, p := range entry.Phones {
-			phones = append(phones, responses.PhoneDetail{
+			phones = append(phones, PhoneDetail{
 				Expected:   p.Expected,
 				Heard:      p.Heard,
 				Confidence: p.Confidence,
 			})
 		}
-		errors = append(errors, responses.MispronouncedWord{
+		errors = append(errors, MispronouncedWord{
 			Word:       entry.Word,
 			Expected:   entry.Expected,
 			Heard:      heardString(entry.Actual),
@@ -140,14 +139,14 @@ func mapContainerAssessment(assessmentRaw, phonemesRaw []byte) (*responses.Prono
 		})
 	}
 
-	return &responses.PronounceResult{
+	return &PronounceResult{
 		Score:            learningScore(diffs.PhonemeErrorRate, diffs.WordErrorRate),
 		Transcription:    assessment.Transcribe,
 		PhonemeErrorRate: diffs.PhonemeErrorRate,
 		WordErrorRate:    diffs.WordErrorRate,
 		AcousticDistance: assessment.AcousticDistance,
 		Errors:           errors,
-		Prosody: responses.Prosody{
+		Prosody: Prosody{
 			F0:     downsampleCurve(assessment.Prosody.F0),
 			Energy: downsampleCurve(assessment.Prosody.Energy),
 		},

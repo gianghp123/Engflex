@@ -26,7 +26,7 @@ def _register() -> None:
 
 def _post_transcribe(audio: bytes, mime: str):
     _register()
-    client = TestClient(runner_app)
+    client = TestClient(runner_app, headers={"X-Internal-Secret": "test"})
     return client.post(
         "/transcribe",
         data={"conversationId": CONV},
@@ -58,7 +58,7 @@ def _heard(transcript: str):
 
 
 def test_unknown_session_is_404():
-    client = TestClient(runner_app)
+    client = TestClient(runner_app, headers={"X-Internal-Secret": "test"})
     resp = client.post(
         "/transcribe",
         data={"conversationId": "nope"},

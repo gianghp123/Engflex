@@ -55,7 +55,7 @@ func (h *PersonaController) List(c *gin.Context) {
 func (h *PersonaController) Create(c *gin.Context) {
 	var req requests.CreatePersona
 	if err := c.ShouldBindJSON(&req); err != nil {
-		common.Fail(c, common.BadRequest(err.Error()))
+		common.Fail(c, common.InvalidRequest(err))
 		return
 	}
 	m, err := h.service.Create(c.Request.Context(), req)
@@ -81,7 +81,7 @@ func (h *PersonaController) Create(c *gin.Context) {
 func (h *PersonaController) Update(c *gin.Context) {
 	var req requests.UpdatePersona
 	if err := c.ShouldBindJSON(&req); err != nil {
-		common.Fail(c, common.BadRequest(err.Error()))
+		common.Fail(c, common.InvalidRequest(err))
 		return
 	}
 	m, err := h.service.Update(c.Request.Context(), c.Param("id"), req)

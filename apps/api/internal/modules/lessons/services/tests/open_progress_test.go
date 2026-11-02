@@ -17,6 +17,7 @@ import (
 	llmmocks "engflex-api/internal/llm/mocks"
 	"engflex-api/internal/modules/lessons/dtos/responses"
 	"engflex-api/internal/modules/lessons/services"
+	"engflex-api/internal/utils"
 	voicemocks "engflex-api/internal/voice/mocks"
 	"engflex-api/internal/voice/pronunciation"
 )
@@ -45,11 +46,12 @@ func TestGetOpenProgress(t *testing.T) {
 			ID: openID, UserID: userID, LessonID: &[]string{lessonID}[0],
 			Type: enums.AttemptTypeLesson, Status: enums.AttemptStatusInProgress,
 			Result: []byte(result),
+			Lesson: &models.Lesson{ID: lessonID, Activities: []*models.LessonActivity{reading, writing}},
 		}
 	}
 	twoOutcomes := `{"` + readID + `":{"type":"reading","score":50,"detail":{"outcomes":[{"index":0,"key":"A","correct":true},{"index":1,"key":"A","correct":false}]}}}`
 	newSvc := func(repo *mocks.MockLessonActivityRepository, attempts *mocks.MockAttemptRepository) services.LessonActivityService {
-		return services.NewLessonActivityService(repo, pronunciation.NewScorer(voicemocks.NewMockPronounceEngine(t)), llmmocks.NewMockLLMClient(t), attempts)
+		return newActivityService(t, repo, pronunciation.NewScorer(voicemocks.NewMockPronounceEngine(t)), llmmocks.NewMockLLMClient(t), attempts)
 	}
 
 	tests := []struct {
@@ -69,7 +71,7 @@ func TestGetOpenProgress(t *testing.T) {
 			name:     "no open attempt",
 			lessonID: lessonID,
 			setup: func(repo *mocks.MockLessonActivityRepository, attempts *mocks.MockAttemptRepository) {
-				attempts.EXPECT().GetOpenAttempt(mock.Anything, userID, lessonID).Return(nil, gorm.ErrRecordNotFound).Once()
+				attempts.EXPECT().GetOpenLessonGraph(mock.Anything, userID, lessonID).Return(nil, gorm.ErrRecordNotFound).Once()
 			},
 			wantStatus: http.StatusNotFound,
 		},
@@ -77,7 +79,7 @@ func TestGetOpenProgress(t *testing.T) {
 			name:     "repo error",
 			lessonID: lessonID,
 			setup: func(repo *mocks.MockLessonActivityRepository, attempts *mocks.MockAttemptRepository) {
-				attempts.EXPECT().GetOpenAttempt(mock.Anything, userID, lessonID).Return(nil, gorm.ErrInvalidDB).Once()
+				attempts.EXPECT().GetOpenLessonGraph(mock.Anything, userID, lessonID).Return(nil, gorm.ErrInvalidDB).Once()
 			},
 			wantStatus: http.StatusInternalServerError,
 		},
@@ -85,8 +87,7 @@ func TestGetOpenProgress(t *testing.T) {
 			name:     "enriched outcomes with attempt summary",
 			lessonID: lessonID,
 			setup: func(repo *mocks.MockLessonActivityRepository, attempts *mocks.MockAttemptRepository) {
-				attempts.EXPECT().GetOpenAttempt(mock.Anything, userID, lessonID).Return(openWith(twoOutcomes), nil).Once()
-				repo.EXPECT().GetByID(mock.Anything, readID).Return(reading, nil).Once()
+				attempts.EXPECT().GetOpenLessonGraph(mock.Anything, userID, lessonID).Return(openWith(twoOutcomes), nil).Once()
 			},
 			want: &responses.AttemptProgress{
 				Attempt: responses.AttemptSummary{ID: openID, Status: string(enums.AttemptStatusInProgress)},
@@ -102,8 +103,7 @@ func TestGetOpenProgress(t *testing.T) {
 			name:     "non-checkable entry omitted",
 			lessonID: lessonID,
 			setup: func(repo *mocks.MockLessonActivityRepository, attempts *mocks.MockAttemptRepository) {
-				attempts.EXPECT().GetOpenAttempt(mock.Anything, userID, lessonID).Return(openWith(`{"`+writeID+`":{"type":"writing","score":80,"detail":{}}}`), nil).Once()
-				repo.EXPECT().GetByID(mock.Anything, writeID).Return(writing, nil).Once()
+				attempts.EXPECT().GetOpenLessonGraph(mock.Anything, userID, lessonID).Return(openWith(`{"`+writeID+`":{"type":"writing","score":80,"detail":{}}}`), nil).Once()
 			},
 			want: &responses.AttemptProgress{
 				Attempt: responses.AttemptSummary{ID: openID, Status: string(enums.AttemptStatusInProgress)},
@@ -114,8 +114,7 @@ func TestGetOpenProgress(t *testing.T) {
 			name:     "stale index skipped",
 			lessonID: lessonID,
 			setup: func(repo *mocks.MockLessonActivityRepository, attempts *mocks.MockAttemptRepository) {
-				attempts.EXPECT().GetOpenAttempt(mock.Anything, userID, lessonID).Return(openWith(`{"`+readID+`":{"type":"reading","score":100,"detail":{"outcomes":[{"index":0,"key":"A","correct":true},{"index":9,"key":"C","correct":false}]}}}`), nil).Once()
-				repo.EXPECT().GetByID(mock.Anything, readID).Return(reading, nil).Once()
+				attempts.EXPECT().GetOpenLessonGraph(mock.Anything, userID, lessonID).Return(openWith(`{"`+readID+`":{"type":"reading","score":100,"detail":{"outcomes":[{"index":0,"key":"A","correct":true},{"index":9,"key":"C","correct":false}]}}}`), nil).Once()
 			},
 			want: &responses.AttemptProgress{
 				Attempt: responses.AttemptSummary{ID: openID, Status: string(enums.AttemptStatusInProgress)},
@@ -130,9 +129,7 @@ func TestGetOpenProgress(t *testing.T) {
 			name:     "missing activity skipped",
 			lessonID: lessonID,
 			setup: func(repo *mocks.MockLessonActivityRepository, attempts *mocks.MockAttemptRepository) {
-				attempts.EXPECT().GetOpenAttempt(mock.Anything, userID, lessonID).Return(openWith(`{"`+readID+`":{"type":"reading","score":100,"detail":{"outcomes":[{"index":1,"key":"B","correct":true}]}},"`+goneID+`":{"type":"reading","score":0,"detail":{"outcomes":[{"index":0,"key":"A","correct":false}]}}}`), nil).Once()
-				repo.EXPECT().GetByID(mock.Anything, readID).Return(reading, nil).Once()
-				repo.EXPECT().GetByID(mock.Anything, goneID).Return(nil, gorm.ErrRecordNotFound).Once()
+				attempts.EXPECT().GetOpenLessonGraph(mock.Anything, userID, lessonID).Return(openWith(`{"`+readID+`":{"type":"reading","score":100,"detail":{"outcomes":[{"index":1,"key":"B","correct":true}]}},"`+goneID+`":{"type":"reading","score":0,"detail":{"outcomes":[{"index":0,"key":"A","correct":false}]}}}`), nil).Once()
 			},
 			want: &responses.AttemptProgress{
 				Attempt: responses.AttemptSummary{ID: openID, Status: string(enums.AttemptStatusInProgress)},
@@ -159,8 +156,10 @@ func TestGetOpenProgress(t *testing.T) {
 			require.NoError(t, err)
 			require.NotNil(t, got)
 			assert.Equal(t, tt.want.Attempt.ID, got.Attempt.ID)
-			assert.Equal(t, tt.want.Attempt.Status, got.Attempt.Status)
-			assert.Equal(t, tt.want.Checks, got.Checks)
+			assert.Equal(t, tt.want.Attempt.Status, string(got.Attempt.Status))
+			var dto responses.AttemptProgress
+			require.NoError(t, utils.Map(&dto, got))
+			assert.Equal(t, tt.want.Checks, dto.Checks)
 		})
 	}
 }

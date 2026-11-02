@@ -12,7 +12,6 @@ import (
 	"engflex-api/config"
 	"engflex-api/internal/common"
 	"engflex-api/internal/database/models"
-	attemptsresponses "engflex-api/internal/modules/attempts/dtos/responses"
 	"engflex-api/internal/modules/lessons/dtos/requests"
 	"engflex-api/internal/modules/lessons/dtos/responses"
 	"engflex-api/internal/modules/lessons/services"
@@ -43,7 +42,7 @@ func NewLessonActivityController(activities services.LessonActivityService, medi
 func (h *LessonActivityController) List(c *gin.Context) {
 	var req requests.ListActivities
 	if err := c.ShouldBindQuery(&req); err != nil {
-		common.Fail(c, common.BadRequest(err.Error()))
+		common.Fail(c, common.InvalidRequest(err))
 		return
 	}
 	items, err := h.activities.ListByLesson(c.Request.Context(), req.LessonID)
@@ -121,7 +120,7 @@ func (h *LessonActivityController) AdminGetByID(c *gin.Context) {
 func (h *LessonActivityController) Create(c *gin.Context) {
 	var req requests.CreateLessonActivity
 	if err := c.ShouldBindJSON(&req); err != nil {
-		common.Fail(c, common.BadRequest(err.Error()))
+		common.Fail(c, common.InvalidRequest(err))
 		return
 	}
 	m, err := h.activities.Create(c.Request.Context(), req)
@@ -145,7 +144,7 @@ func (h *LessonActivityController) Create(c *gin.Context) {
 func (h *LessonActivityController) Update(c *gin.Context) {
 	var req requests.UpdateLessonActivity
 	if err := c.ShouldBindJSON(&req); err != nil {
-		common.Fail(c, common.BadRequest(err.Error()))
+		common.Fail(c, common.InvalidRequest(err))
 		return
 	}
 	m, err := h.activities.Update(c.Request.Context(), c.Param("id"), req)
@@ -185,7 +184,7 @@ func (h *LessonActivityController) Delete(c *gin.Context) {
 func (h *LessonActivityController) CheckAnswer(c *gin.Context) {
 	var req requests.CheckAnswer
 	if err := c.ShouldBindJSON(&req); err != nil {
-		common.Fail(c, common.BadRequest(err.Error()))
+		common.Fail(c, common.InvalidRequest(err))
 		return
 	}
 	res, err := h.activities.CheckAnswer(c.Request.Context(), middleware.UserID(c), c.Param("id"), req.AttemptID, req.QuestionIndex, req.Key)
@@ -193,7 +192,9 @@ func (h *LessonActivityController) CheckAnswer(c *gin.Context) {
 		common.Fail(c, err)
 		return
 	}
-	common.OK(c, "activity checked", res)
+	var dto responses.CheckResult
+	_ = utils.Map(&dto, res)
+	common.OK(c, "activity checked", dto)
 }
 
 // Pronounce godoc
@@ -210,7 +211,7 @@ func (h *LessonActivityController) CheckAnswer(c *gin.Context) {
 func (h *LessonActivityController) Pronounce(c *gin.Context) {
 	file, err := c.FormFile("audio")
 	if err != nil {
-		common.Fail(c, common.BadRequest("audio is required"))
+		common.Fail(c, common.InvalidRequest(err, "audio is required"))
 		return
 	}
 	if file.Size > int64(pronunciation.MaxAudioBytes) {
@@ -247,7 +248,9 @@ func (h *LessonActivityController) Pronounce(c *gin.Context) {
 		common.Fail(c, err)
 		return
 	}
-	common.OK(c, "pronunciation scored", res)
+	var dto responses.PronunciationResult
+	_ = utils.Map(&dto, res)
+	common.OK(c, "pronunciation scored", dto)
 }
 
 // StartAttempt godoc
@@ -264,7 +267,7 @@ func (h *LessonActivityController) StartAttempt(c *gin.Context) {
 		common.Fail(c, err)
 		return
 	}
-	var dto attemptsresponses.Attempt
+	var dto responses.StartedAttempt
 	_ = utils.Map(&dto, m)
 	// datatypes.JSON does not Map into map[string]any; decode explicitly.
 	_ = json.Unmarshal(m.Result, &dto.Result)
@@ -288,7 +291,9 @@ func (h *LessonActivityController) GetOpenAttempt(c *gin.Context) {
 		common.Fail(c, err)
 		return
 	}
-	common.OK(c, "open attempt", res)
+	var dto responses.AttemptProgress
+	_ = utils.Map(&dto, res)
+	common.OK(c, "open attempt", dto)
 }
 
 // ScoreWriting godoc
@@ -304,7 +309,7 @@ func (h *LessonActivityController) GetOpenAttempt(c *gin.Context) {
 func (h *LessonActivityController) ScoreWriting(c *gin.Context) {
 	var req requests.ScoreWriting
 	if err := c.ShouldBindJSON(&req); err != nil {
-		common.Fail(c, common.BadRequest(err.Error()))
+		common.Fail(c, common.InvalidRequest(err))
 		return
 	}
 	res, err := h.activities.ScoreWriting(c.Request.Context(), middleware.UserID(c), c.Param("id"), req.AttemptID, req.Text)
@@ -312,5 +317,25 @@ func (h *LessonActivityController) ScoreWriting(c *gin.Context) {
 		common.Fail(c, err)
 		return
 	}
-	common.OK(c, "writing scored", res)
+	var dto responses.WritingScoreResponse
+	_ = utils.Map(&dto, res)
+	common.OK(c, "writing scored", dto)
+}
+
+// ListProgress returns completion facts; it never returns protected answers.
+// @Summary List my lesson progress
+// @Tags lessons
+// @Security BearerAuth
+// @Produce json
+// @Success 200 {object} common.ApiResponse{data=[]responses.LessonProgressSummary}
+// @Router /lessons/progress [get]
+func (h *LessonActivityController) ListProgress(c *gin.Context) {
+	items, err := h.activities.ListProgress(c.Request.Context(), middleware.UserID(c))
+	if err != nil {
+		common.Fail(c, err)
+		return
+	}
+	var dto []*responses.LessonProgressSummary
+	_ = utils.MapSlice(&dto, items)
+	common.OK(c, "lesson progress", dto)
 }

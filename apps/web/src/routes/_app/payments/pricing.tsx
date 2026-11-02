@@ -1,11 +1,15 @@
-import type { SubscriptionPlan } from "@engflex/contracts";
+import {
+	SUBSCRIPTION_PLAN_VALUES,
+	type SubscriptionPlan,
+} from "@engflex/contracts";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useBreadcrumbs } from "#/app/breadcrumbs";
+import { CardShell } from "#/components/common/card-shell";
 import { MoMascot } from "#/components/common/mo-mascot";
 import { PageLayout } from "#/components/common/page-layout";
-import { Button } from "#/components/ui/button";
+import { SubmitButton } from "#/components/common/submit-button";
 import {
 	Card,
 	CardContent,
@@ -13,6 +17,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from "#/components/ui/card";
+import { Skeleton } from "#/components/ui/skeleton";
 import { usePlans, useStartCheckout } from "#/features/payments/queries";
 import { m } from "#/paraglide/messages";
 
@@ -73,9 +78,32 @@ function PricingPage() {
 			}}
 		>
 			{isPending && (
-				<p className="text-muted-foreground">
-					{m["payments.pricing.loading"]()}
-				</p>
+				<output
+					className="grid gap-4 md:grid-cols-3"
+					aria-label={m["payments.pricing.loading"]()}
+				>
+					{SUBSCRIPTION_PLAN_VALUES.map((plan) => (
+						<CardShell
+							key={plan}
+							surface=""
+							pending
+							skeleton={
+								<Card>
+									<CardHeader>
+										<Skeleton className="h-7 w-24" />
+									</CardHeader>
+									<CardContent className="flex flex-col gap-1">
+										<Skeleton className="h-9 w-36" />
+										<Skeleton className="h-5 w-28" />
+									</CardContent>
+									<CardFooter>
+										<Skeleton className="h-9 w-full" />
+									</CardFooter>
+								</Card>
+							}
+						/>
+					))}
+				</output>
 			)}
 			{isError && (
 				<p className="text-destructive">{m["payments.pricing.error"]()}</p>
@@ -87,35 +115,37 @@ function PricingPage() {
 						const isSubmitting =
 							checkout.isPending && pendingPlan === plan.plan;
 						return (
-							<Card key={plan.plan}>
-								<CardHeader>
-									<CardTitle className="text-xl">
-										{planLabel(plan.plan)}
-									</CardTitle>
-								</CardHeader>
-								<CardContent className="flex flex-col gap-1">
-									<span className="text-3xl font-bold">
-										{formatVnd(plan.amount)}
-									</span>
-									<span className="text-sm text-muted-foreground">
-										{m["payments.pricing.perMonth"]({
-											amount: formatVnd(perMonth),
-										})}
-									</span>
-								</CardContent>
-								<CardFooter>
-									<Button
-										type="button"
-										className="w-full"
-										disabled={checkout.isPending}
-										onClick={() => handleCheckout(plan.plan)}
-									>
-										{isSubmitting
-											? m["payments.pricing.redirecting"]()
-											: m["payments.pricing.cta"]()}
-									</Button>
-								</CardFooter>
-							</Card>
+							<CardShell key={plan.plan} surface="">
+								<Card>
+									<CardHeader>
+										<CardTitle className="text-xl">
+											{planLabel(plan.plan)}
+										</CardTitle>
+									</CardHeader>
+									<CardContent className="flex flex-col gap-1">
+										<span className="text-3xl font-bold">
+											{formatVnd(plan.amount)}
+										</span>
+										<span className="text-sm text-muted-foreground">
+											{m["payments.pricing.perMonth"]({
+												amount: formatVnd(perMonth),
+											})}
+										</span>
+									</CardContent>
+									<CardFooter>
+										<SubmitButton
+											type="button"
+											className="w-full"
+											pending={checkout.isPending}
+											onClick={() => handleCheckout(plan.plan)}
+										>
+											{isSubmitting
+												? m["payments.pricing.redirecting"]()
+												: m["payments.pricing.cta"]()}
+										</SubmitButton>
+									</CardFooter>
+								</Card>
+							</CardShell>
 						);
 					})}
 				</div>

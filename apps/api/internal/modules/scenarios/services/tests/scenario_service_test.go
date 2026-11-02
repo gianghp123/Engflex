@@ -211,7 +211,7 @@ func TestScenarioGetByID(t *testing.T) {
 			id:   "01b9a032-e2cf-5bb0-8df5-7bf49704bee8",
 			setup: func(repo *repomocks.MockScenarioRepository) {
 				repo.On("GetByID", mock.Anything, "01b9a032-e2cf-5bb0-8df5-7bf49704bee8").
-					Return(&models.Scenario{ID: "01b9a032-e2cf-5bb0-8df5-7bf49704bee8", Title: "Behavioral questions on leadership"}, nil).Once()
+					Return(&models.Scenario{ID: "01b9a032-e2cf-5bb0-8df5-7bf49704bee8", Title: "Behavioral questions on leadership", Status: enums.PublishStatusPublished}, nil).Once()
 			},
 			wantID: "01b9a032-e2cf-5bb0-8df5-7bf49704bee8",
 		},

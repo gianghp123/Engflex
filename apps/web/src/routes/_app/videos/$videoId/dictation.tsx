@@ -17,6 +17,7 @@ import { APP_ROUTES } from "#/app/app-route";
 import { type CrumbItem, useBreadcrumbs } from "#/app/breadcrumbs";
 import { MoMascot } from "#/components/common/mo-mascot";
 import { PageLayout } from "#/components/common/page-layout";
+import { SubmitButton } from "#/components/common/submit-button";
 import { Button } from "#/components/ui/button";
 import {
 	Empty,
@@ -40,18 +41,19 @@ import {
 import {
 	openVideoAttemptQueryOptions,
 	useCompleteVideoAttempt,
-	useSaveVideoProgress,
-	useStartVideoAttempt,
 	videoDetailQueryOptions,
 	videoKeys,
 } from "#/features/videos/queries";
+import { useVideoProgressQueue } from "#/features/videos/use-progress-queue";
+import { ApiError } from "#/lib/api/api";
 import { m } from "#/paraglide/messages";
 
 export const Route = createFileRoute("/_app/videos/$videoId/dictation")({
 	loader: async ({ context: { queryClient }, params: { videoId } }) => {
 		try {
 			return await queryClient.query(videoDetailQueryOptions(videoId));
-		} catch {
+		} catch (error) {
+			if (!(error instanceof ApiError && error.status === 404)) throw error;
 			throw notFound();
 		}
 	},
@@ -110,7 +112,12 @@ function DictationPage() {
 		enabled: isLoaded && !!video?.id,
 	});
 
-	if (!video) return null;
+	if (!video) throw notFound();
+	if (
+		openQuery.isError &&
+		!(openQuery.error instanceof ApiError && openQuery.error.status === 404)
+	)
+		throw openQuery.error;
 
 	if (!isLoaded || openQuery.isPending) {
 		return <DictationPending />;
@@ -138,9 +145,6 @@ function DictationWorkspace({
 
 	const playerRef = useRef<YouTubePlayerRef>(null);
 
-	const [currentAttemptId, setCurrentAttemptId] = useState<string | null>(
-		initialAttempt?.id ?? null,
-	);
 	const [showMedia, setShowMedia] = useState(true);
 	const [showTranscript, setShowTranscript] = useState(true);
 	const [level, setLevel] = useState<DictationLevel>(() => {
@@ -171,29 +175,18 @@ function DictationWorkspace({
 	const [revealed, setRevealed] = useState<number[]>([]);
 	const [showSummary, setShowSummary] = useState(false);
 
-	const startAttempt = useStartVideoAttempt();
-	const saveProgress = useSaveVideoProgress();
+	const progress = useVideoProgressQueue(video.id, initialAttempt);
+	const [completionError, setCompletionError] = useState<unknown>(null);
 	const completeAttempt = useCompleteVideoAttempt();
+	const pendingCompletion = useRef<
+		Parameters<typeof completeAttempt.mutateAsync>[0] | null
+	>(null);
 
 	const persistProgress = async (
 		targetIndex: number,
 		statesToSave: Record<number, SentenceProgressState>,
 		currentLevel = level,
 	) => {
-		let attemptId = currentAttemptId;
-		if (!attemptId) {
-			try {
-				const res = await startAttempt.mutateAsync({
-					videoId: video.id,
-					type: "dictation",
-				});
-				attemptId = res.id;
-				setCurrentAttemptId(res.id);
-			} catch {
-				return;
-			}
-		}
-
 		const transcriptsPayload: Record<string, unknown> = {};
 		const completedIds: string[] = [];
 		transcripts.forEach((t, idx) => {
@@ -207,19 +200,13 @@ function DictationWorkspace({
 			}
 		});
 
-		try {
-			await saveProgress.mutateAsync({
-				videoId: video.id,
-				attemptId,
-				req: {
-					activeSequence: targetIndex,
-					activeTranscriptId: transcripts[targetIndex]?.id,
-					level: currentLevel,
-					completedTranscriptIds: completedIds,
-					transcripts: transcriptsPayload,
-				},
-			});
-		} catch {}
+		return progress.save({
+			activeSequence: targetIndex,
+			activeTranscriptId: transcripts[targetIndex]?.id,
+			level: currentLevel,
+			completedTranscriptIds: completedIds,
+			transcripts: transcriptsPayload,
+		});
 	};
 
 	const completedCount = Object.values(sentenceStates).filter(
@@ -248,39 +235,52 @@ function DictationWorkspace({
 		totalWordsInLesson > 0 ? (totalCorrectWords / totalWordsInLesson) * 100 : 0;
 
 	const handleFinish = async () => {
-		setShowSummary(true);
-		let attemptId = currentAttemptId;
-		if (!attemptId) {
-			try {
-				const res = await startAttempt.mutateAsync({
-					videoId: video.id,
-					type: "dictation",
-				});
-				attemptId = res.id;
-				setCurrentAttemptId(res.id);
-			} catch {
-				return;
-			}
-		}
-
-		await persistProgress(activeIndex, sentenceStates);
-
-		try {
-			await completeAttempt.mutateAsync({
+		if (!pendingCompletion.current) {
+			if (!(await persistProgress(activeIndex, sentenceStates))) return;
+			const attempt = progress.attempt.current;
+			if (!attempt) return;
+			pendingCompletion.current = {
 				videoId: video.id,
-				attemptId,
-				req: {
-					score: Math.round(overallAccuracy),
-				},
-			});
-			void queryClient.invalidateQueries({
-				queryKey: videoKeys.detail(video.id),
-			});
-			void queryClient.invalidateQueries({
-				queryKey: videoKeys.all,
-			});
-		} catch {}
+				attemptId: attempt.id,
+				req: { score: Math.round(overallAccuracy) },
+			};
+		}
+		try {
+			// A lost response can follow a committed completion. Retry exactly
+			// that immutable result without saving onto a closed attempt first.
+			await completeAttempt.mutateAsync(pendingCompletion.current);
+			setCompletionError(null);
+			setShowSummary(true);
+			void queryClient.invalidateQueries({ queryKey: videoKeys.all });
+		} catch (error) {
+			setCompletionError(error);
+		}
 	};
+
+	const reloadProgress = async () => {
+		const latest = await progress.reload();
+		if (!latest) return;
+		setSentenceStates(parseInitialSentenceStates(transcripts, latest.result));
+		const savedLevel = latest.result?.level;
+		setLevel(
+			savedLevel === "easy" || savedLevel === "hard" ? savedLevel : "normal",
+		);
+		setActiveIndex(latest.result?.activeSequence ?? 0);
+		setActiveWordIndex(0);
+		setCurrentInput("");
+		setCompletionError(null);
+		pendingCompletion.current = null;
+	};
+	const retryDraft = async () => {
+		if (completionError && pendingCompletion.current) {
+			await handleFinish();
+			return;
+		}
+		if (!(await progress.recover())) return;
+		setCompletionError(null);
+		await persistProgress(activeIndex, sentenceStates);
+	};
+	const persistenceError = progress.error ?? completionError;
 
 	const crumbs: CrumbItem[] = [
 		{ label: m["nav.item.videos"](), to: APP_ROUTES.VIDEOS.LIST },
@@ -532,24 +532,19 @@ function DictationWorkspace({
 	};
 
 	const handleRestart = async () => {
+		pendingCompletion.current = null;
+		setCompletionError(null);
 		setSentenceStates({});
 		setActiveIndex(0);
 		setActiveWordIndex(0);
 		setCurrentInput("");
 		setRevealed([]);
 		setShowSummary(false);
-		setCurrentAttemptId(null);
+		await progress.restart();
 		const firstLine = transcripts[0];
 		if (firstLine) {
 			playerRef.current?.seekTo(firstLine.startTimestamp);
 		}
-		try {
-			const res = await startAttempt.mutateAsync({
-				videoId: video.id,
-				type: "dictation",
-			});
-			setCurrentAttemptId(res.id);
-		} catch {}
 	};
 
 	const handleLevelChange = (newLevel: DictationLevel) => {
@@ -568,6 +563,45 @@ function DictationWorkspace({
 
 	return (
 		<PageLayout>
+			{persistenceError ? (
+				<div role="alert" className="surface-card p-4">
+					<p>
+						{persistenceError instanceof ApiError &&
+						persistenceError.status === 409
+							? m["videos.dictation.persistence.conflict"]()
+							: persistenceError instanceof ApiError &&
+									persistenceError.status === 403
+								? m["videos.dictation.persistence.denied"]()
+								: m["videos.dictation.persistence.failed"]()}
+					</p>
+					{!(
+						persistenceError instanceof ApiError &&
+						persistenceError.status === 409
+					) ? (
+						<SubmitButton
+							pending={progress.busy || completeAttempt.isPending}
+							onClick={retryDraft}
+						>
+							{m["videos.dictation.persistence.retry"]()}
+						</SubmitButton>
+					) : null}
+					{persistenceError instanceof ApiError &&
+					persistenceError.status === 403 ? (
+						<Button asChild variant="outline">
+							<Link
+								to={APP_ROUTES.PAYMENTS.PRICING}
+								target="_blank"
+								rel="noopener noreferrer"
+							>
+								{m["videos.dictation.persistence.renew"]()}
+							</Link>
+						</Button>
+					) : null}
+					<SubmitButton pending={progress.busy} onClick={reloadProgress}>
+						{m["videos.dictation.persistence.reload"]()}
+					</SubmitButton>
+				</div>
+			) : null}
 			<div className="flex flex-wrap items-center justify-end gap-2">
 				<Button
 					type="button"

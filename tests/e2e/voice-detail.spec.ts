@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./authenticated-test";
 import { closeDb } from "./helpers";
 
 const SEEDED_ID = "7c000003-0000-4000-8000-000000000003";

@@ -1,8 +1,34 @@
+import sys
+
 import sentry_sdk
 from loguru import logger
 from pipecat.processors.metrics.sentry import SentryMetrics
 
 from config import settings
+
+
+def configure_logging(sink=None) -> None:
+    """Override runner DEBUG defaults after startup; never emit provider text.
+
+    Pipecat logs utterances at DEBUG and includes prepared TTS text in some
+    warnings. Keep severity/location for dependency diagnostics, but replace
+    dependency payloads; our own lifecycle/callback records retain safe IDs.
+    """
+    def safe_record(record):
+        if (record["name"] or "").startswith("pipecat."):
+            record["message"] = "voice dependency diagnostic"
+            record["exception"] = None
+            record["extra"] = {}
+        return True
+
+    logger.configure(handlers=[{
+        "sink": sys.stderr if sink is None else sink,
+        "level": "INFO",
+        "serialize": True,
+        "diagnose": False,
+        "backtrace": False,
+        "filter": safe_record,
+    }])
 
 
 def init_sentry() -> None:

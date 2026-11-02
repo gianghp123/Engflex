@@ -5,6 +5,7 @@ import (
 
 	"engflex-api/internal/common"
 	"engflex-api/internal/modules/payments/dtos/requests"
+	"engflex-api/internal/modules/payments/dtos/responses"
 	"engflex-api/internal/modules/payments/services"
 	"engflex-api/internal/utils"
 )
@@ -35,7 +36,9 @@ func (h *PremiumFeatureController) List(c *gin.Context) {
 		common.Fail(c, err)
 		return
 	}
-	common.Paginated(c, "premium features listed", items, page, pageSize, total)
+	var dto []*responses.PremiumFeature
+	_ = utils.MapSlice(&dto, items)
+	common.Paginated(c, "premium features listed", dto, page, pageSize, total)
 }
 
 // Create godoc
@@ -50,7 +53,7 @@ func (h *PremiumFeatureController) List(c *gin.Context) {
 func (h *PremiumFeatureController) Create(c *gin.Context) {
 	var req requests.CreatePremiumFeature
 	if err := c.ShouldBindJSON(&req); err != nil {
-		common.Fail(c, common.BadRequest(err.Error()))
+		common.Fail(c, common.InvalidRequest(err))
 		return
 	}
 	created, err := h.service.Create(c.Request.Context(), req)
@@ -58,7 +61,9 @@ func (h *PremiumFeatureController) Create(c *gin.Context) {
 		common.Fail(c, err)
 		return
 	}
-	common.Created(c, "premium feature created", created)
+	var dto responses.PremiumFeature
+	_ = utils.Map(&dto, created)
+	common.Created(c, "premium feature created", dto)
 }
 
 // Update godoc
@@ -74,7 +79,7 @@ func (h *PremiumFeatureController) Create(c *gin.Context) {
 func (h *PremiumFeatureController) Update(c *gin.Context) {
 	var req requests.UpdatePremiumFeature
 	if err := c.ShouldBindJSON(&req); err != nil {
-		common.Fail(c, common.BadRequest(err.Error()))
+		common.Fail(c, common.InvalidRequest(err))
 		return
 	}
 	updated, err := h.service.Update(c.Request.Context(), c.Param("id"), req)
@@ -82,7 +87,9 @@ func (h *PremiumFeatureController) Update(c *gin.Context) {
 		common.Fail(c, err)
 		return
 	}
-	common.OK(c, "premium feature updated", updated)
+	var dto responses.PremiumFeature
+	_ = utils.Map(&dto, updated)
+	common.OK(c, "premium feature updated", dto)
 }
 
 // Delete godoc

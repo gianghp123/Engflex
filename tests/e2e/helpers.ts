@@ -223,8 +223,8 @@ export async function dbInsertScenario(
 	title: string,
 ): Promise<void> {
 	await db().query(
-		`INSERT INTO scenarios (id, topic_id, persona_id, title, objective, cefr_level, max_duration, details)
-		 VALUES ($1, $2, NULL, $3, '', 'A1', 5,
+		`INSERT INTO scenarios (id, topic_id, persona_id, title, objective, cefr_level, max_duration, status, details)
+		 VALUES ($1, $2, NULL, $3, '', 'A1', 5, 'published',
 		 '{"context":[],"role":"","goal_format":"","interlocutor_role":"","opening":{"label":"","text":""},"vocab":[]}'::jsonb)`,
 		[id, topicId, title],
 	);

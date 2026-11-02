@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
 	checkAnswer,
 	getLessonDetail,
@@ -73,7 +73,13 @@ export function useLessonDetailBySlug(slug: string | undefined) {
 }
 
 export function useCheckAnswer() {
+	const client = useQueryClient();
 	return useMutation({
+		onSuccess: () =>
+			Promise.all([
+				client.invalidateQueries({ queryKey: lessonKeys.progress }),
+				client.invalidateQueries({ queryKey: ["progress"] }),
+			]),
 		mutationFn: (input: {
 			activityId: string;
 			attemptId: string;
@@ -90,7 +96,13 @@ export function useCheckAnswer() {
 }
 
 export function usePronounceAttempt() {
+	const client = useQueryClient();
 	return useMutation({
+		onSuccess: () =>
+			Promise.all([
+				client.invalidateQueries({ queryKey: lessonKeys.progress }),
+				client.invalidateQueries({ queryKey: ["progress"] }),
+			]),
 		mutationFn: (input: {
 			activityId: string;
 			attemptId: string;
@@ -109,7 +121,13 @@ export function usePronounceAttempt() {
 }
 
 export function useStartLessonAttempt() {
+	const client = useQueryClient();
 	return useMutation({
+		onSuccess: () =>
+			Promise.all([
+				client.invalidateQueries({ queryKey: lessonKeys.progress }),
+				client.invalidateQueries({ queryKey: ["progress"] }),
+			]),
 		mutationFn: (lessonId: string) => startLessonAttempt(lessonId),
 	});
 }
@@ -127,7 +145,13 @@ export function openAttemptQueryOptions(id: string) {
 }
 
 export function useScoreWriting() {
+	const client = useQueryClient();
 	return useMutation({
+		onSuccess: () =>
+			Promise.all([
+				client.invalidateQueries({ queryKey: lessonKeys.progress }),
+				client.invalidateQueries({ queryKey: ["progress"] }),
+			]),
 		mutationFn: (input: {
 			activityId: string;
 			attemptId: string;

@@ -62,18 +62,6 @@ export interface ListParams {
 }
 
 //////////
-// source: premium.go
-
-/**
- * PremiumChecker is the minimal surface admin-curated content services
- * need to gate a premium-only item. Defined here (not in the payments
- * module) so every content module can depend on it without an inter-module
- * import; services.SubscriptionService satisfies this structurally, no
- * adapter needed — same shape as middleware.PremiumChecker.
- */
-export type PremiumChecker = any;
-
-//////////
 // source: response.go
 
 /**

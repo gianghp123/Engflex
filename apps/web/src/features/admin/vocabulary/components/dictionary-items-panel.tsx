@@ -1,7 +1,14 @@
 import type {
 	CEFR,
+	VocabularyDetails,
 	VocabularyDomain,
 	VocabularyItem,
+	VocabularyPartOfSpeech,
+} from "@engflex/contracts";
+import {
+	CEFR_VALUES,
+	VOCABULARY_DOMAIN_VALUES,
+	VOCABULARY_PART_OF_SPEECH_VALUES,
 } from "@engflex/contracts";
 import { Plus } from "lucide-react";
 import { useState } from "react";
@@ -34,15 +41,6 @@ import {
 } from "#/features/admin/vocabulary/queries";
 import { m } from "#/paraglide/messages";
 
-const CEFR_OPTIONS: CEFR[] = ["A1", "A2", "B1", "B2", "C1", "C2"];
-const DOMAIN_OPTIONS: VocabularyDomain[] = [
-	"backend_db",
-	"distributed_systems",
-	"devops_cloud",
-	"frontend_ui",
-	"ai_ml",
-];
-
 function domainLabel(domain: string): string {
 	return domain.replace(/_/g, " ");
 }
@@ -52,6 +50,8 @@ interface ItemFormState {
 	definition: string;
 	cefr: CEFR;
 	domain: VocabularyDomain | "";
+	partOfSpeech: VocabularyPartOfSpeech | "";
+	details: VocabularyDetails;
 	status: "draft" | "published";
 	isPremium: boolean;
 }
@@ -61,6 +61,20 @@ const EMPTY_FORM: ItemFormState = {
 	definition: "",
 	cefr: "B1",
 	domain: "",
+	partOfSpeech: "",
+	details: {
+		ipa: "",
+		audioUs: "",
+		audioUk: "",
+		syllables: "",
+		stressTip: "",
+		commonSlip: "",
+		longDefinition: "",
+		etymology: "",
+		contexts: [],
+		collocations: [],
+		wordForms: [],
+	},
 	status: "draft",
 	isPremium: false,
 };
@@ -93,6 +107,8 @@ export function DictionaryItemsPanel() {
 			definition: item.definition,
 			cefr: item.cefr,
 			domain: item.domain ?? "",
+			partOfSpeech: item.partOfSpeech ?? "",
+			details: item.details ?? EMPTY_FORM.details,
 			status: item.status === "published" ? "published" : "draft",
 			isPremium: item.isPremium,
 		});
@@ -113,7 +129,9 @@ export function DictionaryItemsPanel() {
 						term: form.term.trim(),
 						definition: form.definition.trim(),
 						cefr: form.cefr,
-						domain: form.domain || undefined,
+						domain: form.domain || null,
+						partOfSpeech: form.partOfSpeech || null,
+						details: form.details,
 						status: form.status,
 						isPremium: form.isPremium,
 					},
@@ -132,7 +150,9 @@ export function DictionaryItemsPanel() {
 					term: form.term.trim(),
 					definition: form.definition.trim(),
 					cefr: form.cefr,
-					domain: form.domain || undefined,
+					domain: form.domain || null,
+					partOfSpeech: form.partOfSpeech || null,
+					details: form.details,
 					isPremium: form.isPremium,
 				},
 				{
@@ -279,7 +299,7 @@ export function DictionaryItemsPanel() {
 								<SelectValue />
 							</SelectTrigger>
 							<SelectContent>
-								{CEFR_OPTIONS.map((option) => (
+								{CEFR_VALUES.map((option) => (
 									<SelectItem key={option} value={option}>
 										{option}
 									</SelectItem>
@@ -294,7 +314,10 @@ export function DictionaryItemsPanel() {
 							onValueChange={(value) =>
 								setForm((current) => ({
 									...current,
-									domain: value === "none" ? "" : (value as VocabularyDomain),
+									domain:
+										VOCABULARY_DOMAIN_VALUES.find(
+											(option) => option === value,
+										) ?? "",
 								}))
 							}
 						>
@@ -303,7 +326,7 @@ export function DictionaryItemsPanel() {
 							</SelectTrigger>
 							<SelectContent>
 								<SelectItem value="none">—</SelectItem>
-								{DOMAIN_OPTIONS.map((option) => (
+								{VOCABULARY_DOMAIN_VALUES.map((option) => (
 									<SelectItem key={option} value={option}>
 										{domainLabel(option)}
 									</SelectItem>
@@ -312,6 +335,48 @@ export function DictionaryItemsPanel() {
 						</Select>
 					</Field>
 				</div>
+				<Field>
+					<FieldLabel>{m["admin.dictionary.fields.partOfSpeech"]()}</FieldLabel>
+					<Select
+						value={form.partOfSpeech || "none"}
+						onValueChange={(value) =>
+							setForm((current) => ({
+								...current,
+								partOfSpeech:
+									VOCABULARY_PART_OF_SPEECH_VALUES.find(
+										(option) => option === value,
+									) ?? "",
+							}))
+						}
+					>
+						<SelectTrigger className="w-full">
+							<SelectValue />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="none">—</SelectItem>
+							{VOCABULARY_PART_OF_SPEECH_VALUES.map((option) => (
+								<SelectItem key={option} value={option}>
+									{option.replace(/_/g, " ")}
+								</SelectItem>
+							))}
+						</SelectContent>
+					</Select>
+				</Field>
+				<Field>
+					<FieldLabel htmlFor="item-ipa">
+						{m["admin.dictionary.fields.ipa"]()}
+					</FieldLabel>
+					<Input
+						id="item-ipa"
+						value={form.details.ipa}
+						onChange={(event) =>
+							setForm((current) => ({
+								...current,
+								details: { ...current.details, ipa: event.target.value },
+							}))
+						}
+					/>
+				</Field>
 				<Field data-invalid={Boolean(error)}>
 					<FieldLabel htmlFor="item-definition">Definition</FieldLabel>
 					<Textarea

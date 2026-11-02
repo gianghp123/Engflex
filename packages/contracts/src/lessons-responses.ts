@@ -295,8 +295,7 @@ export interface AttemptProgress {
    */
   checks: { [key: string]: CheckedQuestion[]};
   /**
-   * CompletedParts lists the activity ids present in the run's result map:
-   * the server's own finalize rule (any recorded entry covers a part).
+   * CompletedParts contains only activities with every required outcome.
    */
   completedParts: string[];
 }
@@ -308,4 +307,15 @@ export interface LessonProgressSummary {
   lessonId: string;
   status: AttemptStatus;
   completedActivityIds: string[];
+}
+export interface StartedAttempt {
+  id: string;
+  userId: string;
+  lessonId?: string;
+  type: AttemptType;
+  status: AttemptStatus;
+  score?: number /* float64 */;
+  result: { [key: string]: unknown};
+  durationSec?: number /* int */;
+  createdAt: string /* RFC3339 */;
 }

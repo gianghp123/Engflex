@@ -1,35 +1,13 @@
-// Package videos wires the video-exercise module: exercises, their caption
-// transcripts, and the content-format taxonomy. All three tables are served
-// by this one module because they are one feature.
+// Package videos registers routes over dependencies supplied by composition.
 package videos
 
 import (
-	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
-
-	"engflex-api/internal/database/repositories"
-	paymentservices "engflex-api/internal/modules/payments/services"
 	"engflex-api/internal/modules/videos/controllers"
-	"engflex-api/internal/modules/videos/services"
 	"engflex-api/internal/server/middleware"
+	"github.com/gin-gonic/gin"
 )
 
-// RegisterRoutes mounts the video endpoints under /api/v1.
-func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB) {
-	premiumSvc := paymentservices.NewSubscriptionService(
-		repositories.NewSubscriptionRepository(db), repositories.NewPlanRepository(db))
-	exerciseSvc := services.NewVideoExerciseService(repositories.NewVideoExerciseRepository(db), premiumSvc)
-	exerciseCtl := controllers.NewVideoExerciseController(exerciseSvc)
-
-	attemptSvc := services.NewVideoAttemptService(repositories.NewAttemptRepository(db), repositories.NewVideoExerciseRepository(db))
-	attemptCtl := controllers.NewVideoAttemptController(attemptSvc)
-
-	transcriptSvc := services.NewVideoTranscriptService(repositories.NewVideoTranscriptRepository(db))
-	transcriptCtl := controllers.NewVideoTranscriptController(transcriptSvc)
-
-	categorySvc := services.NewVideoCategoryService(repositories.NewVideoCategoryRepository(db))
-	categoryCtl := controllers.NewVideoCategoryController(categorySvc)
-
+func RegisterRoutes(rg *gin.RouterGroup, exerciseCtl *controllers.VideoExerciseController, attemptCtl *controllers.VideoAttemptController, transcriptCtl *controllers.VideoTranscriptController, categoryCtl *controllers.VideoCategoryController) {
 	// All three resources are 100% admin-curated (no user-owned variant like
 	// vocabulary decks have), so mutations are admin-gated outright; reads
 	// stay open to any authenticated user, filtered to published content by
@@ -47,7 +25,7 @@ func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB) {
 	e.POST("/:id/attempts/:attemptId/complete", middleware.RequireAuth(), attemptCtl.CompleteAttempt)
 
 	t := rg.Group("/video-transcripts")
-	t.GET("", middleware.RequireAuth(), transcriptCtl.List)
+	t.GET("", middleware.RequireAuth(), middleware.RequireAdmin(), transcriptCtl.List)
 	t.GET("/:id", middleware.RequireAuth(), transcriptCtl.GetByID)
 	t.GET("/video-exercise/:video_exercise_id", middleware.RequireAuth(), transcriptCtl.GetByVideoExerciseID)
 	t.POST("", middleware.RequireAuth(), middleware.RequireAdmin(), transcriptCtl.Create)

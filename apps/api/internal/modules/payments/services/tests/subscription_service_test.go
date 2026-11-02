@@ -98,28 +98,9 @@ func TestSubscriptionService_Grant_UnknownPlan(t *testing.T) {
 }
 
 func TestSubscriptionService_Revoke(t *testing.T) {
-	t.Run("cancels the active subscription", func(t *testing.T) {
-		svc, mockRepo, _ := setupSubscription(t)
-		expires := time.Now().Add(24 * time.Hour)
-		mockRepo.On("GetActiveByUserID", mock.Anything, "user_1").
-			Return(&models.Subscription{ID: "sub_1", UserID: "user_1", Status: enums.SubscriptionStatusActive, ExpiresAt: &expires}, nil)
-		mockRepo.On("UpdateStatus", mock.Anything, "sub_1", enums.SubscriptionStatusCancelled, (*time.Time)(nil), (*time.Time)(nil)).
-			Return(nil)
-
-		err := svc.Revoke(context.Background(), "user_1")
-
-		require.NoError(t, err)
-	})
-
-	t.Run("no active subscription is a no-op, not an error", func(t *testing.T) {
-		svc, mockRepo, _ := setupSubscription(t)
-		mockRepo.On("GetActiveByUserID", mock.Anything, "user_1").Return(nil, gorm.ErrRecordNotFound)
-
-		err := svc.Revoke(context.Background(), "user_1")
-
-		require.NoError(t, err)
-		mockRepo.AssertNotCalled(t, "UpdateStatus", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything)
-	})
+	svc, repo, _ := setupSubscription(t)
+	repo.On("CancelActive", mock.Anything, "user_1").Return(nil).Once()
+	require.NoError(t, svc.Revoke(context.Background(), "user_1"))
 }
 
 func TestSubscriptionService_ListAll(t *testing.T) {

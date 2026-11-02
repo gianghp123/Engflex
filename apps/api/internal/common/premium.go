@@ -21,7 +21,7 @@ func RequirePremiumAccess(ctx context.Context, checker PremiumChecker, userID st
 	}
 	ok, err := checker.IsPremium(ctx, userID)
 	if err != nil {
-		return err
+		return ServiceUnavailable("subscription verification unavailable")
 	}
 	if !ok {
 		return Forbidden("this content requires a premium subscription")

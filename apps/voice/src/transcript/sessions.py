@@ -42,3 +42,7 @@ def get(conversation_id: str) -> SessionControl | None:
 
 def unregister(conversation_id: str) -> None:
     _SESSIONS.pop(conversation_id, None)
+
+
+def active() -> list[SessionControl]:
+    return list(_SESSIONS.values())

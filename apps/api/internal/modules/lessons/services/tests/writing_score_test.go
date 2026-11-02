@@ -33,9 +33,10 @@ const (
 
 func writingActivityFixture() *models.LessonActivity {
 	return &models.LessonActivity{
-		ID:     writingActID,
-		Type:   enums.ActivityTypeWriting,
-		Config: datatypes.JSON(`{"task":"email","instructions":"i","stimulus":"s","minWords":10,"maxWords":100,"modelAnswer":"m","checklist":["greet the team","give name and role"]}`),
+		ID:       writingActID,
+		LessonID: "11111111-1111-1111-1111-111111111111",
+		Type:     enums.ActivityTypeWriting,
+		Config:   datatypes.JSON(`{"task":"email","instructions":"i","stimulus":"s","minWords":10,"maxWords":100,"modelAnswer":"m","checklist":["greet the team","give name and role"]}`),
 	}
 }
 
@@ -93,13 +94,13 @@ func TestScoreWriting(t *testing.T) {
 				llm := llmmocks.NewMockLLMClient(t)
 				repo.EXPECT().GetByID(mock.Anything, writingActID).Return(writingActivityFixture(), nil).Once()
 				expectLLMCanned(llm, writingCanned())
-				attempts.EXPECT().GetByID(mock.Anything, writingOpenID).Return(writingOpenAttempt(), nil).Twice()
-				repo.EXPECT().ListByLesson(mock.Anything, mock.Anything).Return([]*models.LessonActivity{{ID: writingActID}}, nil).Once()
+				attempts.EXPECT().GetForUpdate(mock.Anything, writingOpenID).Return(writingOpenAttempt(), nil).Twice()
+				repo.EXPECT().ListByLesson(mock.Anything, mock.Anything).Return([]*models.LessonActivity{writingActivityFixture()}, nil).Once()
 				var saved *models.Attempt
 				attempts.EXPECT().Update(mock.Anything, mock.Anything).
 					Run(func(ctx context.Context, m *models.Attempt) { saved = m }).
 					Return(nil).Once()
-				svc := services.NewLessonActivityService(repo, pronunciation.NewScorer(voicemocks.NewMockPronounceEngine(t)), llm, attempts)
+				svc := newActivityService(t, repo, pronunciation.NewScorer(voicemocks.NewMockPronounceEngine(t)), llm, attempts)
 
 				got, err := svc.ScoreWriting(context.Background(), writingUserID, writingActID, writingOpenID, writingText)
 
@@ -124,7 +125,7 @@ func TestScoreWriting(t *testing.T) {
 				assert.Equal(t, "Hello everyone, my name is Kenji and I am a sales associate.", got.Suggested)
 				assert.Equal(t, "Remember the be verb: I am, not I is.", got.Tip)
 				assert.Equal(t, writingOpenID, got.Attempt.ID)
-				assert.Equal(t, string(enums.AttemptStatusCompleted), got.Attempt.Status)
+				assert.Equal(t, enums.AttemptStatusCompleted, got.Attempt.Status)
 				require.NotNil(t, got.Attempt.Score)
 				assert.Equal(t, 75.0, *got.Attempt.Score)
 				require.NotNil(t, saved)
@@ -144,10 +145,10 @@ func TestScoreWriting(t *testing.T) {
 				attempts := mocks.NewMockAttemptRepository(t)
 				llm := llmmocks.NewMockLLMClient(t)
 				repo.EXPECT().GetByID(mock.Anything, writingActID).Return(writingActivityFixture(), nil).Once()
-				attempts.EXPECT().GetByID(mock.Anything, writingOpenID).Return(writingOpenAttempt(), nil).Once()
+				attempts.EXPECT().GetForUpdate(mock.Anything, writingOpenID).Return(writingOpenAttempt(), nil).Once()
 				llm.EXPECT().CompleteStructured(mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).
 					Return(errors.New("boom")).Once()
-				svc := services.NewLessonActivityService(repo, pronunciation.NewScorer(voicemocks.NewMockPronounceEngine(t)), llm, attempts)
+				svc := newActivityService(t, repo, pronunciation.NewScorer(voicemocks.NewMockPronounceEngine(t)), llm, attempts)
 
 				got, err := svc.ScoreWriting(context.Background(), writingUserID, writingActID, writingOpenID, writingText)
 
@@ -163,11 +164,11 @@ func TestScoreWriting(t *testing.T) {
 				attempts := mocks.NewMockAttemptRepository(t)
 				llm := llmmocks.NewMockLLMClient(t)
 				repo.EXPECT().GetByID(mock.Anything, writingActID).Return(writingActivityFixture(), nil).Once()
-				attempts.EXPECT().GetByID(mock.Anything, writingOpenID).Return(writingOpenAttempt(), nil).Once()
+				attempts.EXPECT().GetForUpdate(mock.Anything, writingOpenID).Return(writingOpenAttempt(), nil).Once()
 				bad := writingCanned()
 				bad.Grammar[0].Text = "never written words"
 				expectLLMCanned(llm, bad)
-				svc := services.NewLessonActivityService(repo, pronunciation.NewScorer(voicemocks.NewMockPronounceEngine(t)), llm, attempts)
+				svc := newActivityService(t, repo, pronunciation.NewScorer(voicemocks.NewMockPronounceEngine(t)), llm, attempts)
 
 				got, err := svc.ScoreWriting(context.Background(), writingUserID, writingActID, writingOpenID, writingText)
 
@@ -183,11 +184,11 @@ func TestScoreWriting(t *testing.T) {
 				attempts := mocks.NewMockAttemptRepository(t)
 				llm := llmmocks.NewMockLLMClient(t)
 				repo.EXPECT().GetByID(mock.Anything, writingActID).Return(writingActivityFixture(), nil).Once()
-				attempts.EXPECT().GetByID(mock.Anything, writingOpenID).Return(writingOpenAttempt(), nil).Once()
+				attempts.EXPECT().GetForUpdate(mock.Anything, writingOpenID).Return(writingOpenAttempt(), nil).Once()
 				bad := writingCanned()
 				bad.Task.Verdicts = bad.Task.Verdicts[:1]
 				expectLLMCanned(llm, bad)
-				svc := services.NewLessonActivityService(repo, pronunciation.NewScorer(voicemocks.NewMockPronounceEngine(t)), llm, attempts)
+				svc := newActivityService(t, repo, pronunciation.NewScorer(voicemocks.NewMockPronounceEngine(t)), llm, attempts)
 
 				got, err := svc.ScoreWriting(context.Background(), writingUserID, writingActID, writingOpenID, writingText)
 
@@ -204,7 +205,7 @@ func TestScoreWriting(t *testing.T) {
 				llm := llmmocks.NewMockLLMClient(t)
 				reading := checkReadingFixture()
 				repo.EXPECT().GetByID(mock.Anything, reading.ID).Return(reading, nil).Once()
-				svc := services.NewLessonActivityService(repo, pronunciation.NewScorer(voicemocks.NewMockPronounceEngine(t)), llm, attempts)
+				svc := newActivityService(t, repo, pronunciation.NewScorer(voicemocks.NewMockPronounceEngine(t)), llm, attempts)
 
 				got, err := svc.ScoreWriting(context.Background(), writingUserID, reading.ID, writingOpenID, writingText)
 
@@ -220,7 +221,7 @@ func TestScoreWriting(t *testing.T) {
 				repo := mocks.NewMockLessonActivityRepository(t)
 				attempts := mocks.NewMockAttemptRepository(t)
 				llm := llmmocks.NewMockLLMClient(t)
-				svc := services.NewLessonActivityService(repo, pronunciation.NewScorer(voicemocks.NewMockPronounceEngine(t)), llm, attempts)
+				svc := newActivityService(t, repo, pronunciation.NewScorer(voicemocks.NewMockPronounceEngine(t)), llm, attempts)
 
 				got, err := svc.ScoreWriting(context.Background(), writingUserID, writingActID, writingOpenID, "   ")
 
@@ -236,7 +237,7 @@ func TestScoreWriting(t *testing.T) {
 				repo := mocks.NewMockLessonActivityRepository(t)
 				attempts := mocks.NewMockAttemptRepository(t)
 				llm := llmmocks.NewMockLLMClient(t)
-				svc := services.NewLessonActivityService(repo, pronunciation.NewScorer(voicemocks.NewMockPronounceEngine(t)), llm, attempts)
+				svc := newActivityService(t, repo, pronunciation.NewScorer(voicemocks.NewMockPronounceEngine(t)), llm, attempts)
 
 				got, err := svc.ScoreWriting(context.Background(), writingUserID, writingActID, writingOpenID, strings.Repeat("word ", 501))
 
@@ -255,8 +256,8 @@ func TestScoreWriting(t *testing.T) {
 				repo.EXPECT().GetByID(mock.Anything, writingActID).Return(writingActivityFixture(), nil).Once()
 				foreign := writingOpenAttempt()
 				foreign.UserID = "user_999"
-				attempts.EXPECT().GetByID(mock.Anything, writingOpenID).Return(foreign, nil).Once()
-				svc := services.NewLessonActivityService(repo, pronunciation.NewScorer(voicemocks.NewMockPronounceEngine(t)), llm, attempts)
+				attempts.EXPECT().GetForUpdate(mock.Anything, writingOpenID).Return(foreign, nil).Once()
+				svc := newActivityService(t, repo, pronunciation.NewScorer(voicemocks.NewMockPronounceEngine(t)), llm, attempts)
 
 				got, err := svc.ScoreWriting(context.Background(), writingUserID, writingActID, writingOpenID, writingText)
 
@@ -273,7 +274,7 @@ func TestScoreWriting(t *testing.T) {
 				attempts := mocks.NewMockAttemptRepository(t)
 				llm := llmmocks.NewMockLLMClient(t)
 				repo.EXPECT().GetByID(mock.Anything, writingActID).Return(nil, gorm.ErrRecordNotFound).Once()
-				svc := services.NewLessonActivityService(repo, pronunciation.NewScorer(voicemocks.NewMockPronounceEngine(t)), llm, attempts)
+				svc := newActivityService(t, repo, pronunciation.NewScorer(voicemocks.NewMockPronounceEngine(t)), llm, attempts)
 
 				got, err := svc.ScoreWriting(context.Background(), writingUserID, writingActID, writingOpenID, writingText)
 

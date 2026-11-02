@@ -7,6 +7,7 @@ type StartVideoAttempt struct {
 }
 
 type SaveVideoProgress struct {
+	Revision               int            `json:"revision" binding:"required,min=1"`
 	ActiveSequence         int            `json:"activeSequence" binding:"min=0"`
 	ActiveTranscriptID     *string        `json:"activeTranscriptId" binding:"omitempty,uuid"`
 	Level                  *string        `json:"level" binding:"omitempty,oneof=easy normal hard"`

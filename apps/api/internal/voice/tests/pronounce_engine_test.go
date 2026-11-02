@@ -14,7 +14,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"engflex-api/internal/modules/conversations/dtos/responses"
 	"engflex-api/internal/voice"
 )
 
@@ -80,8 +79,8 @@ func TestHTTPPronounceEngineRecordedMismatch(t *testing.T) {
 
 	// Reference phones come from /phonemes, grouped per word.
 	require.Len(t, got.ReferencePhones, 7)
-	assert.Equal(t, responses.ReferencePhone{Word: "Good", Phones: "ɡʊd"}, got.ReferencePhones[0])
-	assert.Equal(t, responses.ReferencePhone{Word: "morning", Phones: "mɔːɹnɪŋ"}, got.ReferencePhones[1])
+	assert.Equal(t, voice.ReferencePhone{Word: "Good", Phones: "ɡʊd"}, got.ReferencePhones[0])
+	assert.Equal(t, voice.ReferencePhone{Word: "morning", Phones: "mɔːɹnɪŋ"}, got.ReferencePhones[1])
 
 	// 46-point vectors and 107-point prosody stay whole (≤120 kept as-is).
 	require.Len(t, got.ModelCurve, 46)
@@ -157,13 +156,13 @@ func TestHTTPPronounceEngineNullAndMissing(t *testing.T) {
 	tests := []struct {
 		name  string
 		body  string
-		check func(*testing.T, *responses.PronounceResult)
+		check func(*testing.T, *voice.PronounceResult)
 	}{
 		{
 			name: "null actual maps to empty heard",
 			body: `{"transcribe":"HI","differences":{"phoneme_error_rate":0.5,"word_error_rate":0.5,` +
 				`"errors":[{"word":"hi","expected":"haɪ","actual":null}]}}`,
-			check: func(t *testing.T, got *responses.PronounceResult) {
+			check: func(t *testing.T, got *voice.PronounceResult) {
 				t.Helper()
 				require.Len(t, got.Errors, 1)
 				assert.Equal(t, "", got.Errors[0].Heard)
@@ -176,7 +175,7 @@ func TestHTTPPronounceEngineNullAndMissing(t *testing.T) {
 		{
 			name: "missing differences: rates default to zero, score 100 without panic",
 			body: `{"transcribe":"HI"}`,
-			check: func(t *testing.T, got *responses.PronounceResult) {
+			check: func(t *testing.T, got *voice.PronounceResult) {
 				t.Helper()
 				assert.Equal(t, "HI", got.Transcription)
 				assert.Equal(t, 100.0, got.Score)
@@ -246,9 +245,9 @@ func TestHTTPPronounceEngineReferencePhonesGroupRuns(t *testing.T) {
 	got, err := engine.Pronounce(context.Background(), "hi world world bye", "en", []byte("fake-webm"), "audio/webm")
 	require.NoError(t, err)
 	require.Len(t, got.ReferencePhones, 3)
-	assert.Equal(t, responses.ReferencePhone{Word: "hi", Phones: "haɪ"}, got.ReferencePhones[0])
-	assert.Equal(t, responses.ReferencePhone{Word: "world", Phones: "wɜːld"}, got.ReferencePhones[1])
-	assert.Equal(t, responses.ReferencePhone{Word: "bye", Phones: "baɪ"}, got.ReferencePhones[2])
+	assert.Equal(t, voice.ReferencePhone{Word: "hi", Phones: "haɪ"}, got.ReferencePhones[0])
+	assert.Equal(t, voice.ReferencePhone{Word: "world", Phones: "wɜːld"}, got.ReferencePhones[1])
+	assert.Equal(t, voice.ReferencePhone{Word: "bye", Phones: "baɪ"}, got.ReferencePhones[2])
 }
 
 func TestHTTPPronounceEngineRequestShape(t *testing.T) {

@@ -42,10 +42,30 @@ type DetailOpening struct {
 // banner — nested scenarios, their personas, and their detail documents — in
 // one call, because every nested type mirrors its model by field name.
 type ScenarioTopic struct {
-	ID        string     `json:"id"`
-	Slug      string     `json:"slug"`
-	Name      string     `json:"name"`
-	ShortName string     `json:"shortName"`
-	Position  int        `json:"position"`
-	Scenarios []Scenario `json:"scenarios"`
+	ID        string            `json:"id"`
+	Slug      string            `json:"slug"`
+	Name      string            `json:"name"`
+	ShortName string            `json:"shortName"`
+	Position  int               `json:"position"`
+	Scenarios []ScenarioPreview `json:"scenarios"`
+}
+
+type ScenarioPreview struct {
+	ID          string                   `json:"id"`
+	Topic       *ScenarioTopic           `json:"topic,omitempty"`
+	Persona     *ScenarioPersonaPreview  `json:"persona"`
+	Title       string                   `json:"title"`
+	Objective   string                   `json:"objective"`
+	CEFRLevel   enums.ScenarioDifficulty `json:"cefrLevel"`
+	MaxDuration int                      `json:"maxDuration"`
+	Status      enums.PublishStatus      `json:"status"`
+	IsPremium   bool                     `json:"isPremium"`
+}
+
+type ScenarioPersonaPreview struct {
+	Personality string       `json:"personality"`
+	ID          string       `json:"id"`
+	Name        string       `json:"name"`
+	RoleTitle   string       `json:"roleTitle"`
+	Gender      enums.Gender `json:"gender"`
 }

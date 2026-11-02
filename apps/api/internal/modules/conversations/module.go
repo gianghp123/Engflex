@@ -1,34 +1,13 @@
-// Package conversations wires the conversation lifecycle module.
+// Package conversations registers routes over dependencies supplied by composition.
 package conversations
 
 import (
-	"net/http"
-
-	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
-
-	"engflex-api/config"
-	"engflex-api/internal/database/repositories"
 	"engflex-api/internal/modules/conversations/controllers"
-	"engflex-api/internal/modules/conversations/services"
 	"engflex-api/internal/server/middleware"
-	"engflex-api/internal/voice"
+	"github.com/gin-gonic/gin"
 )
 
-// RegisterRoutes mounts the conversation endpoints under /api/v1.
-// sessionLimiter is an optional IP-keyed throttle (nil = disabled) applied
-// BEFORE auth on engine-costly routes (sona parity: limiter precedes auth
-// because the userID is unavailable pre-auth).
-func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB, cfg config.VoiceConfig, sessionLimiter gin.HandlerFunc) {
-	repo := repositories.NewConversationRepository(db)
-	turns := repositories.NewConversationTurnRepository(db)
-	feedbacks := repositories.NewFeedbackRepository(db)
-	engine := voice.NewHTTPVoiceClient(cfg)
-	pronounce := voice.NewHTTPPronounceEngine(cfg.PronounceURL, cfg.PronounceTimeout)
-	svc := services.NewConversationService(repo, turns, engine, pronounce, cfg.MaxDurationSec, feedbacks,
-		repositories.NewScenarioRepository(db), repositories.NewPersonaRepository(db))
-	ctl := controllers.NewConversationController(svc, cfg.MaxDurationSec)
-
+func RegisterRoutes(rg *gin.RouterGroup, ctl *controllers.ConversationController, cb *controllers.VoiceCallbackController, tcb *controllers.TurnCallbackController, sessionLimiter gin.HandlerFunc, internalSecret string) {
 	g := rg.Group("/conversations")
 	strict := []gin.HandlerFunc{}
 	if sessionLimiter != nil {
@@ -51,21 +30,7 @@ func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB, cfg config.VoiceConfig, se
 	g.POST("/:id/transcribe", middleware.RequireAuth(), ctl.Transcribe)
 	g.POST("/:id/pronounce", middleware.RequireAuth(), ctl.Pronounce)
 
-	cb := controllers.NewVoiceCallbackController(svc)
-	tcb := controllers.NewTurnCallbackController(svc)
-	internal := rg.Group("/internal/conversations", middleware.RequireInternalSecret(cfg.InternalSecret))
+	internal := rg.Group("/internal/conversations", middleware.RequireInternalSecret(internalSecret))
 	internal.POST("/:id/finalize", cb.Finalize)
-	// A text-only batch is small; this is a guard against a malformed or
-	// hostile request buffering itself into memory.
-	const maxTurnsBatchBytes = 4 << 20
-	internal.POST("/:id/turns", maxBodyBytes(maxTurnsBatchBytes), tcb.IngestTurns)
-}
-
-// maxBodyBytes rejects an oversized batch before it is buffered, so a bad
-// request cannot exhaust memory.
-func maxBodyBytes(limit int64) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, limit)
-		c.Next()
-	}
+	internal.POST("/:id/turns", tcb.IngestTurns)
 }

@@ -1,41 +1,13 @@
-// Package vocabulary wires the vocabulary module: the shared dictionary,
-// user flashcard decks and their rows, the deck taxonomy, and per-user word
-// state. All five tables are served by this one module because they are one
-// feature.
+// Package vocabulary registers routes over dependencies supplied by composition.
 package vocabulary
 
 import (
-	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
-
-	"engflex-api/internal/database/repositories"
-	paymentservices "engflex-api/internal/modules/payments/services"
 	"engflex-api/internal/modules/vocabulary/controllers"
-	"engflex-api/internal/modules/vocabulary/services"
 	"engflex-api/internal/server/middleware"
+	"github.com/gin-gonic/gin"
 )
 
-// RegisterRoutes mounts the vocabulary endpoints under /api/v1.
-func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB) {
-	premiumSvc := paymentservices.NewSubscriptionService(
-		repositories.NewSubscriptionRepository(db), repositories.NewPlanRepository(db))
-
-	categorySvc := services.NewVocabularyCategoryService(repositories.NewVocabularyCategoryRepository(db))
-	categoryCtl := controllers.NewVocabularyCategoryController(categorySvc)
-
-	deckSvc := services.NewVocabularyDeckService(repositories.NewVocabularyDeckRepository(db), premiumSvc)
-	deckCtl := controllers.NewVocabularyDeckController(deckSvc)
-
-	itemSvc := services.NewVocabularyDeckItemService(repositories.NewVocabularyDeckItemRepository(db), repositories.NewVocabularyDeckRepository(db))
-	itemCtl := controllers.NewVocabularyDeckItemController(itemSvc)
-
-	itemRepo := repositories.NewVocabularyItemRepository(db)
-	dictSvc := services.NewVocabularyItemService(itemRepo, premiumSvc)
-	dictCtl := controllers.NewVocabularyItemController(dictSvc)
-
-	stateSvc := services.NewUserVocabularyService(repositories.NewUserVocabularyRepository(db), itemRepo)
-	stateCtl := controllers.NewUserVocabularyController(stateSvc)
-
+func RegisterRoutes(rg *gin.RouterGroup, categoryCtl *controllers.VocabularyCategoryController, deckCtl *controllers.VocabularyDeckController, itemCtl *controllers.VocabularyDeckItemController, dictCtl *controllers.VocabularyItemController, stateCtl *controllers.UserVocabularyController) {
 	c := rg.Group("/vocabulary-categories")
 	c.GET("", middleware.RequireAuth(), categoryCtl.List)
 	c.GET("/:id", middleware.RequireAuth(), categoryCtl.GetByID)

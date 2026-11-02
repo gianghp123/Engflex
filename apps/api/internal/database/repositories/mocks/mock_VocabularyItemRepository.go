@@ -50,8 +50,8 @@ func (_m *MockVocabularyItemRepository) EXPECT() *MockVocabularyItemRepository_E
 }
 
 // Count provides a mock function for the type MockVocabularyItemRepository
-func (_mock *MockVocabularyItemRepository) Count(ctx context.Context, onlyPublished bool) (int64, error) {
-	ret := _mock.Called(ctx, onlyPublished)
+func (_mock *MockVocabularyItemRepository) Count(ctx context.Context, onlyPublished bool, userID string, search string) (int64, error) {
+	ret := _mock.Called(ctx, onlyPublished, userID, search)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Count")
@@ -59,16 +59,16 @@ func (_mock *MockVocabularyItemRepository) Count(ctx context.Context, onlyPublis
 
 	var r0 int64
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, bool) (int64, error)); ok {
-		return returnFunc(ctx, onlyPublished)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, bool, string, string) (int64, error)); ok {
+		return returnFunc(ctx, onlyPublished, userID, search)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, bool) int64); ok {
-		r0 = returnFunc(ctx, onlyPublished)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, bool, string, string) int64); ok {
+		r0 = returnFunc(ctx, onlyPublished, userID, search)
 	} else {
 		r0 = ret.Get(0).(int64)
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, bool) error); ok {
-		r1 = returnFunc(ctx, onlyPublished)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, bool, string, string) error); ok {
+		r1 = returnFunc(ctx, onlyPublished, userID, search)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -83,11 +83,13 @@ type MockVocabularyItemRepository_Count_Call struct {
 // Count is a helper method to define mock.On call
 //   - ctx context.Context
 //   - onlyPublished bool
-func (_e *MockVocabularyItemRepository_Expecter) Count(ctx any, onlyPublished any) *MockVocabularyItemRepository_Count_Call {
-	return &MockVocabularyItemRepository_Count_Call{Call: _e.mock.On("Count", ctx, onlyPublished)}
+//   - userID string
+//   - search string
+func (_e *MockVocabularyItemRepository_Expecter) Count(ctx any, onlyPublished any, userID any, search any) *MockVocabularyItemRepository_Count_Call {
+	return &MockVocabularyItemRepository_Count_Call{Call: _e.mock.On("Count", ctx, onlyPublished, userID, search)}
 }
 
-func (_c *MockVocabularyItemRepository_Count_Call) Run(run func(ctx context.Context, onlyPublished bool)) *MockVocabularyItemRepository_Count_Call {
+func (_c *MockVocabularyItemRepository_Count_Call) Run(run func(ctx context.Context, onlyPublished bool, userID string, search string)) *MockVocabularyItemRepository_Count_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -97,9 +99,19 @@ func (_c *MockVocabularyItemRepository_Count_Call) Run(run func(ctx context.Cont
 		if args[1] != nil {
 			arg1 = args[1].(bool)
 		}
+		var arg2 string
+		if args[2] != nil {
+			arg2 = args[2].(string)
+		}
+		var arg3 string
+		if args[3] != nil {
+			arg3 = args[3].(string)
+		}
 		run(
 			arg0,
 			arg1,
+			arg2,
+			arg3,
 		)
 	})
 	return _c
@@ -110,7 +122,7 @@ func (_c *MockVocabularyItemRepository_Count_Call) Return(n int64, err error) *M
 	return _c
 }
 
-func (_c *MockVocabularyItemRepository_Count_Call) RunAndReturn(run func(ctx context.Context, onlyPublished bool) (int64, error)) *MockVocabularyItemRepository_Count_Call {
+func (_c *MockVocabularyItemRepository_Count_Call) RunAndReturn(run func(ctx context.Context, onlyPublished bool, userID string, search string) (int64, error)) *MockVocabularyItemRepository_Count_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -298,8 +310,8 @@ func (_c *MockVocabularyItemRepository_GetByID_Call) RunAndReturn(run func(ctx c
 }
 
 // List provides a mock function for the type MockVocabularyItemRepository
-func (_mock *MockVocabularyItemRepository) List(ctx context.Context, limit int, offset int, onlyPublished bool) ([]*models.VocabularyItem, error) {
-	ret := _mock.Called(ctx, limit, offset, onlyPublished)
+func (_mock *MockVocabularyItemRepository) List(ctx context.Context, limit int, offset int, onlyPublished bool, userID string, search string) ([]*models.VocabularyItem, error) {
+	ret := _mock.Called(ctx, limit, offset, onlyPublished, userID, search)
 
 	if len(ret) == 0 {
 		panic("no return value specified for List")
@@ -307,18 +319,18 @@ func (_mock *MockVocabularyItemRepository) List(ctx context.Context, limit int, 
 
 	var r0 []*models.VocabularyItem
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, int, int, bool) ([]*models.VocabularyItem, error)); ok {
-		return returnFunc(ctx, limit, offset, onlyPublished)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, int, int, bool, string, string) ([]*models.VocabularyItem, error)); ok {
+		return returnFunc(ctx, limit, offset, onlyPublished, userID, search)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, int, int, bool) []*models.VocabularyItem); ok {
-		r0 = returnFunc(ctx, limit, offset, onlyPublished)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, int, int, bool, string, string) []*models.VocabularyItem); ok {
+		r0 = returnFunc(ctx, limit, offset, onlyPublished, userID, search)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*models.VocabularyItem)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, int, int, bool) error); ok {
-		r1 = returnFunc(ctx, limit, offset, onlyPublished)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, int, int, bool, string, string) error); ok {
+		r1 = returnFunc(ctx, limit, offset, onlyPublished, userID, search)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -335,11 +347,13 @@ type MockVocabularyItemRepository_List_Call struct {
 //   - limit int
 //   - offset int
 //   - onlyPublished bool
-func (_e *MockVocabularyItemRepository_Expecter) List(ctx any, limit any, offset any, onlyPublished any) *MockVocabularyItemRepository_List_Call {
-	return &MockVocabularyItemRepository_List_Call{Call: _e.mock.On("List", ctx, limit, offset, onlyPublished)}
+//   - userID string
+//   - search string
+func (_e *MockVocabularyItemRepository_Expecter) List(ctx any, limit any, offset any, onlyPublished any, userID any, search any) *MockVocabularyItemRepository_List_Call {
+	return &MockVocabularyItemRepository_List_Call{Call: _e.mock.On("List", ctx, limit, offset, onlyPublished, userID, search)}
 }
 
-func (_c *MockVocabularyItemRepository_List_Call) Run(run func(ctx context.Context, limit int, offset int, onlyPublished bool)) *MockVocabularyItemRepository_List_Call {
+func (_c *MockVocabularyItemRepository_List_Call) Run(run func(ctx context.Context, limit int, offset int, onlyPublished bool, userID string, search string)) *MockVocabularyItemRepository_List_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -357,11 +371,21 @@ func (_c *MockVocabularyItemRepository_List_Call) Run(run func(ctx context.Conte
 		if args[3] != nil {
 			arg3 = args[3].(bool)
 		}
+		var arg4 string
+		if args[4] != nil {
+			arg4 = args[4].(string)
+		}
+		var arg5 string
+		if args[5] != nil {
+			arg5 = args[5].(string)
+		}
 		run(
 			arg0,
 			arg1,
 			arg2,
 			arg3,
+			arg4,
+			arg5,
 		)
 	})
 	return _c
@@ -372,7 +396,7 @@ func (_c *MockVocabularyItemRepository_List_Call) Return(vocabularyItems []*mode
 	return _c
 }
 
-func (_c *MockVocabularyItemRepository_List_Call) RunAndReturn(run func(ctx context.Context, limit int, offset int, onlyPublished bool) ([]*models.VocabularyItem, error)) *MockVocabularyItemRepository_List_Call {
+func (_c *MockVocabularyItemRepository_List_Call) RunAndReturn(run func(ctx context.Context, limit int, offset int, onlyPublished bool, userID string, search string) ([]*models.VocabularyItem, error)) *MockVocabularyItemRepository_List_Call {
 	_c.Call.Return(run)
 	return _c
 }

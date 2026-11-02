@@ -8,6 +8,7 @@ package pronunciation
 import (
 	"context"
 	"errors"
+	"log/slog"
 	"net/http"
 
 	"engflex-api/internal/common"
@@ -83,9 +84,11 @@ func (s *scorer) Score(ctx context.Context, expectedText string, audio []byte, m
 		return nil, mapEngineError(ctx, err)
 	}
 	var out Result
-	if utils.Map(&out, res) != nil {
+	if err := utils.Map(&out, res); err != nil {
+		logger.Report(ctx, "pronunciation result mapping failed", err)
 		return nil, common.Internal()
 	}
+	slog.InfoContext(ctx, "pronunciation scored", "score", out.Score)
 	return &out, nil
 }
 

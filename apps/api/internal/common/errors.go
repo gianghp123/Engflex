@@ -112,6 +112,10 @@ func FromDBError(err error, resource string) *AppError {
 	if err == nil {
 		return nil
 	}
+	var appErr *AppError
+	if errors.As(err, &appErr) {
+		return appErr
+	}
 	var idErr *InvalidIDError
 	if errors.As(err, &idErr) {
 		return BadRequest(idErr.Error())
@@ -150,4 +154,16 @@ func firstNonBlankOrDefault(msgs []string, fallback string) string {
 		}
 	}
 	return fallback
+}
+
+// InvalidRequest preserves the HTTP size limit for streamed/chunked uploads.
+func InvalidRequest(err error, fallback ...string) *AppError {
+	var limit *http.MaxBytesError
+	if errors.As(err, &limit) {
+		return New(http.StatusRequestEntityTooLarge, "request body too large")
+	}
+	if len(fallback) > 0 {
+		return BadRequest(fallback...)
+	}
+	return BadRequest(err.Error())
 }

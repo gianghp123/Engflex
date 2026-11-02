@@ -30,6 +30,7 @@ export interface WordForm {
  * word-detail screen renders beyond the core columns.
  */
 export interface VocabularyDetails {
+  ipa: string;
   audioUs: string;
   audioUk: string;
   syllables: string;
@@ -57,13 +58,15 @@ export interface UserVocabularyState {
 /**
  * VocabularyItem is a vocabulary hub card / word detail payload.
  */
+export interface SavedVocabulary extends UserVocabularyState {
+  item: VocabularyItemSummary;
+}
 export interface VocabularyItem {
   id: string;
   term: string;
-  ipa: string;
-  partOfSpeech: string;
+  partOfSpeech?: VocabularyPartOfSpeech | null;
   cefr: CEFR;
-  domain?: VocabularyDomain;
+  domain?: VocabularyDomain | null;
   definition: string;
   status: PublishStatus;
   isPremium: boolean;
@@ -81,6 +84,15 @@ export interface VocabularyStats {
   customAdditions: number /* int */;
   dueToday: number /* int */;
   retentionPct: number /* int */;
+}
+export interface VocabularyItemSummary {
+  id: string;
+  term: string;
+  cefr: CEFR;
+  domain?: VocabularyDomain | null;
+  partOfSpeech?: VocabularyPartOfSpeech | null;
+  status: PublishStatus;
+  isPremium: boolean;
 }
 
 //////////
@@ -121,11 +133,9 @@ export interface VocabularyDeckDetail {
 export interface VocabularyDeckItemResponse {
   id: string;
   deckId: string;
-  videoExerciseId?: string;
-  videoTranscriptId?: string;
-  phrase: string;
-  normalizedPhrase: string;
-  meaning: string;
+  itemId: string;
+  sequence: number /* int */;
+  item: VocabularyItem;
   exampleSentence: string;
   note: string;
 }

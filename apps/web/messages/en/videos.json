@@ -81,6 +81,14 @@
         "hint": "Type each word and press Space to check",
         "sentenceDone": "Sentence completed! Press Enter or 'Next' to continue.",
         "accuracy": "{correct}/{total} words correct"
+      },
+      "persistence": {
+        "conflict": "Progress changed in another session. Your draft is kept here. Load the saved progress before continuing.",
+        "denied": "Access is no longer available. Your draft is kept here; restore access before continuing.",
+        "failed": "Progress could not be saved. Your draft is kept here.",
+        "reload": "Load saved progress (replace this draft)",
+        "retry": "Retry with this draft",
+        "renew": "Restore premium access"
       }
     },
     "practice": {

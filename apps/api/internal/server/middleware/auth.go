@@ -96,7 +96,7 @@ func RequireAuth() gin.HandlerFunc {
 		}
 		// Stamp user_id on downstream logs (services, request logger).
 		c.Request = c.Request.WithContext(
-			logger.WithUserID(c.Request.Context(), claims.Subject),
+			common.WithActor(logger.WithUserID(c.Request.Context(), claims.Subject), common.Actor{UserID: claims.Subject, Admin: roleFromClaims(claims.Custom) == enums.UserRoleAdmin}),
 		)
 		c.Next()
 	}

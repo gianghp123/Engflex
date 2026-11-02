@@ -30,6 +30,9 @@ pnpm test:e2e            # headless, boots Go API + vite automatically
 pnpm test:e2e:headed     # headed browser
 pnpm test:e2e:live       # live engine + fake mic (Analyze flow)
 pnpm test:e2e:recovery   # live engine + fake mic (transcript recovery)
+
+# Existing authorized development admin; never changes Clerk roles/metadata.
+pnpm exec playwright test --config playwright.admin.config.ts
 ```
 
 Live suites (`playwright.live.config.ts`, `playwright.recovery.config.ts`) share
@@ -60,3 +63,27 @@ one stack on dedicated ports (API 8010, web 3010, engine 7861) and need
 - `voice-recovery.spec.ts` — live transcript-recovery suite.
 
 Desktop Chromium only, one worker (serial against the live backend).
+
+The default suite uses closed local Voice/Pronunciation/LLM endpoints. It covers
+publication and current-entitlement HTTP policies, video revision conflicts,
+premium-loss draft recovery, a lost completion response, and signed-out SSR in
+English and Vietnamese. Clerk development authentication is still a network
+dependency. Browser contexts refresh their session and establish the locale
+before rendering; the dedicated database name must end in `_e2e`.
+
+The admin acceptance config additionally requires `E2E_ADMIN_CLERK_USER_EMAIL`
+and a `sk_test_` key for the same instance. It verifies dictionary nullable
+metadata/IPA, deck picker CRUD, nested lesson/exam/video attempt labels,
+grant/revoke, and checkout through a local VNPay test double plus signed IPN.
+All business writes stay in the dedicated database; role changes are not part
+of this suite. Never point it at a retained environment.
+
+`node runtime-acceptance.mjs` is an explicit Docker acceptance probe, requiring
+`TEST_DATABASE_URL`, the two test emails, and task-owned API/Voice containers on
+the default local ports 55980/55960 (PostgreSQL 55916). It checks the release
+HTTP probes, restarts only the Voice container labelled
+`engflex.validation=modular`, and checks Go session re-confirmation, snapshot
+reordering/replay/correction and atomic zero-duration finalization. It sends no
+WebRTC offer and therefore starts no inference. The authorized-content smoke
+probe uses admin preview; paid entitlements are tested separately by the policy
+and checkout suites. The script revokes only the sessions it minted.

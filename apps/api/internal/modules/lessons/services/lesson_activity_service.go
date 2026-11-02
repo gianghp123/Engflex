@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 	"gorm.io/datatypes"
@@ -22,7 +23,6 @@ import (
 	"engflex-api/internal/logger"
 	"engflex-api/internal/modules/lessons/activityconfig"
 	"engflex-api/internal/modules/lessons/dtos/requests"
-	"engflex-api/internal/modules/lessons/dtos/responses"
 	"engflex-api/internal/modules/lessons/prompts"
 	"engflex-api/internal/modules/lessons/schemas"
 	"engflex-api/internal/utils"
@@ -32,33 +32,43 @@ import (
 // LessonActivityService owns ordered lesson parts and lesson attempts
 // (1 attempt = 1 lesson; per-part results attach to the open run).
 type LessonActivityService interface {
+	ListProgress(ctx context.Context, userID string) ([]*models.LessonProgressSummary, error)
 	ListByLesson(ctx context.Context, lessonID string) ([]*models.LessonActivity, error)
 	GetByID(ctx context.Context, id string) (*models.LessonActivity, error)
-	CheckAnswer(ctx context.Context, userID, id, attemptID string, questionIndex int, key string) (*responses.CheckResult, error)
-	Pronounce(ctx context.Context, userID, id, attemptID string, itemIndex int, audio []byte, mime string) (*responses.PronunciationResult, error)
+	CheckAnswer(ctx context.Context, userID, id, attemptID string, questionIndex int, key string) (*models.CheckResult, error)
+	Pronounce(ctx context.Context, userID, id, attemptID string, itemIndex int, audio []byte, mime string) (*pronunciation.Result, error)
 	StartAttempt(ctx context.Context, userID, lessonID string) (*models.Attempt, error)
-	GetOpenProgress(ctx context.Context, userID, lessonID string) (*responses.AttemptProgress, error)
+	GetOpenProgress(ctx context.Context, userID, lessonID string) (*models.LessonAttemptProgress, error)
 	AttachPartResult(ctx context.Context, userID, attemptID, activityID string, entry PartEntry) (*models.Attempt, error)
-	ScoreWriting(ctx context.Context, userID, id, attemptID, text string) (*responses.WritingScoreResponse, error)
+	ScoreWriting(ctx context.Context, userID, id, attemptID, text string) (*models.LessonWritingResult, error)
 	Create(ctx context.Context, req requests.CreateLessonActivity) (*models.LessonActivity, error)
 	Update(ctx context.Context, id string, req requests.UpdateLessonActivity) (*models.LessonActivity, error)
 	Delete(ctx context.Context, id string) error
 }
 
+type LessonAccessPolicy interface {
+	CheckAccess(ctx context.Context, userID, id string) error
+}
+
 type lessonActivityService struct {
-	repo     repositories.LessonActivityRepository
-	scorer   pronunciation.Scorer
-	llm      llm.LLMClient
-	attempts repositories.AttemptRepository
+	access       LessonAccessPolicy
+	repo         repositories.LessonActivityRepository
+	scorer       pronunciation.Scorer
+	llm          llm.LLMClient
+	attempts     repositories.AttemptRepository
+	transactions repositories.TransactionManager
 }
 
 // NewLessonActivityService builds the service over repository and client
 // interfaces (never concretes, never nil).
-func NewLessonActivityService(repo repositories.LessonActivityRepository, scorer pronunciation.Scorer, llm llm.LLMClient, attempts repositories.AttemptRepository) LessonActivityService {
-	return &lessonActivityService{repo: repo, scorer: scorer, llm: llm, attempts: attempts}
+func NewLessonActivityService(repo repositories.LessonActivityRepository, scorer pronunciation.Scorer, llm llm.LLMClient, attempts repositories.AttemptRepository, transactions repositories.TransactionManager, access LessonAccessPolicy) LessonActivityService {
+	return &lessonActivityService{repo: repo, scorer: scorer, llm: llm, attempts: attempts, transactions: transactions, access: access}
 }
 
 func (s *lessonActivityService) ListByLesson(ctx context.Context, lessonID string) ([]*models.LessonActivity, error) {
+	if err := s.access.CheckAccess(ctx, common.ActorFromContext(ctx).UserID, lessonID); err != nil {
+		return nil, err
+	}
 	items, err := s.repo.ListByLesson(ctx, lessonID)
 	if err != nil {
 		appErr := common.FromDBError(err, "lesson activity")
@@ -76,17 +86,23 @@ func (s *lessonActivityService) GetByID(ctx context.Context, id string) (*models
 		logger.Report(ctx, "get lesson activity failed", appErr, "id", id)
 		return nil, appErr
 	}
+	if err := s.access.CheckAccess(ctx, common.ActorFromContext(ctx).UserID, m.LessonID); err != nil {
+		return nil, err
+	}
 	slog.InfoContext(ctx, "lesson activity found", "id", m.ID)
 	return m, nil
 }
 
 // loadActivity fetches one activity, mapping DB errors to the API vocabulary.
-func (s *lessonActivityService) loadActivity(ctx context.Context, id string) (*models.LessonActivity, error) {
+func (s *lessonActivityService) loadActivity(ctx context.Context, userID, id string) (*models.LessonActivity, error) {
 	m, err := s.repo.GetByID(ctx, id)
 	if err != nil {
 		appErr := common.FromDBError(err, "lesson activity")
 		logger.Report(ctx, "load lesson activity failed", appErr, "id", id)
 		return nil, appErr
+	}
+	if err := s.access.CheckAccess(ctx, userID, m.LessonID); err != nil {
+		return nil, err
 	}
 	return m, nil
 }
@@ -96,10 +112,14 @@ func (s *lessonActivityService) loadActivity(ctx context.Context, id string) (*m
 // existence rides the lessons FK (23503 -> 404 via FromDBError); malformed
 // ids are 400 here.
 func (s *lessonActivityService) StartAttempt(ctx context.Context, userID, lessonID string) (*models.Attempt, error) {
+	if err := s.access.CheckAccess(ctx, userID, lessonID); err != nil {
+		return nil, err
+	}
 	if _, err := uuid.Parse(lessonID); err != nil {
 		return nil, common.BadRequest("invalid lesson id")
 	}
 	if open, err := s.attempts.GetOpenAttempt(ctx, userID, lessonID); err == nil {
+		slog.InfoContext(ctx, "open lesson attempt reused", "attemptID", open.ID)
 		return open, nil
 	} else if !errors.Is(err, gorm.ErrRecordNotFound) {
 		appErr := common.FromDBError(err, "attempt")
@@ -113,7 +133,7 @@ func (s *lessonActivityService) StartAttempt(ctx context.Context, userID, lesson
 		Status:   enums.AttemptStatusInProgress,
 		Result:   []byte(`{}`),
 	}
-	if err := s.attempts.Create(ctx, m); err != nil {
+	if err := s.attempts.CreateOpen(ctx, m); err != nil {
 		appErr := common.FromDBError(err, "attempt")
 		logger.Report(ctx, "start attempt failed", appErr, "lessonID", lessonID)
 		return nil, appErr
@@ -126,11 +146,14 @@ func (s *lessonActivityService) StartAttempt(ctx context.Context, userID, lesson
 // the client can resume mid-lesson. 404 when no run is open (the caller then
 // starts one). Non-checkable entries are omitted; outcomes pointing past the
 // current config are skipped as stale.
-func (s *lessonActivityService) GetOpenProgress(ctx context.Context, userID, lessonID string) (*responses.AttemptProgress, error) {
+func (s *lessonActivityService) GetOpenProgress(ctx context.Context, userID, lessonID string) (*models.LessonAttemptProgress, error) {
+	if err := s.access.CheckAccess(ctx, userID, lessonID); err != nil {
+		return nil, err
+	}
 	if _, err := uuid.Parse(lessonID); err != nil {
 		return nil, common.BadRequest("invalid lesson id")
 	}
-	m, err := s.attempts.GetOpenAttempt(ctx, userID, lessonID)
+	m, err := s.attempts.GetOpenLessonGraph(ctx, userID, lessonID)
 	if err != nil {
 		appErr := common.FromDBError(err, "attempt")
 		if !errors.Is(err, gorm.ErrRecordNotFound) {
@@ -138,12 +161,20 @@ func (s *lessonActivityService) GetOpenProgress(ctx context.Context, userID, les
 		}
 		return nil, appErr
 	}
-	checks := map[string][]responses.CheckedQuestion{}
-	for activityID, entry := range decodePartMap(m) {
-		am, err := s.repo.GetByID(ctx, activityID)
-		if err != nil {
-			logger.Report(ctx, "progress activity missing", common.FromDBError(err, "lesson activity"), "activityID", activityID)
+	checks := map[string][]models.CheckedQuestion{}
+	if m.Lesson == nil {
+		return nil, common.NotFound("lesson not found")
+	}
+	parts := decodePartMap(m)
+	completed := []string{}
+	for _, am := range m.Lesson.Activities {
+		activityID := am.ID
+		entry, ok := parts[activityID]
+		if !ok {
 			continue
+		}
+		if partComplete(am, entry) {
+			completed = append(completed, activityID)
 		}
 		questions, err := activityconfig.QuestionsFor(am.Type, am.Config)
 		if errors.Is(err, activityconfig.ErrNotCheckable) {
@@ -157,25 +188,20 @@ func (s *lessonActivityService) GetOpenProgress(ctx context.Context, userID, les
 		if raw, merr := json.Marshal(entry.Detail); merr != nil || json.Unmarshal(raw, &detail) != nil {
 			continue
 		}
-		var out []responses.CheckedQuestion
+		var out []models.CheckedQuestion
 		for _, o := range detail.Outcomes {
 			if o.Index < 0 || o.Index >= len(questions) {
 				continue
 			}
 			q := questions[o.Index]
-			out = append(out, responses.CheckedQuestion{Index: o.Index, Key: o.Key, Correct: o.Correct, CorrectKey: q.AnswerKey, Explanation: q.Explanation})
+			out = append(out, models.CheckedQuestion{Index: o.Index, Key: o.Key, Correct: o.Correct, CorrectKey: q.AnswerKey, Explanation: q.Explanation})
 		}
 		if len(out) > 0 {
 			checks[activityID] = out
 		}
 	}
-	var summary responses.AttemptSummary
-	if err := utils.Map(&summary, m); err != nil {
-		logger.Report(ctx, "progress map failed", common.Internal(), "attemptID", m.ID)
-		return nil, common.Internal()
-	}
 	slog.InfoContext(ctx, "attempt progress loaded", "attemptID", m.ID, "activities", len(checks))
-	return &responses.AttemptProgress{Attempt: summary, Checks: checks}, nil
+	return &models.LessonAttemptProgress{Attempt: m, Checks: checks, CompletedParts: completed}, nil
 }
 
 // loadOwnedAttempt fetches one attempt and proves ownership: foreign ids
@@ -185,7 +211,7 @@ func (s *lessonActivityService) loadOwnedAttempt(ctx context.Context, userID, at
 	if _, err := uuid.Parse(attemptID); err != nil {
 		return nil, common.BadRequest("invalid attempt id")
 	}
-	m, err := s.attempts.GetByID(ctx, attemptID)
+	m, err := s.attempts.GetForUpdate(ctx, attemptID)
 	if err != nil {
 		appErr := common.FromDBError(err, "attempt")
 		logger.Report(ctx, "load owned attempt failed", appErr, "attemptID", attemptID)
@@ -203,13 +229,17 @@ func (s *lessonActivityService) loadOwnedAttempt(ctx context.Context, userID, at
 // AttachPartResult merges one part entry into the open attempt and finalizes
 // inline when the map covers every lesson activity.
 func (s *lessonActivityService) AttachPartResult(ctx context.Context, userID, attemptID, activityID string, entry PartEntry) (*models.Attempt, error) {
-	m, err := s.loadOwnedAttempt(ctx, userID, attemptID)
-	if err != nil {
-		return nil, err
-	}
-	parts := decodePartMap(m)
-	parts[activityID] = entry
-	return s.attachWithMap(ctx, m, parts)
+	return s.withAttemptTransaction(ctx, func(s *lessonActivityService) (*models.Attempt, error) {
+
+		m, err := s.loadOwnedAttempt(ctx, userID, attemptID)
+		if err != nil {
+			return nil, err
+		}
+		parts := decodePartMap(m)
+		parts[activityID] = entry
+		return s.attachWithMap(ctx, m, parts)
+
+	})
 }
 
 // attachWithMap persists one merged part entry, finalizing inline when the
@@ -231,11 +261,23 @@ func (s *lessonActivityService) maybeFinalize(ctx context.Context, m *models.Att
 		logger.Report(ctx, "attempt missing lesson", common.Internal(), "attemptID", m.ID)
 		return nil, common.Internal()
 	}
+	if err := s.access.CheckAccess(ctx, m.UserID, *m.LessonID); err != nil {
+		return nil, err
+	}
 	activities, err := s.repo.ListByLesson(ctx, *m.LessonID)
 	if err != nil {
 		appErr := common.FromDBError(err, "lesson activity")
 		logger.Report(ctx, "finalize list failed", appErr, "lessonID", *m.LessonID)
 		return nil, appErr
+	}
+	expected := make(map[string]*models.LessonActivity, len(activities))
+	for _, a := range activities {
+		expected[a.ID] = a
+	}
+	for id := range parts {
+		if _, ok := expected[id]; !ok {
+			return nil, common.BadRequest("activity does not belong to this lesson")
+		}
 	}
 	complete := len(activities) > 0
 	sum := 0.0
@@ -243,10 +285,22 @@ func (s *lessonActivityService) maybeFinalize(ctx context.Context, m *models.Att
 		p, ok := parts[a.ID]
 		if !ok {
 			complete = false
-			break
+			continue
+		}
+		if err := normalizePart(a, &p); err != nil {
+			return nil, err
+		}
+		parts[a.ID] = p
+		if !partComplete(a, p) {
+			complete = false
 		}
 		sum += p.Score
 	}
+	encoded, err := encodePartMap(parts)
+	if err != nil {
+		return nil, common.Internal()
+	}
+	m.Result = encoded
 	if !complete {
 		if err := s.attempts.Update(ctx, m); err != nil {
 			appErr := common.FromDBError(err, "attempt")
@@ -259,6 +313,12 @@ func (s *lessonActivityService) maybeFinalize(ctx context.Context, m *models.Att
 	mean := sum / float64(len(activities))
 	m.Score = &mean
 	m.Status = enums.AttemptStatusCompleted
+	now := time.Now().UTC()
+	m.SubmittedAt = &now
+	if m.StartedAt != nil {
+		duration := max(0, int(now.Sub(*m.StartedAt).Seconds()))
+		m.DurationSec = &duration
+	}
 	if err := s.attempts.Update(ctx, m); err != nil {
 		appErr := common.FromDBError(err, "attempt")
 		logger.Report(ctx, "finalize save failed", appErr, "attemptID", m.ID)
@@ -270,8 +330,8 @@ func (s *lessonActivityService) maybeFinalize(ctx context.Context, m *models.Att
 
 // CheckAnswer grades one question of a reading/listening activity. Answer keys
 // live only in the config blob; nothing is returned until the caller commits.
-func (s *lessonActivityService) CheckAnswer(ctx context.Context, userID, id, attemptID string, questionIndex int, key string) (*responses.CheckResult, error) {
-	m, err := s.loadActivity(ctx, id)
+func (s *lessonActivityService) CheckAnswer(ctx context.Context, userID, id, attemptID string, questionIndex int, key string) (*models.CheckResult, error) {
+	m, err := s.loadActivity(ctx, userID, id)
 	if err != nil {
 		return nil, err
 	}
@@ -293,78 +353,86 @@ func (s *lessonActivityService) CheckAnswer(ctx context.Context, userID, id, att
 		return nil, err
 	}
 	slog.InfoContext(ctx, "activity checked", "id", id, "questionIndex", questionIndex, "correct", correct)
-	return &responses.CheckResult{Correct: correct, CorrectKey: q.AnswerKey, Explanation: q.Explanation}, nil
+	return &models.CheckResult{Correct: correct, CorrectKey: q.AnswerKey, Explanation: q.Explanation}, nil
 }
 
 // AttachCheckOutcome merges one graded question into the part entry.
 func (s *lessonActivityService) AttachCheckOutcome(ctx context.Context, userID, attemptID, activityID string, partType enums.AttemptType, outcome QuestionOutcome) (*models.Attempt, error) {
-	m, err := s.loadOwnedAttempt(ctx, userID, attemptID)
-	if err != nil {
-		return nil, err
-	}
-	parts := decodePartMap(m)
-	entry := parts[activityID]
-	var detail CheckPartDetail
-	if entry.Detail != nil {
-		if raw, merr := json.Marshal(entry.Detail); merr == nil {
-			_ = json.Unmarshal(raw, &detail)
+	return s.withAttemptTransaction(ctx, func(s *lessonActivityService) (*models.Attempt, error) {
+
+		m, err := s.loadOwnedAttempt(ctx, userID, attemptID)
+		if err != nil {
+			return nil, err
 		}
-	}
-	merged := false
-	for i, o := range detail.Outcomes {
-		if o.Index == outcome.Index {
-			detail.Outcomes[i] = outcome
-			merged = true
+		parts := decodePartMap(m)
+		entry := parts[activityID]
+		var detail CheckPartDetail
+		if entry.Detail != nil {
+			if raw, merr := json.Marshal(entry.Detail); merr == nil {
+				_ = json.Unmarshal(raw, &detail)
+			}
 		}
-	}
-	if !merged {
-		detail.Outcomes = append(detail.Outcomes, outcome)
-	}
-	correct := 0
-	for _, o := range detail.Outcomes {
-		if o.Correct {
-			correct++
+		merged := false
+		for i, o := range detail.Outcomes {
+			if o.Index == outcome.Index {
+				detail.Outcomes[i] = outcome
+				merged = true
+			}
 		}
-	}
-	score := 0.0
-	if len(detail.Outcomes) > 0 {
-		score = float64(correct) / float64(len(detail.Outcomes)) * 100
-	}
-	parts[activityID] = PartEntry{Type: partType, Score: score, Detail: detail}
-	return s.attachWithMap(ctx, m, parts)
+		if !merged {
+			detail.Outcomes = append(detail.Outcomes, outcome)
+		}
+		correct := 0
+		for _, o := range detail.Outcomes {
+			if o.Correct {
+				correct++
+			}
+		}
+		score := 0.0
+		if len(detail.Outcomes) > 0 {
+			score = float64(correct) / float64(len(detail.Outcomes)) * 100
+		}
+		parts[activityID] = PartEntry{Type: partType, Score: score, Detail: detail}
+		return s.attachWithMap(ctx, m, parts)
+
+	})
 }
 
 // AttachPronounceItem merges one item score (latest wins) into the part entry.
 func (s *lessonActivityService) AttachPronounceItem(ctx context.Context, userID, attemptID, activityID string, itemIndex int, score float64) (*models.Attempt, error) {
-	m, err := s.loadOwnedAttempt(ctx, userID, attemptID)
-	if err != nil {
-		return nil, err
-	}
-	parts := decodePartMap(m)
-	entry := parts[activityID]
-	var detail PronouncePartDetail
-	if entry.Detail != nil {
-		if raw, merr := json.Marshal(entry.Detail); merr == nil {
-			_ = json.Unmarshal(raw, &detail)
+	return s.withAttemptTransaction(ctx, func(s *lessonActivityService) (*models.Attempt, error) {
+
+		m, err := s.loadOwnedAttempt(ctx, userID, attemptID)
+		if err != nil {
+			return nil, err
 		}
-	}
-	if detail.Items == nil {
-		detail.Items = map[string]float64{}
-	}
-	detail.Items[strconv.Itoa(itemIndex)] = score
-	sum := 0.0
-	for _, v := range detail.Items {
-		sum += v
-	}
-	mean := sum / float64(len(detail.Items))
-	parts[activityID] = PartEntry{Type: enums.AttemptTypeSpeaking, Score: mean, Detail: detail}
-	return s.attachWithMap(ctx, m, parts)
+		parts := decodePartMap(m)
+		entry := parts[activityID]
+		var detail PronouncePartDetail
+		if entry.Detail != nil {
+			if raw, merr := json.Marshal(entry.Detail); merr == nil {
+				_ = json.Unmarshal(raw, &detail)
+			}
+		}
+		if detail.Items == nil {
+			detail.Items = map[string]float64{}
+		}
+		detail.Items[strconv.Itoa(itemIndex)] = score
+		sum := 0.0
+		for _, v := range detail.Items {
+			sum += v
+		}
+		mean := sum / float64(len(detail.Items))
+		parts[activityID] = PartEntry{Type: enums.AttemptTypeSpeaking, Score: mean, Detail: detail}
+		return s.attachWithMap(ctx, m, parts)
+
+	})
 }
 
 // Pronounce scores one read-aloud attempt. It resolves the reference text
 // from the speaking config and delegates scoring to the shared scorer.
-func (s *lessonActivityService) Pronounce(ctx context.Context, userID, id, attemptID string, itemIndex int, audio []byte, mime string) (*responses.PronunciationResult, error) {
-	m, err := s.loadActivity(ctx, id)
+func (s *lessonActivityService) Pronounce(ctx context.Context, userID, id, attemptID string, itemIndex int, audio []byte, mime string) (*pronunciation.Result, error) {
+	m, err := s.loadActivity(ctx, userID, id)
 	if err != nil {
 		return nil, err
 	}
@@ -379,29 +447,27 @@ func (s *lessonActivityService) Pronounce(ctx context.Context, userID, id, attem
 	if itemIndex < 0 || itemIndex >= len(cfg.Items) {
 		return nil, common.BadRequest("item index out of range")
 	}
-	if _, err := s.loadOwnedAttempt(ctx, userID, attemptID); err != nil {
+	if attempt, err := s.loadOwnedAttempt(ctx, userID, attemptID); err != nil {
 		return nil, err
+	} else if attempt.LessonID == nil || *attempt.LessonID != m.LessonID {
+		return nil, common.BadRequest("activity does not belong to this lesson")
 	}
 	out, err := s.scorer.Score(ctx, cfg.Items[itemIndex].Text, audio, mime)
 	if err != nil {
 		return nil, err
 	}
-	var dto responses.PronunciationResult
-	if utils.Map(&dto, out) != nil {
-		logger.Report(ctx, "pronounce map failed", common.Internal(), "id", id)
-		return nil, common.Internal()
-	}
-	if _, err := s.AttachPronounceItem(ctx, userID, attemptID, id, itemIndex, dto.Score); err != nil {
+
+	if _, err := s.AttachPronounceItem(ctx, userID, attemptID, id, itemIndex, out.Score); err != nil {
 		return nil, err
 	}
-	slog.InfoContext(ctx, "pronunciation scored", "activityID", id, "score", dto.Score)
-	return &dto, nil
+	slog.InfoContext(ctx, "pronunciation scored", "activityID", id, "score", out.Score)
+	return out, nil
 }
 
 // ScoreWriting grades one writing part with a stateless LLM call and attaches
 // the result to the open lesson attempt. Any LLM or shape failure returns an
 // error and writes nothing.
-func (s *lessonActivityService) ScoreWriting(ctx context.Context, userID, id, attemptID, text string) (*responses.WritingScoreResponse, error) {
+func (s *lessonActivityService) ScoreWriting(ctx context.Context, userID, id, attemptID, text string) (*models.LessonWritingResult, error) {
 	trimmed := strings.TrimSpace(text)
 	if trimmed == "" {
 		return nil, common.BadRequest("text is required")
@@ -410,7 +476,7 @@ func (s *lessonActivityService) ScoreWriting(ctx context.Context, userID, id, at
 	if words > maxWritingWords {
 		return nil, common.New(http.StatusRequestEntityTooLarge, "text too long")
 	}
-	m, err := s.loadActivity(ctx, id)
+	m, err := s.loadActivity(ctx, userID, id)
 	if err != nil {
 		return nil, err
 	}
@@ -422,8 +488,10 @@ func (s *lessonActivityService) ScoreWriting(ctx context.Context, userID, id, at
 		logger.Report(ctx, "writing config failed", common.Internal(), "id", id)
 		return nil, common.Internal()
 	}
-	if _, err := s.loadOwnedAttempt(ctx, userID, attemptID); err != nil {
+	if attempt, err := s.loadOwnedAttempt(ctx, userID, attemptID); err != nil {
 		return nil, err
+	} else if attempt.LessonID == nil || *attempt.LessonID != m.LessonID {
+		return nil, common.BadRequest("activity does not belong to this lesson")
 	}
 	prompt := prompts.BuildWritingScorePrompt(cfg, trimmed, words)
 	var out schemas.WritingFeedback
@@ -441,12 +509,8 @@ func (s *lessonActivityService) ScoreWriting(ctx context.Context, userID, id, at
 	if err != nil {
 		return nil, err
 	}
-	var dto responses.WritingScoreResponse
-	if err := utils.Map(&dto, scored); err != nil {
-		logger.Report(ctx, "writing map failed", common.Internal(), "id", id)
-		return nil, common.Internal()
-	}
-	dto.Summary = responses.ScoreSummary{
+	dto := models.LessonWritingResult{WritingFeedback: scored, Attempt: attached}
+	dto.Summary = models.ScoreSummary{
 		PointsCovered: countCovered(scored.Task.Verdicts),
 		PointsTotal:   len(scored.Task.Verdicts),
 		Score:         score,
@@ -454,7 +518,6 @@ func (s *lessonActivityService) ScoreWriting(ctx context.Context, userID, id, at
 		MinWords:      cfg.MinWords,
 		MaxWords:      cfg.MaxWords,
 	}
-	dto.Attempt = responses.AttemptSummary{ID: attached.ID, Status: string(attached.Status), Score: attached.Score}
 	slog.InfoContext(ctx, "writing scored", "activityID", id, "score", score)
 	return &dto, nil
 }
@@ -547,4 +610,101 @@ func (s *lessonActivityService) Delete(ctx context.Context, id string) error {
 	}
 	slog.InfoContext(ctx, "lesson activity deleted", "id", id)
 	return nil
+}
+
+func (s *lessonActivityService) withAttemptTransaction(ctx context.Context, apply func(*lessonActivityService) (*models.Attempt, error)) (*models.Attempt, error) {
+	var out *models.Attempt
+	err := s.transactions.Run(ctx, func(tx *gorm.DB) error {
+		scoped := *s
+		scoped.attempts = s.attempts.WithTx(tx)
+		scoped.repo = s.repo.WithTx(tx)
+		var err error
+		out, err = apply(&scoped)
+		return err
+	})
+	if err != nil {
+		appErr := common.FromDBError(err, "attempt")
+		var existing *common.AppError
+		if errors.As(err, &existing) {
+			appErr = existing
+		}
+		logger.Report(ctx, "lesson attempt mutation failed", appErr)
+		return nil, appErr
+	}
+	slog.InfoContext(ctx, "lesson attempt mutation committed", "attemptID", out.ID)
+	return out, nil
+}
+
+func partComplete(activity *models.LessonActivity, entry PartEntry) bool {
+	raw, err := json.Marshal(entry.Detail)
+	if err != nil {
+		return false
+	}
+	switch activity.Type {
+	case enums.ActivityTypeReading, enums.ActivityTypeListening:
+		questions, err := activityconfig.QuestionsFor(activity.Type, activity.Config)
+		if err != nil || len(questions) == 0 {
+			return false
+		}
+		var detail CheckPartDetail
+		if json.Unmarshal(raw, &detail) != nil {
+			return false
+		}
+		seen := map[int]bool{}
+		for _, o := range detail.Outcomes {
+			if o.Index < 0 || o.Index >= len(questions) || seen[o.Index] {
+				return false
+			}
+			seen[o.Index] = true
+		}
+		return len(seen) == len(questions)
+	case enums.ActivityTypeSpeaking:
+		cfg, err := activityconfig.ParseSpeakingConfig(activity.Config)
+		if err != nil || len(cfg.Items) == 0 {
+			return false
+		}
+		var detail PronouncePartDetail
+		if json.Unmarshal(raw, &detail) != nil || len(detail.Items) != len(cfg.Items) {
+			return false
+		}
+		for i := range cfg.Items {
+			if _, ok := detail.Items[strconv.Itoa(i)]; !ok {
+				return false
+			}
+		}
+		return true
+	case enums.ActivityTypeWriting:
+		var detail schemas.WritingFeedback
+		return json.Unmarshal(raw, &detail) == nil && detail.Suggested != ""
+	default:
+		return false
+	}
+}
+
+func (s *lessonActivityService) ListProgress(ctx context.Context, userID string) ([]*models.LessonProgressSummary, error) {
+	attempts, err := s.attempts.ListLessonProgress(ctx, userID)
+	if err != nil {
+		appErr := common.FromDBError(err, "lesson progress")
+		logger.Report(ctx, "lesson progress list failed", appErr)
+		return nil, appErr
+	}
+	var out []*models.LessonProgressSummary
+	if err := utils.MapSlice(&out, attempts); err != nil {
+		logger.Report(ctx, "lesson progress map failed", err)
+		return nil, common.Internal()
+	}
+	for i, attempt := range attempts {
+		out[i].CompletedActivityIDs = []string{}
+		if attempt.Lesson == nil {
+			continue
+		}
+		parts := decodePartMap(attempt)
+		for _, activity := range attempt.Lesson.Activities {
+			if entry, ok := parts[activity.ID]; ok && partComplete(activity, entry) {
+				out[i].CompletedActivityIDs = append(out[i].CompletedActivityIDs, activity.ID)
+			}
+		}
+	}
+	slog.InfoContext(ctx, "lesson progress listed", "userID", userID, "count", len(out))
+	return out, nil
 }

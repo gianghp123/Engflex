@@ -6,7 +6,7 @@ package mocks
 
 import (
 	"context"
-	"engflex-api/internal/modules/conversations/dtos/responses"
+	"engflex-api/internal/voice"
 
 	mock "github.com/stretchr/testify/mock"
 )
@@ -48,23 +48,23 @@ func (_m *MockPronounceEngine) EXPECT() *MockPronounceEngine_Expecter {
 }
 
 // Pronounce provides a mock function for the type MockPronounceEngine
-func (_mock *MockPronounceEngine) Pronounce(ctx context.Context, expectedText string, lang string, audio []byte, mime string) (*responses.PronounceResult, error) {
+func (_mock *MockPronounceEngine) Pronounce(ctx context.Context, expectedText string, lang string, audio []byte, mime string) (*voice.PronounceResult, error) {
 	ret := _mock.Called(ctx, expectedText, lang, audio, mime)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Pronounce")
 	}
 
-	var r0 *responses.PronounceResult
+	var r0 *voice.PronounceResult
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string, []byte, string) (*responses.PronounceResult, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string, []byte, string) (*voice.PronounceResult, error)); ok {
 		return returnFunc(ctx, expectedText, lang, audio, mime)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string, []byte, string) *responses.PronounceResult); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string, []byte, string) *voice.PronounceResult); ok {
 		r0 = returnFunc(ctx, expectedText, lang, audio, mime)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*responses.PronounceResult)
+			r0 = ret.Get(0).(*voice.PronounceResult)
 		}
 	}
 	if returnFunc, ok := ret.Get(1).(func(context.Context, string, string, []byte, string) error); ok {
@@ -123,12 +123,12 @@ func (_c *MockPronounceEngine_Pronounce_Call) Run(run func(ctx context.Context, 
 	return _c
 }
 
-func (_c *MockPronounceEngine_Pronounce_Call) Return(pronounceResult *responses.PronounceResult, err error) *MockPronounceEngine_Pronounce_Call {
+func (_c *MockPronounceEngine_Pronounce_Call) Return(pronounceResult *voice.PronounceResult, err error) *MockPronounceEngine_Pronounce_Call {
 	_c.Call.Return(pronounceResult, err)
 	return _c
 }
 
-func (_c *MockPronounceEngine_Pronounce_Call) RunAndReturn(run func(ctx context.Context, expectedText string, lang string, audio []byte, mime string) (*responses.PronounceResult, error)) *MockPronounceEngine_Pronounce_Call {
+func (_c *MockPronounceEngine_Pronounce_Call) RunAndReturn(run func(ctx context.Context, expectedText string, lang string, audio []byte, mime string) (*voice.PronounceResult, error)) *MockPronounceEngine_Pronounce_Call {
 	_c.Call.Return(run)
 	return _c
 }

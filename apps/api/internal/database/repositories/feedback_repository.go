@@ -30,7 +30,7 @@ func (r *feedbackRepository) Upsert(ctx context.Context, f *models.Feedback) err
 	return r.db.WithContext(ctx).
 		Clauses(clause.OnConflict{
 			Columns:   []clause.Column{{Name: "subject_type"}, {Name: "subject_id"}},
-			DoUpdates: clause.AssignmentColumns([]string{"payload", "user_id", "updated_at"}),
+			DoUpdates: clause.AssignmentColumns([]string{"payload", "input_fingerprint", "user_id", "updated_at"}),
 		}).
 		Create(f).Error
 }

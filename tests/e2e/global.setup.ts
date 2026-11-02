@@ -1,6 +1,7 @@
 import path from "node:path";
 import { clerk, clerkSetup } from "@clerk/testing/playwright";
 import { test as setup } from "@playwright/test";
+import { clerkUserId, closeDb, db } from "./helpers";
 
 // Must run serially: clerkSetup() exports env (CLERK_FAPI,
 // CLERK_TESTING_TOKEN) into this worker's process only.
@@ -16,6 +17,20 @@ setup("global setup", async () => {
 		}
 	}
 	await clerkSetup();
+	// Voice suites need an onboarded learner even on a fresh database.
+	const databaseName = new URL(process.env.DATABASE_URL ?? "").pathname;
+	if (!databaseName.endsWith("_e2e")) {
+		throw new Error("e2e: refusing fixtures outside a dedicated _e2e database");
+	}
+	try {
+		await db().query(
+			`INSERT INTO user_profiles (clerk_user_id, onboarding_completed_at)
+			 VALUES ($1, now()) ON CONFLICT (clerk_user_id) DO NOTHING`,
+			[await clerkUserId()],
+		);
+	} finally {
+		await closeDb();
+	}
 });
 
 const authFile = path.join(
@@ -24,6 +39,7 @@ const authFile = path.join(
 );
 
 setup("authenticate and save state to storage", async ({ page }) => {
+	setup.setTimeout(90_000);
 	const email = process.env.E2E_CLERK_USER_EMAIL;
 	if (!email) {
 		throw new Error("e2e: E2E_CLERK_USER_EMAIL must be set (see README.md)");

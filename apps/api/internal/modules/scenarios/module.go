@@ -1,29 +1,13 @@
-// Package scenarios wires the scenarios module.
+// Package scenarios registers routes over dependencies supplied by composition.
 package scenarios
 
 import (
-	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
-
-	"engflex-api/internal/database/repositories"
-	paymentservices "engflex-api/internal/modules/payments/services"
 	"engflex-api/internal/modules/scenarios/controllers"
-	"engflex-api/internal/modules/scenarios/services"
 	"engflex-api/internal/server/middleware"
+	"github.com/gin-gonic/gin"
 )
 
-// RegisterRoutes mounts the catalog endpoints under /api/v1: scenarios,
-// scenario topics, and personas (one feature, three route groups).
-func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB) {
-	premiumSvc := paymentservices.NewSubscriptionService(
-		repositories.NewSubscriptionRepository(db), repositories.NewPlanRepository(db))
-	svc := services.NewScenarioService(
-		repositories.NewScenarioRepository(db), repositories.NewScenarioTopicRepository(db), premiumSvc)
-	ctl := controllers.NewScenarioController(svc)
-
-	personaSvc := services.NewPersonaService(repositories.NewPersonaRepository(db))
-	personaCtl := controllers.NewPersonaController(personaSvc)
-
+func RegisterRoutes(rg *gin.RouterGroup, ctl *controllers.ScenarioController, personaCtl *controllers.PersonaController) {
 	// All three resources are 100% admin-curated, so mutations are
 	// admin-gated outright; reads stay open to any authenticated user, with
 	// scenarios filtered to published content by the service (topics/

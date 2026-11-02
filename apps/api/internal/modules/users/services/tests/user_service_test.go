@@ -3,6 +3,7 @@ package tests
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"testing"
 	"time"
@@ -10,10 +11,13 @@ import (
 	"github.com/clerk/clerk-sdk-go/v2"
 	"github.com/clerk/clerk-sdk-go/v2/user"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
 	"engflex-api/internal/common"
-	paymentresponses "engflex-api/internal/modules/payments/dtos/responses"
+	"engflex-api/internal/common/enums"
+	"engflex-api/internal/database/models"
+	"engflex-api/internal/database/repositories/mocks"
 	"engflex-api/internal/modules/users/dtos/requests"
 	"engflex-api/internal/modules/users/services"
 )
@@ -38,19 +42,18 @@ func (f fakeClerkClient) Update(ctx context.Context, id string, params *user.Upd
 // Clerk-facing behavior, not premium enrichment.
 type fakeSubscriptionLookup struct{}
 
-func (fakeSubscriptionLookup) GetActive(ctx context.Context, userID string) (*paymentresponses.Subscription, error) {
-	return nil, nil
+func (fakeSubscriptionLookup) Enrich(ctx context.Context, users []*models.DirectoryUser) ([]*models.DirectoryUser, error) {
+	return users, nil
 }
 
-// fakeSubscriptionLookupFn lets a single test override GetActive's result.
-type fakeSubscriptionLookupFn func(ctx context.Context, userID string) (*paymentresponses.Subscription, error)
+type fakeSubscriptionLookupFn func(ctx context.Context, users []*models.DirectoryUser) ([]*models.DirectoryUser, error)
 
-func (f fakeSubscriptionLookupFn) GetActive(ctx context.Context, userID string) (*paymentresponses.Subscription, error) {
-	return f(ctx, userID)
+func (f fakeSubscriptionLookupFn) Enrich(ctx context.Context, users []*models.DirectoryUser) ([]*models.DirectoryUser, error) {
+	return f(ctx, users)
 }
 
-func newUserService(c fakeClerkClient) services.UserService {
-	return services.NewUserServiceWithClient(c, fakeSubscriptionLookup{})
+func newUserService(t *testing.T, c fakeClerkClient) services.UserService {
+	return services.NewUserServiceWithClient(c, fakeSubscriptionLookup{}, mocks.NewMockAttemptRepository(t))
 }
 
 func strPtr(s string) *string { return &s }
@@ -79,7 +82,7 @@ func TestUserService_List_MapsPrimaryEmailAndRole(t *testing.T) {
 			}, nil
 		},
 	}
-	svc := newUserService(fake)
+	svc := newUserService(t, fake)
 
 	items, total, err := svc.List(context.Background(), requests.ListUsers{ListParams: common.ListParams{Page: 1, PageSize: 20}})
 
@@ -102,7 +105,7 @@ func TestUserService_List_DefaultsRoleToUser(t *testing.T) {
 			}, nil
 		},
 	}
-	svc := newUserService(fake)
+	svc := newUserService(t, fake)
 
 	items, _, err := svc.List(context.Background(), requests.ListUsers{ListParams: common.ListParams{Page: 1, PageSize: 20}})
 
@@ -121,17 +124,18 @@ func TestUserService_List_EnrichesPremiumStatus(t *testing.T) {
 		},
 	}
 	expires := time.Date(2027, 1, 1, 0, 0, 0, 0, time.UTC)
-	subs := fakeSubscriptionLookupFn(func(ctx context.Context, userID string) (*paymentresponses.Subscription, error) {
-		return &paymentresponses.Subscription{ExpiresAt: &expires}, nil
+	subs := fakeSubscriptionLookupFn(func(ctx context.Context, users []*models.DirectoryUser) ([]*models.DirectoryUser, error) {
+		users[0].Subscription = &models.Subscription{ExpiresAt: &expires}
+		return users, nil
 	})
-	svc := services.NewUserServiceWithClient(fake, subs)
+	svc := services.NewUserServiceWithClient(fake, subs, mocks.NewMockAttemptRepository(t))
 
 	items, _, err := svc.List(context.Background(), requests.ListUsers{ListParams: common.ListParams{Page: 1, PageSize: 20}})
 
 	require.NoError(t, err)
 	require.Len(t, items, 1)
-	assert.True(t, items[0].Premium)
-	assert.Equal(t, &expires, items[0].PremiumExpiresAt)
+	require.NotNil(t, items[0].Subscription)
+	assert.Equal(t, &expires, items[0].Subscription.ExpiresAt)
 }
 
 func TestUserService_List_ClerkErrorMapsTo503(t *testing.T) {
@@ -140,7 +144,7 @@ func TestUserService_List_ClerkErrorMapsTo503(t *testing.T) {
 			return nil, assert.AnError
 		},
 	}
-	svc := newUserService(fake)
+	svc := newUserService(t, fake)
 
 	items, total, err := svc.List(context.Background(), requests.ListUsers{ListParams: common.ListParams{Page: 1, PageSize: 20}})
 
@@ -160,7 +164,7 @@ func TestUserService_UpdateRole_RejectsSelfDemotion(t *testing.T) {
 			return nil, nil
 		},
 	}
-	svc := newUserService(fake)
+	svc := newUserService(t, fake)
 
 	_, err := svc.UpdateRole(context.Background(), "user_1", "user_1", "user")
 
@@ -181,7 +185,7 @@ func TestUserService_UpdateRole_AllowsOtherUsers(t *testing.T) {
 			return &clerk.User{ID: id, PublicMetadata: *params.PublicMetadata}, nil
 		},
 	}
-	svc := newUserService(fake)
+	svc := newUserService(t, fake)
 
 	updated, err := svc.UpdateRole(context.Background(), "admin_1", "user_2", "admin")
 
@@ -196,11 +200,125 @@ func TestUserService_UpdateRole_NotFoundMapsTo404(t *testing.T) {
 			return nil, &clerk.APIErrorResponse{HTTPStatusCode: http.StatusNotFound}
 		},
 	}
-	svc := newUserService(fake)
+	svc := newUserService(t, fake)
 
 	_, err := svc.UpdateRole(context.Background(), "admin_1", "missing", "admin")
 
 	var appErr *common.AppError
 	require.ErrorAs(t, err, &appErr)
 	assert.Equal(t, http.StatusNotFound, appErr.Status)
+}
+
+func TestUserService_ListAttempts(t *testing.T) {
+	lessonType := enums.AttemptTypeLesson
+	score := 85.0
+	dur := 120
+	now := time.Now().UTC()
+
+	tests := []struct {
+		name          string
+		userID        string
+		req           requests.ListUserAttempts
+		setupMock     func(m *mocks.MockAttemptRepository)
+		expectedCount int
+		expectedTotal int64
+		expectErr     bool
+	}{
+		{
+			name:   "success without type filter",
+			userID: "user_123",
+			req: requests.ListUserAttempts{
+				ListParams: common.ListParams{Page: 1, PageSize: 10},
+			},
+			setupMock: func(m *mocks.MockAttemptRepository) {
+				m.EXPECT().CountByUser(mock.Anything, "user_123", (*enums.AttemptType)(nil)).Return(int64(1), nil).Once()
+				m.EXPECT().ListByUser(mock.Anything, "user_123", (*enums.AttemptType)(nil), 10, 0).Return([]*models.Attempt{
+					{
+						ID:          "att_1",
+						UserID:      "user_123",
+						Type:        enums.AttemptTypeLesson,
+						Status:      enums.AttemptStatusCompleted,
+						Score:       &score,
+						DurationSec: &dur,
+						CreatedAt:   now,
+						Lesson: &models.Lesson{
+							ID:    "less_1",
+							Title: "Greetings Lesson",
+						},
+					},
+				}, nil).Once()
+			},
+			expectedCount: 1,
+			expectedTotal: 1,
+			expectErr:     false,
+		},
+		{
+			name:   "success with type filter",
+			userID: "user_123",
+			req: requests.ListUserAttempts{
+				ListParams: common.ListParams{Page: 1, PageSize: 10},
+				Type:       &lessonType,
+			},
+			setupMock: func(m *mocks.MockAttemptRepository) {
+				m.EXPECT().CountByUser(mock.Anything, "user_123", &lessonType).Return(int64(2), nil).Once()
+				m.EXPECT().ListByUser(mock.Anything, "user_123", &lessonType, 10, 0).Return([]*models.Attempt{
+					{
+						ID:        "att_2",
+						UserID:    "user_123",
+						Type:      enums.AttemptTypeLesson,
+						Status:    enums.AttemptStatusCompleted,
+						CreatedAt: now,
+					},
+				}, nil).Once()
+			},
+			expectedCount: 1,
+			expectedTotal: 2,
+			expectErr:     false,
+		},
+		{
+			name:   "count failure returns error",
+			userID: "user_123",
+			req: requests.ListUserAttempts{
+				ListParams: common.ListParams{Page: 1, PageSize: 10},
+			},
+			setupMock: func(m *mocks.MockAttemptRepository) {
+				m.EXPECT().CountByUser(mock.Anything, "user_123", (*enums.AttemptType)(nil)).Return(int64(0), errors.New("db error")).Once()
+			},
+			expectErr: true,
+		},
+		{
+			name:   "list failure returns error",
+			userID: "user_123",
+			req: requests.ListUserAttempts{
+				ListParams: common.ListParams{Page: 1, PageSize: 10},
+			},
+			setupMock: func(m *mocks.MockAttemptRepository) {
+				m.EXPECT().CountByUser(mock.Anything, "user_123", (*enums.AttemptType)(nil)).Return(int64(1), nil).Once()
+				m.EXPECT().ListByUser(mock.Anything, "user_123", (*enums.AttemptType)(nil), 10, 0).Return(nil, errors.New("db error")).Once()
+			},
+			expectErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockAttempts := mocks.NewMockAttemptRepository(t)
+			tt.setupMock(mockAttempts)
+			svc := services.NewUserServiceWithClient(fakeClerkClient{}, fakeSubscriptionLookup{}, mockAttempts)
+
+			items, total, err := svc.ListAttempts(context.Background(), tt.userID, tt.req)
+			if tt.expectErr {
+				require.Error(t, err)
+				var appErr *common.AppError
+				require.ErrorAs(t, err, &appErr)
+				return
+			}
+			require.NoError(t, err)
+			assert.Equal(t, tt.expectedTotal, total)
+			assert.Len(t, items, tt.expectedCount)
+			if tt.expectedCount > 0 && items[0].Lesson != nil {
+				assert.Equal(t, "Greetings Lesson", items[0].Lesson.Title)
+			}
+		})
+	}
 }

@@ -1,8 +1,11 @@
 package main
 
 import (
+	"context"
 	"log/slog"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/clerk/clerk-sdk-go/v2"
@@ -71,11 +74,23 @@ func main() {
 		os.Exit(1)
 	}
 
-	router := server.NewRouter(db, cfg)
+	pool, err := db.DB()
+	if err != nil {
+		slog.Error("database pool unavailable", "error", err)
+		os.Exit(1)
+	}
+	defer pool.Close()
+	pool.SetMaxOpenConns(cfg.Database.MaxOpenConns)
+	pool.SetMaxIdleConns(cfg.Database.MaxIdleConns)
+	pool.SetConnMaxLifetime(cfg.Database.ConnMaxLifetime)
+	pool.SetConnMaxIdleTime(cfg.Database.ConnMaxIdleTime)
+	runtime := server.NewRuntime(db, cfg)
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
 
 	slog.Info("swagger docs available", "url", "http://localhost:"+cfg.Server.Port+"/swagger/index.html")
 
-	if err := router.Run(cfg.Server.Addr()); err != nil {
+	if err := runtime.Run(ctx); err != nil {
 		slog.Error("server exited unexpectedly", "error", err)
 		os.Exit(1)
 	}

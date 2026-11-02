@@ -15,7 +15,6 @@ import (
 	"engflex-api/internal/common"
 	"engflex-api/internal/database/models"
 	repomocks "engflex-api/internal/database/repositories/mocks"
-	"engflex-api/internal/modules/attempts/dtos/responses"
 	"engflex-api/internal/modules/attempts/services"
 )
 
@@ -51,7 +50,7 @@ func TestGetProgress(t *testing.T) {
 		profile     *models.UserProfile
 		profileErr  error
 		daysErr     error
-		want        *responses.Progress
+		want        *models.LearnerProgress
 		wantStatus  int
 	}{
 		{
@@ -60,32 +59,32 @@ func TestGetProgress(t *testing.T) {
 			lessons:     5,
 			seconds:     1800,
 			profile:     profile(30),
-			want:        &responses.Progress{StreakDays: 3, VoiceMinutesToday: 30, DailyGoalMinutes: 30, LessonsCompleted: 5},
+			want:        &models.LearnerProgress{StreakDays: 3, VoiceMinutesToday: 30, DailyGoalMinutes: 30, LessonsCompleted: 5},
 		},
 		{
 			name:        "only yesterday keeps the streak alive",
 			attemptDays: []string{day(-1)},
 			profile:     profile(10),
-			want:        &responses.Progress{StreakDays: 1, DailyGoalMinutes: 10},
+			want:        &models.LearnerProgress{StreakDays: 1, DailyGoalMinutes: 10},
 		},
 		{
 			name:        "gap yesterday breaks the streak",
 			attemptDays: []string{day(-2), day(-3)},
 			profile:     profile(15),
-			want:        &responses.Progress{StreakDays: 0, DailyGoalMinutes: 15},
+			want:        &models.LearnerProgress{StreakDays: 0, DailyGoalMinutes: 15},
 		},
 		{
 			name:        "attempts and conversations union the days",
 			attemptDays: []string{day(0), day(-2)},
 			endedDays:   []string{day(-1)},
 			profile:     profile(15),
-			want:        &responses.Progress{StreakDays: 3, DailyGoalMinutes: 15},
+			want:        &models.LearnerProgress{StreakDays: 3, DailyGoalMinutes: 15},
 		},
 		{
 			name:        "missing profile falls back to the default goal",
 			attemptDays: []string{day(0)},
 			profileErr:  gorm.ErrRecordNotFound,
-			want:        &responses.Progress{StreakDays: 1, DailyGoalMinutes: 15},
+			want:        &models.LearnerProgress{StreakDays: 1, DailyGoalMinutes: 15},
 		},
 		{
 			name:       "repo error maps to 500",

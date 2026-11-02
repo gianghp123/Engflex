@@ -1,6 +1,6 @@
 import { useAuth } from "@clerk/tanstack-react-start";
 import type { Checkout } from "@engflex/contracts";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
 	getMyPremiumStatus,
 	listPlans,
@@ -21,8 +21,10 @@ export function usePlans() {
 }
 
 export function useStartCheckout() {
+	const queryClient = useQueryClient();
 	return useMutation({
 		mutationFn: (body: Checkout) => startCheckout(body),
+		onSuccess: () => queryClient.invalidateQueries({ queryKey: ["payments"] }),
 	});
 }
 
@@ -34,6 +36,8 @@ export function useMyPremiumStatus() {
 	return useQuery({
 		queryKey: keys.me,
 		queryFn: getMyPremiumStatus,
+		refetchInterval: 60000,
+		refetchOnWindowFocus: true,
 	});
 }
 
@@ -43,6 +47,13 @@ export function useMyPremiumStatus() {
  *  blocked while loading. */
 export function useCanAccessPremium(): boolean {
 	const { sessionClaims } = useAuth();
-	const { data } = useMyPremiumStatus();
-	return isAdminClaims(sessionClaims) || Boolean(data?.isPremium);
+	const query = useMyPremiumStatus();
+	if (isAdminClaims(sessionClaims)) return true;
+	if (query.isError) throw query.error;
+	if (query.isPending) return true;
+	return (
+		!!query.data.isPremium &&
+		!!query.data.expiresAt &&
+		new Date(query.data.expiresAt).getTime() > Date.now()
+	);
 }

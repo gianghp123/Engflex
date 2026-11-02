@@ -14,13 +14,15 @@ import type { YouTubePlayerRef } from "#/features/videos/components/youtube-play
 import { extractYouTubeId, pairWords } from "#/features/videos/dictation";
 import { formatDuration } from "#/features/videos/format";
 import { videoDetailQueryOptions } from "#/features/videos/queries";
+import { ApiError } from "#/lib/api/api";
 import { m } from "#/paraglide/messages";
 
 export const Route = createFileRoute("/_app/videos/$videoId/shadowing")({
 	loader: async ({ context: { queryClient }, params: { videoId } }) => {
 		try {
 			return await queryClient.query(videoDetailQueryOptions(videoId));
-		} catch {
+		} catch (error) {
+			if (!(error instanceof ApiError && error.status === 404)) throw error;
 			throw notFound();
 		}
 	},

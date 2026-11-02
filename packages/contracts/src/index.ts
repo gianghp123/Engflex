@@ -110,3 +110,7 @@ export type {
   Collocation,
   WordForm,
 } from './vocabulary-responses.ts';
+
+// The user administration endpoints mirror Billing wire shapes.
+export type { Subscription } from "./payments-responses.ts";
+export type { GrantSubscription } from "./payments-requests.ts";

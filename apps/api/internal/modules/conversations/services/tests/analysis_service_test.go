@@ -36,7 +36,7 @@ func newAnalysisService(t *testing.T) (*services.ConversationService, *repomocks
 	feedback := repomocks.NewMockFeedbackRepository(t)
 	engine := voicemocks.NewMockVoiceClient(t)
 	pronounce := voicemocks.NewMockPronounceEngine(t)
-	return services.NewConversationService(repo, turnsRepo, engine, pronounce, 300, feedback, repomocks.NewMockScenarioRepository(t), repomocks.NewMockPersonaRepository(t)), repo, turnsRepo, engine, feedback
+	return services.NewConversationService(repo, turnsRepo, engine, pronounce, 300, feedback, repomocks.NewMockScenarioRepository(t), repomocks.NewMockPersonaRepository(t), allowScenarioAccess{}), repo, turnsRepo, engine, feedback
 }
 
 const goodFeedback = `{"corrected":"I went yesterday.","spans":[],"relevance":{"status":"relevant","reason":null},"alternatives":{"language":null,"contextual":null},"tip":"past tense"}`
@@ -59,7 +59,7 @@ func TestAnalyzeTurn(t *testing.T) {
 					func(req voice.AnalyzeTurnRequest) bool {
 						return req.Text == "I go yesterday." && req.TurnID == turnID
 					})).Return(&voice.AnalyzeTurnResponse{Feedback: json.RawMessage(goodFeedback)}, nil)
-				fb.On("Upsert", mock.Anything, mock.Anything).Return(nil)
+				repo.On("StoreAnalysis", mock.Anything, convID, int64(0), mock.Anything).Return(nil)
 			},
 			check: func(t *testing.T, f *models.Feedback) {
 				assert.Equal(t, enums.FeedbackSubjectConversationTurn, f.SubjectType)
@@ -172,7 +172,7 @@ func TestAnalyzeTurn(t *testing.T) {
 }
 
 func TestAnalyze_SendsUpToFiveContextTurns(t *testing.T) {
-	svc, repo, turnsRepo, engine, fb := newAnalysisService(t)
+	svc, repo, turnsRepo, engine, _ := newAnalysisService(t)
 	turns := []*models.ConversationTurn{}
 	for i := 1; i <= 8; i++ {
 		turns = append(turns, &models.ConversationTurn{
@@ -192,7 +192,7 @@ func TestAnalyze_SendsUpToFiveContextTurns(t *testing.T) {
 	engine.On("AnalyzeTurn", mock.Anything, mock.MatchedBy(
 		func(req voice.AnalyzeTurnRequest) bool { return len(req.Context) == 5 },
 	)).Return(&voice.AnalyzeTurnResponse{Feedback: json.RawMessage(goodFeedback)}, nil)
-	fb.On("Upsert", mock.Anything, mock.Anything).Return(nil)
+	repo.On("StoreAnalysis", mock.Anything, convID, int64(0), mock.Anything).Return(nil)
 
 	_, err := svc.AnalyzeTurn(context.Background(), userID, convID, 1, "")
 	require.NoError(t, err)

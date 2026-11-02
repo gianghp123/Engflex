@@ -445,6 +445,92 @@ func (_c *MockVideoExerciseRepository_List_Call) RunAndReturn(run func(ctx conte
 	return _c
 }
 
+// ListWithPractice provides a mock function for the type MockVideoExerciseRepository
+func (_mock *MockVideoExerciseRepository) ListWithPractice(ctx context.Context, userID string, limit int, offset int, onlyPublished bool) ([]*models.VideoExercise, error) {
+	ret := _mock.Called(ctx, userID, limit, offset, onlyPublished)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ListWithPractice")
+	}
+
+	var r0 []*models.VideoExercise
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, int, int, bool) ([]*models.VideoExercise, error)); ok {
+		return returnFunc(ctx, userID, limit, offset, onlyPublished)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, int, int, bool) []*models.VideoExercise); ok {
+		r0 = returnFunc(ctx, userID, limit, offset, onlyPublished)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.VideoExercise)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, int, int, bool) error); ok {
+		r1 = returnFunc(ctx, userID, limit, offset, onlyPublished)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockVideoExerciseRepository_ListWithPractice_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ListWithPractice'
+type MockVideoExerciseRepository_ListWithPractice_Call struct {
+	*mock.Call
+}
+
+// ListWithPractice is a helper method to define mock.On call
+//   - ctx context.Context
+//   - userID string
+//   - limit int
+//   - offset int
+//   - onlyPublished bool
+func (_e *MockVideoExerciseRepository_Expecter) ListWithPractice(ctx any, userID any, limit any, offset any, onlyPublished any) *MockVideoExerciseRepository_ListWithPractice_Call {
+	return &MockVideoExerciseRepository_ListWithPractice_Call{Call: _e.mock.On("ListWithPractice", ctx, userID, limit, offset, onlyPublished)}
+}
+
+func (_c *MockVideoExerciseRepository_ListWithPractice_Call) Run(run func(ctx context.Context, userID string, limit int, offset int, onlyPublished bool)) *MockVideoExerciseRepository_ListWithPractice_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 int
+		if args[2] != nil {
+			arg2 = args[2].(int)
+		}
+		var arg3 int
+		if args[3] != nil {
+			arg3 = args[3].(int)
+		}
+		var arg4 bool
+		if args[4] != nil {
+			arg4 = args[4].(bool)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+			arg4,
+		)
+	})
+	return _c
+}
+
+func (_c *MockVideoExerciseRepository_ListWithPractice_Call) Return(videoExercises []*models.VideoExercise, err error) *MockVideoExerciseRepository_ListWithPractice_Call {
+	_c.Call.Return(videoExercises, err)
+	return _c
+}
+
+func (_c *MockVideoExerciseRepository_ListWithPractice_Call) RunAndReturn(run func(ctx context.Context, userID string, limit int, offset int, onlyPublished bool) ([]*models.VideoExercise, error)) *MockVideoExerciseRepository_ListWithPractice_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // Update provides a mock function for the type MockVideoExerciseRepository
 func (_mock *MockVideoExerciseRepository) Update(ctx context.Context, lesson *models.VideoExercise) error {
 	ret := _mock.Called(ctx, lesson)

@@ -3,10 +3,14 @@ package services
 import (
 	"bytes"
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"log/slog"
 	"net/http"
+	"strings"
+	"unicode/utf8"
 
 	"engflex-api/internal/common"
 	"engflex-api/internal/common/enums"
@@ -15,7 +19,6 @@ import (
 	"engflex-api/internal/logger"
 	"engflex-api/internal/modules/conversations/dtos/callbacks"
 	"engflex-api/internal/modules/conversations/dtos/requests"
-	"engflex-api/internal/modules/conversations/dtos/responses"
 	"engflex-api/internal/utils"
 	"engflex-api/internal/voice"
 )
@@ -23,7 +26,12 @@ import (
 var errEmptyAnswer = errors.New("voice engine returned an empty offer answer")
 
 // ConversationService owns the conversation lifecycle rules.
+type ScenarioAccessPolicy interface {
+	CheckAccess(ctx context.Context, userID, id string) error
+}
+
 type ConversationService struct {
+	access        ScenarioAccessPolicy
 	conversations repositories.ConversationRepository
 	turns         repositories.ConversationTurnRepository
 	voice         voice.VoiceClient
@@ -35,8 +43,8 @@ type ConversationService struct {
 }
 
 // NewConversationService builds the service over repository + engine interfaces.
-func NewConversationService(conversations repositories.ConversationRepository, turns repositories.ConversationTurnRepository, voice voice.VoiceClient, pronounce voice.PronounceEngine, maxDuration int, feedbacks repositories.FeedbackRepository, scenarios repositories.ScenarioRepository, personas repositories.PersonaRepository) *ConversationService {
-	return &ConversationService{conversations: conversations, turns: turns, voice: voice, pronounce: pronounce, maxDuration: maxDuration, feedbacks: feedbacks, scenarios: scenarios, personas: personas}
+func NewConversationService(conversations repositories.ConversationRepository, turns repositories.ConversationTurnRepository, voice voice.VoiceClient, pronounce voice.PronounceEngine, maxDuration int, feedbacks repositories.FeedbackRepository, scenarios repositories.ScenarioRepository, personas repositories.PersonaRepository, access ScenarioAccessPolicy) *ConversationService {
+	return &ConversationService{conversations: conversations, turns: turns, voice: voice, pronounce: pronounce, maxDuration: maxDuration, feedbacks: feedbacks, scenarios: scenarios, personas: personas, access: access}
 }
 
 // Create provisions a pending conversation. The close of the caller's other
@@ -44,10 +52,18 @@ func NewConversationService(conversations repositories.ConversationRepository, t
 // repository (CreateClosingActive), so concurrent creates cannot both slip
 // through — the row lock serializes them.
 func (s *ConversationService) Create(ctx context.Context, userID string, req requests.StartConversation) (*models.Conversation, error) {
+	if req.Mode != enums.ConversationModeFreeTalk && req.Mode != enums.ConversationModeRoleplay {
+		return nil, common.BadRequest("invalid conversation mode")
+	}
 	if req.Mode == enums.ConversationModeRoleplay && (req.ScenarioID == nil || *req.ScenarioID == "") {
 		return nil, common.BadRequest("scenarioId is required for roleplay")
 	}
 
+	if req.ScenarioID != nil {
+		if err := s.access.CheckAccess(ctx, userID, *req.ScenarioID); err != nil {
+			return nil, err
+		}
+	}
 	m := &models.Conversation{}
 	if err := utils.Map(m, req); err != nil {
 		logger.Report(ctx, "map start conversation failed", err, "userID", userID)
@@ -89,18 +105,17 @@ func (s *ConversationService) List(ctx context.Context, userID string, scenarioI
 }
 
 // Start provisions the engine session (idempotent) and returns the ICE config.
-func (s *ConversationService) Start(ctx context.Context, userID, id string) (*models.Conversation, *responses.IceConfig, error) {
+func (s *ConversationService) Start(ctx context.Context, userID, id string) (*models.Conversation, *voice.IceConfig, error) {
 	conv, err := s.getOwned(ctx, userID, id)
 	if err != nil {
 		return nil, nil, err
 	}
+	if err := s.checkAccess(ctx, userID, conv); err != nil {
+		return nil, nil, err
+	}
+
 	if conv.Status != enums.ConversationStatusPending {
 		return nil, nil, common.Conflict("conversation is not pending")
-	}
-	if conv.SpeechSessionID != "" && len(conv.SpeechStartResponse) > 0 {
-		if cached, ok := decodeStartResponse(conv.SpeechStartResponse); ok {
-			return conv, cached.ICEConfig, nil
-		}
 	}
 
 	persona, scenario := s.promptInputs(ctx, conv)
@@ -132,15 +147,6 @@ func (s *ConversationService) Start(ctx context.Context, userID, id string) (*mo
 		return nil, nil, appErr
 	}
 	if affected == 0 {
-		refreshed, err := s.conversations.GetByID(ctx, conv.ID)
-		if err != nil {
-			appErr := common.FromDBError(err, "conversation")
-			logger.Report(ctx, "recheck conversation start failed", appErr, "conversationID", conv.ID)
-			return nil, nil, appErr
-		}
-		if cached, ok := decodeStartResponse(refreshed.SpeechStartResponse); ok {
-			return refreshed, cached.ICEConfig, nil
-		}
 		return nil, nil, common.Conflict("conversation start raced")
 	}
 
@@ -156,6 +162,10 @@ func (s *ConversationService) Offer(ctx context.Context, userID, id, method stri
 	if err != nil {
 		return nil, 0, err
 	}
+	if err := s.checkAccess(ctx, userID, conv); err != nil {
+		return nil, 0, err
+	}
+
 	if conv.Status == enums.ConversationStatusEnded || conv.Status == enums.ConversationStatusFailed {
 		return nil, 0, common.Conflict("conversation is closed")
 	}
@@ -220,74 +230,57 @@ func (s *ConversationService) End(ctx context.Context, userID, id string) (*mode
 	return updated, nil
 }
 
-// Finalize records the engine-reported duration (internal callback).
-// It is intentionally status-agnostic: the engine reports sessions it ran,
-// which are live, or already ended by the user — either way the duration
-// must land (first ended_at wins, first duration wins, per SetEnded).
-func (s *ConversationService) Finalize(ctx context.Context, id string, durationSec int) error {
-	if durationSec < 0 {
+// Finalize commits the final transcript and lifecycle in one database transaction.
+func (s *ConversationService) Finalize(ctx context.Context, id string, req callbacks.FinalizeConversation) error {
+	if req.DurationSec < 0 {
 		return common.BadRequest("durationSec must be >= 0")
 	}
-	if _, err := s.conversations.GetByID(ctx, id); err != nil {
-		appErr := common.FromDBError(err, "conversation")
-		logger.Report(ctx, "finalize conversation lookup failed", appErr, "conversationID", id)
-		return appErr
-	}
-	// Zero turns at finalize is definitive: the engine posts its turn batch
-	// (awaited) before this callback, so nothing can arrive later. Discard
-	// the empty conversation instead of storing empty history.
-	deleted, err := s.conversations.DeleteIfEmpty(ctx, id)
-	if err != nil {
-		appErr := common.FromDBError(err, "conversation")
-		logger.Report(ctx, "finalize empty-check failed", appErr, "conversationID", id)
-		return appErr
-	}
-	if deleted {
-		slog.InfoContext(ctx, "empty conversation discarded", "conversationID", id)
-		return nil
-	}
-	if _, err := s.conversations.SetEnded(ctx, id, &durationSec); err != nil {
-		appErr := common.FromDBError(err, "conversation")
-		logger.Report(ctx, "finalize conversation failed", appErr, "conversationID", id)
-		return appErr
-	}
-	slog.InfoContext(ctx, "conversation finalized", "conversationID", id, "durationSec", durationSec)
-	return nil
+	_, err := s.applySnapshot(ctx, id, req.IngestTurns, &req.DurationSec)
+	return err
 }
 
-// IngestTurns stores the engine's finalize-time batch. Positions are made
-// idempotent by the repository's ON CONFLICT DO NOTHING upsert, so a retried
-// batch cannot duplicate turns.
 func (s *ConversationService) IngestTurns(ctx context.Context, id string, req callbacks.IngestTurns) (int, error) {
-	if len(req.Turns) == 0 {
-		return 0, common.BadRequest("turns must not be empty")
+	_, err := s.applySnapshot(ctx, id, req, nil)
+	if err != nil {
+		return 0, err
 	}
-	if len(req.Turns) > common.MaxTurnsPerBatch {
-		return 0, common.BadRequest("too many turns in one batch")
-	}
-	if _, err := s.conversations.GetByID(ctx, id); err != nil {
-		appErr := common.FromDBError(err, "conversation")
-		logger.Report(ctx, "ingest turns: conversation lookup failed", appErr, "conversationID", id)
-		return 0, appErr
-	}
+	return len(req.Turns), nil
+}
 
+func (s *ConversationService) applySnapshot(ctx context.Context, id string, req callbacks.IngestTurns, duration *int) (*models.Conversation, error) {
+	if req.EngineSessionID == "" || req.Revision < 1 {
+		return nil, common.BadRequest("session identity and positive revision required")
+	}
+	if req.Turns == nil || len(req.Turns) > common.MaxTurnsPerBatch {
+		return nil, common.BadRequest("invalid snapshot turn count")
+	}
+	for i, turn := range req.Turns {
+		if turn.Position != i+1 || (turn.Role != enums.TurnRoleUser && turn.Role != enums.TurnRoleAI) || strings.TrimSpace(turn.Text) == "" || utf8.RuneCountInString(turn.Text) > 10000 {
+			return nil, common.BadRequest("invalid snapshot turn")
+		}
+	}
+	raw, err := json.Marshal(req.Turns)
+	if err != nil {
+		logger.Report(ctx, "snapshot hash failed", err)
+		return nil, common.Internal()
+	}
+	hash := sha256.Sum256(raw)
 	var turns []*models.ConversationTurn
 	if err := utils.MapSlice(&turns, req.Turns); err != nil {
-		logger.Report(ctx, "map ingest turns failed", err, "conversationID", id)
-		return 0, common.Internal()
+		logger.Report(ctx, "map snapshot failed", err)
+		return nil, common.Internal()
 	}
 	for _, turn := range turns {
 		turn.ConversationID = id
 	}
-
-	stored, err := s.turns.UpsertTurns(ctx, id, turns)
+	out, err := s.conversations.ApplySnapshot(ctx, id, req.EngineSessionID, req.Revision, hex.EncodeToString(hash[:]), turns, duration)
 	if err != nil {
-		appErr := common.FromDBError(err, "conversation turn")
-		logger.Report(ctx, "ingest turns failed", appErr, "conversationID", id)
-		return 0, appErr
+		appErr := common.FromDBError(err, "conversation")
+		logger.Report(ctx, "snapshot rejected", appErr, "conversationID", id, "revision", req.Revision)
+		return nil, appErr
 	}
-	slog.InfoContext(ctx, "turns ingested", "conversationID", id, "received", len(turns), "stored", stored)
-	return stored, nil
+	slog.InfoContext(ctx, "snapshot acknowledged", "conversationID", id, "revision", req.Revision, "turns", len(turns), "final", duration != nil)
+	return out, nil
 }
 
 // promptInputs resolves the conversation's scenario, persona, and learner for
@@ -343,4 +336,11 @@ func decodeStartResponse(raw []byte) (*voice.StartResponse, bool) {
 		return nil, false
 	}
 	return &out, true
+}
+
+func (s *ConversationService) checkAccess(ctx context.Context, userID string, conv *models.Conversation) error {
+	if conv.ScenarioID != nil {
+		return s.access.CheckAccess(ctx, userID, *conv.ScenarioID)
+	}
+	return nil
 }

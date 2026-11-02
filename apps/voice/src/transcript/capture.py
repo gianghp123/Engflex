@@ -10,7 +10,13 @@ text-only; acoustic alignment belongs to the OpenPronounce scoring container,
 not the transcript.
 """
 
-from dataclasses import dataclass
+import json
+from collections.abc import Callable
+from dataclasses import dataclass, replace
+
+
+class SnapshotLimitExceeded(ValueError):
+    pass
 
 
 @dataclass
@@ -24,6 +30,11 @@ class TurnRecord:
 class TurnCollector:
     def __init__(self) -> None:
         self._records: list[TurnRecord] = []
+        self.revision = 1
+        self.on_change: Callable[[], None] | None = None
+        self.on_limit: Callable[[], None] | None = None
+        self.accepting = True
+        self.finalized = False
         self._open_user: TurnRecord | None = None
         # Slot a correction reserved for the bot's next reply. It survives an
         # interrupted (dying) reply and is consumed by the first complete one.
@@ -43,9 +54,11 @@ class TurnCollector:
         cleaned = (text or "").strip()
         if not cleaned:
             return None
+        self._check_limit(cleaned, merging=self._open_user)
         if self._open_user is not None:
             self._open_user.text = f"{self._open_user.text} {cleaned}".strip()
             self._open_user.was_interrupted = self._open_user.was_interrupted or was_interrupted
+            self._changed()
             return self._open_user
         record = TurnRecord(
             position=self._next_position(),
@@ -55,6 +68,7 @@ class TurnCollector:
         )
         self._records.append(record)
         self._open_user = record
+        self._changed()
         return record
 
     def begin_correction(self, text: str) -> int | None:
@@ -77,11 +91,13 @@ class TurnCollector:
                 target = record
         if target is None:
             return None
+        self._check_limit(cleaned, replacing=True)
         target.text = cleaned
         # Drop the stale reply and anything recorded after the target turn.
         self._records = [r for r in self._records if r.position <= target.position]
         self._open_user = target
         self._reserved_bot_position = target.position + 1
+        self._changed()
         return target.position
 
     def add_bot_text(self, text: str, was_interrupted: bool = False) -> TurnRecord | None:
@@ -94,6 +110,7 @@ class TurnCollector:
             # no longer exists and is about to be replaced on that very slot.
             # Recording it would only churn a row we are about to overwrite.
             return None
+        self._check_limit(cleaned, replacing=reserved is not None)
         self._open_user = None
         slot = reserved if reserved is not None else self._next_position()
         record = TurnRecord(
@@ -110,6 +127,7 @@ class TurnCollector:
         if reserved is not None:
             # This reply claimed the reservation, so the reservation is released.
             self._reserved_bot_position = None
+        self._changed()
         return record
 
     def latest_user_record(self) -> TurnRecord | None:
@@ -138,6 +156,31 @@ class TurnCollector:
         self._records.clear()
         self._open_user = None
         self._reviewed_position = None
+        self._changed()
 
     def _next_position(self) -> int:
         return len(self._records) + 1
+
+    def snapshot(self) -> tuple[int, tuple[TurnRecord, ...]]:
+        return self.revision, tuple(replace(r) for r in self._records)
+
+    def _changed(self) -> None:
+        self.revision += 1
+        if self.on_change is not None:
+            self.on_change()
+
+    def _check_limit(self, text: str, *, merging: TurnRecord | None = None,
+                     replacing: bool = False) -> None:
+        if self.finalized:
+            raise SnapshotLimitExceeded("transcript finalized")
+        length = len(text) + (len(merging.text) + 1 if merging else 0)
+        count = len(self._records) + (0 if merging or replacing else 1)
+        # Reserve JSON escaping/metadata overhead conservatively before a
+        # mutation, so an oversized snapshot is never silently truncated.
+        wire_bytes = sum(len(json.dumps(r.text).encode("utf-8")) for r in self._records)
+        wire_bytes += len(json.dumps(text).encode("utf-8")) + count * 128
+        if not self.accepting or length > 10000 or count > 500 or wire_bytes > (4 << 20):
+            self.accepting = False
+            if self.on_limit is not None:
+                self.on_limit()
+            raise SnapshotLimitExceeded("transcript snapshot limit exceeded")

@@ -53,6 +53,7 @@ export const API_ROUTES = {
 		USERS: "/admin/users",
 		USER_ROLE: (id: ApiId) => `/admin/users/${id}/role`,
 		USER_SUBSCRIPTIONS: (id: ApiId) => `/admin/users/${id}/subscriptions`,
+		USER_ATTEMPTS: (id: ApiId) => `/admin/users/${id}/attempts`,
 		PREMIUM_PLANS: "/admin/premium/plans",
 		PREMIUM_PLAN: (plan: ApiId) => `/admin/premium/plans/${plan}`,
 		PREMIUM_FEATURES: "/admin/premium/features",

@@ -12,6 +12,7 @@ import (
 type UserVocabulary struct {
 	UserID         string                 `gorm:"type:text;primaryKey" json:"userId"`
 	ItemID         string                 `gorm:"type:uuid;primaryKey" json:"itemId"`
+	Item           *VocabularyItem        `gorm:"->;foreignKey:ItemID;references:ID" json:"item"`
 	SourceType     enums.VocabularySource `gorm:"column:source_type;not null" json:"sourceType"`
 	SourceID       *string                `gorm:"type:uuid" json:"sourceId"`
 	Note           *string                `json:"note"`

@@ -11,7 +11,6 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"engflex-api/internal/common"
-	conversationsresponses "engflex-api/internal/modules/conversations/dtos/responses"
 	"engflex-api/internal/voice"
 	voicemocks "engflex-api/internal/voice/mocks"
 	"engflex-api/internal/voice/pronunciation"
@@ -19,13 +18,13 @@ import (
 
 func TestScorer(t *testing.T) {
 	audio := []byte("fake-webm")
-	want := &conversationsresponses.PronounceResult{
+	want := &voice.PronounceResult{
 		Score:            91.11,
 		Transcription:    "please call me back",
 		PhonemeErrorRate: 0.12,
 		WordErrorRate:    0.25,
 		AcousticDistance: 3.5,
-		Errors: []conversationsresponses.MispronouncedWord{
+		Errors: []voice.MispronouncedWord{
 			{Word: "call", Expected: "kɔːl", Heard: "kɑːl", Confidence: 0.4},
 		},
 	}

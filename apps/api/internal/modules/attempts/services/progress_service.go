@@ -11,9 +11,8 @@ import (
 	"gorm.io/gorm"
 
 	"engflex-api/internal/common"
-	"engflex-api/internal/database/repositories"
+	"engflex-api/internal/database/models"
 	"engflex-api/internal/logger"
-	"engflex-api/internal/modules/attempts/dtos/responses"
 )
 
 // defaultDailyGoalMinutes is the fallback before onboarding stores a value,
@@ -24,18 +23,30 @@ const defaultDailyGoalMinutes = 15
 // product case; the window also bounds the per-request work.
 const streakWindowDays = 366
 
+type LearningProgressReader interface {
+	ListCompletedDays(ctx context.Context, userID string, since time.Time) ([]string, error)
+	CountCompleted(ctx context.Context, userID string) (int64, error)
+}
+type ConversationProgressReader interface {
+	ListEndedDays(ctx context.Context, userID string, since time.Time) ([]string, error)
+	SumDurationSince(ctx context.Context, userID string, since time.Time) (int64, error)
+}
+type ProfileReader interface {
+	GetByUserID(ctx context.Context, userID string) (*models.UserProfile, error)
+}
+
 // ProgressService composes the measurable-only dashboard rollup.
 type ProgressService struct {
-	attempts      repositories.AttemptRepository
-	conversations repositories.ConversationRepository
-	profiles      repositories.UserProfileRepository
+	attempts      LearningProgressReader
+	conversations ConversationProgressReader
+	profiles      ProfileReader
 }
 
 // NewProgressService takes interfaces, never concretes.
 func NewProgressService(
-	attempts repositories.AttemptRepository,
-	conversations repositories.ConversationRepository,
-	profiles repositories.UserProfileRepository,
+	attempts LearningProgressReader,
+	conversations ConversationProgressReader,
+	profiles ProfileReader,
 ) *ProgressService {
 	return &ProgressService{attempts: attempts, conversations: conversations, profiles: profiles}
 }
@@ -43,7 +54,7 @@ func NewProgressService(
 // GetProgress returns the fields that have a real data source. Days are
 // server UTC — a documented limitation (learner-local midnight can differ);
 // per-timezone streaks are a later concern.
-func (s *ProgressService) GetProgress(ctx context.Context, userID string) (*responses.Progress, error) {
+func (s *ProgressService) GetProgress(ctx context.Context, userID string) (*models.LearnerProgress, error) {
 	now := time.Now().UTC()
 	dayStart := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
 	since := dayStart.AddDate(0, 0, -streakWindowDays)
@@ -92,7 +103,7 @@ func (s *ProgressService) GetProgress(ctx context.Context, userID string) (*resp
 		return nil, appErr
 	}
 
-	out := &responses.Progress{
+	out := &models.LearnerProgress{
 		StreakDays:        streak(active, dayStart),
 		VoiceMinutesToday: int(seconds / 60),
 		DailyGoalMinutes:  goal,

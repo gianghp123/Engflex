@@ -35,7 +35,7 @@ func NewVideoTranscriptController(service services.VideoTranscriptService) *Vide
 func (h *VideoTranscriptController) Create(c *gin.Context) {
 	var req requests.CreateVideoTranscript
 	if err := c.ShouldBindJSON(&req); err != nil {
-		common.Fail(c, common.BadRequest(err.Error()))
+		common.Fail(c, common.InvalidRequest(err))
 		return
 	}
 	m, err := h.service.Create(c.Request.Context(), req)
@@ -67,7 +67,7 @@ func (h *VideoTranscriptController) Update(c *gin.Context) {
 	id := c.Param("id")
 	var req requests.UpdateVideoTranscript
 	if err := c.ShouldBindJSON(&req); err != nil {
-		common.Fail(c, common.BadRequest(err.Error()))
+		common.Fail(c, common.InvalidRequest(err))
 		return
 	}
 	m, err := h.service.Update(c.Request.Context(), id, req)

@@ -31,12 +31,18 @@ func NewVocabularyItemController(items services.VocabularyItemService) *Vocabula
 // @Router       /vocabulary-items [get]
 func (h *VocabularyItemController) List(c *gin.Context) {
 	page, pageSize := utils.ParsePagination(c)
-	items, total, err := h.items.List(c.Request.Context(), pageSize, utils.Offset(page, pageSize), middleware.Role(c) == enums.UserRoleAdmin)
+	items, total, err := h.items.List(c.Request.Context(), pageSize, utils.Offset(page, pageSize), middleware.Role(c) == enums.UserRoleAdmin, middleware.UserID(c), c.Query("search"))
 	if err != nil {
 		common.Fail(c, err)
 		return
 	}
-	var dtos []responses.VocabularyItem
+	if middleware.Role(c) == enums.UserRoleAdmin {
+		var dtos []responses.VocabularyItem
+		_ = utils.MapSlice(&dtos, items)
+		common.Paginated(c, "vocabulary items", dtos, page, pageSize, total)
+		return
+	}
+	var dtos []responses.VocabularyItemSummary
 	_ = utils.MapSlice(&dtos, items)
 	common.Paginated(c, "vocabulary items", dtos, page, pageSize, total)
 }
@@ -72,7 +78,7 @@ func (h *VocabularyItemController) GetByID(c *gin.Context) {
 func (h *VocabularyItemController) Create(c *gin.Context) {
 	var req requests.CreateVocabularyItem
 	if err := c.ShouldBindJSON(&req); err != nil {
-		common.Fail(c, common.BadRequest(err.Error()))
+		common.Fail(c, common.InvalidRequest(err))
 		return
 	}
 	m, err := h.items.Create(c.Request.Context(), middleware.UserID(c), req)
@@ -97,7 +103,7 @@ func (h *VocabularyItemController) Create(c *gin.Context) {
 func (h *VocabularyItemController) CreateSystemEntry(c *gin.Context) {
 	var req requests.CreateVocabularyItem
 	if err := c.ShouldBindJSON(&req); err != nil {
-		common.Fail(c, common.BadRequest(err.Error()))
+		common.Fail(c, common.InvalidRequest(err))
 		return
 	}
 	m, err := h.items.CreateSystemEntry(c.Request.Context(), req)
@@ -123,7 +129,7 @@ func (h *VocabularyItemController) CreateSystemEntry(c *gin.Context) {
 func (h *VocabularyItemController) Update(c *gin.Context) {
 	var req requests.UpdateVocabularyItem
 	if err := c.ShouldBindJSON(&req); err != nil {
-		common.Fail(c, common.BadRequest(err.Error()))
+		common.Fail(c, common.InvalidRequest(err))
 		return
 	}
 	m, err := h.items.Update(c.Request.Context(), c.Param("id"), req)

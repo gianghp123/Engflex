@@ -31,10 +31,10 @@ func NewVoiceCallbackController(service *services.ConversationService) *VoiceCal
 func (h *VoiceCallbackController) Finalize(c *gin.Context) {
 	var req dtoscallbacks.FinalizeConversation
 	if err := c.ShouldBindJSON(&req); err != nil {
-		common.Fail(c, common.BadRequest(err.Error()))
+		common.Fail(c, common.InvalidRequest(err))
 		return
 	}
-	if err := h.service.Finalize(c.Request.Context(), c.Param("id"), req.DurationSec); err != nil {
+	if err := h.service.Finalize(c.Request.Context(), c.Param("id"), req); err != nil {
 		common.Fail(c, err)
 		return
 	}

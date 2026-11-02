@@ -18,7 +18,7 @@ type Subscription struct {
 	ExpiresAt *time.Time               `json:"expiresAt"`
 	CreatedAt time.Time                `json:"createdAt"`
 	UpdatedAt time.Time                `json:"updatedAt"`
-}
+} // @name PaymentSubscription
 
 // Plan is one fixed-duration package's current price, admin-editable.
 type Plan struct {

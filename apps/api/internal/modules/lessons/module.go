@@ -1,52 +1,20 @@
-// Package lessons wires the curriculum module: units on the path (sections
-// derived from CEFR) and ordered activities. Lesson attempts are recorded
-// here (1 attempt = 1 lesson); progress rollups stay outside. Bookmarks are
-// the generic internal/modules/bookmarks module now, not lesson-local.
+// Package lessons registers routes over dependencies supplied by composition.
 package lessons
 
 import (
-	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
-
-	"engflex-api/config"
-	"engflex-api/internal/database/repositories"
-	"engflex-api/internal/llm"
 	"engflex-api/internal/modules/lessons/controllers"
-	"engflex-api/internal/modules/lessons/services"
-	paymentservices "engflex-api/internal/modules/payments/services"
 	"engflex-api/internal/server/middleware"
-	"engflex-api/internal/voice"
-	"engflex-api/internal/voice/pronunciation"
+	"github.com/gin-gonic/gin"
 )
 
-// RegisterRoutes mounts the lesson endpoints under /api/v1.
-// sessionLimiter is an optional IP-keyed throttle (nil = disabled) applied
-// BEFORE auth on the engine-costly pronounce route (conversations parity:
-// limiter precedes auth because the userID is unavailable pre-auth).
-func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB, voiceCfg config.VoiceConfig, llmCfg config.LLMConfig, media config.MediaConfig, sessionLimiter gin.HandlerFunc) {
-	premiumSvc := paymentservices.NewSubscriptionService(
-		repositories.NewSubscriptionRepository(db), repositories.NewPlanRepository(db))
-	lessonSvc := services.NewLessonService(
-		repositories.NewLessonSectionRepository(db),
-		repositories.NewLessonRepository(db),
-		premiumSvc,
-	)
-	lessonCtl := controllers.NewLessonController(lessonSvc, media)
-
-	activitySvc := services.NewLessonActivityService(
-		repositories.NewLessonActivityRepository(db),
-		pronunciation.NewScorer(voice.NewHTTPPronounceEngine(voiceCfg.PronounceURL, voiceCfg.PronounceTimeout)),
-		llm.NewHTTPLLMClient(llmCfg),
-		repositories.NewAttemptRepository(db),
-	)
-	activityCtl := controllers.NewLessonActivityController(activitySvc, media)
-
+func RegisterRoutes(rg *gin.RouterGroup, lessonCtl *controllers.LessonController, activityCtl *controllers.LessonActivityController, sessionLimiter gin.HandlerFunc) {
 	// Lessons/activities/sections are 100% admin-curated, so mutations are
 	// admin-gated outright; reads stay open to any authenticated user,
 	// filtered to published content by the service (sections have no draft
 	// concept of their own, same as video/vocabulary categories).
 	l := rg.Group("/lessons")
 	l.GET("", middleware.RequireAuth(), lessonCtl.List)
+	l.GET("/progress", middleware.RequireAuth(), activityCtl.ListProgress)
 	l.GET("/:id", middleware.RequireAuth(), lessonCtl.GetByID)
 	l.GET("/by-slug/:slug", middleware.RequireAuth(), lessonCtl.GetBySlug)
 	l.POST("", middleware.RequireAuth(), middleware.RequireAdmin(), lessonCtl.Create)

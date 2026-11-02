@@ -107,7 +107,7 @@ module "api_app" {
   network_aliases = "engflex-api"
 
   domains           = [local.api_url]
-  health_check_path = "/health"
+  health_check_path = "/readyz"
 
   # Plain-HTTP domains must not redirect (no TLS served locally anymore).
   is_force_https_enabled = false
@@ -135,6 +135,10 @@ module "api_app" {
     LLM_BASE_URL               = var.llm_base_url
     LLM_MODEL                  = var.llm_model
     SENTRY_DSN                 = module.sentry.dsns["api"]
+    VNPAY_TMN_CODE             = var.vnpay_tmn_code
+    VNPAY_HASH_SECRET          = var.vnpay_hash_secret
+    VNPAY_PAY_URL              = var.vnpay_pay_url
+    VNPAY_RETURN_URL           = var.vnpay_return_url
     VOICE_SERVICE_URL          = "http://${local.apps.voice.name}:${local.apps.voice.port}"
     VOICE_INTERNAL_SECRET      = var.voice_internal_secret
     VOICE_MAX_DURATION_SEC     = local.voice_limits.max_duration_sec

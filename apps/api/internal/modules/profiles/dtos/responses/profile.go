@@ -6,7 +6,7 @@ import (
 	"engflex-api/internal/common/enums"
 )
 
-// Preferences mirrors user_profiles.preferences (jsonb). The CEFR range is
+// Preferences mirrors the model's nested read graph. The CEFR range is
 // derived from Level in Go, not stored.
 type Preferences struct {
 	Level              enums.Level           `json:"level"`

@@ -39,16 +39,30 @@ const keys = {
 		["admin", "vocabulary-categories", page, pageSize] as const,
 };
 
-export function useAdminVocabularyItems(page: number, pageSize: number) {
+export function useAdminVocabularyItems(
+	page: number,
+	pageSize: number,
+	search = "",
+) {
 	return useQuery({
-		queryKey: keys.items(page, pageSize),
-		queryFn: () => listVocabularyItems(page, pageSize),
+		queryKey: [...keys.items(page, pageSize), search],
+		queryFn: () => listVocabularyItems(page, pageSize, search),
 	});
 }
 
 function useInvalidate(key: readonly unknown[]) {
 	const queryClient = useQueryClient();
-	return () => queryClient.invalidateQueries({ queryKey: key });
+	return () =>
+		Promise.all([
+			queryClient.invalidateQueries({ queryKey: key }),
+			queryClient.invalidateQueries({ queryKey: ["vocabulary"] }),
+			queryClient.invalidateQueries({
+				queryKey: ["admin", "vocabulary-deck-items"],
+			}),
+			queryClient.invalidateQueries({
+				queryKey: ["admin", "vocabulary-decks"],
+			}),
+		]);
 }
 
 export function useCreateVocabularyItem() {

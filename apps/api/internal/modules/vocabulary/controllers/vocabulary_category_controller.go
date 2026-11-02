@@ -34,7 +34,7 @@ func NewVocabularyCategoryController(service services.VocabularyCategoryService)
 func (h *VocabularyCategoryController) Create(c *gin.Context) {
 	var req requests.CreateVocabularyCategory
 	if err := c.ShouldBindJSON(&req); err != nil {
-		common.Fail(c, common.BadRequest(err.Error()))
+		common.Fail(c, common.InvalidRequest(err))
 		return
 	}
 	m, err := h.service.Create(c.Request.Context(), req)
@@ -66,7 +66,7 @@ func (h *VocabularyCategoryController) Update(c *gin.Context) {
 	id := c.Param("id")
 	var req requests.UpdateVocabularyCategory
 	if err := c.ShouldBindJSON(&req); err != nil {
-		common.Fail(c, common.BadRequest(err.Error()))
+		common.Fail(c, common.InvalidRequest(err))
 		return
 	}
 	m, err := h.service.Update(c.Request.Context(), id, req)

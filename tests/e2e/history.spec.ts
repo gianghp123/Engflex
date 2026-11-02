@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./authenticated-test";
 import {
 	apiCreateConversation,
 	apiEndConversation,
@@ -265,14 +265,14 @@ test("pending sessions never appear in history", async ({ page }) => {
 	).toHaveCount(0);
 });
 
-test("abandoned never-started sessions are deleted, not saved", async () => {
-	// Creating B closes A inside the same transaction: A never reached the
-	// engine and holds no turns, so it is deleted rather than ended.
+test("replaced sessions retain their identity for delayed callbacks", async () => {
+	// Only a confirmed final snapshot can establish that a session is empty.
+	// Creating B closes A atomically but retains A for callbacks and replay.
 	const a = await apiCreateConversation({ mode: "free_talk" });
 	created.push(a.id);
 	const b = await apiCreateConversation({ mode: "free_talk" });
 	created.push(b.id);
 
-	expect(await dbConversationExists(a.id)).toBe(false);
+	expect(await dbConversationExists(a.id)).toBe(true);
 	expect(await dbConversationExists(b.id)).toBe(true);
 });

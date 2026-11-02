@@ -72,7 +72,7 @@ func (h *VocabularyDeckController) GetByID(c *gin.Context) {
 func (h *VocabularyDeckController) Create(c *gin.Context) {
 	var req requests.CreateVocabularyDeck
 	if err := c.ShouldBindJSON(&req); err != nil {
-		common.Fail(c, common.BadRequest(err.Error()))
+		common.Fail(c, common.InvalidRequest(err))
 		return
 	}
 	m, err := h.decks.Create(c.Request.Context(), middleware.UserID(c), req)
@@ -98,7 +98,7 @@ func (h *VocabularyDeckController) Create(c *gin.Context) {
 func (h *VocabularyDeckController) Update(c *gin.Context) {
 	var req requests.UpdateVocabularyDeck
 	if err := c.ShouldBindJSON(&req); err != nil {
-		common.Fail(c, common.BadRequest(err.Error()))
+		common.Fail(c, common.InvalidRequest(err))
 		return
 	}
 	m, err := h.decks.Update(c.Request.Context(), middleware.UserID(c), c.Param("id"), middleware.Role(c) == enums.UserRoleAdmin, req)
@@ -139,7 +139,7 @@ func (h *VocabularyDeckController) Delete(c *gin.Context) {
 func (h *VocabularyDeckController) CreateSystemDeck(c *gin.Context) {
 	var req requests.CreateVocabularyDeck
 	if err := c.ShouldBindJSON(&req); err != nil {
-		common.Fail(c, common.BadRequest(err.Error()))
+		common.Fail(c, common.InvalidRequest(err))
 		return
 	}
 	m, err := h.decks.CreateSystemDeck(c.Request.Context(), middleware.UserID(c), req)

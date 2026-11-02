@@ -1,7 +1,8 @@
 -- +goose Up
 CREATE TABLE vocabulary_decks (
     id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id       text,
+    user_id       text NOT NULL,
+    is_default    boolean NOT NULL DEFAULT false,
     category_id   uuid REFERENCES vocabulary_categories (id) ON DELETE SET NULL,
     name          text NOT NULL,
     description   text,

@@ -35,7 +35,7 @@ func (h *UserVocabularyController) List(c *gin.Context) {
 		common.Fail(c, err)
 		return
 	}
-	var dtos []responses.UserVocabularyState
+	var dtos []responses.SavedVocabulary
 	_ = utils.MapSlice(&dtos, items)
 	common.OK(c, "user vocabulary", dtos)
 }
@@ -52,7 +52,7 @@ func (h *UserVocabularyController) List(c *gin.Context) {
 func (h *UserVocabularyController) Save(c *gin.Context) {
 	var req requests.SaveUserVocabulary
 	if err := c.ShouldBindJSON(&req); err != nil {
-		common.Fail(c, common.BadRequest(err.Error()))
+		common.Fail(c, common.InvalidRequest(err))
 		return
 	}
 	m, err := h.state.Save(c.Request.Context(), middleware.UserID(c), req)

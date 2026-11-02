@@ -14,8 +14,9 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { APP_ROUTES } from "#/app/app-route";
 import { useBreadcrumbs } from "#/app/breadcrumbs";
+import { CardShell } from "#/components/common/card-shell";
 import { LanguagePicker } from "#/components/common/language-picker";
-import { PageSplit } from "#/components/common/page-layout";
+import { PageLayout, PageSplit } from "#/components/common/page-layout";
 import { SubmitButton } from "#/components/common/submit-button";
 import { CheckQuestionPanel } from "#/features/lessons/components/check-question-panel";
 import { ListeningBriefCard } from "#/features/lessons/components/listening/listening-brief-card";
@@ -40,6 +41,7 @@ import {
 	getFirstIncompleteActivity,
 } from "#/features/lessons/store";
 import { useExplanationLanguage } from "#/hooks/use-explanation-language";
+import { ApiError } from "#/lib/api/api";
 import { loadOr404 } from "#/lib/router/route-loader";
 import { m } from "#/paraglide/messages";
 
@@ -58,12 +60,17 @@ function PracticePage() {
 	const { slug } = Route.useParams();
 	const detailQuery = useLessonDetailBySlug(slug);
 
-	if (detailQuery.isPending) return null;
+	if (detailQuery.isPending)
+		return (
+			<PageLayout>
+				<CardShell pending className="min-h-96" />
+			</PageLayout>
+		);
 	// A failed fetch is an error, not a missing lesson (see loader above:
 	// genuine 404s and empty lessons never reach the component).
 	if (detailQuery.isError) throw detailQuery.error;
 	const detail = detailQuery.data;
-	if (!detail) return null;
+	if (!detail) throw notFound();
 
 	return <PracticeInner key={detail.id} slug={slug} detail={detail} />;
 }
@@ -98,15 +105,13 @@ function buildQuestionSeeds(
 	return seeds;
 }
 
-/** Every part with a recorded server entry counts complete — the server's
- *  own finalize rule (any attached part covers it), so writing and speaking
- *  rehydrate too. Mid-activity answers still restore via `checks`. */
+/** Restore only parts the backend proves complete; partial answers remain drafts. */
 function markCompleteParts(
 	lessonId: string,
 	activities: Activity[],
 	progress: AttemptProgress,
 ) {
-	const completed = new Set(progress.completedParts ?? []);
+	const completed = new Set(progress.completedParts);
 	for (const activity of activities) {
 		if (completed.has(activity.id)) {
 			completePart(lessonId, activity.partNumber, activities.length);
@@ -173,6 +178,11 @@ function PracticeInner({
 		throw new Error(`practice: no activity for part ${activePart}`);
 	const currentPart: ActivityType = activity.type;
 
+	if (
+		openQuery.isError &&
+		!(openQuery.error instanceof ApiError && openQuery.error.status === 404)
+	)
+		throw openQuery.error;
 	if (attemptId === null && !openQuery.isPending) {
 		return (
 			<PartShell
@@ -315,6 +325,7 @@ function useContinue(
 	activity: Activity,
 	activities: Activity[],
 	onAdvance: (part: ActivityType) => void,
+	canComplete: boolean,
 ) {
 	const navigate = useNavigate();
 	const index = activities.findIndex((item) => item.id === activity.id);
@@ -324,6 +335,10 @@ function useContinue(
 		: m["lessons.step.finishLesson"]();
 
 	function handleContinue() {
+		if (!canComplete) {
+			toast.error(m["lessons.practice.incomplete"]());
+			return;
+		}
 		completePart(lessonId, activity.partNumber, activities.length);
 		if (next) {
 			onAdvance(next.type);
@@ -395,6 +410,9 @@ function ReadingActivity({
 		activity,
 		activities,
 		onAdvance,
+		payload?.questions.every(
+			(_, index) => checked.results[index] !== undefined,
+		) ?? false,
 	);
 
 	if (!payload) throw new Error("practice: activity payload missing");
@@ -466,6 +484,9 @@ function ListeningActivity({
 		activity,
 		activities,
 		onAdvance,
+		payload?.questions.every(
+			(_, index) => checked.results[index] !== undefined,
+		) ?? false,
 	);
 
 	if (!payload) throw new Error("practice: activity payload missing");
@@ -556,6 +577,7 @@ function WritingActivity({
 		activity,
 		activities,
 		onAdvance,
+		result !== null,
 	);
 	const partCount = activities.length;
 
@@ -634,6 +656,7 @@ function SpeakingBranch({
 		activity,
 		activities,
 		onAdvance,
+		true, // reached only after every speaking item has an acknowledged score
 	);
 
 	function handleComplete() {

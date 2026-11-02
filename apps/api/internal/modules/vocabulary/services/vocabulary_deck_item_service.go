@@ -3,7 +3,6 @@ package services
 import (
 	"context"
 	"log/slog"
-	"strings"
 
 	"engflex-api/internal/common"
 	"engflex-api/internal/common/enums"
@@ -28,13 +27,15 @@ type VocabularyDeckItemService interface {
 }
 
 type vocabularyDeckItemService struct {
-	items repositories.VocabularyDeckItemRepository
-	decks repositories.VocabularyDeckRepository
+	items      repositories.VocabularyDeckItemRepository
+	decks      repositories.VocabularyDeckRepository
+	dictionary repositories.VocabularyItemRepository
+	premium    common.PremiumChecker
 }
 
 // NewVocabularyDeckItemService builds the service over both repositories.
-func NewVocabularyDeckItemService(items repositories.VocabularyDeckItemRepository, decks repositories.VocabularyDeckRepository) VocabularyDeckItemService {
-	return &vocabularyDeckItemService{items: items, decks: decks}
+func NewVocabularyDeckItemService(items repositories.VocabularyDeckItemRepository, decks repositories.VocabularyDeckRepository, dictionary repositories.VocabularyItemRepository, premium common.PremiumChecker) VocabularyDeckItemService {
+	return &vocabularyDeckItemService{items: items, decks: decks, dictionary: dictionary, premium: premium}
 }
 
 // requireRead mirrors vocabularyDeckService.GetDetail's access split: a
@@ -52,7 +53,7 @@ func (s *vocabularyDeckItemService) requireRead(ctx context.Context, userID, dec
 		if d.Status != enums.PublishStatusPublished && !isAdmin {
 			return common.NotFound("vocabulary deck not found")
 		}
-		return nil
+		return common.RequirePremiumAccess(ctx, s.premium, userID, isAdmin, d.IsPremium)
 	}
 	if d.UserID != userID {
 		return common.Forbidden("not your deck")
@@ -83,6 +84,11 @@ func (s *vocabularyDeckItemService) ListByDeck(ctx context.Context, userID, deck
 		logger.Report(ctx, "list vocabulary deck items failed", appErr, "deckID", deckID)
 		return nil, appErr
 	}
+	for _, item := range items {
+		if err := s.checkItem(ctx, userID, item.Item, isAdmin); err != nil {
+			return nil, err
+		}
+	}
 	slog.InfoContext(ctx, "vocabulary deck items listed", "count", len(items), "deckID", deckID)
 	return items, nil
 }
@@ -95,6 +101,9 @@ func (s *vocabularyDeckItemService) GetByID(ctx context.Context, userID, id stri
 		return nil, appErr
 	}
 	if err := s.requireRead(ctx, userID, m.DeckID, isAdmin); err != nil {
+		return nil, err
+	}
+	if err := s.checkItem(ctx, userID, m.Item, isAdmin); err != nil {
 		return nil, err
 	}
 	slog.InfoContext(ctx, "vocabulary deck item found", "id", m.ID)
@@ -110,14 +119,16 @@ func (s *vocabularyDeckItemService) Create(ctx context.Context, userID string, i
 		logger.Report(ctx, "map create vocabulary deck item failed", err)
 		return nil, common.Internal()
 	}
-	i.NormalizedPhrase = strings.ToLower(strings.TrimSpace(i.Phrase))
+	if err := s.requireItem(ctx, userID, req.DeckID, req.ItemID, isAdmin); err != nil {
+		return nil, err
+	}
 	if err := s.items.Create(ctx, i); err != nil {
 		appErr := common.FromDBError(err, "vocabulary deck")
 		logger.Report(ctx, "create vocabulary deck item failed", appErr)
 		return nil, appErr
 	}
 	slog.InfoContext(ctx, "vocabulary deck item created", "id", i.ID)
-	return i, nil
+	return s.GetByID(ctx, userID, i.ID, isAdmin)
 }
 
 func (s *vocabularyDeckItemService) Update(ctx context.Context, userID, id string, isAdmin bool, req requests.UpdateVocabularyDeckItem) (*models.VocabularyDeckItem, error) {
@@ -134,8 +145,8 @@ func (s *vocabularyDeckItemService) Update(ctx context.Context, userID, id strin
 		logger.Report(ctx, "map update vocabulary deck item failed", err, "id", id)
 		return nil, common.Internal()
 	}
-	if req.Phrase != nil {
-		i.NormalizedPhrase = strings.ToLower(strings.TrimSpace(i.Phrase))
+	if err := s.requireItem(ctx, userID, i.DeckID, i.ItemID, isAdmin); err != nil {
+		return nil, err
 	}
 	if err := s.items.Update(ctx, i); err != nil {
 		appErr := common.FromDBError(err, "vocabulary deck item")
@@ -143,7 +154,7 @@ func (s *vocabularyDeckItemService) Update(ctx context.Context, userID, id strin
 		return nil, appErr
 	}
 	slog.InfoContext(ctx, "vocabulary deck item updated", "id", id)
-	return i, nil
+	return s.GetByID(ctx, userID, i.ID, isAdmin)
 }
 
 func (s *vocabularyDeckItemService) Delete(ctx context.Context, userID, id string, isAdmin bool) error {
@@ -163,4 +174,46 @@ func (s *vocabularyDeckItemService) Delete(ctx context.Context, userID, id strin
 	}
 	slog.InfoContext(ctx, "vocabulary deck item deleted", "id", id)
 	return nil
+}
+
+// requireItem applies dictionary visibility without granting access to another user's words.
+func (s *vocabularyDeckItemService) requireItem(ctx context.Context, userID, deckID, itemID string, isAdmin bool) error {
+	item, err := s.dictionary.GetByID(ctx, itemID)
+	if err != nil {
+		appErr := common.FromDBError(err, "vocabulary item")
+		logger.Report(ctx, "load dictionary reference failed", appErr, "itemID", itemID)
+		return appErr
+	}
+	if item.CreatedByUserID != nil {
+		if *item.CreatedByUserID != userID {
+			return common.NotFound("vocabulary item not found")
+		}
+		deck, err := s.decks.GetByID(ctx, deckID)
+		if err != nil {
+			appErr := common.FromDBError(err, "vocabulary deck")
+			logger.Report(ctx, "load deck reference policy failed", appErr)
+			return appErr
+		}
+		if deck.IsDefault {
+			return common.UnprocessableEntity("system decks require shared dictionary entries")
+		}
+	} else if item.Status != enums.PublishStatusPublished && !isAdmin {
+		return common.NotFound("vocabulary item not found")
+	}
+	return common.RequirePremiumAccess(ctx, s.premium, userID, isAdmin, item.IsPremium)
+}
+
+func (s *vocabularyDeckItemService) checkItem(ctx context.Context, userID string, item *models.VocabularyItem, isAdmin bool) error {
+	if item == nil {
+		appErr := common.Internal()
+		logger.Report(ctx, "dictionary relation missing", appErr)
+		return appErr
+	}
+	if item.CreatedByUserID != nil && *item.CreatedByUserID != userID {
+		return common.NotFound("vocabulary item not found")
+	}
+	if item.CreatedByUserID == nil && item.Status != enums.PublishStatusPublished && !isAdmin {
+		return common.NotFound("vocabulary item not found")
+	}
+	return common.RequirePremiumAccess(ctx, s.premium, userID, isAdmin, item.IsPremium)
 }

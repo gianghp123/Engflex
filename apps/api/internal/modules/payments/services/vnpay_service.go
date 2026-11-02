@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"crypto/hmac"
 	"crypto/rand"
 	"encoding/hex"
 	"encoding/json"
@@ -17,7 +18,6 @@ import (
 	"engflex-api/internal/database/models"
 	"engflex-api/internal/database/repositories"
 	"engflex-api/internal/logger"
-	"engflex-api/internal/modules/payments/dtos/responses"
 
 	"gorm.io/datatypes"
 	"gorm.io/gorm"
@@ -66,38 +66,21 @@ type VNPayConfig struct {
 // VNPayService builds VNPay checkout URLs and verifies/handles the IPN
 // callback that confirms or fails a payment attempt.
 type VNPayService interface {
-	BuildCheckoutURL(ctx context.Context, userID string, plan enums.SubscriptionPlan, clientIP string) (*responses.CheckoutSession, error)
+	BuildCheckoutURL(ctx context.Context, userID string, plan enums.SubscriptionPlan, clientIP string) (*models.CheckoutSession, error)
 	VerifyAndHandleIPN(ctx context.Context, query url.Values) (rspCode string, err error)
 }
 
 type vnpayService struct {
-	cfg   VNPayConfig
-	db    *gorm.DB
-	subs  repositories.SubscriptionRepository
-	txns  repositories.PaymentTransactionRepository
-	plans repositories.PlanRepository
+	cfg          VNPayConfig
+	transactions repositories.TransactionManager
+	subs         repositories.SubscriptionRepository
+	txns         repositories.PaymentTransactionRepository
+	plans        repositories.PlanRepository
 }
 
-// NewVNPayService builds the service over the repository interfaces and
-// gateway config. db is used only to open the transactions BuildCheckoutURL
-// and VerifyAndHandleIPN need across the subscriptions/payment_transactions
-// tables — it may be nil (unit tests construct the service this way,
-// exercising the mocked repositories directly without a live transaction);
-// production wiring always supplies the real handle.
-func NewVNPayService(cfg VNPayConfig, db *gorm.DB, subs repositories.SubscriptionRepository, txns repositories.PaymentTransactionRepository, plans repositories.PlanRepository) VNPayService {
-	return &vnpayService{cfg: cfg, db: db, subs: subs, txns: txns, plans: plans}
-}
-
-// runInTx runs fn inside a real DB transaction when s.db is set, or calls
-// fn(nil) directly otherwise. The two call sites below pass tx straight to
-// WithTx on the repositories they use, so in the nil case those repos are
-// left pointed at their original (non-transactional) handle — correct for
-// unit tests, since the mocked repositories never look at tx.
-func (s *vnpayService) runInTx(ctx context.Context, fn func(tx *gorm.DB) error) error {
-	if s.db == nil {
-		return fn(nil)
-	}
-	return s.db.WithContext(ctx).Transaction(fn)
+// NewVNPayService requires the same transaction boundary in every environment.
+func NewVNPayService(cfg VNPayConfig, transactions repositories.TransactionManager, subs repositories.SubscriptionRepository, txns repositories.PaymentTransactionRepository, plans repositories.PlanRepository) VNPayService {
+	return &vnpayService{cfg: cfg, transactions: transactions, subs: subs, txns: txns, plans: plans}
 }
 
 // generateTxnRef returns a time-prefixed random reference, unique enough
@@ -112,7 +95,7 @@ func generateTxnRef() string {
 // BuildCheckoutURL creates the pending subscription + payment_transaction
 // rows and returns the signed VNPay checkout URL to redirect the learner's
 // browser to.
-func (s *vnpayService) BuildCheckoutURL(ctx context.Context, userID string, plan enums.SubscriptionPlan, clientIP string) (*responses.CheckoutSession, error) {
+func (s *vnpayService) BuildCheckoutURL(ctx context.Context, userID string, plan enums.SubscriptionPlan, clientIP string) (*models.CheckoutSession, error) {
 	def, err := s.plans.GetByPlan(ctx, plan)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -127,11 +110,12 @@ func (s *vnpayService) BuildCheckoutURL(ctx context.Context, userID string, plan
 	}
 
 	sub := &models.Subscription{
-		UserID:   userID,
-		Plan:     plan,
-		Status:   enums.SubscriptionStatusPending,
-		Amount:   def.Amount,
-		Currency: def.Currency,
+		DurationMonths: def.Months,
+		UserID:         userID,
+		Plan:           plan,
+		Status:         enums.SubscriptionStatusPending,
+		Amount:         def.Amount,
+		Currency:       def.Currency,
 	}
 	txnRef := generateTxnRef()
 	txn := &models.PaymentTransaction{
@@ -144,11 +128,8 @@ func (s *vnpayService) BuildCheckoutURL(ctx context.Context, userID string, plan
 	// The pending subscription and its payment_transaction must land
 	// together or not at all — a checkout session with one row but not the
 	// other is an inconsistent state nothing else in this flow expects.
-	if err := s.runInTx(ctx, func(tx *gorm.DB) error {
-		subs, txns := s.subs, s.txns
-		if tx != nil {
-			subs, txns = subs.WithTx(tx), txns.WithTx(tx)
-		}
+	if err := s.transactions.Run(ctx, func(tx *gorm.DB) error {
+		subs, txns := s.subs.WithTx(tx), s.txns.WithTx(tx)
 		if err := subs.Create(ctx, sub); err != nil {
 			return err
 		}
@@ -184,7 +165,7 @@ func (s *vnpayService) BuildCheckoutURL(ctx context.Context, userID string, plan
 
 	paymentURL := s.cfg.PayURL + "?" + q.Encode()
 	slog.InfoContext(ctx, "vnpay checkout created", "subscription_id", sub.ID, "txn_ref", txnRef, "plan", plan)
-	return &responses.CheckoutSession{PaymentURL: paymentURL, TxnRef: txnRef}, nil
+	return &models.CheckoutSession{PaymentURL: paymentURL, TxnRef: txnRef}, nil
 }
 
 // VerifyAndHandleIPN verifies the callback signature, then applies the
@@ -194,7 +175,7 @@ func (s *vnpayService) BuildCheckoutURL(ctx context.Context, userID string, plan
 func (s *vnpayService) VerifyAndHandleIPN(ctx context.Context, query url.Values) (string, error) {
 	gotHash := query.Get("vnp_SecureHash")
 	wantHash := vnpaySignQuery(query, s.cfg.HashSecret)
-	if gotHash == "" || gotHash != wantHash {
+	if gotHash == "" || !hmac.Equal([]byte(gotHash), []byte(wantHash)) {
 		slog.WarnContext(ctx, "vnpay ipn rejected: bad signature", "txn_ref", query.Get("vnp_TxnRef"))
 		return vnpayRspInvalidSignature, nil
 	}
@@ -205,11 +186,8 @@ func (s *vnpayService) VerifyAndHandleIPN(ctx context.Context, query url.Values)
 	raw, _ := json.Marshal(query)
 
 	var rspCode string
-	txErr := s.runInTx(ctx, func(tx *gorm.DB) error {
-		subs, txns := s.subs, s.txns
-		if tx != nil {
-			subs, txns = subs.WithTx(tx), txns.WithTx(tx)
-		}
+	txErr := s.transactions.Run(ctx, func(tx *gorm.DB) error {
+		subs, txns := s.subs.WithTx(tx), s.txns.WithTx(tx)
 
 		// Locked read: a concurrent replay of the same vnp_TxnRef (VNPay
 		// retries IPN until acked) blocks here until this transaction
@@ -217,6 +195,9 @@ func (s *vnpayService) VerifyAndHandleIPN(ctx context.Context, query url.Values)
 		// branch below — the two deliveries can never both apply the result.
 		txn, err := txns.GetByProviderTxnRefForUpdate(ctx, "vnpay", txnRef)
 		if err != nil {
+			if !errors.Is(err, gorm.ErrRecordNotFound) {
+				return err
+			}
 			slog.WarnContext(ctx, "vnpay ipn rejected: unknown txn_ref", "txn_ref", txnRef)
 			rspCode = vnpayRspOrderNotFound
 			return nil
@@ -244,11 +225,10 @@ func (s *vnpayService) VerifyAndHandleIPN(ctx context.Context, query url.Values)
 			if err != nil {
 				return err
 			}
-			planDef, err := s.plans.GetByPlan(ctx, sub.Plan)
-			if err != nil {
-				return err
+			if sub.DurationMonths <= 0 {
+				return common.Internal("subscription duration missing")
 			}
-			end := now.AddDate(0, planDef.Months, 0)
+			end := now.AddDate(0, sub.DurationMonths, 0)
 			if err := subs.UpdateStatus(ctx, txn.SubscriptionID, enums.SubscriptionStatusActive, &now, &end); err != nil {
 				return err
 			}

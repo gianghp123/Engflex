@@ -1,4 +1,8 @@
-import type { ConversationSession } from "@engflex/contracts";
+import {
+	type ConversationSession,
+	ConversationStatusEnded,
+	ConversationStatusFailed,
+} from "@engflex/contracts";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { APP_ROUTES } from "#/app/app-route";
 import { useConversation, useEndConversation } from "#/features/voice/queries";
@@ -118,7 +122,11 @@ export function useVoiceSession(
 	return {
 		conversation,
 		endPending: endConversation.isPending,
-		ready: mounted && authHeaders !== null,
+		ready:
+			mounted &&
+			(authHeaders !== null ||
+				conversation.data?.status === ConversationStatusEnded ||
+				conversation.data?.status === ConversationStatusFailed),
 		startBotParams,
 		transformStartResponse,
 		connectionLost,

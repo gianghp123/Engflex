@@ -106,25 +106,15 @@ func (s *ScenarioService) GetByID(ctx context.Context, id string) (*models.Scena
 		logger.Report(ctx, "get scenario failed", appErr, "scenarioID", id)
 		return nil, appErr
 	}
+	actor := common.ActorFromContext(ctx)
+	if !actor.Admin && m.Status != enums.PublishStatusPublished {
+		return nil, common.NotFound("scenario not found")
+	}
+	if err := common.RequirePremiumAccess(ctx, s.premium, actor.UserID, actor.Admin, m.IsPremium); err != nil {
+		return nil, err
+	}
 	slog.InfoContext(ctx, "scenario found", "scenarioID", m.ID)
 	return m, nil
-}
-
-// toScenarioDetail hand-maps the wire input into the model's jsonb-backed
-// detail struct. copier's DeepCopy does NOT recurse into a nested field
-// when the source and destination are different named struct types, even
-// with identical inner field names (verified: a blanket utils.Map left
-// Details entirely zeroed) — so this one nested field needs an explicit
-// line-up instead of the usual blanket utils.Map.
-func toScenarioDetail(in requests.ScenarioDetailInput) models.ScenarioDetail {
-	return models.ScenarioDetail{
-		Role:             in.Role,
-		InterlocutorRole: in.InterlocutorRole,
-		GoalFormat:       in.GoalFormat,
-		Context:          in.Context,
-		Opening:          models.DetailOpening{Label: in.Opening.Label, Text: in.Opening.Text},
-		Vocab:            in.Vocab,
-	}
 }
 
 // Create adds an admin-curated scenario, starting as draft until explicitly
@@ -135,7 +125,10 @@ func (s *ScenarioService) Create(ctx context.Context, req requests.CreateScenari
 		logger.Report(ctx, "map create scenario failed", err)
 		return nil, common.Internal()
 	}
-	m.Details = toScenarioDetail(req.Details)
+	if err := utils.Map(&m.Details, req.Details); err != nil {
+		logger.Report(ctx, "map scenario details failed", err)
+		return nil, common.Internal()
+	}
 	m.Status = enums.PublishStatusDraft
 	if err := s.scenarios.Create(ctx, m); err != nil {
 		appErr := common.FromDBError(err, "scenario")
@@ -161,7 +154,10 @@ func (s *ScenarioService) Update(ctx context.Context, id string, req requests.Up
 		return nil, common.Internal()
 	}
 	if req.Details != nil {
-		m.Details = toScenarioDetail(*req.Details)
+		if err := utils.Map(&m.Details, *req.Details); err != nil {
+			logger.Report(ctx, "map scenario details failed", err, "id", id)
+			return nil, common.Internal()
+		}
 	}
 	if req.Status != nil {
 		m.Status = *req.Status
@@ -229,5 +225,23 @@ func (s *ScenarioService) DeleteTopic(ctx context.Context, id string) error {
 		return appErr
 	}
 	slog.InfoContext(ctx, "scenario topic deleted", "id", id)
+	return nil
+}
+
+func (s *ScenarioService) CheckAccess(ctx context.Context, userID, id string) error {
+	m, err := s.scenarios.GetByID(ctx, id)
+	if err != nil {
+		appErr := common.FromDBError(err, "scenario")
+		logger.Report(ctx, "scenario access lookup failed", appErr, "scenarioID", id)
+		return appErr
+	}
+	admin := common.ActorFromContext(ctx).Admin
+	if !admin && m.Status != enums.PublishStatusPublished {
+		return common.NotFound("scenario not found")
+	}
+	if err := common.RequirePremiumAccess(ctx, s.premium, userID, admin, m.IsPremium); err != nil {
+		return err
+	}
+	slog.InfoContext(ctx, "scenario access allowed", "scenarioID", id)
 	return nil
 }

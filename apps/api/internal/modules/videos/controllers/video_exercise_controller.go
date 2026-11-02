@@ -36,7 +36,7 @@ func NewVideoExerciseController(service services.VideoExerciseService) *VideoExe
 func (h *VideoExerciseController) Create(c *gin.Context) {
 	var req requests.CreateVideoExercise
 	if err := c.ShouldBindJSON(&req); err != nil {
-		common.Fail(c, common.BadRequest(err.Error()))
+		common.Fail(c, common.InvalidRequest(err))
 		return
 	}
 	m, err := h.service.Create(c.Request.Context(), req)
@@ -67,7 +67,7 @@ func (h *VideoExerciseController) Update(c *gin.Context) {
 	id := c.Param("id")
 	var req requests.UpdateVideoExercise
 	if err := c.ShouldBindJSON(&req); err != nil {
-		common.Fail(c, common.BadRequest(err.Error()))
+		common.Fail(c, common.InvalidRequest(err))
 		return
 	}
 	m, err := h.service.Update(c.Request.Context(), id, req)

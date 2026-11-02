@@ -153,7 +153,8 @@
     "practice": {
       "noRunTitle": "No open run yet",
       "noRunBody": "Start a run to begin practicing this lesson.",
-      "noRunAction": "Start practicing"
+      "noRunAction": "Start practicing",
+      "incomplete": "Complete every question before continuing."
     }
   }
 }

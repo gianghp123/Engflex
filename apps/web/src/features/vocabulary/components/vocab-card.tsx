@@ -1,4 +1,7 @@
-import type { VocabularyItem } from "@engflex/contracts";
+import type {
+	UserVocabularyState,
+	VocabularyItemSummary,
+} from "@engflex/contracts";
 import { Link } from "@tanstack/react-router";
 import { cn } from "cn";
 import { Check, CircleCheck } from "lucide-react";
@@ -16,13 +19,13 @@ export function VocabCard({
 	item,
 	onToggleMastered,
 }: {
-	item: VocabularyItem;
+	item: VocabularyItemSummary & { userState?: UserVocabularyState };
 	onToggleMastered: () => void;
 }) {
 	const state = item.userState;
 	const mastered = state?.mastered ?? false;
 	const due = isDue(state?.srsDueAt);
-	const context = item.details?.contexts?.[0];
+
 	const canAccessPremium = useCanAccessPremium();
 	const premiumBlocked = item.isPremium && !canAccessPremium;
 
@@ -31,7 +34,6 @@ export function VocabCard({
 			<div className="flex items-start justify-between gap-2">
 				<div className="min-w-0">
 					<h3 className="text-base font-bold text-foreground">{item.term}</h3>
-					<p className="font-mono text-xs text-muted-foreground">{item.ipa}</p>
 				</div>
 				{mastered ? (
 					<span className="chip shrink-0 border-cefr-b1-border bg-cefr-b1-bg px-2 py-0.5 text-xs text-cefr-b1">
@@ -68,16 +70,6 @@ export function VocabCard({
 				) : null}
 				{state ? <SourcePill source={state.sourceType} /> : null}
 			</div>
-
-			<p className="text-[15px] font-medium text-muted-foreground">
-				{item.definition}
-			</p>
-
-			{context ? (
-				<div className="bubble bubble-partner text-[15px]">
-					“{context.quote}”
-				</div>
-			) : null}
 
 			<div className="mt-auto flex items-center gap-2 pt-1">
 				<AudioButton

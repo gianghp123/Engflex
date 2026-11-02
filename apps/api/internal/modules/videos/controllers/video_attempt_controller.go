@@ -65,7 +65,7 @@ func (h *VideoAttemptController) StartAttempt(c *gin.Context) {
 	id := c.Param("id")
 	var req requests.StartVideoAttempt
 	if err := c.ShouldBindJSON(&req); err != nil {
-		common.Fail(c, common.BadRequest(err.Error()))
+		common.Fail(c, common.InvalidRequest(err))
 		return
 	}
 	userID := middleware.UserID(c)
@@ -95,7 +95,7 @@ func (h *VideoAttemptController) GetOpenAttempt(c *gin.Context) {
 	id := c.Param("id")
 	var req requests.StartVideoAttempt
 	if err := c.ShouldBindQuery(&req); err != nil {
-		common.Fail(c, common.BadRequest(err.Error()))
+		common.Fail(c, common.InvalidRequest(err))
 		return
 	}
 	userID := middleware.UserID(c)
@@ -129,7 +129,7 @@ func (h *VideoAttemptController) SaveProgress(c *gin.Context) {
 	attemptID := c.Param("attemptId")
 	var req requests.SaveVideoProgress
 	if err := c.ShouldBindJSON(&req); err != nil {
-		common.Fail(c, common.BadRequest(err.Error()))
+		common.Fail(c, common.InvalidRequest(err))
 		return
 	}
 	userID := middleware.UserID(c)
@@ -163,7 +163,7 @@ func (h *VideoAttemptController) CompleteAttempt(c *gin.Context) {
 	attemptID := c.Param("attemptId")
 	var req requests.CompleteVideoAttempt
 	if err := c.ShouldBindJSON(&req); err != nil {
-		common.Fail(c, common.BadRequest(err.Error()))
+		common.Fail(c, common.InvalidRequest(err))
 		return
 	}
 	userID := middleware.UserID(c)

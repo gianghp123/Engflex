@@ -17,18 +17,7 @@ import (
 
 	"engflex-api/config"
 	_ "engflex-api/docs"
-	"engflex-api/internal/modules/attempts"
-	"engflex-api/internal/modules/bookmarks"
-	"engflex-api/internal/modules/conversations"
-	"engflex-api/internal/modules/exams"
-	"engflex-api/internal/modules/lessons"
-	"engflex-api/internal/modules/payments"
-	"engflex-api/internal/modules/profiles"
-	"engflex-api/internal/modules/scenarios"
-	"engflex-api/internal/modules/stories"
-	"engflex-api/internal/modules/users"
-	"engflex-api/internal/modules/videos"
-	"engflex-api/internal/modules/vocabulary"
+	"engflex-api/internal/composition"
 	"engflex-api/internal/server/middleware"
 )
 
@@ -36,6 +25,11 @@ import (
 // Add domain modules here as they are implemented:
 // profiles.RegisterRoutes(v1, db), contents.RegisterRoutes(v1, db), ...
 func NewRouter(db *gorm.DB, cfg config.Config) *gin.Engine {
+	router, _ := newRouter(db, cfg)
+	return router
+}
+func newRouter(db *gorm.DB, cfg config.Config) (*gin.Engine, func()) {
+	var clients []*redis.Client
 	r := gin.New()
 	// Recovery mounts outermost (gin.Default semantics): sentrygin captures
 	// the panic first and repanics into Recovery, which writes the
@@ -44,7 +38,7 @@ func NewRouter(db *gorm.DB, cfg config.Config) *gin.Engine {
 	r.Use(
 		middleware.Recovery(),
 		sentrygin.New(sentrygin.Options{Repanic: true, WaitForDelivery: false}),
-		middleware.RequestID(), middleware.RequestLogger(),
+		middleware.RequestID(), middleware.RequestLogger(), middleware.BodyLimits(),
 	)
 	// Trust X-Forwarded-For only from configured proxies so the IP-keyed
 	// limiter buckets by real client IP (sona parity). Empty
@@ -141,14 +135,17 @@ func NewRouter(db *gorm.DB, cfg config.Config) *gin.Engine {
 		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 		defer cancel()
 		if err := client.Ping(ctx).Err(); err != nil {
+			_ = client.Close()
 			return memoryFallback("redis unreachable", err)
 		}
 		h, err := middleware.NewRedisRateLimitMiddleware(
 			client, cfg.Redis.KeyPrefix+":rl:"+prefix, rate)
 		if err != nil {
 			slog.Error("rate limiting disabled", "kind", kind, "error", err)
+			_ = client.Close()
 			return nil
 		}
+		clients = append(clients, client)
 		return h
 	}
 	if global := buildLimiter("global", cfg.RateLimit.GlobalRate, "global"); global != nil {
@@ -157,18 +154,16 @@ func NewRouter(db *gorm.DB, cfg config.Config) *gin.Engine {
 		v1.Use(middleware.BypassRateLimitForPrefix("/api/v1/internal/", global))
 	}
 	sessionLimiter := buildLimiter("session", cfg.RateLimit.SessionRate, "session")
-	conversations.RegisterRoutes(v1, db, cfg.Voice, sessionLimiter)
-	lessons.RegisterRoutes(v1, db, cfg.Voice, cfg.LLM, cfg.Media, sessionLimiter)
-	attempts.RegisterRoutes(v1, db)
-	exams.RegisterRoutes(v1, db)
-	scenarios.RegisterRoutes(v1, db)
-	videos.RegisterRoutes(v1, db)
-	vocabulary.RegisterRoutes(v1, db)
-	users.RegisterRoutes(v1, db)
-	payments.RegisterRoutes(v1, db, cfg.Payment)
-	profiles.RegisterRoutes(v1, db)
-	bookmarks.RegisterRoutes(v1, db)
-	stories.RegisterRoutes(v1, db)
+	composition.RegisterModules(v1, db, cfg, sessionLimiter)
 
-	return r
+	return r, func() {
+		for _, client := range clients {
+			if err := client.Close(); err != nil {
+				slog.Warn("redis close failed", "error", err)
+			}
+		}
+		if transport, ok := http.DefaultTransport.(*http.Transport); ok {
+			transport.CloseIdleConnections()
+		}
+	}
 }

@@ -37,7 +37,7 @@ func (r *vocabularyDeckItemRepository) ListByDeck(ctx context.Context, deckID st
 		return nil, err
 	}
 	out := make([]*models.VocabularyDeckItem, 0)
-	if err := r.db.WithContext(ctx).Where("deck_id = ?", deckID).Order("created_at asc").Find(&out).Error; err != nil {
+	if err := r.db.WithContext(ctx).Joins("Item").Where("vocabulary_deck_items.deck_id = ?", deckID).Order("vocabulary_deck_items.sequence ASC, vocabulary_deck_items.id ASC").Find(&out).Error; err != nil {
 		return nil, err
 	}
 	return out, nil
@@ -48,7 +48,7 @@ func (r *vocabularyDeckItemRepository) GetByID(ctx context.Context, id string) (
 		return nil, err
 	}
 	var m models.VocabularyDeckItem
-	if err := r.db.WithContext(ctx).First(&m, "id = ?", id).Error; err != nil {
+	if err := r.db.WithContext(ctx).Joins("Item").First(&m, "vocabulary_deck_items.id = ?", id).Error; err != nil {
 		return nil, err
 	}
 	return &m, nil

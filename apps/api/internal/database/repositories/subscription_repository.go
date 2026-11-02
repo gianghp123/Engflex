@@ -15,6 +15,7 @@ import (
 // the payment flow owns transitioning a row from pending to active/failed via
 // UpdateStatus, keyed off the row's own ID (set by VNPayService at checkout time).
 type SubscriptionRepository interface {
+	CancelActive(ctx context.Context, userID string) error
 	Create(ctx context.Context, s *models.Subscription) error
 	GetByID(ctx context.Context, id string) (*models.Subscription, error)
 	GetActiveByUserID(ctx context.Context, userID string) (*models.Subscription, error)
@@ -127,4 +128,9 @@ func (r *subscriptionRepository) UpdateStatus(ctx context.Context, id string, st
 		updates["expires_at"] = *expiresAt
 	}
 	return r.db.WithContext(ctx).Model(&models.Subscription{}).Where("id = ?", id).Updates(updates).Error
+}
+
+// Cancel every active package atomically; expired active rows are revoked too.
+func (r *subscriptionRepository) CancelActive(ctx context.Context, userID string) error {
+	return r.db.WithContext(ctx).Model(&models.Subscription{}).Where("user_id = ? AND status = ?", userID, enums.SubscriptionStatusActive).Update("status", enums.SubscriptionStatusCancelled).Error
 }

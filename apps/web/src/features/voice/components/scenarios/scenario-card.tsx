@@ -1,4 +1,4 @@
-import type { Scenario } from "@engflex/contracts";
+import type { ScenarioPreview } from "@engflex/contracts";
 import { Link } from "@tanstack/react-router";
 import { cn } from "cn";
 import { Clock3 } from "lucide-react";
@@ -27,7 +27,7 @@ export function ScenarioCard({
 	scenario,
 	onStart,
 }: {
-	scenario: Scenario;
+	scenario: ScenarioPreview;
 	onStart: () => void;
 }) {
 	const tone =

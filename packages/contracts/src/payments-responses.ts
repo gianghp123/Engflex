@@ -33,7 +33,7 @@ export interface Subscription {
   expiresAt?: string /* RFC3339 */;
   createdAt: string /* RFC3339 */;
   updatedAt: string /* RFC3339 */;
-}
+} // @name PaymentSubscription
 /**
  * Plan is one fixed-duration package's current price, admin-editable.
  */

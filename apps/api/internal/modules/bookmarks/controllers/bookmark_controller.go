@@ -30,7 +30,7 @@ func NewBookmarkController(bookmarks services.BookmarkService) *BookmarkControll
 func (h *BookmarkController) List(c *gin.Context) {
 	var req requests.ListBookmarks
 	if err := c.ShouldBindQuery(&req); err != nil {
-		common.Fail(c, common.BadRequest(err.Error()))
+		common.Fail(c, common.InvalidRequest(err))
 		return
 	}
 	items, err := h.bookmarks.ListByUser(c.Request.Context(), middleware.UserID(c), string(req.ContentType))
@@ -55,7 +55,7 @@ func (h *BookmarkController) List(c *gin.Context) {
 func (h *BookmarkController) Save(c *gin.Context) {
 	var req requests.SaveBookmark
 	if err := c.ShouldBindJSON(&req); err != nil {
-		common.Fail(c, common.BadRequest(err.Error()))
+		common.Fail(c, common.InvalidRequest(err))
 		return
 	}
 	b, err := h.bookmarks.Save(c.Request.Context(), middleware.UserID(c), req.ContentType, req.ContentID)

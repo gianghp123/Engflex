@@ -1,0 +1,118 @@
+{
+  "owners": {
+    "Learning": [
+      "lessons",
+      "videos",
+      "exams",
+      "stories"
+    ],
+    "Vocabulary": [
+      "vocabulary"
+    ],
+    "Learner": [
+      "profiles",
+      "bookmarks",
+      "users",
+      "attempts"
+    ],
+    "Conversation": [
+      "conversations",
+      "scenarios"
+    ],
+    "Billing": [
+      "payments"
+    ]
+  },
+  "repositories": {
+    "Learning": [
+      "Attempt",
+      "ExamCategory",
+      "ExamTest",
+      "Lesson",
+      "LessonActivity",
+      "LessonSection",
+      "Story",
+      "StorySentence",
+      "VideoCategory",
+      "VideoExercise",
+      "VideoTranscript"
+    ],
+    "Vocabulary": [
+      "VocabularyCategory",
+      "VocabularyDeck",
+      "VocabularyDeckItem",
+      "VocabularyItem",
+      "UserVocabulary"
+    ],
+    "Learner": [
+      "Bookmark",
+      "UserProfile",
+      "UserDirectory"
+    ],
+    "Conversation": [
+      "Conversation",
+      "ConversationTurn",
+      "Feedback",
+      "Scenario",
+      "ScenarioTopic",
+      "Persona"
+    ],
+    "Billing": [
+      "Plan",
+      "PremiumFeature",
+      "Subscription",
+      "PaymentTransaction"
+    ]
+  },
+  "read_interfaces": {
+    "attempts/services/progress_service.go": {
+      "LearningProgressReader": [
+        "ListCompletedDays",
+        "CountCompleted"
+      ],
+      "ConversationProgressReader": [
+        "ListEndedDays",
+        "SumDurationSince"
+      ],
+      "ProfileReader": [
+        "GetByUserID"
+      ]
+    },
+    "users/services/user_service.go": {
+      "UserAttemptsReader": [
+        "CountByUser",
+        "ListByUser"
+      ],
+      "subscriptionLookup": [
+        "Enrich"
+      ]
+    },
+    "users/controllers/user_controller.go": {
+      "SubscriptionAdministration": [
+        "ListByUserID",
+        "GrantUser",
+        "Revoke"
+      ]
+    },
+    "conversations/services/conversation_service.go": {
+      "ScenarioAccessPolicy": [
+        "CheckAccess"
+      ]
+    },
+    "lessons/services/lesson_activity_service.go": {
+      "LessonAccessPolicy": [
+        "CheckAccess"
+      ]
+    },
+    "videos/services/video_attempt_service.go": {
+      "VideoAccessPolicy": [
+        "CheckAccess"
+      ]
+    },
+    "vocabulary/services/user_vocabulary_service.go": {
+      "VocabularyAccessPolicy": [
+        "CheckAccess"
+      ]
+    }
+  }
+}

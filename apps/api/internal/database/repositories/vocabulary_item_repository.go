@@ -19,8 +19,8 @@ import (
 // pages and counts drift). GetByID stays unfiltered; the service decides
 // visibility for a single fetch the same way it does for decks.
 type VocabularyItemRepository interface {
-	List(ctx context.Context, limit, offset int, onlyPublished bool) ([]*models.VocabularyItem, error)
-	Count(ctx context.Context, onlyPublished bool) (int64, error)
+	List(ctx context.Context, limit, offset int, onlyPublished bool, userID, search string) ([]*models.VocabularyItem, error)
+	Count(ctx context.Context, onlyPublished bool, userID, search string) (int64, error)
 	GetByID(ctx context.Context, id string) (*models.VocabularyItem, error)
 	Create(ctx context.Context, i *models.VocabularyItem) error
 	Update(ctx context.Context, i *models.VocabularyItem) error
@@ -52,18 +52,24 @@ func visiblePublished(db *gorm.DB, onlyPublished bool) *gorm.DB {
 	return db.Where("status = ?", enums.PublishStatusPublished)
 }
 
-func (r *vocabularyItemRepository) List(ctx context.Context, limit, offset int, onlyPublished bool) ([]*models.VocabularyItem, error) {
+func (r *vocabularyItemRepository) List(ctx context.Context, limit, offset int, onlyPublished bool, userID, search string) ([]*models.VocabularyItem, error) {
 	var out []*models.VocabularyItem
-	q := visiblePublished(r.db.WithContext(ctx), onlyPublished)
+	q := visiblePublished(r.db.WithContext(ctx), onlyPublished).Where("created_by_user_id IS NULL OR created_by_user_id = ?", userID)
+	if search != "" {
+		q = q.Where("term ILIKE ?", "%"+search+"%")
+	}
 	if err := q.Order("created_at DESC").Limit(limit).Offset(offset).Find(&out).Error; err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (r *vocabularyItemRepository) Count(ctx context.Context, onlyPublished bool) (int64, error) {
+func (r *vocabularyItemRepository) Count(ctx context.Context, onlyPublished bool, userID, search string) (int64, error) {
 	var n int64
-	q := visiblePublished(r.db.WithContext(ctx).Model(&models.VocabularyItem{}), onlyPublished)
+	q := visiblePublished(r.db.WithContext(ctx).Model(&models.VocabularyItem{}), onlyPublished).Where("created_by_user_id IS NULL OR created_by_user_id = ?", userID)
+	if search != "" {
+		q = q.Where("term ILIKE ?", "%"+search+"%")
+	}
 	if err := q.Count(&n).Error; err != nil {
 		return 0, err
 	}

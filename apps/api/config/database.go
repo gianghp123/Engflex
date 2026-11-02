@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"net/url"
+	"time"
 
 	"engflex-api/internal/utils"
 )
@@ -10,24 +11,32 @@ import (
 // DatabaseConfig holds the PostgreSQL connection settings.
 // Values are read from DB_* environment variables (see apps/api/.env).
 type DatabaseConfig struct {
-	Host     string
-	Port     string
-	User     string
-	Password string
-	Name     string
-	SSLMode  string
+	Host            string
+	Port            string
+	User            string
+	Password        string
+	Name            string
+	SSLMode         string
+	MaxOpenConns    int
+	MaxIdleConns    int
+	ConnMaxLifetime time.Duration
+	ConnMaxIdleTime time.Duration
 }
 
 // LoadDatabaseConfig reads the database configuration from the environment.
 // Defaults match apps/api/.env for local development.
 func LoadDatabaseConfig() DatabaseConfig {
 	return DatabaseConfig{
-		Host:     utils.GetEnv("DB_HOST", "localhost"),
-		Port:     utils.GetEnv("DB_PORT", "5777"),
-		User:     utils.GetEnv("DB_USER", "postgres"),
-		Password: utils.GetEnv("DB_PASSWORD", "postgres"),
-		Name:     utils.GetEnv("DB_NAME", "engflex"),
-		SSLMode:  utils.GetEnv("DB_SSLMODE", "disable"),
+		Host:            utils.GetEnv("DB_HOST", "localhost"),
+		Port:            utils.GetEnv("DB_PORT", "5777"),
+		User:            utils.GetEnv("DB_USER", "postgres"),
+		Password:        utils.GetEnv("DB_PASSWORD", "postgres"),
+		Name:            utils.GetEnv("DB_NAME", "engflex"),
+		SSLMode:         utils.GetEnv("DB_SSLMODE", "disable"),
+		MaxOpenConns:    utils.GetEnvInt("DB_MAX_OPEN_CONNS", 20),
+		MaxIdleConns:    utils.GetEnvInt("DB_MAX_IDLE_CONNS", 10),
+		ConnMaxLifetime: time.Duration(utils.GetEnvInt("DB_CONN_MAX_LIFETIME_SEC", 1800)) * time.Second,
+		ConnMaxIdleTime: time.Duration(utils.GetEnvInt("DB_CONN_MAX_IDLE_SEC", 300)) * time.Second,
 	}
 }
 

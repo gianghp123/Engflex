@@ -22,8 +22,8 @@ type PaymentConfig struct {
 // LoadPaymentConfig reads the payment configuration from the environment.
 func LoadPaymentConfig() PaymentConfig {
 	return PaymentConfig{
-		VNPayTmnCode:    utils.MustGetEnv("VNPAY_TMN_CODE"),
-		VNPayHashSecret: utils.MustGetEnv("VNPAY_HASH_SECRET"),
+		VNPayTmnCode:    utils.GetEnv("VNPAY_TMN_CODE", ""),
+		VNPayHashSecret: utils.GetEnv("VNPAY_HASH_SECRET", ""),
 		VNPayPayURL:     utils.GetEnv("VNPAY_PAY_URL", "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html"),
 		VNPayReturnURL:  utils.GetEnv("VNPAY_RETURN_URL", "http://localhost:3000/payments/vnpay/return"),
 	}

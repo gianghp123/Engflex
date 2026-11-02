@@ -123,7 +123,7 @@ func (s *videoCategoryService) ListWithPreview(ctx context.Context, previewK int
 	if previewK > common.VideoPreviewMax {
 		previewK = common.VideoPreviewMax
 	}
-	categories, err := s.repo.ListWithPreview(ctx, previewK)
+	categories, err := s.repo.ListWithPracticePreview(ctx, common.ActorFromContext(ctx).UserID, previewK)
 	if err != nil {
 		appErr := common.FromDBError(err, "video category")
 		logger.Report(ctx, "failed to list video categories with preview", appErr, "preview_k", previewK)

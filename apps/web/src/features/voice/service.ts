@@ -6,6 +6,7 @@ import type {
 	ListScenarios,
 	Pagination,
 	Scenario,
+	ScenarioPreview,
 	ScenarioTopic,
 	StartConversation,
 	TranscribeResult,
@@ -106,13 +107,13 @@ export function transcribeAudio(
  */
 export function listScenarios(
 	params?: Partial<ListScenarios>,
-): Promise<{ items: Scenario[]; pagination: Pagination }> {
+): Promise<{ items: ScenarioPreview[]; pagination: Pagination }> {
 	const query: Record<string, string> = {};
 	if (params?.topicId) query.topicId = params.topicId;
 	if (params?.random) query.random = "true";
 	if (params?.page) query.page = String(params.page);
 	if (params?.pageSize) query.pageSize = String(params.pageSize);
-	return apiPage<Scenario>(
+	return apiPage<ScenarioPreview>(
 		API_ROUTES.SCENARIOS.LIST,
 		{ method: "GET" },
 		{ withCredentials: true, query },

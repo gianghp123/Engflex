@@ -63,6 +63,27 @@
         "planLabel": "Plan",
         "planNone": "None (remove premium)",
         "noteLabel": "Note (optional)"
+      },
+      "attempts": {
+        "action": "Learning history",
+        "dialogTitle": "Learning history — {name}",
+        "dialogDescription": "List of practice sessions and exam runs for this user.",
+        "typeFilter": "Content type",
+        "allTypes": "All types",
+        "columnType": "Type",
+        "columnTitle": "Title / Topic",
+        "columnStatus": "Status",
+        "columnScore": "Score",
+        "columnDuration": "Duration",
+        "columnDate": "Date",
+        "statusCompleted": "Completed",
+        "statusInProgress": "In progress",
+        "statusAbandoned": "Abandoned",
+        "typeLesson": "Lesson",
+        "typeExam": "TOEIC Exam",
+        "typeDictation": "Dictation",
+        "typeShadowing": "Shadowing",
+        "typeOther": "Other"
       }
     },
     "premium": {
@@ -95,6 +116,22 @@
         "created": "Created",
         "allStatuses": "All statuses",
         "allPlans": "All plans"
+      }
+    },
+    "deckCards": {
+      "title": "Cards",
+      "dictionary": "Dictionary entry",
+      "search": "Search dictionary",
+      "sequence": "Order",
+      "example": "Example",
+      "note": "Note",
+      "term": "Term",
+      "definition": "Definition"
+    },
+    "dictionary": {
+      "fields": {
+        "partOfSpeech": "Part of speech",
+        "ipa": "IPA"
       }
     }
   }

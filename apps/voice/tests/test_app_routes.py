@@ -48,7 +48,7 @@ def test_analyze_returns_feedback_envelope(monkeypatch):
         return _feedback()
 
     monkeypatch.setattr(routes, "analyze_turn", fake_analyze)
-    resp = TestClient(runner_app).post("/analyze", json=_payload())
+    resp = TestClient(runner_app, headers={"X-Internal-Secret": "test"}).post("/analyze", json=_payload())
     assert resp.status_code == 200, resp.text
     assert resp.json()["feedback"]["tip"] == "past tense"
 
@@ -58,7 +58,7 @@ def test_analyze_refusal_is_422(monkeypatch):
         raise analysis.AnalysisRefused("declined")
 
     monkeypatch.setattr(routes, "analyze_turn", fake_analyze)
-    resp = TestClient(runner_app).post("/analyze", json=_payload())
+    resp = TestClient(runner_app, headers={"X-Internal-Secret": "test"}).post("/analyze", json=_payload())
     assert resp.status_code == 422
 
 
@@ -67,7 +67,7 @@ def test_analyze_unusable_reply_is_422(monkeypatch):
         raise ValueError("no JSON object")
 
     monkeypatch.setattr(routes, "analyze_turn", fake_analyze)
-    resp = TestClient(runner_app).post("/analyze", json=_payload())
+    resp = TestClient(runner_app, headers={"X-Internal-Secret": "test"}).post("/analyze", json=_payload())
     assert resp.status_code == 422
 
 
@@ -76,12 +76,12 @@ def test_analyze_transport_failure_is_500(monkeypatch):
         raise RuntimeError("connection reset")
 
     monkeypatch.setattr(routes, "analyze_turn", fake_analyze)
-    resp = TestClient(runner_app).post("/analyze", json=_payload())
+    resp = TestClient(runner_app, headers={"X-Internal-Secret": "test"}).post("/analyze", json=_payload())
     assert resp.status_code == 500
 
 
 def test_analyze_rejects_missing_text():
-    resp = TestClient(runner_app).post("/analyze", json={"conversationId": "c1", "turnId": "t1"})
+    resp = TestClient(runner_app, headers={"X-Internal-Secret": "test"}).post("/analyze", json={"conversationId": "c1", "turnId": "t1"})
     assert resp.status_code == 422
 
 

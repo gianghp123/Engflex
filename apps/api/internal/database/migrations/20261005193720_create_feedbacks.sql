@@ -11,6 +11,7 @@
 -- fail with "operator does not exist: uuid = text" (SQLSTATE 42883), which
 -- GORM surfaces as an empty transcript rather than an error.
 CREATE TABLE feedbacks (
+    input_fingerprint text NOT NULL DEFAULT '',
     id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id      text NOT NULL,
     subject_type text NOT NULL,

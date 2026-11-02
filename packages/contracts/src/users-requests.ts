@@ -15,3 +15,13 @@ export interface ListUsers extends ListParams {
 export interface UpdateUserRole {
   role: string;
 }
+/**
+ * ListUserAttempts pages and filters attempts for a target user.
+ */
+export interface ListUserAttempts extends ListParams {
+  type?: AttemptType;
+}
+export interface GrantSubscription {
+  plan: SubscriptionPlan;
+  note: string;
+} // @name UserGrantSubscription

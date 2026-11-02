@@ -47,6 +47,8 @@ packages:
     # AppError never crosses the wire (only its message, inside the envelope).
     exclude_files:
       - "errors.go"
+      - "actor.go"
+      - "premium.go"
 
   # Shared enums: one Go file per enum type -> const + union literal types.
   - path: "engflex-api/internal/common/enums"
@@ -107,6 +109,8 @@ packages:
   - path: "engflex-api/internal/modules/vocabulary/dtos/requests"
     output_path: "../../packages/contracts/src/vocabulary-requests.ts"
     fallback_type: "unknown"
+    exclude_files:
+      - "vocabulary_nullable.go"
   - path: "engflex-api/internal/modules/vocabulary/dtos/responses"
     output_path: "../../packages/contracts/src/vocabulary-responses.ts"
     fallback_type: "unknown"

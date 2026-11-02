@@ -6,7 +6,6 @@ package mocks
 
 import (
 	"context"
-	"engflex-api/internal/modules/conversations/dtos/responses"
 	"engflex-api/internal/voice"
 
 	mock "github.com/stretchr/testify/mock"
@@ -271,23 +270,23 @@ func (_c *MockVoiceClient_Start_Call) RunAndReturn(run func(ctx context.Context,
 }
 
 // Transcribe provides a mock function for the type MockVoiceClient
-func (_mock *MockVoiceClient) Transcribe(ctx context.Context, conversationID string, audio []byte, mime string) (*responses.TranscribeResult, error) {
+func (_mock *MockVoiceClient) Transcribe(ctx context.Context, conversationID string, audio []byte, mime string) (*voice.TranscribeResult, error) {
 	ret := _mock.Called(ctx, conversationID, audio, mime)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Transcribe")
 	}
 
-	var r0 *responses.TranscribeResult
+	var r0 *voice.TranscribeResult
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, []byte, string) (*responses.TranscribeResult, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, []byte, string) (*voice.TranscribeResult, error)); ok {
 		return returnFunc(ctx, conversationID, audio, mime)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, []byte, string) *responses.TranscribeResult); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, []byte, string) *voice.TranscribeResult); ok {
 		r0 = returnFunc(ctx, conversationID, audio, mime)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*responses.TranscribeResult)
+			r0 = ret.Get(0).(*voice.TranscribeResult)
 		}
 	}
 	if returnFunc, ok := ret.Get(1).(func(context.Context, string, []byte, string) error); ok {
@@ -340,34 +339,34 @@ func (_c *MockVoiceClient_Transcribe_Call) Run(run func(ctx context.Context, con
 	return _c
 }
 
-func (_c *MockVoiceClient_Transcribe_Call) Return(transcribeResult *responses.TranscribeResult, err error) *MockVoiceClient_Transcribe_Call {
+func (_c *MockVoiceClient_Transcribe_Call) Return(transcribeResult *voice.TranscribeResult, err error) *MockVoiceClient_Transcribe_Call {
 	_c.Call.Return(transcribeResult, err)
 	return _c
 }
 
-func (_c *MockVoiceClient_Transcribe_Call) RunAndReturn(run func(ctx context.Context, conversationID string, audio []byte, mime string) (*responses.TranscribeResult, error)) *MockVoiceClient_Transcribe_Call {
+func (_c *MockVoiceClient_Transcribe_Call) RunAndReturn(run func(ctx context.Context, conversationID string, audio []byte, mime string) (*voice.TranscribeResult, error)) *MockVoiceClient_Transcribe_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // Transcript provides a mock function for the type MockVoiceClient
-func (_mock *MockVoiceClient) Transcript(ctx context.Context, conversationID string, action string, text string) (*responses.TranscriptResult, error) {
+func (_mock *MockVoiceClient) Transcript(ctx context.Context, conversationID string, action string, text string) (*voice.TranscriptResult, error) {
 	ret := _mock.Called(ctx, conversationID, action, text)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Transcript")
 	}
 
-	var r0 *responses.TranscriptResult
+	var r0 *voice.TranscriptResult
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string, string) (*responses.TranscriptResult, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string, string) (*voice.TranscriptResult, error)); ok {
 		return returnFunc(ctx, conversationID, action, text)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string, string) *responses.TranscriptResult); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string, string) *voice.TranscriptResult); ok {
 		r0 = returnFunc(ctx, conversationID, action, text)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*responses.TranscriptResult)
+			r0 = ret.Get(0).(*voice.TranscriptResult)
 		}
 	}
 	if returnFunc, ok := ret.Get(1).(func(context.Context, string, string, string) error); ok {
@@ -420,12 +419,12 @@ func (_c *MockVoiceClient_Transcript_Call) Run(run func(ctx context.Context, con
 	return _c
 }
 
-func (_c *MockVoiceClient_Transcript_Call) Return(transcriptResult *responses.TranscriptResult, err error) *MockVoiceClient_Transcript_Call {
+func (_c *MockVoiceClient_Transcript_Call) Return(transcriptResult *voice.TranscriptResult, err error) *MockVoiceClient_Transcript_Call {
 	_c.Call.Return(transcriptResult, err)
 	return _c
 }
 
-func (_c *MockVoiceClient_Transcript_Call) RunAndReturn(run func(ctx context.Context, conversationID string, action string, text string) (*responses.TranscriptResult, error)) *MockVoiceClient_Transcript_Call {
+func (_c *MockVoiceClient_Transcript_Call) RunAndReturn(run func(ctx context.Context, conversationID string, action string, text string) (*voice.TranscriptResult, error)) *MockVoiceClient_Transcript_Call {
 	_c.Call.Return(run)
 	return _c
 }

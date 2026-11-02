@@ -35,7 +35,7 @@ func NewLessonController(lessons services.LessonService, media config.MediaConfi
 func (h *LessonController) List(c *gin.Context) {
 	var req requests.ListLessons
 	if err := c.ShouldBindQuery(&req); err != nil {
-		common.Fail(c, common.BadRequest(err.Error()))
+		common.Fail(c, common.InvalidRequest(err))
 		return
 	}
 	// Section-first read: the repository returns sections with units
@@ -86,7 +86,7 @@ func (h *LessonController) GetByID(c *gin.Context) {
 func (h *LessonController) Create(c *gin.Context) {
 	var req requests.CreateLesson
 	if err := c.ShouldBindJSON(&req); err != nil {
-		common.Fail(c, common.BadRequest(err.Error()))
+		common.Fail(c, common.InvalidRequest(err))
 		return
 	}
 	m, err := h.lessons.Create(c.Request.Context(), req)
@@ -112,7 +112,7 @@ func (h *LessonController) Create(c *gin.Context) {
 func (h *LessonController) Update(c *gin.Context) {
 	var req requests.UpdateLesson
 	if err := c.ShouldBindJSON(&req); err != nil {
-		common.Fail(c, common.BadRequest(err.Error()))
+		common.Fail(c, common.InvalidRequest(err))
 		return
 	}
 	m, err := h.lessons.Update(c.Request.Context(), c.Param("id"), req)
@@ -171,7 +171,7 @@ func (h *LessonController) ListSections(c *gin.Context) {
 func (h *LessonController) CreateSection(c *gin.Context) {
 	var req requests.CreateLessonSection
 	if err := c.ShouldBindJSON(&req); err != nil {
-		common.Fail(c, common.BadRequest(err.Error()))
+		common.Fail(c, common.InvalidRequest(err))
 		return
 	}
 	m, err := h.lessons.CreateSection(c.Request.Context(), req)
@@ -197,7 +197,7 @@ func (h *LessonController) CreateSection(c *gin.Context) {
 func (h *LessonController) UpdateSection(c *gin.Context) {
 	var req requests.UpdateLessonSection
 	if err := c.ShouldBindJSON(&req); err != nil {
-		common.Fail(c, common.BadRequest(err.Error()))
+		common.Fail(c, common.InvalidRequest(err))
 		return
 	}
 	m, err := h.lessons.UpdateSection(c.Request.Context(), c.Param("id"), req)

@@ -37,7 +37,7 @@ func (r *userVocabularyRepository) WithTx(tx *gorm.DB) UserVocabularyRepository 
 
 func (r *userVocabularyRepository) ListByUser(ctx context.Context, userID string, limit, offset int) ([]*models.UserVocabulary, error) {
 	var out []*models.UserVocabulary
-	if err := r.db.WithContext(ctx).Where("user_id = ?", userID).Order("created_at DESC").Limit(limit).Offset(offset).Find(&out).Error; err != nil {
+	if err := r.db.WithContext(ctx).Joins("Item").Where("user_vocabulary.user_id = ?", userID).Where(`"Item".created_by_user_id IS NULL OR "Item".created_by_user_id = ?`, userID).Order("user_vocabulary.created_at DESC").Limit(limit).Offset(offset).Find(&out).Error; err != nil {
 		return nil, err
 	}
 	return out, nil
@@ -48,7 +48,7 @@ func (r *userVocabularyRepository) Get(ctx context.Context, userID, itemID strin
 		return nil, err
 	}
 	var m models.UserVocabulary
-	if err := r.db.WithContext(ctx).First(&m, "user_id = ? AND item_id = ?", userID, itemID).Error; err != nil {
+	if err := r.db.WithContext(ctx).Joins("Item").First(&m, "user_vocabulary.user_id = ? AND user_vocabulary.item_id = ?", userID, itemID).Error; err != nil {
 		return nil, err
 	}
 	return &m, nil

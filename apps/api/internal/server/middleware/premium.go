@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"context"
 	"log/slog"
 
 	"github.com/gin-gonic/gin"
@@ -13,9 +12,7 @@ import (
 // (not imported from the services package) so middleware stays the
 // consumer-side interface; services.SubscriptionService satisfies it
 // structurally, no adapter needed.
-type PremiumChecker interface {
-	IsPremium(ctx context.Context, userID string) (bool, error)
-}
+type PremiumChecker = common.PremiumChecker
 
 // RequirePremium allows only callers with an active, non-expired
 // subscription. Compose after RequireAuth. Unlike RequireAdmin, this is not

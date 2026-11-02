@@ -111,7 +111,7 @@ func TestLessonActivityService_Update_ValidatesAgainstEffectiveType(t *testing.T
 
 func lessonActivitySvc(t *testing.T, repo *mocks.MockLessonActivityRepository) services.LessonActivityService {
 	t.Helper()
-	return services.NewLessonActivityService(
+	return newActivityService(t,
 		repo,
 		nil,
 		nil,

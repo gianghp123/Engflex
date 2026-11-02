@@ -42,8 +42,7 @@ export interface ScoreWriting extends LanguageParam {
 
 /**
  * LessonDetailsInput mirrors models.LessonDetails field for field so the
- * service's hand-written mapper (not a blanket utils.Map — see
- * toLessonDetails) can line the two up directly.
+ * service can map the JSONB value directly with utils.Map.
  */
 export interface LessonDetailsInput {
   estimatedDurationMin?: number /* int */;

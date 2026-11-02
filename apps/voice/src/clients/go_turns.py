@@ -1,57 +1,48 @@
-"""Turn-batch ingestion callback: engine -> Go.
+"""Coalesce immutable full snapshots; one sender task per voice session."""
+import asyncio
 
-At-most-once, same contract as `go_callbacks.finalize_session`: a failed
-batch is logged and dropped. Go makes replay safe (idempotent upsert on
-`(conversation_id, position)`), so a manual re-post is always an option.
-"""
-
-import aiohttp
-from loguru import logger
-
-from config import settings
-from transcript.capture import TurnRecord
-
-INTERNAL_HEADER = "X-Internal-Secret"
+from clients.go_callbacks import finalize_session, post_callback
+from transcript.capture import TurnCollector
 
 
-def _serialize(records: list[TurnRecord]) -> dict[str, object]:
-    return {
-        "turns": [
-            {
-                "position": record.position,
-                "role": record.role,
-                "text": record.text,
-                "wasInterrupted": record.was_interrupted,
-            }
-            for record in records
-        ]
-    }
+class SnapshotPublisher:
+    def __init__(self, conversation_id: str, engine_session_id: str,
+                 collector: TurnCollector):
+        self.conversation_id = conversation_id
+        self.engine_session_id = engine_session_id
+        self.collector = collector
+        self.pending: dict | None = None
+        self.task: asyncio.Task | None = None
+        self.closed = False
+        self.final_task: asyncio.Task | None = None
 
+    def snapshot(self) -> dict:
+        revision, records = self.collector.snapshot()
+        return {"engineSessionId": self.engine_session_id, "revision": revision,
+                "turns": [{"position": r.position, "role": r.role, "text": r.text,
+                           "wasInterrupted": r.was_interrupted} for r in records]}
 
-async def post_turn_batch(conversation_id: str, records: list[TurnRecord]) -> bool:
-    """POST the batch. Async end to end: the teardown call site
-    (`on_pipeline_finished`) is already async and awaits `finalize_session`,
-    so a sync wrapper with `asyncio.run` would only fight the running loop.
-    Failures are logged, never raised (at-most-once, like `finalize_session`).
-    """
-    if not records:
-        return True
-    url = f"{settings.api_url}/api/v1/internal/conversations/{conversation_id}/turns"
-    payload = _serialize(records)
-    try:
-        async with (
-            aiohttp.ClientSession(
-                timeout=aiohttp.ClientTimeout(total=settings.turns_post_timeout_sec)
-            ) as session,
-            session.post(
-                url, json=payload, headers={INTERNAL_HEADER: settings.internal_secret}
-            ) as resp,
-        ):
-            # Same form as `go_callbacks.finalize_session`: raise, don't
-            # inspect `resp.status` by hand.
-            resp.raise_for_status()
-        logger.info("turn batch sent", conversation_id=conversation_id, turns=len(records))
-        return True
-    except Exception:  # noqa: BLE001 - at-most-once by design
-        logger.exception("turn batch failed", conversation_id=conversation_id)
-        return False
+    def notify(self) -> None:
+        if self.closed:
+            return
+        self.pending = self.snapshot()
+        if self.task is None or self.task.done():
+            self.task = asyncio.create_task(self._drain())
+
+    async def _drain(self) -> None:
+        while self.pending is not None:
+            snapshot, self.pending = self.pending, None
+            await post_callback(self.conversation_id, "turns", snapshot)
+
+    async def finalize(self, duration_sec: int) -> bool:
+        if self.final_task is None:
+            self.closed = True
+            self.collector.finalized = True
+            self.pending = None
+            snapshot = self.snapshot()
+            async def flush():
+                if self.task is not None:
+                    await self.task
+                return await finalize_session(self.conversation_id, duration_sec, snapshot)
+            self.final_task = asyncio.create_task(flush())
+        return await self.final_task

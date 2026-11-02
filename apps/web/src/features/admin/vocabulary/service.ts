@@ -19,9 +19,10 @@ import { api, apiPage } from "#/lib/api";
 export function listVocabularyItems(
 	page: number,
 	pageSize: number,
+	search = "",
 ): Promise<{ items: VocabularyItem[]; pagination: Pagination }> {
 	return apiPage<VocabularyItem>(API_ROUTES.VOCABULARY_ITEMS.LIST, undefined, {
-		query: { page, pageSize },
+		query: { page, pageSize, search },
 	});
 }
 

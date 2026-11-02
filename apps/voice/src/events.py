@@ -20,9 +20,8 @@ from pipecat.processors.frame_processor import FrameDirection
 from pipecat.transports.base_transport import BaseTransport
 
 from app.schemas import RunnerBody
-from clients.go_callbacks import finalize_session
-from clients.go_turns import post_turn_batch
-from transcript.capture import TurnCollector
+from clients.go_turns import SnapshotPublisher
+from transcript.capture import SnapshotLimitExceeded, TurnCollector
 
 
 def get_custom_error_message(error: str, service_name: str = "Service") -> str:
@@ -70,6 +69,7 @@ def register_event_handlers(
     body: RunnerBody,
     start_time: float,
     collector: TurnCollector,
+    publisher: SnapshotPublisher,
 ) -> None:
     timer_handle: dict[str, asyncio.Task[None]] = {}
 
@@ -137,11 +137,10 @@ def register_event_handlers(
         # User turns take the default was_interrupted=False: the user-side
         # message type has no interruption field, and consecutive fragments
         # already merge in the collector.
-        # Live upsert so the transcript (and Analyze buttons) track the
-        # session in real time. Fire-and-forget: the finalize batch covers
-        # gaps and the idempotent upsert absorbs duplicates.
-        if (record := collector.add_user_text(message.content)) is not None:
-            asyncio.create_task(post_turn_batch(body.conversationId, [record]))
+        try:
+            collector.add_user_text(message.content)
+        except SnapshotLimitExceeded:
+            await worker.queue_frames([ErrorFrame(USER_FACING_ERROR), EndWorkerFrame()])
 
     @assistant_aggregator.event_handler("on_assistant_turn_stopped")
     async def on_assistant_turn(_aggregator, message) -> None:
@@ -149,15 +148,14 @@ def register_event_handlers(
         # message.interrupted carries the flag (no separate frame watch).
         # InterruptionFrame exists in pipecat.frames.frames; there is no
         # StartInterruptionFrame in 1.11.0.
-        if (
-            record := collector.add_bot_text(message.content, was_interrupted=message.interrupted)
-        ) is not None:
-            asyncio.create_task(post_turn_batch(body.conversationId, [record]))
+        try:
+            collector.add_bot_text(message.content, was_interrupted=message.interrupted)
+        except SnapshotLimitExceeded:
+            await worker.queue_frames([ErrorFrame(USER_FACING_ERROR), EndWorkerFrame()])
 
     @worker.event_handler("on_pipeline_finished")
     async def on_pipeline_finished(_worker: PipelineWorker, _frame):
-        records = collector.records()
-        if records:
-            await post_turn_batch(body.conversationId, records)
-        duration = int(time.time() - start_time)
-        await finalize_session(body.conversationId, duration)
+        if (pending := timer_handle.get("task")) is not None:
+            pending.cancel()
+        duration = max(0, int(time.time() - start_time))
+        await publisher.finalize(duration)

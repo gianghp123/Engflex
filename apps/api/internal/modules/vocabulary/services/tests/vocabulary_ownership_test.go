@@ -23,7 +23,10 @@ func TestVocabularyDeckItemService_ListByDeck_ForeignDeck(t *testing.T) {
 	deckRepo.On("GetByID", mock.Anything, deckID).
 		Return(&models.VocabularyDeck{ID: deckID, UserID: owner, Name: "Core"}, nil)
 	itemRepo := mocks.NewMockVocabularyDeckItemRepository(t)
-	svc := services.NewVocabularyDeckItemService(itemRepo, deckRepo)
+	dictionary := mocks.NewMockVocabularyItemRepository(t)
+	dictionary.On("GetByID", mock.Anything, mock.Anything).Return(&models.VocabularyItem{ID: "11111111-1111-1111-1111-111111111111", Status: enums.PublishStatusPublished}, nil).Maybe()
+	itemRepo.On("GetByID", mock.Anything, mock.Anything).Return(&models.VocabularyDeckItem{DeckID: deckID, ItemID: "11111111-1111-1111-1111-111111111111", Item: &models.VocabularyItem{Status: enums.PublishStatusPublished}}, nil).Maybe()
+	svc := services.NewVocabularyDeckItemService(itemRepo, deckRepo, dictionary, fakePremiumChecker{})
 
 	res, err := svc.ListByDeck(context.Background(), other, deckID, false)
 
@@ -41,7 +44,10 @@ func TestVocabularyDeckItemService_ListByDeck_DraftSystemDeckHiddenFromLearner(t
 	deckRepo.On("GetByID", mock.Anything, deckID).
 		Return(&models.VocabularyDeck{ID: deckID, UserID: admin, IsDefault: true, Status: enums.PublishStatusDraft}, nil)
 	itemRepo := mocks.NewMockVocabularyDeckItemRepository(t)
-	svc := services.NewVocabularyDeckItemService(itemRepo, deckRepo)
+	dictionary := mocks.NewMockVocabularyItemRepository(t)
+	dictionary.On("GetByID", mock.Anything, mock.Anything).Return(&models.VocabularyItem{ID: "11111111-1111-1111-1111-111111111111", Status: enums.PublishStatusPublished}, nil).Maybe()
+	itemRepo.On("GetByID", mock.Anything, mock.Anything).Return(&models.VocabularyDeckItem{DeckID: deckID, ItemID: "11111111-1111-1111-1111-111111111111", Item: &models.VocabularyItem{Status: enums.PublishStatusPublished}}, nil).Maybe()
+	svc := services.NewVocabularyDeckItemService(itemRepo, deckRepo, dictionary, fakePremiumChecker{})
 
 	res, err := svc.ListByDeck(context.Background(), learner, deckID, false)
 
@@ -60,7 +66,10 @@ func TestVocabularyDeckItemService_ListByDeck_PublishedSystemDeckReadableByAnyon
 		Return(&models.VocabularyDeck{ID: deckID, UserID: admin, IsDefault: true, Status: enums.PublishStatusPublished}, nil)
 	itemRepo := mocks.NewMockVocabularyDeckItemRepository(t)
 	itemRepo.On("ListByDeck", mock.Anything, deckID).Return(make([]*models.VocabularyDeckItem, 0), nil)
-	svc := services.NewVocabularyDeckItemService(itemRepo, deckRepo)
+	dictionary := mocks.NewMockVocabularyItemRepository(t)
+	dictionary.On("GetByID", mock.Anything, mock.Anything).Return(&models.VocabularyItem{ID: "11111111-1111-1111-1111-111111111111", Status: enums.PublishStatusPublished}, nil).Maybe()
+	itemRepo.On("GetByID", mock.Anything, mock.Anything).Return(&models.VocabularyDeckItem{DeckID: deckID, ItemID: "11111111-1111-1111-1111-111111111111", Item: &models.VocabularyItem{Status: enums.PublishStatusPublished}}, nil).Maybe()
+	svc := services.NewVocabularyDeckItemService(itemRepo, deckRepo, dictionary, fakePremiumChecker{})
 
 	res, err := svc.ListByDeck(context.Background(), learner, deckID, false)
 
@@ -78,9 +87,12 @@ func TestVocabularyDeckItemService_Create_AnyAdminManagesSystemDeck(t *testing.T
 		Return(&models.VocabularyDeck{ID: deckID, UserID: creator, IsDefault: true, Status: enums.PublishStatusDraft}, nil)
 	itemRepo := mocks.NewMockVocabularyDeckItemRepository(t)
 	itemRepo.On("Create", mock.Anything, mock.Anything).Return(nil)
-	svc := services.NewVocabularyDeckItemService(itemRepo, deckRepo)
+	dictionary := mocks.NewMockVocabularyItemRepository(t)
+	dictionary.On("GetByID", mock.Anything, mock.Anything).Return(&models.VocabularyItem{ID: "11111111-1111-1111-1111-111111111111", Status: enums.PublishStatusPublished}, nil).Maybe()
+	itemRepo.On("GetByID", mock.Anything, mock.Anything).Return(&models.VocabularyDeckItem{DeckID: deckID, ItemID: "11111111-1111-1111-1111-111111111111", Item: &models.VocabularyItem{Status: enums.PublishStatusPublished}}, nil).Maybe()
+	svc := services.NewVocabularyDeckItemService(itemRepo, deckRepo, dictionary, fakePremiumChecker{})
 
-	res, err := svc.Create(context.Background(), otherAdmin, true, requests.CreateVocabularyDeckItem{DeckID: deckID, Phrase: "hi", Meaning: "chao"})
+	res, err := svc.Create(context.Background(), otherAdmin, true, requests.CreateVocabularyDeckItem{DeckID: deckID, ItemID: "11111111-1111-1111-1111-111111111111"})
 
 	require.NoError(t, err)
 	assert.NotNil(t, res)

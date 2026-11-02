@@ -1,9 +1,6 @@
 #!/usr/bin/env bash
-# Deploy: terraform plan → apply (iff changed; rollout is TF-owned — apps
-# via coolify_deployment resources, services via coolify_resource_action
-# with env-hash triggers; empty diffs no-op) → goose migrations (with
-# postgres readiness wait) → ensure frozen pronounce artifact → external
-# health polls (api/web) + internal status probes (voice/pronounce).
+# Deploy: provision data resources → wait for PostgreSQL → Goose migrations
+# → application rollout → readiness and smoke probes. One release runner only.
 # Run via `make deploy` from the repo root (or directly from anywhere).
 # FORCE=1 make deploy → force-replace all four app deployments.
 # Exit non-zero on the first failure, with the failing stage named.
@@ -19,6 +16,10 @@ GOOSE="${GOOSE:-$HOME/go/bin/goose}"
 command -v terraform >/dev/null || { echo "ERROR: terraform not on PATH" >&2; exit 1; }
 [ -x "$GOOSE" ] || { echo "ERROR: goose not found at $GOOSE (set \$GOOSE, or install to ~/go/bin/goose)" >&2; exit 1; }
 command -v curl >/dev/null || { echo "ERROR: curl not on PATH" >&2; exit 1; }
+command -v python3 >/dev/null || { echo "ERROR: python3 not on PATH" >&2; exit 1; }
+# Fail before any infrastructure mutation if the authenticated release gate
+# cannot run. The runner supplies short-lived learner and premium test tokens.
+python3 infrastructure/scripts/smoke.py --validate-config
 # App rollout lives in TF (coolify_deployment resources in deployments.tf):
 # env/code/structural changes redeploy exactly the affected apps, empty diffs
 # no-op. Only services (provider has no service-deployment resource) still
@@ -41,32 +42,14 @@ echo "== ensure pronounce artifact (frozen image) =="
 # pulls this tag, so the artifact must exist before apply starts.
 bash "$REPO_ROOT/infrastructure/scripts/ensure-pronounce-image.sh"
 
-echo "== terraform =="
+echo "== provision data resources =="
 tf init -input=false
 PLAN_FILE="$(mktemp "${TMPDIR:-/tmp}/engflex-tfplan.XXXXXX")"
 DB_WAIT_LOG="$(mktemp "${TMPDIR:-/tmp}/engflex-dbwait.XXXXXX")"
 trap 'rm -f "$PLAN_FILE" "$DB_WAIT_LOG"' EXIT
-# detailed-exitcode: 0 = empty, 2 = changes. (set -e would abort on 2.)
-set +e
-tf plan -input=false -out="$PLAN_FILE" -detailed-exitcode
-PLAN_EXIT=$?
-set -e
-case "$PLAN_EXIT" in
-  0) echo "terraform: plan empty, nothing to apply";;
-  2) echo "terraform: changes pending";;
-  *) echo "ERROR: terraform plan failed (exit $PLAN_EXIT)" >&2; exit 1;;
-esac
-
-if [ "$PLAN_EXIT" = "2" ]; then
-  echo "== terraform apply =="
-  tf apply -input=false -auto-approve "${REPLACE_ARGS[@]}" "$PLAN_FILE"
-fi
-
-echo "== capture outputs =="
+tf plan -input=false -target=module.postgres -target=module.redis -target=module.minio -out="$PLAN_FILE"
+tf apply -input=false -auto-approve "$PLAN_FILE"
 DATABASE_URL="$(tf output -raw postgres_public_url)"
-API_HEALTH_URL="$(tf output -raw api_health_url)"
-WEB_HOST="$(tf output -raw web_host)"
-TUNNEL_HOST="$(tf output -raw tunnel_hostname)"
 
 echo "== migrations =="
 echo "waiting for postgres to accept connections…"
@@ -88,6 +71,29 @@ until "$GOOSE" -dir "$MIGRATIONS_DIR" postgres "$DATABASE_URL" status >"$DB_WAIT
   sleep 5
 done
 "$GOOSE" -dir "$MIGRATIONS_DIR" postgres "$DATABASE_URL" up
+
+echo "== terraform =="
+
+# detailed-exitcode: 0 = empty, 2 = changes. (set -e would abort on 2.)
+set +e
+tf plan -input=false "${REPLACE_ARGS[@]}" -out="$PLAN_FILE" -detailed-exitcode
+PLAN_EXIT=$?
+set -e
+case "$PLAN_EXIT" in
+  0) echo "terraform: plan empty, nothing to apply";;
+  2) echo "terraform: changes pending";;
+  *) echo "ERROR: terraform plan failed (exit $PLAN_EXIT)" >&2; exit 1;;
+esac
+
+if [ "$PLAN_EXIT" = "2" ]; then
+  echo "== terraform apply =="
+  tf apply -input=false -auto-approve "$PLAN_FILE"
+fi
+
+echo "== capture application outputs =="
+API_HEALTH_URL="$(tf output -raw api_health_url)"
+WEB_HOST="$(tf output -raw web_host)"
+TUNNEL_HOST="$(tf output -raw tunnel_hostname)"
 
 echo "== health =="
 poll() { # $1=url $2=label $3=deadline_sec (default 900)
@@ -122,10 +128,13 @@ poll "$API_HEALTH_URL" "api" 1200
 poll "http://$WEB_HOST/" "web" 1200
 
 echo "== voice internal status =="
-poll_internal "http://engflex-voice:7860/status" "voice" 900
+poll_internal "http://engflex-voice:7860/readyz" "voice" 900
 
 echo "== pronounce internal health =="
 poll_internal "http://engflex-pronounce:8000/health" "pronounce" 3600
+
+echo "== authenticated release smoke =="
+SMOKE_API_URL="${API_HEALTH_URL%/readyz}" python3 infrastructure/scripts/smoke.py
 
 if [ -n "$TUNNEL_HOST" ]; then
   echo "deploy complete: https://$TUNNEL_HOST/ (local: http://$WEB_HOST/)"

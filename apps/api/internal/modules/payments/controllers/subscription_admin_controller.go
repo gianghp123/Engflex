@@ -5,6 +5,7 @@ import (
 
 	"engflex-api/internal/common"
 	"engflex-api/internal/common/enums"
+	paymentresponses "engflex-api/internal/modules/payments/dtos/responses"
 	"engflex-api/internal/modules/payments/services"
 	"engflex-api/internal/utils"
 )
@@ -30,7 +31,7 @@ func NewSubscriptionAdminController(service services.SubscriptionService) *Subsc
 // @Param        plan query string false "1m|3m|12m"
 // @Param        page query int false "page"
 // @Param        pageSize query int false "page size"
-// @Success      200 {object} common.ApiResponse{data=[]responses.Subscription}
+// @Success      200 {object} common.ApiResponse{data=[]PaymentSubscription}
 // @Router       /admin/premium/subscriptions [get]
 func (h *SubscriptionAdminController) List(c *gin.Context) {
 	page, pageSize := utils.ParsePagination(c)
@@ -42,5 +43,7 @@ func (h *SubscriptionAdminController) List(c *gin.Context) {
 		common.Fail(c, err)
 		return
 	}
-	common.Paginated(c, "subscriptions listed", items, page, pageSize, total)
+	var dto []*paymentresponses.Subscription
+	_ = utils.MapSlice(&dto, items)
+	common.Paginated(c, "subscriptions listed", dto, page, pageSize, total)
 }

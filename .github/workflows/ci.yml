@@ -15,6 +15,20 @@ concurrency:
 jobs:
   api:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: engflex_test
+          POSTGRES_PASSWORD: engflex_test
+          POSTGRES_DB: engflex_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U engflex_test"
+          --health-interval 5s --health-timeout 5s --health-retries 12
+    env:
+      TEST_DATABASE_URL: postgres://engflex_test:engflex_test@localhost:5432/engflex_test?sslmode=disable
     defaults:
       run:
         working-directory: apps/api
@@ -30,8 +44,19 @@ jobs:
           make swagger
       - name: gofmt
         run: test -z "$(gofmt -l internal/)"
+      - name: migrate clean PostgreSQL and verify reversible chain
+        run: |
+          go install github.com/pressly/goose/v3/cmd/goose@v3.28.0
+          goose -dir internal/database/migrations postgres "$TEST_DATABASE_URL" up
+          goose -dir internal/database/migrations postgres "$TEST_DATABASE_URL" reset
+          goose -dir internal/database/migrations postgres "$TEST_DATABASE_URL" up
+      - run: python scripts/check-module-boundaries.py
+      - name: provider-free release probe regression
+        run: python -m unittest discover -s ../../infrastructure/scripts -p test_smoke.py -v
       - run: go vet ./...
       - run: go test ./... -count=1
+      - name: concurrency race regression (Linux)
+        run: go test -race ./internal/database/repositories/tests ./internal/modules/exams/services/tests ./internal/modules/payments/services -count=1
 
   voice:
     runs-on: ubuntu-latest
@@ -59,6 +84,10 @@ jobs:
       - run: pnpm --filter web compile:messages
       - run: pnpm --filter web check
       - run: pnpm --filter web typecheck
+      - name: contracts and browser suites compile against generated wire types
+        run: |
+          pnpm --filter web exec tsc --noEmit -p ../../packages/contracts/tsconfig.json
+          pnpm --filter e2e typecheck
       - run: pnpm --filter web check:conventions
       - run: pnpm --filter web build
 

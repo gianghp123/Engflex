@@ -33,7 +33,7 @@ type VoiceConfig struct {
 func LoadVoiceConfig() VoiceConfig {
 	return VoiceConfig{
 		ServiceURL:       utils.GetEnv("VOICE_SERVICE_URL", "http://localhost:7860"),
-		InternalSecret:   utils.MustGetEnv("VOICE_INTERNAL_SECRET"),
+		InternalSecret:   utils.GetEnv("VOICE_INTERNAL_SECRET", ""),
 		MaxDurationSec:   utils.GetEnvInt("VOICE_MAX_DURATION_SEC", 300),
 		StartTimeout:     time.Duration(utils.GetEnvInt("VOICE_START_TIMEOUT_MS", 15000)) * time.Millisecond,
 		OfferTimeout:     time.Duration(utils.GetEnvInt("VOICE_OFFER_TIMEOUT_MS", 10000)) * time.Millisecond,

@@ -15,6 +15,7 @@ type VideoProgressPayload struct {
 }
 
 type VideoAttemptResponse struct {
+	Revision        int                   `json:"revision"`
 	ID              string                `json:"id"`
 	UserID          string                `json:"userId"`
 	VideoExerciseID *string               `json:"videoExerciseId,omitempty"`

@@ -27,6 +27,19 @@ class Response(io.BytesIO):
 
 
 class ImportTests(unittest.TestCase):
+    def test_dry_run_never_publishes_or_opens_database(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            release = root / "release"
+            release.mkdir()
+            for path in (release / "content.json", release / "provenance.json", root / "validation.json", root / "media.json"):
+                path.write_text("{}", encoding="utf-8")
+            publisher = Mock(side_effect=AssertionError("dry-run must not publish"))
+            argv = ["import_toeic.py", "--release", str(release), "--media", str(root / "media.json"), "--category-slug", "test", "--category-title", "Test", "--test-slug", "test", "--dry-run"]
+            with patch.object(sys, "argv", argv), patch.object(module, "prepare", return_value={}), patch.dict(sys.modules, {"publish_toeic_media": SimpleNamespace(publish_content=publisher)}):
+                module.main()
+            publisher.assert_not_called()
+
     def test_release_and_media_checks(self):
         for fault in (None, "preview", "changed", "unreviewed", "stale_review", "missing", "hash", "short_audio", "redirect"):
             with self.subTest(fault=fault):

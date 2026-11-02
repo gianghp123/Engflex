@@ -32,7 +32,7 @@ func TestAttemptLifecycle(t *testing.T) {
 
 	newSvc := func(t *testing.T, repo *mocks.MockLessonActivityRepository, attempts *mocks.MockAttemptRepository) services.LessonActivityService {
 		t.Helper()
-		return services.NewLessonActivityService(repo, pronunciation.NewScorer(voicemocks.NewMockPronounceEngine(t)), llmmocks.NewMockLLMClient(t), attempts)
+		return newActivityService(t, repo, pronunciation.NewScorer(voicemocks.NewMockPronounceEngine(t)), llmmocks.NewMockLLMClient(t), attempts)
 	}
 
 	openAttempt := func() *models.Attempt {
@@ -45,7 +45,7 @@ func TestAttemptLifecycle(t *testing.T) {
 			Result:   []byte(`{}`),
 		}
 	}
-	twoActivities := []*models.LessonActivity{{ID: act1}, {ID: act2}}
+	twoActivities := []*models.LessonActivity{{ID: act1, Type: enums.ActivityTypeWriting}, {ID: act2, Type: enums.ActivityTypeSpeaking, Config: []byte(`{"items":[{"text":"Hello","modelAudioKey":"hello.mp3"}]}`)}}
 
 	tests := []struct {
 		name string
@@ -58,7 +58,7 @@ func TestAttemptLifecycle(t *testing.T) {
 				attempts := mocks.NewMockAttemptRepository(t)
 				attempts.EXPECT().GetOpenAttempt(mock.Anything, userID, lessonID).Return(nil, gorm.ErrRecordNotFound).Once()
 				var created *models.Attempt
-				attempts.EXPECT().Create(mock.Anything, mock.Anything).
+				attempts.EXPECT().CreateOpen(mock.Anything, mock.Anything).
 					Run(func(ctx context.Context, m *models.Attempt) { created = m }).
 					Return(nil).Once()
 				svc := newSvc(t, repo, attempts)
@@ -112,7 +112,7 @@ func TestAttemptLifecycle(t *testing.T) {
 			run: func(t *testing.T) {
 				repo := mocks.NewMockLessonActivityRepository(t)
 				attempts := mocks.NewMockAttemptRepository(t)
-				attempts.EXPECT().GetByID(mock.Anything, openID).Return(nil, gorm.ErrRecordNotFound).Once()
+				attempts.EXPECT().GetForUpdate(mock.Anything, openID).Return(nil, gorm.ErrRecordNotFound).Once()
 				svc := newSvc(t, repo, attempts)
 
 				got, err := svc.AttachPartResult(context.Background(), userID, openID, act1, services.PartEntry{Type: enums.AttemptTypeWriting, Score: 80})
@@ -142,7 +142,7 @@ func TestAttemptLifecycle(t *testing.T) {
 				attempts := mocks.NewMockAttemptRepository(t)
 				foreign := openAttempt()
 				foreign.UserID = otherID
-				attempts.EXPECT().GetByID(mock.Anything, openID).Return(foreign, nil).Once()
+				attempts.EXPECT().GetForUpdate(mock.Anything, openID).Return(foreign, nil).Once()
 				svc := newSvc(t, repo, attempts)
 
 				got, err := svc.AttachPartResult(context.Background(), userID, openID, act1, services.PartEntry{Type: enums.AttemptTypeWriting, Score: 80})
@@ -158,7 +158,7 @@ func TestAttemptLifecycle(t *testing.T) {
 				attempts := mocks.NewMockAttemptRepository(t)
 				closed := openAttempt()
 				closed.Status = enums.AttemptStatusCompleted
-				attempts.EXPECT().GetByID(mock.Anything, openID).Return(closed, nil).Once()
+				attempts.EXPECT().GetForUpdate(mock.Anything, openID).Return(closed, nil).Once()
 				svc := newSvc(t, repo, attempts)
 
 				got, err := svc.AttachPartResult(context.Background(), userID, openID, act1, services.PartEntry{Type: enums.AttemptTypeWriting, Score: 80})
@@ -172,7 +172,7 @@ func TestAttemptLifecycle(t *testing.T) {
 			run: func(t *testing.T) {
 				repo := mocks.NewMockLessonActivityRepository(t)
 				attempts := mocks.NewMockAttemptRepository(t)
-				attempts.EXPECT().GetByID(mock.Anything, openID).Return(openAttempt(), nil).Once()
+				attempts.EXPECT().GetForUpdate(mock.Anything, openID).Return(openAttempt(), nil).Once()
 				repo.EXPECT().ListByLesson(mock.Anything, lessonID).Return(twoActivities, nil).Once()
 				var saved *models.Attempt
 				attempts.EXPECT().Update(mock.Anything, mock.Anything).
@@ -180,7 +180,7 @@ func TestAttemptLifecycle(t *testing.T) {
 					Return(nil).Once()
 				svc := newSvc(t, repo, attempts)
 
-				got, err := svc.AttachPartResult(context.Background(), userID, openID, act1, services.PartEntry{Type: enums.AttemptTypeWriting, Score: 80, Detail: map[string]string{"tip": "x"}})
+				got, err := svc.AttachPartResult(context.Background(), userID, openID, act1, services.PartEntry{Type: enums.AttemptTypeWriting, Score: 80, Detail: map[string]string{"suggested": "Improved answer", "tip": "x"}})
 
 				require.NoError(t, err)
 				require.NotNil(t, got)
@@ -200,12 +200,12 @@ func TestAttemptLifecycle(t *testing.T) {
 				repo := mocks.NewMockLessonActivityRepository(t)
 				attempts := mocks.NewMockAttemptRepository(t)
 				seeded, err := json.Marshal(map[string]services.PartEntry{
-					act1: {Type: enums.AttemptTypeWriting, Score: 80, Detail: map[string]string{"tip": "x"}},
+					act1: {Type: enums.AttemptTypeWriting, Score: 80, Detail: map[string]string{"suggested": "Improved answer", "tip": "x"}},
 				})
 				require.NoError(t, err)
 				open := openAttempt()
 				open.Result = seeded
-				attempts.EXPECT().GetByID(mock.Anything, openID).Return(open, nil).Once()
+				attempts.EXPECT().GetForUpdate(mock.Anything, openID).Return(open, nil).Once()
 				repo.EXPECT().ListByLesson(mock.Anything, lessonID).Return(twoActivities, nil).Once()
 				var saved *models.Attempt
 				attempts.EXPECT().Update(mock.Anything, mock.Anything).
@@ -213,7 +213,7 @@ func TestAttemptLifecycle(t *testing.T) {
 					Return(nil).Once()
 				svc := newSvc(t, repo, attempts)
 
-				got, err := svc.AttachPartResult(context.Background(), userID, openID, act2, services.PartEntry{Type: enums.AttemptTypeSpeaking, Score: 60, Detail: map[string]string{"items": "x"}})
+				got, err := svc.AttachPartResult(context.Background(), userID, openID, act2, services.PartEntry{Type: enums.AttemptTypeSpeaking, Score: 60, Detail: map[string]any{"items": map[string]float64{"0": 60}}})
 
 				require.NoError(t, err)
 				require.NotNil(t, got)

@@ -60,7 +60,7 @@ function VocabularyPage() {
 
 	const visible = items.filter((item) => {
 		if (filters.search.trim()) {
-			const haystack = `${item.term} ${item.definition}`.toLowerCase();
+			const haystack = item.term.toLowerCase();
 			if (!haystack.includes(filters.search.trim().toLowerCase())) return false;
 		}
 		if (item.cefr !== filters.cefr && filters.cefr !== "all") return false;

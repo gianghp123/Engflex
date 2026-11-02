@@ -1,21 +1,13 @@
+// Package stories registers routes over dependencies supplied by composition.
 package stories
 
 import (
-	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
-
-	"engflex-api/internal/database/repositories"
 	"engflex-api/internal/modules/stories/controllers"
-	"engflex-api/internal/modules/stories/services"
 	"engflex-api/internal/server/middleware"
+	"github.com/gin-gonic/gin"
 )
 
-// RegisterRoutes mounts the stories endpoints under /api/v1.
-func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB) {
-	repo := repositories.NewStoryRepository(db)
-	svc := services.NewStoryService(repo)
-	ctl := controllers.NewStoryController(svc)
-
+func RegisterRoutes(rg *gin.RouterGroup, ctl *controllers.StoryController) {
 	g := rg.Group("/stories")
 	g.GET("", middleware.RequireAuth(), ctl.List)
 	g.GET("/topics", middleware.RequireAuth(), ctl.ListTopics)

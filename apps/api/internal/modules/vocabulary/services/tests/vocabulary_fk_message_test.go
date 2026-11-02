@@ -2,6 +2,7 @@ package tests
 
 import (
 	"context"
+	"engflex-api/internal/common/enums"
 	"testing"
 
 	"github.com/jackc/pgx/v5/pgconn"
@@ -23,9 +24,12 @@ func TestVocabularyDeckItemService_Create_UnknownDeckNamesDeck(t *testing.T) {
 		Return(&models.VocabularyDeck{ID: deckID, UserID: owner}, nil)
 	itemRepo.On("Create", mock.Anything, mock.Anything).
 		Return(&pgconn.PgError{Code: "23503"})
-	svc := services.NewVocabularyDeckItemService(itemRepo, deckRepo)
+	dictionary := mocks.NewMockVocabularyItemRepository(t)
+	dictionary.On("GetByID", mock.Anything, mock.Anything).Return(&models.VocabularyItem{ID: "11111111-1111-1111-1111-111111111111", Status: enums.PublishStatusPublished}, nil).Maybe()
+	itemRepo.On("GetByID", mock.Anything, mock.Anything).Return(&models.VocabularyDeckItem{DeckID: deckID, ItemID: "11111111-1111-1111-1111-111111111111", Item: &models.VocabularyItem{Status: enums.PublishStatusPublished}}, nil).Maybe()
+	svc := services.NewVocabularyDeckItemService(itemRepo, deckRepo, dictionary, fakePremiumChecker{})
 
-	res, err := svc.Create(context.Background(), owner, false, requests.CreateVocabularyDeckItem{DeckID: deckID, Phrase: "hi", Meaning: "chao"})
+	res, err := svc.Create(context.Background(), owner, false, requests.CreateVocabularyDeckItem{DeckID: deckID, ItemID: "11111111-1111-1111-1111-111111111111"})
 
 	require.Error(t, err)
 	assert.Nil(t, res)

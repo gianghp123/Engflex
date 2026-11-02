@@ -13,7 +13,6 @@ import (
 
 	"engflex-api/config"
 	"engflex-api/internal/common/enums"
-	"engflex-api/internal/modules/conversations/dtos/responses"
 )
 
 // VoiceSessionBody is the per-session payload the engine parses. Persona,
@@ -61,8 +60,8 @@ type StartRequest struct {
 
 // StartResponse is the engine's /start reply (cached for idempotent starts).
 type StartResponse struct {
-	SessionID string               `json:"sessionId"`
-	ICEConfig *responses.IceConfig `json:"iceConfig,omitempty"`
+	SessionID string     `json:"sessionId"`
+	ICEConfig *IceConfig `json:"iceConfig,omitempty"`
 }
 
 // AnalyzeTurnRequest is the per-turn analysis payload. It carries the turn
@@ -98,10 +97,10 @@ type VoiceClient interface {
 	// Transcript is the one learner-initiated, session-scoped command. The
 	// engine owns the live transcript and the reviewed turn, so Go only checks
 	// ownership and forwards.
-	Transcript(ctx context.Context, conversationID, action, text string) (*responses.TranscriptResult, error)
+	Transcript(ctx context.Context, conversationID, action, text string) (*TranscriptResult, error)
 	// Transcribe sends one recorded re-speak for isolated transcription. The
 	// engine owns Deepgram, so Go only checks ownership and forwards.
-	Transcribe(ctx context.Context, conversationID string, audio []byte, mime string) (*responses.TranscribeResult, error)
+	Transcribe(ctx context.Context, conversationID string, audio []byte, mime string) (*TranscribeResult, error)
 }
 
 // TranscriptStatusError carries a non-2xx engine reply. The engine owns the
@@ -121,6 +120,7 @@ func (e *TranscriptStatusError) Error() string {
 }
 
 type httpVoiceClient struct {
+	secret         string
 	baseURL        string
 	http           *http.Client
 	startTimeout   time.Duration
@@ -130,6 +130,7 @@ type httpVoiceClient struct {
 
 func NewHTTPVoiceClient(cfg config.VoiceConfig) VoiceClient {
 	return &httpVoiceClient{
+		secret:         cfg.InternalSecret,
 		baseURL:        cfg.ServiceURL,
 		http:           &http.Client{},
 		startTimeout:   cfg.StartTimeout,
@@ -158,6 +159,7 @@ func (c *httpVoiceClient) AnalyzeTurn(ctx context.Context, req AnalyzeTurnReques
 	}
 	httpReq.Header.Set("Content-Type", "application/json")
 
+	httpReq.Header.Set("X-Internal-Secret", c.secret)
 	resp, err := c.http.Do(httpReq)
 	if err != nil {
 		return nil, err
@@ -192,6 +194,7 @@ func (c *httpVoiceClient) Start(ctx context.Context, req StartRequest) (*StartRe
 	}
 	httpReq.Header.Set("Content-Type", "application/json")
 
+	httpReq.Header.Set("X-Internal-Secret", c.secret)
 	resp, err := c.http.Do(httpReq)
 	if err != nil {
 		return nil, err
@@ -226,6 +229,7 @@ func (c *httpVoiceClient) Offer(ctx context.Context, engineSessionID, method str
 	}
 	httpReq.Header.Set("Content-Type", "application/json")
 
+	httpReq.Header.Set("X-Internal-Secret", c.secret)
 	resp, err := c.http.Do(httpReq)
 	if err != nil {
 		return nil, 0, err
@@ -239,7 +243,7 @@ func (c *httpVoiceClient) Offer(ctx context.Context, engineSessionID, method str
 	return respBody, resp.StatusCode, nil
 }
 
-func (c *httpVoiceClient) Transcript(ctx context.Context, conversationID, action, text string) (*responses.TranscriptResult, error) {
+func (c *httpVoiceClient) Transcript(ctx context.Context, conversationID, action, text string) (*TranscriptResult, error) {
 	body, err := json.Marshal(map[string]any{
 		"conversationId": conversationID,
 		"action":         action,
@@ -255,6 +259,7 @@ func (c *httpVoiceClient) Transcript(ctx context.Context, conversationID, action
 		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("X-Internal-Secret", c.secret)
 	resp, err := c.http.Do(req)
 	if err != nil {
 		return nil, err
@@ -267,14 +272,14 @@ func (c *httpVoiceClient) Transcript(ctx context.Context, conversationID, action
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		return nil, &TranscriptStatusError{Path: "/transcript", Status: resp.StatusCode, Body: raw}
 	}
-	var out responses.TranscriptResult
+	var out TranscriptResult
 	if err := json.Unmarshal(raw, &out); err != nil {
 		return nil, err
 	}
 	return &out, nil
 }
 
-func (c *httpVoiceClient) Transcribe(ctx context.Context, conversationID string, audio []byte, mime string) (*responses.TranscribeResult, error) {
+func (c *httpVoiceClient) Transcribe(ctx context.Context, conversationID string, audio []byte, mime string) (*TranscribeResult, error) {
 	var body bytes.Buffer
 	w := multipart.NewWriter(&body)
 	// CreatePart, not CreateFormFile: the latter labels every part
@@ -302,6 +307,7 @@ func (c *httpVoiceClient) Transcribe(ctx context.Context, conversationID string,
 		return nil, err
 	}
 	req.Header.Set("Content-Type", w.FormDataContentType())
+	req.Header.Set("X-Internal-Secret", c.secret)
 	resp, err := c.http.Do(req)
 	if err != nil {
 		return nil, err
@@ -314,7 +320,7 @@ func (c *httpVoiceClient) Transcribe(ctx context.Context, conversationID string,
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		return nil, &TranscriptStatusError{Path: "/transcribe", Status: resp.StatusCode, Body: raw}
 	}
-	var out responses.TranscribeResult
+	var out TranscribeResult
 	if err := json.Unmarshal(raw, &out); err != nil {
 		return nil, err
 	}

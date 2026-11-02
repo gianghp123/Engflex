@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./authenticated-test";
 import {
 	apiCreateConversation,
 	apiEndConversation,
@@ -85,7 +85,7 @@ test("ended session: persisted review renders seeded turns", async ({
 	await expect(page).toHaveURL(/\/voice\/?$/);
 });
 
-test("analyze: engine-down error, then seeded feedback card", async ({
+test("analyze: unavailable response, then seeded feedback card", async ({
 	page,
 }) => {
 	await page.goto("/voice");
@@ -98,8 +98,11 @@ test("analyze: engine-down error, then seeded feedback card", async ({
 	await apiEndConversation(id);
 
 	await page.goto(`/voice/room/${id}`);
+	await expect(page.getByText("I go to the office yesterday")).toBeVisible({
+		timeout: 20_000,
+	});
 	await page.getByRole("button", { name: "Analyze turn" }).first().click();
-	// No engine running: the mutation fails and the per-turn error shows.
+	// Deterministic provider-free failure; the per-turn draft remains visible.
 	await expect(page.getByText("Analysis failed. Try again.")).toBeVisible({
 		timeout: 20_000,
 	});

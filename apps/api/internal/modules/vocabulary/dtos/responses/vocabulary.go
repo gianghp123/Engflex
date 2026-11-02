@@ -28,6 +28,7 @@ type WordForm struct {
 // VocabularyDetails mirrors vocabulary_items.details (jsonb): everything the
 // word-detail screen renders beyond the core columns.
 type VocabularyDetails struct {
+	IPA            string              `json:"ipa"`
 	AudioUS        string              `json:"audioUs"`
 	AudioUK        string              `json:"audioUk"`
 	Syllables      string              `json:"syllables"`
@@ -53,18 +54,22 @@ type UserVocabularyState struct {
 }
 
 // VocabularyItem is a vocabulary hub card / word detail payload.
+type SavedVocabulary struct {
+	UserVocabularyState `tstype:",extends"`
+	Item                VocabularyItemSummary `json:"item"`
+}
+
 type VocabularyItem struct {
-	ID           string                  `json:"id"`
-	Term         string                  `json:"term"`
-	IPA          string                  `json:"ipa"`
-	PartOfSpeech string                  `json:"partOfSpeech"`
-	CEFR         enums.CEFR              `json:"cefr"`
-	Domain       *enums.VocabularyDomain `json:"domain"`
-	Definition   string                  `json:"definition"`
-	Status       enums.PublishStatus     `json:"status"`
-	IsPremium    bool                    `json:"isPremium"`
-	Details      *VocabularyDetails      `json:"details"`
-	UserState    *UserVocabularyState    `json:"userState"`
+	ID           string                        `json:"id"`
+	Term         string                        `json:"term"`
+	PartOfSpeech *enums.VocabularyPartOfSpeech `json:"partOfSpeech" tstype:"VocabularyPartOfSpeech | null"`
+	CEFR         enums.CEFR                    `json:"cefr"`
+	Domain       *enums.VocabularyDomain       `json:"domain" tstype:"VocabularyDomain | null"`
+	Definition   string                        `json:"definition"`
+	Status       enums.PublishStatus           `json:"status"`
+	IsPremium    bool                          `json:"isPremium"`
+	Details      *VocabularyDetails            `json:"details"`
+	UserState    *UserVocabularyState          `json:"userState"`
 }
 
 // VocabularyStats aggregates the hub's four stat cards (computed by
@@ -76,4 +81,14 @@ type VocabularyStats struct {
 	CustomAdditions int `json:"customAdditions"`
 	DueToday        int `json:"dueToday"`
 	RetentionPct    int `json:"retentionPct"`
+}
+
+type VocabularyItemSummary struct {
+	ID           string                        `json:"id"`
+	Term         string                        `json:"term"`
+	CEFR         enums.CEFR                    `json:"cefr"`
+	Domain       *enums.VocabularyDomain       `json:"domain" tstype:"VocabularyDomain | null"`
+	PartOfSpeech *enums.VocabularyPartOfSpeech `json:"partOfSpeech" tstype:"VocabularyPartOfSpeech | null"`
+	Status       enums.PublishStatus           `json:"status"`
+	IsPremium    bool                          `json:"isPremium"`
 }

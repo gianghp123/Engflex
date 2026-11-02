@@ -21,7 +21,7 @@ INSERT INTO vocabulary_items (id, term, definition, cefr, domain, status) VALUES
  ('66666666-0000-4000-8000-000000000004','sharding','Splitting a dataset across multiple databases or nodes to spread load.','C1','distributed_systems','published'),
  ('66666666-0000-4000-8000-000000000005','eventual consistency','A guarantee that replicas converge to the same value given no new writes, but not immediately.','C1','distributed_systems','draft'),
  ('66666666-0000-4000-8000-000000000006','container orchestration','Automated deployment, scaling and management of containerized applications.','B2','devops_cloud','published'),
- ('66666666-0000-4000-8000-000000000007','blue-green deployment','A release strategy that runs two production environments and switches traffic between them.','B2','devops_cloud','draft'),
+ ('66666666-0000-4000-8000-000000000007','blue-green deployment','A release strategy that runs two production environments and switches traffic between them.','B2','devops_cloud','published'),
  ('66666666-0000-4000-8000-000000000008','load balancer','A component that distributes incoming requests across multiple servers.','A2','devops_cloud','published'),
  ('66666666-0000-4000-8000-000000000009','responsive design','Layout that adapts to different screen sizes.','B1','frontend_ui','published'),
  ('66666666-0000-4000-8000-00000000000a','hydration','Attaching client-side interactivity to server-rendered HTML.','B2','frontend_ui','published'),
@@ -37,18 +37,18 @@ INSERT INTO vocabulary_decks (id, user_id, category_id, name, description, thumb
 ON CONFLICT (id) DO NOTHING;
 
 -- Cards inside the system decks ------------------------------------------------
-INSERT INTO vocabulary_deck_items (id, deck_id, phrase, normalized_phrase, meaning, example_sentence, note) VALUES
- ('88888888-0000-4000-8000-000000000001','77777777-0000-4000-8000-000000000001','idempotent','idempotent','can be applied repeatedly with the same result','Retrying an idempotent request is always safe.',''),
- ('88888888-0000-4000-8000-000000000002','77777777-0000-4000-8000-000000000001','connection pooling','connection pooling','reusing open DB connections instead of opening new ones','We enabled connection pooling to cut latency under load.',''),
- ('88888888-0000-4000-8000-000000000003','77777777-0000-4000-8000-000000000002','load balancer','load balancer','distributes traffic across servers','The load balancer took the unhealthy instance out of rotation.',''),
- ('88888888-0000-4000-8000-000000000004','77777777-0000-4000-8000-000000000002','blue-green deployment','blue-green deployment','release strategy swapping two live environments','We rolled back instantly thanks to the blue-green deployment.',''),
- ('88888888-0000-4000-8000-000000000005','77777777-0000-4000-8000-000000000003','gradient descent','gradient descent','optimization algorithm minimizing loss step by step','Gradient descent converged after 200 epochs.','')
+INSERT INTO vocabulary_deck_items (id, deck_id, item_id, sequence, example_sentence, note) VALUES
+ ('88888888-0000-4000-8000-000000000001','77777777-0000-4000-8000-000000000001','66666666-0000-4000-8000-000000000001',1,'',''),
+ ('88888888-0000-4000-8000-000000000002','77777777-0000-4000-8000-000000000001','66666666-0000-4000-8000-000000000002',2,'',''),
+ ('88888888-0000-4000-8000-000000000003','77777777-0000-4000-8000-000000000002','66666666-0000-4000-8000-000000000008',3,'',''),
+ ('88888888-0000-4000-8000-000000000004','77777777-0000-4000-8000-000000000002','66666666-0000-4000-8000-000000000007',4,'',''),
+ ('88888888-0000-4000-8000-000000000005','77777777-0000-4000-8000-000000000003','66666666-0000-4000-8000-00000000000b',5,'','')
 ON CONFLICT (id) DO NOTHING;
 
 -- Video categories --------------------------------------------------------------
 INSERT INTO video_categories (id, slug, name) VALUES
  ('99999999-0000-4000-8000-000000000001','trailer','Trailer'),
- ('99999999-0000-4000-8000-000000000002','podcast','Podcast Clip'),
+ ('99999999-0000-4000-8000-000000000002','podcast-clip','Podcast Clip'),
  ('99999999-0000-4000-8000-000000000003','interview','Interview'),
  ('99999999-0000-4000-8000-000000000004','tutorial','Tutorial')
 ON CONFLICT (id) DO NOTHING;

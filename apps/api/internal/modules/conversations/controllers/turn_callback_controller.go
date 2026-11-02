@@ -32,7 +32,7 @@ func NewTurnCallbackController(service *services.ConversationService) *TurnCallb
 func (h *TurnCallbackController) IngestTurns(c *gin.Context) {
 	var req dtoscallbacks.IngestTurns
 	if err := c.ShouldBindJSON(&req); err != nil {
-		common.Fail(c, common.BadRequest(err.Error()))
+		common.Fail(c, common.InvalidRequest(err))
 		return
 	}
 	stored, err := h.service.IngestTurns(c.Request.Context(), c.Param("id"), req)

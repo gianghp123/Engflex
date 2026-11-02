@@ -33,7 +33,7 @@ func NewStoryController(service services.StoryService) *StoryController {
 func (h *StoryController) List(c *gin.Context) {
 	var req requests.ListStories
 	if err := c.ShouldBindQuery(&req); err != nil {
-		common.Fail(c, common.BadRequest(err.Error()))
+		common.Fail(c, common.InvalidRequest(err))
 		return
 	}
 	page, pageSize := utils.ParsePagination(c)

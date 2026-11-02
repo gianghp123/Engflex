@@ -1,20 +1,13 @@
+// Package exams registers routes over dependencies supplied by composition.
 package exams
 
 import (
-	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
-
-	"engflex-api/internal/database/repositories"
 	"engflex-api/internal/modules/exams/controllers"
-	"engflex-api/internal/modules/exams/services"
 	"engflex-api/internal/server/middleware"
+	"github.com/gin-gonic/gin"
 )
 
-func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB) {
-	categories := repositories.NewExamCategoryRepository(db)
-	tests := repositories.NewExamTestRepository(db)
-	attempts := repositories.NewAttemptRepository(db)
-	ctl := controllers.NewExamController(services.NewCatalogService(categories, tests), services.NewAttemptService(attempts, tests, repositories.NewTransactionManager(db)))
+func RegisterRoutes(rg *gin.RouterGroup, ctl *controllers.ExamController) {
 	rg.GET("/exam-categories", middleware.RequireAuth(), ctl.ListCategories)
 	rg.GET("/exam-categories/:categoryId/tests", middleware.RequireAuth(), ctl.ListTests)
 	rg.GET("/exam-tests/:id", middleware.RequireAuth(), ctl.GetTest)

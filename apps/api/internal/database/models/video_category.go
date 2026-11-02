@@ -10,7 +10,7 @@ type VideoCategory struct {
 	Name       string           `gorm:"not null" json:"name"`
 	CreatedAt  time.Time        `gorm:"autoCreateTime" json:"createdAt"`
 	UpdatedAt  time.Time        `gorm:"autoUpdateTime" json:"updatedAt"`
-	VideoCount int64            `gorm:"->" json:"videoCount"`
+	VideoCount int64            `gorm:"->;-:migration" json:"videoCount"`
 	Videos     []*VideoExercise `gorm:"->;foreignKey:CategoryID;references:ID" json:"videos,omitempty"`
 }
 

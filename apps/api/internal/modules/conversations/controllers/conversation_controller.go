@@ -41,7 +41,7 @@ func NewConversationController(service *services.ConversationService, maxDuratio
 func (h *ConversationController) Create(c *gin.Context) {
 	var req requests.StartConversation
 	if err := c.ShouldBindJSON(&req); err != nil {
-		common.Fail(c, common.BadRequest(err.Error()))
+		common.Fail(c, common.InvalidRequest(err))
 		return
 	}
 	userID := middleware.UserID(c)
@@ -97,7 +97,7 @@ func (h *ConversationController) List(c *gin.Context) {
 	page, pageSize := utils.ParsePagination(c)
 	var req requests.ListConversations
 	if err := c.ShouldBindQuery(&req); err != nil {
-		common.Fail(c, common.BadRequest(err.Error()))
+		common.Fail(c, common.InvalidRequest(err))
 		return
 	}
 	rows, total, err := h.service.List(c.Request.Context(), middleware.UserID(c), req.ScenarioID, pageSize, utils.Offset(page, pageSize))
@@ -127,9 +127,11 @@ func (h *ConversationController) Start(c *gin.Context) {
 		common.Fail(c, err)
 		return
 	}
+	var iceDTO *responses.IceConfig
+	_ = utils.Map(&iceDTO, ice)
 	common.OK(c, "session ready", responses.ConversationSession{
 		SessionID:   conv.ID,
-		IceConfig:   ice,
+		IceConfig:   iceDTO,
 		MaxDuration: h.maxDuration,
 	})
 }
@@ -248,7 +250,9 @@ func (h *ConversationController) Transcript(c *gin.Context) {
 		common.Fail(c, err)
 		return
 	}
-	common.OK(c, "transcript command applied", result)
+	var dto responses.TranscriptResult
+	_ = utils.Map(&dto, result)
+	common.OK(c, "transcript command applied", dto)
 }
 
 // Transcribe transcribes one modal re-speak. Multipart audio in, sentence out;
@@ -272,7 +276,7 @@ func (h *ConversationController) Transcript(c *gin.Context) {
 func (h *ConversationController) Transcribe(c *gin.Context) {
 	file, err := c.FormFile("audio")
 	if err != nil {
-		common.Fail(c, common.BadRequest("audio is required"))
+		common.Fail(c, common.InvalidRequest(err, "audio is required"))
 		return
 	}
 	if file.Size > int64(services.MaxTranscribeBytes) {
@@ -295,7 +299,9 @@ func (h *ConversationController) Transcribe(c *gin.Context) {
 		common.Fail(c, err)
 		return
 	}
-	common.OK(c, "retake transcribed", result)
+	var dto responses.TranscribeResult
+	_ = utils.Map(&dto, result)
+	common.OK(c, "retake transcribed", dto)
 }
 
 // Pronounce scores one exercise attempt against its reference sentence.
@@ -322,7 +328,7 @@ func (h *ConversationController) Transcribe(c *gin.Context) {
 func (h *ConversationController) Pronounce(c *gin.Context) {
 	file, err := c.FormFile("audio")
 	if err != nil {
-		common.Fail(c, common.BadRequest("audio is required"))
+		common.Fail(c, common.InvalidRequest(err, "audio is required"))
 		return
 	}
 	if file.Size > int64(services.MaxPronounceBytes) {
@@ -354,5 +360,7 @@ func (h *ConversationController) Pronounce(c *gin.Context) {
 		common.Fail(c, err)
 		return
 	}
-	common.OK(c, "attempt scored", result)
+	var dto responses.PronounceResult
+	_ = utils.Map(&dto, result)
+	common.OK(c, "attempt scored", dto)
 }

@@ -57,7 +57,7 @@ func (h *ProfileController) GetMe(c *gin.Context) {
 func (h *ProfileController) UpdateMe(c *gin.Context) {
 	var req requests.UpdateProfile
 	if err := c.ShouldBindJSON(&req); err != nil {
-		common.Fail(c, common.BadRequest(err.Error()))
+		common.Fail(c, common.InvalidRequest(err))
 		return
 	}
 	userID := middleware.UserID(c)

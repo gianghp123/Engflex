@@ -365,6 +365,80 @@ func (_c *MockVideoCategoryRepository_List_Call) RunAndReturn(run func(ctx conte
 	return _c
 }
 
+// ListWithPracticePreview provides a mock function for the type MockVideoCategoryRepository
+func (_mock *MockVideoCategoryRepository) ListWithPracticePreview(ctx context.Context, userID string, previewK int) ([]*models.VideoCategory, error) {
+	ret := _mock.Called(ctx, userID, previewK)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ListWithPracticePreview")
+	}
+
+	var r0 []*models.VideoCategory
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, int) ([]*models.VideoCategory, error)); ok {
+		return returnFunc(ctx, userID, previewK)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, int) []*models.VideoCategory); ok {
+		r0 = returnFunc(ctx, userID, previewK)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.VideoCategory)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, int) error); ok {
+		r1 = returnFunc(ctx, userID, previewK)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockVideoCategoryRepository_ListWithPracticePreview_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ListWithPracticePreview'
+type MockVideoCategoryRepository_ListWithPracticePreview_Call struct {
+	*mock.Call
+}
+
+// ListWithPracticePreview is a helper method to define mock.On call
+//   - ctx context.Context
+//   - userID string
+//   - previewK int
+func (_e *MockVideoCategoryRepository_Expecter) ListWithPracticePreview(ctx any, userID any, previewK any) *MockVideoCategoryRepository_ListWithPracticePreview_Call {
+	return &MockVideoCategoryRepository_ListWithPracticePreview_Call{Call: _e.mock.On("ListWithPracticePreview", ctx, userID, previewK)}
+}
+
+func (_c *MockVideoCategoryRepository_ListWithPracticePreview_Call) Run(run func(ctx context.Context, userID string, previewK int)) *MockVideoCategoryRepository_ListWithPracticePreview_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 int
+		if args[2] != nil {
+			arg2 = args[2].(int)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockVideoCategoryRepository_ListWithPracticePreview_Call) Return(videoCategorys []*models.VideoCategory, err error) *MockVideoCategoryRepository_ListWithPracticePreview_Call {
+	_c.Call.Return(videoCategorys, err)
+	return _c
+}
+
+func (_c *MockVideoCategoryRepository_ListWithPracticePreview_Call) RunAndReturn(run func(ctx context.Context, userID string, previewK int) ([]*models.VideoCategory, error)) *MockVideoCategoryRepository_ListWithPracticePreview_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // ListWithPreview provides a mock function for the type MockVideoCategoryRepository
 func (_mock *MockVideoCategoryRepository) ListWithPreview(ctx context.Context, previewK int) ([]*models.VideoCategory, error) {
 	ret := _mock.Called(ctx, previewK)

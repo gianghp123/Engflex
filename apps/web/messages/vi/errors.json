@@ -21,6 +21,31 @@
       "caption": "Mo giữ chỗ cho bạn",
       "primary": "Nâng cấp Premium"
     },
-    "quote": "Tiến bộ đều đặn mỗi ngày đáng giá hơn tốc độ."
+    "quote": "Tiến bộ đều đặn mỗi ngày đáng giá hơn tốc độ.",
+    "unauthorized": {
+      "badge": "Cần đăng nhập · 401",
+      "caption": "Phiên đăng nhập cần làm mới",
+      "title": "Đăng nhập để tiếp tục",
+      "body": "Phiên đăng nhập đã hết hạn. Hãy đăng nhập lại để tiếp tục.",
+      "primary": "Đăng nhập"
+    },
+    "forbidden": {
+      "badge": "Không có quyền truy cập · 403",
+      "caption": "Thao tác bị giới hạn",
+      "title": "Bạn không có quyền truy cập",
+      "body": "Tài khoản của bạn không có quyền sử dụng nội dung này."
+    },
+    "conflict": {
+      "badge": "Tiến trình đã thay đổi · 409",
+      "caption": "Tải lại trạng thái đã lưu",
+      "title": "Nội dung này đã thay đổi",
+      "body": "Một thao tác khác đã cập nhật nội dung này. Hãy tải trạng thái mới nhất trước khi thử lại."
+    },
+    "unavailable": {
+      "badge": "Tạm thời không khả dụng · 503",
+      "caption": "Vui lòng thử lại sau",
+      "title": "Dịch vụ tạm thời không khả dụng",
+      "body": "Quyền truy cập của bạn không thay đổi. Vui lòng thử lại khi dịch vụ hoạt động."
+    }
   }
 }

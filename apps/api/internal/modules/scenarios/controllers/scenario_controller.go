@@ -39,7 +39,7 @@ func (h *ScenarioController) List(c *gin.Context) {
 	page, pageSize := utils.ParsePagination(c)
 	var req requests.ListScenarios
 	if err := c.ShouldBindQuery(&req); err != nil {
-		common.Fail(c, common.BadRequest(err.Error()))
+		common.Fail(c, common.InvalidRequest(err))
 		return
 	}
 	req.Page, req.PageSize = page, pageSize
@@ -48,9 +48,15 @@ func (h *ScenarioController) List(c *gin.Context) {
 		common.Fail(c, err)
 		return
 	}
-	dtos := make([]responses.Scenario, 0, len(items))
-	_ = utils.MapSlice(&dtos, items)
-	common.Paginated(c, "scenarios", dtos, page, pageSize, total)
+	if middleware.Role(c) == enums.UserRoleAdmin {
+		var dto []*responses.Scenario
+		_ = utils.MapSlice(&dto, items)
+		common.Paginated(c, "scenarios", dto, page, pageSize, total)
+		return
+	}
+	var dto []*responses.ScenarioPreview
+	_ = utils.MapSlice(&dto, items)
+	common.Paginated(c, "scenarios", dto, page, pageSize, total)
 }
 
 // TopicsWithPreview godoc
@@ -124,7 +130,7 @@ func (h *ScenarioController) GetByID(c *gin.Context) {
 func (h *ScenarioController) Create(c *gin.Context) {
 	var req requests.CreateScenario
 	if err := c.ShouldBindJSON(&req); err != nil {
-		common.Fail(c, common.BadRequest(err.Error()))
+		common.Fail(c, common.InvalidRequest(err))
 		return
 	}
 	m, err := h.service.Create(c.Request.Context(), req)
@@ -150,7 +156,7 @@ func (h *ScenarioController) Create(c *gin.Context) {
 func (h *ScenarioController) Update(c *gin.Context) {
 	var req requests.UpdateScenario
 	if err := c.ShouldBindJSON(&req); err != nil {
-		common.Fail(c, common.BadRequest(err.Error()))
+		common.Fail(c, common.InvalidRequest(err))
 		return
 	}
 	m, err := h.service.Update(c.Request.Context(), c.Param("id"), req)
@@ -191,7 +197,7 @@ func (h *ScenarioController) Delete(c *gin.Context) {
 func (h *ScenarioController) CreateTopic(c *gin.Context) {
 	var req requests.CreateScenarioTopic
 	if err := c.ShouldBindJSON(&req); err != nil {
-		common.Fail(c, common.BadRequest(err.Error()))
+		common.Fail(c, common.InvalidRequest(err))
 		return
 	}
 	m, err := h.service.CreateTopic(c.Request.Context(), req)
@@ -217,7 +223,7 @@ func (h *ScenarioController) CreateTopic(c *gin.Context) {
 func (h *ScenarioController) UpdateTopic(c *gin.Context) {
 	var req requests.UpdateScenarioTopic
 	if err := c.ShouldBindJSON(&req); err != nil {
-		common.Fail(c, common.BadRequest(err.Error()))
+		common.Fail(c, common.InvalidRequest(err))
 		return
 	}
 	m, err := h.service.UpdateTopic(c.Request.Context(), c.Param("id"), req)

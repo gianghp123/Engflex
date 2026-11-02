@@ -13,7 +13,10 @@ from loguru import logger
 from pipecat.runner.run import app as runner_app
 from pydantic import ValidationError
 
+from app.internal import InternalEngineMiddleware
 from app.schemas import TranscriptCommandBody
+
+runner_app.add_middleware(InternalEngineMiddleware)
 from transcript.analyze import AnalysisRefused, AnalyzeRequest, analyze_turn
 
 
@@ -84,5 +87,6 @@ async def transcript(req: TranscriptCommandBody):
     except HTTPException:
         raise
     except Exception as exc:
-        logger.exception("transcript command failed")
+        logger.error("transcript command failed", error_type=type(exc).__name__,
+                     conversation_id=req.conversationId)
         raise HTTPException(status_code=500, detail="transcript command failed") from exc

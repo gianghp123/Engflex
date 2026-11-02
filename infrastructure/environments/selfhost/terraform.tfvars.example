@@ -29,3 +29,8 @@
 #sentry_organization = "giang-pham-90"
 #sentry_team         = "engflex"
 #sentry_auth_token   = ""
+
+# VNPay sandbox/merchant configuration. Never commit real credentials.
+vnpay_tmn_code = "replace-me"
+vnpay_hash_secret = "replace-me"
+vnpay_return_url = "https://your-app.example/payments/vnpay/return"

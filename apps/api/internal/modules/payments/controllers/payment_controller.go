@@ -10,6 +10,7 @@ import (
 	"engflex-api/internal/modules/payments/dtos/responses"
 	"engflex-api/internal/modules/payments/services"
 	"engflex-api/internal/server/middleware"
+	"engflex-api/internal/utils"
 )
 
 // PaymentController exposes the VNPay checkout, IPN, return, plan catalog,
@@ -57,7 +58,9 @@ func (h *PaymentController) ListPlans(c *gin.Context) {
 		common.Fail(c, err)
 		return
 	}
-	common.OK(c, "plans listed", items)
+	var dto []*responses.Plan
+	_ = utils.MapSlice(&dto, items)
+	common.OK(c, "plans listed", dto)
 }
 
 // Checkout godoc
@@ -72,7 +75,7 @@ func (h *PaymentController) ListPlans(c *gin.Context) {
 func (h *PaymentController) Checkout(c *gin.Context) {
 	var req requests.Checkout
 	if err := c.ShouldBindJSON(&req); err != nil {
-		common.Fail(c, common.BadRequest(err.Error()))
+		common.Fail(c, common.InvalidRequest(err))
 		return
 	}
 	res, err := h.vnpay.BuildCheckoutURL(c.Request.Context(), middleware.UserID(c), req.Plan, c.ClientIP())
@@ -80,7 +83,9 @@ func (h *PaymentController) Checkout(c *gin.Context) {
 		common.Fail(c, err)
 		return
 	}
-	common.OK(c, "checkout created", res)
+	var dto responses.CheckoutSession
+	_ = utils.Map(&dto, res)
+	common.OK(c, "checkout created", dto)
 }
 
 // vnpayAckBody is VNPay's own IPN ack shape — not the house

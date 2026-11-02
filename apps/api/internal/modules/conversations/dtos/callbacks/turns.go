@@ -6,7 +6,9 @@ import "engflex-api/internal/common/enums"
 // and owned by Go: audio and word metadata are out of scope here, so nothing
 // has an unknown shape.
 type IngestTurns struct {
-	Turns []IngestTurn `json:"turns" binding:"required,min=1,max=500,dive"`
+	EngineSessionID string       `json:"engineSessionId" binding:"required"`
+	Revision        int64        `json:"revision" binding:"required,min=1"`
+	Turns           []IngestTurn `json:"turns" binding:"required,max=500,dive"`
 }
 
 // IngestTurn is one transcript line from the engine.

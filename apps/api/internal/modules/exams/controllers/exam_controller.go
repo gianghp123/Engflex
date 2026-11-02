@@ -111,7 +111,7 @@ func (h *ExamController) Start(c *gin.Context) {
 	c.Header("Cache-Control", "private, no-store")
 	var req requests.StartAttempt
 	if err := c.ShouldBindJSON(&req); err != nil {
-		common.Fail(c, common.BadRequest(err.Error()))
+		common.Fail(c, common.InvalidRequest(err))
 		return
 	}
 	attempt, err := h.attempts.Start(c.Request.Context(), middleware.UserID(c), c.Param("id"), req)

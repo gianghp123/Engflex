@@ -3,6 +3,7 @@ package tests
 import (
 	"context"
 	"encoding/json"
+	"engflex-api/internal/voice"
 	"net/http"
 	"testing"
 
@@ -16,7 +17,6 @@ import (
 	"engflex-api/internal/database/models"
 	"engflex-api/internal/database/repositories/mocks"
 	llmmocks "engflex-api/internal/llm/mocks"
-	conversationsresponses "engflex-api/internal/modules/conversations/dtos/responses"
 	"engflex-api/internal/modules/lessons/services"
 	voicemocks "engflex-api/internal/voice/mocks"
 	"engflex-api/internal/voice/pronunciation"
@@ -31,8 +31,9 @@ const (
 
 func attachCheckFixture() *models.LessonActivity {
 	return &models.LessonActivity{
-		ID:   "33333333-3333-3333-3333-333333333333",
-		Type: enums.ActivityTypeReading,
+		LessonID: attachLessonID,
+		ID:       "33333333-3333-3333-3333-333333333333",
+		Type:     enums.ActivityTypeReading,
 		Config: datatypes.JSON(`{"text":"t","questions":[` +
 			`{"stem":"s0","instruction":"i","options":[],"answerKey":"B","explanation":"why0"},` +
 			`{"stem":"s1","instruction":"i","options":[],"answerKey":"C","explanation":"why1"}]}`),
@@ -68,13 +69,13 @@ func TestCheckAnswerAttach(t *testing.T) {
 				attempts := mocks.NewMockAttemptRepository(t)
 				repo.EXPECT().GetByID(mock.Anything, activity.ID).Return(activity, nil).Times(3)
 				open := attachOpenAttempt()
-				attempts.EXPECT().GetByID(mock.Anything, attachOpenID).Return(open, nil).Times(3)
+				attempts.EXPECT().GetForUpdate(mock.Anything, attachOpenID).Return(open, nil).Times(3)
 				repo.EXPECT().ListByLesson(mock.Anything, attachLessonID).Return(attachTwoActivities(activity.ID), nil).Times(3)
 				var saved []*models.Attempt
 				attempts.EXPECT().Update(mock.Anything, mock.Anything).
 					Run(func(ctx context.Context, m *models.Attempt) { saved = append(saved, m) }).
 					Return(nil).Times(3)
-				svc := services.NewLessonActivityService(repo, pronunciation.NewScorer(voicemocks.NewMockPronounceEngine(t)), llmmocks.NewMockLLMClient(t), attempts)
+				svc := newActivityService(t, repo, pronunciation.NewScorer(voicemocks.NewMockPronounceEngine(t)), llmmocks.NewMockLLMClient(t), attempts)
 
 				got, err := svc.CheckAnswer(context.Background(), attachUserID, activity.ID, attachOpenID, 0, "B")
 				require.NoError(t, err)
@@ -118,8 +119,8 @@ func TestCheckAnswerAttach(t *testing.T) {
 				repo := mocks.NewMockLessonActivityRepository(t)
 				attempts := mocks.NewMockAttemptRepository(t)
 				repo.EXPECT().GetByID(mock.Anything, activity.ID).Return(activity, nil).Once()
-				attempts.EXPECT().GetByID(mock.Anything, attachOpenID).Return(nil, gorm.ErrRecordNotFound).Once()
-				svc := services.NewLessonActivityService(repo, pronunciation.NewScorer(voicemocks.NewMockPronounceEngine(t)), llmmocks.NewMockLLMClient(t), attempts)
+				attempts.EXPECT().GetForUpdate(mock.Anything, attachOpenID).Return(nil, gorm.ErrRecordNotFound).Once()
+				svc := newActivityService(t, repo, pronunciation.NewScorer(voicemocks.NewMockPronounceEngine(t)), llmmocks.NewMockLLMClient(t), attempts)
 
 				got, err := svc.CheckAnswer(context.Background(), attachUserID, activity.ID, attachOpenID, 0, "B")
 
@@ -138,16 +139,17 @@ func TestCheckAnswerAttach(t *testing.T) {
 
 func attachSpeakingFixture() *models.LessonActivity {
 	return &models.LessonActivity{
-		ID:   "66666666-6666-6666-6666-666666666666",
-		Type: enums.ActivityTypeSpeaking,
+		LessonID: attachLessonID,
+		ID:       "66666666-6666-6666-6666-666666666666",
+		Type:     enums.ActivityTypeSpeaking,
 		Config: datatypes.JSON(`{"items":[` +
 			`{"text":"Please call me back.","modelAudioKey":"speaking/x/0.mp3","modelVoice":"en-GB-SoniaNeural"},` +
 			`{"text":"Good morning.","modelAudioKey":"speaking/x/1.mp3","modelVoice":"en-GB-SoniaNeural"}]}`),
 	}
 }
 
-func cannedScore(score float64) *conversationsresponses.PronounceResult {
-	return &conversationsresponses.PronounceResult{Score: score, Transcription: "heard words"}
+func cannedScore(score float64) *voice.PronounceResult {
+	return &voice.PronounceResult{Score: score, Transcription: "heard words"}
 }
 
 func TestPronounceAttach(t *testing.T) {
@@ -173,13 +175,13 @@ func TestPronounceAttach(t *testing.T) {
 					Return(cannedScore(95), nil).Once()
 				repo.EXPECT().GetByID(mock.Anything, activity.ID).Return(activity, nil).Times(3)
 				open := attachOpenAttempt()
-				attempts.EXPECT().GetByID(mock.Anything, attachOpenID).Return(open, nil).Times(6)
+				attempts.EXPECT().GetForUpdate(mock.Anything, attachOpenID).Return(open, nil).Times(6)
 				repo.EXPECT().ListByLesson(mock.Anything, attachLessonID).Return(attachTwoActivities(activity.ID), nil).Times(3)
 				var saved []*models.Attempt
 				attempts.EXPECT().Update(mock.Anything, mock.Anything).
 					Run(func(ctx context.Context, m *models.Attempt) { saved = append(saved, m) }).
 					Return(nil).Times(3)
-				svc := services.NewLessonActivityService(repo, pronunciation.NewScorer(voice), llmmocks.NewMockLLMClient(t), attempts)
+				svc := newActivityService(t, repo, pronunciation.NewScorer(voice), llmmocks.NewMockLLMClient(t), attempts)
 
 				got, err := svc.Pronounce(context.Background(), attachUserID, activity.ID, attachOpenID, 0, audio, audioMime)
 				require.NoError(t, err)
@@ -224,8 +226,8 @@ func TestPronounceAttach(t *testing.T) {
 				attempts := mocks.NewMockAttemptRepository(t)
 				voice := voicemocks.NewMockPronounceEngine(t)
 				repo.EXPECT().GetByID(mock.Anything, activity.ID).Return(activity, nil).Once()
-				attempts.EXPECT().GetByID(mock.Anything, attachOpenID).Return(nil, gorm.ErrRecordNotFound).Once()
-				svc := services.NewLessonActivityService(repo, pronunciation.NewScorer(voice), llmmocks.NewMockLLMClient(t), attempts)
+				attempts.EXPECT().GetForUpdate(mock.Anything, attachOpenID).Return(nil, gorm.ErrRecordNotFound).Once()
+				svc := newActivityService(t, repo, pronunciation.NewScorer(voice), llmmocks.NewMockLLMClient(t), attempts)
 
 				got, err := svc.Pronounce(context.Background(), attachUserID, activity.ID, attachOpenID, 0, audio, audioMime)
 
@@ -244,8 +246,8 @@ func TestPronounceAttach(t *testing.T) {
 				repo.EXPECT().GetByID(mock.Anything, activity.ID).Return(activity, nil).Once()
 				foreign := attachOpenAttempt()
 				foreign.UserID = "user_999"
-				attempts.EXPECT().GetByID(mock.Anything, attachOpenID).Return(foreign, nil).Once()
-				svc := services.NewLessonActivityService(repo, pronunciation.NewScorer(voice), llmmocks.NewMockLLMClient(t), attempts)
+				attempts.EXPECT().GetForUpdate(mock.Anything, attachOpenID).Return(foreign, nil).Once()
+				svc := newActivityService(t, repo, pronunciation.NewScorer(voice), llmmocks.NewMockLLMClient(t), attempts)
 
 				got, err := svc.Pronounce(context.Background(), attachUserID, activity.ID, attachOpenID, 0, audio, audioMime)
 

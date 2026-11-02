@@ -7,5 +7,6 @@ package callbacks
 
 // FinalizeConversation is the engine -> Go finalize callback body.
 type FinalizeConversation struct {
-	DurationSec int `json:"durationSec" binding:"required,min=0"`
+	IngestTurns
+	DurationSec int `json:"durationSec" binding:"min=0"`
 }

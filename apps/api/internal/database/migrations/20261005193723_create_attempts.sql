@@ -1,6 +1,7 @@
 -- +goose Up
 CREATE TABLE attempts (
     id                  uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    revision            integer NOT NULL DEFAULT 1 CHECK (revision >= 1),
     user_id             text NOT NULL,
     lesson_id           uuid REFERENCES lessons (id) ON DELETE SET NULL,
     video_exercise_id   uuid REFERENCES video_exercises (id) ON DELETE CASCADE,
@@ -57,6 +58,11 @@ CREATE INDEX idx_attempts_lesson_id ON attempts (lesson_id);
 CREATE INDEX idx_attempts_video_exercise_id ON attempts (video_exercise_id);
 CREATE INDEX idx_attempts_user_video_type_status ON attempts (user_id, video_exercise_id, type, status);
 CREATE INDEX idx_attempts_exam_test_id ON attempts (exam_test_id);
+
+CREATE UNIQUE INDEX uq_attempts_open_lesson ON attempts (user_id, lesson_id)
+    WHERE type = 'lesson' AND status = 'in_progress';
+CREATE UNIQUE INDEX uq_attempts_open_video ON attempts (user_id, video_exercise_id, type)
+    WHERE video_exercise_id IS NOT NULL AND status = 'in_progress';
 
 -- +goose Down
 DROP TABLE IF EXISTS attempts;

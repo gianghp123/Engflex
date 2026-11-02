@@ -4,7 +4,7 @@
 // source: profile.go
 
 /**
- * Preferences mirrors user_profiles.preferences (jsonb). The CEFR range is
+ * Preferences mirrors the model's nested read graph. The CEFR range is
  * derived from Level in Go, not stored.
  */
 export interface Preferences {

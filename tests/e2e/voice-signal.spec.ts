@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./authenticated-test";
 
 /**
  * Same-origin voice signaling contract (2b). The browser POSTs START/OFFER

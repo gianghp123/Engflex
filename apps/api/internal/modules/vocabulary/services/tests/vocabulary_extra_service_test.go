@@ -56,7 +56,10 @@ func TestVocabularyDeckItemService_ListByDeck_EmptyReturns200(t *testing.T) {
 	deckRepo.On("GetByID", mock.Anything, deckID).
 		Return(&models.VocabularyDeck{ID: deckID, UserID: owner}, nil)
 	itemRepo.On("ListByDeck", mock.Anything, deckID).Return(make([]*models.VocabularyDeckItem, 0), nil)
-	svc := services.NewVocabularyDeckItemService(itemRepo, deckRepo)
+	dictionary := mocks.NewMockVocabularyItemRepository(t)
+	dictionary.On("GetByID", mock.Anything, mock.Anything).Return(&models.VocabularyItem{ID: "11111111-1111-1111-1111-111111111111", Status: enums.PublishStatusPublished}, nil).Maybe()
+	itemRepo.On("GetByID", mock.Anything, mock.Anything).Return(&models.VocabularyDeckItem{DeckID: deckID, ItemID: "11111111-1111-1111-1111-111111111111", Item: &models.VocabularyItem{Status: enums.PublishStatusPublished}}, nil).Maybe()
+	svc := services.NewVocabularyDeckItemService(itemRepo, deckRepo, dictionary, fakePremiumChecker{})
 
 	res, err := svc.ListByDeck(context.Background(), owner, deckID, false)
 
@@ -69,9 +72,12 @@ func TestVocabularyDeckItemService_Create_BadDeckID(t *testing.T) {
 	itemRepo := mocks.NewMockVocabularyDeckItemRepository(t)
 	deckRepo := mocks.NewMockVocabularyDeckRepository(t)
 	deckRepo.On("GetByID", mock.Anything, mock.Anything).Return(nil, &common.InvalidIDError{Name: "deckId"})
-	svc := services.NewVocabularyDeckItemService(itemRepo, deckRepo)
+	dictionary := mocks.NewMockVocabularyItemRepository(t)
+	dictionary.On("GetByID", mock.Anything, mock.Anything).Return(&models.VocabularyItem{ID: "11111111-1111-1111-1111-111111111111", Status: enums.PublishStatusPublished}, nil).Maybe()
+	itemRepo.On("GetByID", mock.Anything, mock.Anything).Return(&models.VocabularyDeckItem{DeckID: deckID, ItemID: "11111111-1111-1111-1111-111111111111", Item: &models.VocabularyItem{Status: enums.PublishStatusPublished}}, nil).Maybe()
+	svc := services.NewVocabularyDeckItemService(itemRepo, deckRepo, dictionary, fakePremiumChecker{})
 
-	res, err := svc.Create(context.Background(), "user_1", false, requests.CreateVocabularyDeckItem{DeckID: "11111111-1111-1111-1111-111111111111", Phrase: "hello", Meaning: "xin chao"})
+	res, err := svc.Create(context.Background(), "user_1", false, requests.CreateVocabularyDeckItem{DeckID: "11111111-1111-1111-1111-111111111111", ItemID: "11111111-1111-1111-1111-111111111111"})
 
 	requireAppError(t, err, http.StatusBadRequest)
 	assert.Nil(t, res)
@@ -86,7 +92,7 @@ func TestUserVocabularyService_Save_Idempotent(t *testing.T) {
 	itemRepo.On("GetByID", mock.Anything, itemID).Return(&models.VocabularyItem{ID: itemID, Status: enums.PublishStatusPublished}, nil)
 	repo.On("Upsert", mock.Anything, mock.Anything).Return(nil)
 	repo.On("Get", mock.Anything, userID, itemID).Return(row, nil)
-	svc := services.NewUserVocabularyService(repo, itemRepo)
+	svc := services.NewUserVocabularyService(repo, services.NewVocabularyItemService(itemRepo, fakePremiumChecker{}))
 
 	for i := 0; i < 2; i++ {
 		got, err := svc.Save(context.Background(), userID, requests.SaveUserVocabulary{ItemID: itemID, SourceType: "manual"})
@@ -100,7 +106,7 @@ func TestUserVocabularyService_Save_BadItemID(t *testing.T) {
 	itemRepo := mocks.NewMockVocabularyItemRepository(t)
 	itemRepo.On("GetByID", mock.Anything, "11111111-1111-1111-1111-111111111111").
 		Return(nil, &common.InvalidIDError{Name: "itemId"})
-	svc := services.NewUserVocabularyService(repo, itemRepo)
+	svc := services.NewUserVocabularyService(repo, services.NewVocabularyItemService(itemRepo, fakePremiumChecker{}))
 
 	res, err := svc.Save(context.Background(), "user_1", requests.SaveUserVocabulary{ItemID: "11111111-1111-1111-1111-111111111111", SourceType: "manual"})
 
@@ -114,10 +120,10 @@ func TestUserVocabularyService_Save_DraftItemRejected(t *testing.T) {
 	repo := mocks.NewMockUserVocabularyRepository(t)
 	itemRepo := mocks.NewMockVocabularyItemRepository(t)
 	itemRepo.On("GetByID", mock.Anything, itemID).Return(&models.VocabularyItem{ID: itemID, Status: enums.PublishStatusDraft}, nil)
-	svc := services.NewUserVocabularyService(repo, itemRepo)
+	svc := services.NewUserVocabularyService(repo, services.NewVocabularyItemService(itemRepo, fakePremiumChecker{}))
 
 	res, err := svc.Save(context.Background(), userID, requests.SaveUserVocabulary{ItemID: itemID, SourceType: "manual"})
 
-	requireAppError(t, err, http.StatusUnprocessableEntity)
+	requireAppError(t, err, http.StatusNotFound)
 	assert.Nil(t, res)
 }

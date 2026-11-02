@@ -35,7 +35,7 @@ func NewVideoCategoryController(service services.VideoCategoryService) *VideoCat
 func (h *VideoCategoryController) Create(c *gin.Context) {
 	var req requests.CreateVideoCategory
 	if err := c.ShouldBindJSON(&req); err != nil {
-		common.Fail(c, common.BadRequest(err.Error()))
+		common.Fail(c, common.InvalidRequest(err))
 		return
 	}
 	m, err := h.service.Create(c.Request.Context(), req)
@@ -67,7 +67,7 @@ func (h *VideoCategoryController) Create(c *gin.Context) {
 func (h *VideoCategoryController) Update(c *gin.Context) {
 	var req requests.UpdateVideoCategory
 	if err := c.ShouldBindJSON(&req); err != nil {
-		common.Fail(c, common.BadRequest(err.Error()))
+		common.Fail(c, common.InvalidRequest(err))
 		return
 	}
 	m, err := h.service.Update(c.Request.Context(), c.Param("id"), req)
@@ -168,7 +168,7 @@ func (h *VideoCategoryController) List(c *gin.Context) {
 func (h *VideoCategoryController) ListWithPreview(c *gin.Context) {
 	var req requests.PreviewVideoCategories
 	if err := c.ShouldBindQuery(&req); err != nil {
-		common.Fail(c, common.BadRequest(err.Error()))
+		common.Fail(c, common.InvalidRequest(err))
 		return
 	}
 	categories, err := h.service.ListWithPreview(c.Request.Context(), req.PreviewK)

@@ -15,6 +15,7 @@ import (
 // result (jsonb); target content is identified by lesson_id, video_exercise_id,
 // or exam_test_id.
 type Attempt struct {
+	Revision        int                 `gorm:"not null;default:1" json:"revision"`
 	ID              string              `gorm:"type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
 	UserID          string              `gorm:"not null" json:"userId"`
 	LessonID        *string             `gorm:"type:uuid" json:"lessonId"`
@@ -34,6 +35,7 @@ type Attempt struct {
 	CreatedAt       time.Time           `gorm:"autoCreateTime" json:"createdAt"`
 	UpdatedAt       time.Time           `gorm:"autoUpdateTime" json:"updatedAt"`
 
+	Lesson        *Lesson        `gorm:"->;foreignKey:LessonID;references:ID" json:"lesson,omitempty"`
 	VideoExercise *VideoExercise `gorm:"->;foreignKey:VideoExerciseID;references:ID" json:"videoExercise,omitempty"`
 	ExamTest      *ExamTest      `gorm:"->;foreignKey:ExamTestID;references:ID" json:"examTest,omitempty"`
 }

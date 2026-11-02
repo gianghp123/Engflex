@@ -15,7 +15,6 @@ import (
 	"engflex-api/internal/database/models"
 	"engflex-api/internal/database/repositories/mocks"
 	llmmocks "engflex-api/internal/llm/mocks"
-	"engflex-api/internal/modules/lessons/services"
 	voicemocks "engflex-api/internal/voice/mocks"
 	"engflex-api/internal/voice/pronunciation"
 )
@@ -78,7 +77,7 @@ func TestCheckAnswer(t *testing.T) {
 			const attemptID = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"
 			if tt.wantStatus == 0 {
 				lessonID := "11111111-1111-1111-1111-111111111111"
-				attempts.EXPECT().GetByID(mock.Anything, attemptID).Return(&models.Attempt{
+				attempts.EXPECT().GetForUpdate(mock.Anything, attemptID).Return(&models.Attempt{
 					ID: attemptID, UserID: userID, LessonID: &lessonID,
 					Type: enums.AttemptTypeLesson, Status: enums.AttemptStatusInProgress,
 					Result: []byte(`{}`),
@@ -86,7 +85,7 @@ func TestCheckAnswer(t *testing.T) {
 				repo.EXPECT().ListByLesson(mock.Anything, lessonID).Return([]*models.LessonActivity{{ID: id}}, nil).Once()
 				attempts.EXPECT().Update(mock.Anything, mock.Anything).Return(nil).Once()
 			}
-			svc := services.NewLessonActivityService(repo, pronunciation.NewScorer(voicemocks.NewMockPronounceEngine(t)), llmmocks.NewMockLLMClient(t), attempts)
+			svc := newActivityService(t, repo, pronunciation.NewScorer(voicemocks.NewMockPronounceEngine(t)), llmmocks.NewMockLLMClient(t), attempts)
 			got, err := svc.CheckAnswer(context.Background(), userID, id, attemptID, tt.questionIndex, tt.key)
 			if tt.wantStatus != 0 {
 				requireAppError(t, err, tt.wantStatus)

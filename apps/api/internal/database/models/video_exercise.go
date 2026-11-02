@@ -10,18 +10,19 @@ import (
 // Its caption segments live in video_transcripts; category_id points at the
 // content-format taxonomy (trailer, podcast, ...) in video_categories.
 type VideoExercise struct {
-	ID           string              `gorm:"type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
-	CategoryID   *string             `gorm:"type:uuid" json:"categoryId"`
-	Title        string              `gorm:"not null" json:"title"`
-	Description  string              `gorm:"not null;default:''" json:"description"`
-	VideoURL     string              `gorm:"not null" json:"videoUrl"`
-	ThumbnailURL string              `json:"thumbnailUrl"`
-	CEFRLevel    *enums.CEFR         `gorm:"column:cefr_level" json:"cefrLevel"`
-	Duration     float64             `json:"duration"`
-	Status       enums.PublishStatus `gorm:"not null;default:draft" json:"status"`
-	IsPremium    bool                `gorm:"not null;default:false" json:"isPremium"`
-	CreatedAt    time.Time           `gorm:"autoCreateTime" json:"createdAt"`
-	UpdatedAt    time.Time           `gorm:"autoUpdateTime" json:"updatedAt"`
+	Practice     *VideoPracticeStatus `gorm:"-" json:"practice,omitempty"`
+	ID           string               `gorm:"type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
+	CategoryID   *string              `gorm:"type:uuid" json:"categoryId"`
+	Title        string               `gorm:"not null" json:"title"`
+	Description  string               `gorm:"not null;default:''" json:"description"`
+	VideoURL     string               `gorm:"not null" json:"videoUrl"`
+	ThumbnailURL string               `json:"thumbnailUrl"`
+	CEFRLevel    *enums.CEFR          `gorm:"column:cefr_level" json:"cefrLevel"`
+	Duration     float64              `json:"duration"`
+	Status       enums.PublishStatus  `gorm:"not null;default:draft" json:"status"`
+	IsPremium    bool                 `gorm:"not null;default:false" json:"isPremium"`
+	CreatedAt    time.Time            `gorm:"autoCreateTime" json:"createdAt"`
+	UpdatedAt    time.Time            `gorm:"autoUpdateTime" json:"updatedAt"`
 
 	// Read-only relations: Category joins in one round trip; Transcripts
 	// loads via a second query (has-many must not use Joins).
@@ -30,3 +31,8 @@ type VideoExercise struct {
 }
 
 func (VideoExercise) TableName() string { return "video_exercises" }
+
+type VideoPracticeStatus struct {
+	Dictation bool
+	Shadowing bool
+}

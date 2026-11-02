@@ -24,4 +24,6 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --no-dev
 
 EXPOSE 7860
-CMD ["uv", "run", "src/bot.py", "-t", "webrtc", "--host", "0.0.0.0", "--port", "7860"]
+# The image already contains the locked runtime environment. Startup must not
+# resolve/install dependencies or add the development test tools.
+CMD ["uv", "run", "--no-sync", "src/bot.py", "-t", "webrtc", "--host", "0.0.0.0", "--port", "7860"]

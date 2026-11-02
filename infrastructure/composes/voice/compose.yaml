@@ -28,6 +28,7 @@ services:
       - MAX_DURATION_SEC=${MAX_DURATION_SEC:-300}
       - IDLE_TIMEOUT_SEC=${IDLE_TIMEOUT_SEC:-300}
       - PIPECAT_ICE_SERVERS=${PIPECAT_ICE_SERVERS}
+    stop_grace_period: 120s
     restart: unless-stopped
     # Join the shared coolify network under a stable alias: same-project
     # containers (api, deploy.sh probes) reach voice at engflex-voice:7860.
@@ -39,7 +40,7 @@ services:
     # Curl-based healthcheck so Coolify can mark the container healthy
     # (python-slim ships curl via the Dockerfile; Coolify execs it inside).
     healthcheck:
-      test: ["CMD", "curl", "-fsS", "http://localhost:7860/status"]
+      test: ["CMD", "curl", "-fsS", "http://localhost:7860/readyz"]
       interval: 10s
       timeout: 5s
       retries: 6

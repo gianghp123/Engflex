@@ -9,7 +9,6 @@ import (
 	"engflex-api/internal/database/repositories"
 	"engflex-api/internal/logger"
 	"engflex-api/internal/modules/payments/dtos/requests"
-	"engflex-api/internal/modules/payments/dtos/responses"
 	"engflex-api/internal/utils"
 )
 
@@ -17,9 +16,9 @@ import (
 // named app capabilities and whether each currently requires premium. This
 // is a management/config surface only — no route enforces these flags yet.
 type PremiumFeatureService interface {
-	List(ctx context.Context, limit, offset int) ([]*responses.PremiumFeature, int64, error)
-	Create(ctx context.Context, req requests.CreatePremiumFeature) (*responses.PremiumFeature, error)
-	Update(ctx context.Context, id string, req requests.UpdatePremiumFeature) (*responses.PremiumFeature, error)
+	List(ctx context.Context, limit, offset int) ([]*models.PremiumFeature, int64, error)
+	Create(ctx context.Context, req requests.CreatePremiumFeature) (*models.PremiumFeature, error)
+	Update(ctx context.Context, id string, req requests.UpdatePremiumFeature) (*models.PremiumFeature, error)
 	Delete(ctx context.Context, id string) error
 }
 
@@ -32,13 +31,7 @@ func NewPremiumFeatureService(repo repositories.PremiumFeatureRepository) Premiu
 	return &premiumFeatureService{repo: repo}
 }
 
-func toPremiumFeatureResponse(m *models.PremiumFeature) *responses.PremiumFeature {
-	dto := &responses.PremiumFeature{}
-	_ = utils.Map(dto, m)
-	return dto
-}
-
-func (s *premiumFeatureService) List(ctx context.Context, limit, offset int) ([]*responses.PremiumFeature, int64, error) {
+func (s *premiumFeatureService) List(ctx context.Context, limit, offset int) ([]*models.PremiumFeature, int64, error) {
 	items, err := s.repo.List(ctx, limit, offset)
 	if err != nil {
 		appErr := common.FromDBError(err, "premium feature")
@@ -51,14 +44,11 @@ func (s *premiumFeatureService) List(ctx context.Context, limit, offset int) ([]
 		logger.Report(ctx, "count premium features failed", appErr)
 		return nil, 0, appErr
 	}
-	out := make([]*responses.PremiumFeature, 0, len(items))
-	for _, m := range items {
-		out = append(out, toPremiumFeatureResponse(m))
-	}
-	return out, total, nil
+	slog.InfoContext(ctx, "premiumfeature list completed", "count", len(items), "total", total)
+	return items, total, nil
 }
 
-func (s *premiumFeatureService) Create(ctx context.Context, req requests.CreatePremiumFeature) (*responses.PremiumFeature, error) {
+func (s *premiumFeatureService) Create(ctx context.Context, req requests.CreatePremiumFeature) (*models.PremiumFeature, error) {
 	m := &models.PremiumFeature{}
 	if err := utils.Map(m, req); err != nil {
 		logger.Report(ctx, "map create premium feature failed", err)
@@ -70,10 +60,10 @@ func (s *premiumFeatureService) Create(ctx context.Context, req requests.CreateP
 		return nil, appErr
 	}
 	slog.InfoContext(ctx, "premium feature created", "id", m.ID, "key", m.Key)
-	return toPremiumFeatureResponse(m), nil
+	return m, nil
 }
 
-func (s *premiumFeatureService) Update(ctx context.Context, id string, req requests.UpdatePremiumFeature) (*responses.PremiumFeature, error) {
+func (s *premiumFeatureService) Update(ctx context.Context, id string, req requests.UpdatePremiumFeature) (*models.PremiumFeature, error) {
 	m, err := s.repo.GetByID(ctx, id)
 	if err != nil {
 		appErr := common.FromDBError(err, "premium feature")
@@ -90,7 +80,7 @@ func (s *premiumFeatureService) Update(ctx context.Context, id string, req reque
 		return nil, appErr
 	}
 	slog.InfoContext(ctx, "premium feature updated", "id", id)
-	return toPremiumFeatureResponse(m), nil
+	return m, nil
 }
 
 func (s *premiumFeatureService) Delete(ctx context.Context, id string) error {

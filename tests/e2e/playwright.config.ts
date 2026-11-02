@@ -75,7 +75,8 @@ export default defineConfig({
 		{ name: "global setup", testMatch: /global\.setup\.ts/ },
 		{
 			name: "voice",
-			testMatch: /voice-(room|detail|signal)\.spec\.ts|history\.spec\.ts/,
+			testMatch:
+				/voice-(room|detail|signal)\.spec\.ts|history\.spec\.ts|policy\.spec\.ts|video-progress\.spec\.ts/,
 			dependencies: ["global setup"],
 			use: {
 				...devices["Desktop Chrome"],
@@ -106,6 +107,11 @@ export default defineConfig({
 				// must be listed or every proxied call 403s with an empty body.
 				CORS_ORIGINS: `http://localhost:${WEB_PORT}`,
 				VOICE_SERVICE_URL: "http://127.0.0.1:9",
+				PRONOUNCE_SERVICE_URL: "http://127.0.0.1:9",
+				LLM_BASE_URL: "http://127.0.0.1:9/v1",
+				LLM_API_KEY: "e2e-test-double",
+				LLM_MODEL: "e2e-test-double",
+				LLM_TIMEOUT_MS: "1000",
 				VOICE_START_TIMEOUT_MS: "3000",
 				VOICE_OFFER_TIMEOUT_MS: "3000",
 				VOICE_ANALYZE_TIMEOUT_MS: "10000",

@@ -194,3 +194,19 @@ variable "cloudflare_app_name" {
   type        = string
   default     = "engflex"
 }
+
+variable "vnpay_tmn_code" {
+  type      = string
+  sensitive = true
+}
+variable "vnpay_hash_secret" {
+  type      = string
+  sensitive = true
+}
+variable "vnpay_pay_url" {
+  type    = string
+  default = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html"
+}
+variable "vnpay_return_url" {
+  type = string
+}

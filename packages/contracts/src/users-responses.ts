@@ -17,6 +17,59 @@ export interface User {
   banned: boolean;
   createdAt: string /* RFC3339 */;
   lastActiveAt?: string /* RFC3339 */;
-  premium: boolean;
-  premiumExpiresAt?: string /* RFC3339 */;
+  subscription?: SubscriptionSummary;
 }
+/**
+ * UserAttemptLesson provides the lesson title for a user attempt.
+ */
+export interface UserAttemptLesson {
+  id: string;
+  title: string;
+}
+/**
+ * UserAttemptExamTest provides the exam test title for a user attempt.
+ */
+export interface UserAttemptExamTest {
+  id: string;
+  title: string;
+}
+/**
+ * UserAttemptVideoExercise provides the video exercise title for a user attempt.
+ */
+export interface UserAttemptVideoExercise {
+  id: string;
+  title: string;
+}
+/**
+ * UserAttempt is one learning run for the admin attempt history view.
+ */
+export interface UserAttempt {
+  id: string;
+  type: AttemptType;
+  status: AttemptStatus;
+  score?: number /* float64 */;
+  durationSec?: number /* int */;
+  startedAt?: string /* RFC3339 */;
+  submittedAt?: string /* RFC3339 */;
+  createdAt: string /* RFC3339 */;
+  lesson?: UserAttemptLesson;
+  examTest?: UserAttemptExamTest;
+  videoExercise?: UserAttemptVideoExercise;
+}
+export interface SubscriptionSummary {
+  plan: SubscriptionPlan;
+  status: SubscriptionStatus;
+  expiresAt?: string /* RFC3339 */;
+}
+export interface Subscription {
+  id: string;
+  userId: string;
+  plan: SubscriptionPlan;
+  status: SubscriptionStatus;
+  amount: number /* int64 */;
+  currency: string;
+  startedAt?: string /* RFC3339 */;
+  expiresAt?: string /* RFC3339 */;
+  createdAt: string /* RFC3339 */;
+  updatedAt: string /* RFC3339 */;
+} // @name UserSubscription

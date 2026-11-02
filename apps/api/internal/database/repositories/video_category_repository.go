@@ -8,6 +8,7 @@ import (
 )
 
 type VideoCategoryRepository interface {
+	ListWithPracticePreview(ctx context.Context, userID string, previewK int) ([]*models.VideoCategory, error)
 	List(ctx context.Context, limit, offset int) ([]*models.VideoCategory, error)
 	ListWithPreview(ctx context.Context, previewK int) ([]*models.VideoCategory, error)
 	GetByID(ctx context.Context, id string) (*models.VideoCategory, error)
@@ -137,4 +138,19 @@ func (r *videoCategoryRepository) Count(ctx context.Context) (int64, error) {
 		return 0, err
 	}
 	return count, nil
+}
+
+func (r *videoCategoryRepository) ListWithPracticePreview(ctx context.Context, userID string, previewK int) ([]*models.VideoCategory, error) {
+	categories, err := r.ListWithPreview(ctx, previewK)
+	if err != nil {
+		return nil, err
+	}
+	var videos []*models.VideoExercise
+	for _, category := range categories {
+		videos = append(videos, category.Videos...)
+	}
+	if err := attachVideoPractice(ctx, r.db, userID, videos); err != nil {
+		return nil, err
+	}
+	return categories, nil
 }

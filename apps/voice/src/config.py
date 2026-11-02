@@ -64,7 +64,7 @@ class Settings(BaseSettings):
     # Session
     max_duration_sec: int = 300
     idle_timeout_sec: int = 300
-    # Turn batch callback to Go (at-most-once; a failed batch is dropped).
+    # Per-attempt callback timeout; total retry budget is capped at 30 seconds.
     turns_post_timeout_sec: int = 30
 
     # Analysis (a separate SDK client: the session's LLM service is streaming).

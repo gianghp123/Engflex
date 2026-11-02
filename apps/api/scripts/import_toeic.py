@@ -85,10 +85,14 @@ def main():
     parser.add_argument("--category-slug", required=True)
     parser.add_argument("--category-title", required=True)
     parser.add_argument("--test-slug", required=True)
+    parser.add_argument("--dry-run", action="store_true", help="Validate release and media without uploading or writing DB")
     args = parser.parse_args()
     read = lambda p: json.loads(p.read_text(encoding="utf-8"))
     original = read(args.release / "content.json")
     content = prepare(original, read(args.release / "provenance.json"), read(args.release.parent / "validation.json"), read(args.media))
+    if args.dry_run:
+        print("Release, content graph, media hashes and audio duration validated; no DB write")
+        return
     from publish_toeic_media import publish_content
     publish_content(content)
     import psycopg

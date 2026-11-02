@@ -63,6 +63,27 @@
         "planLabel": "Gói",
         "planNone": "Không (xoá Premium)",
         "noteLabel": "Ghi chú (không bắt buộc)"
+      },
+      "attempts": {
+        "action": "Lịch sử học tập",
+        "dialogTitle": "Lịch sử học tập — {name}",
+        "dialogDescription": "Danh sách các lượt luyện tập và làm bài của người dùng.",
+        "typeFilter": "Loại nội dung",
+        "allTypes": "Tất cả các loại",
+        "columnType": "Loại",
+        "columnTitle": "Tên bài / Chủ đề",
+        "columnStatus": "Trạng thái",
+        "columnScore": "Điểm",
+        "columnDuration": "Thời lượng",
+        "columnDate": "Thời gian",
+        "statusCompleted": "Hoàn thành",
+        "statusInProgress": "Đang làm",
+        "statusAbandoned": "Bỏ dở",
+        "typeLesson": "Bài học",
+        "typeExam": "Thi TOEIC",
+        "typeDictation": "Chép chính tả",
+        "typeShadowing": "Shadowing",
+        "typeOther": "Khác"
       }
     },
     "premium": {
@@ -95,6 +116,22 @@
         "created": "Ngày tạo",
         "allStatuses": "Tất cả trạng thái",
         "allPlans": "Tất cả gói"
+      }
+    },
+    "deckCards": {
+      "title": "Thẻ từ vựng",
+      "dictionary": "Từ trong từ điển",
+      "search": "Tìm trong từ điển",
+      "sequence": "Thứ tự",
+      "example": "Ví dụ",
+      "note": "Ghi chú",
+      "term": "Từ",
+      "definition": "Định nghĩa"
+    },
+    "dictionary": {
+      "fields": {
+        "partOfSpeech": "Từ loại",
+        "ipa": "Phiên âm IPA"
       }
     }
   }

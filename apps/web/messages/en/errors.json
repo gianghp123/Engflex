@@ -21,6 +21,31 @@
       "caption": "Mo is holding your spot",
       "primary": "Upgrade to Premium"
     },
-    "quote": "Steady progress beats speed every single day."
+    "quote": "Steady progress beats speed every single day.",
+    "unauthorized": {
+      "badge": "Sign in required · 401",
+      "caption": "Your session needs refreshing",
+      "title": "Sign in to continue",
+      "body": "Your session has expired. Sign in again to continue.",
+      "primary": "Sign in"
+    },
+    "forbidden": {
+      "badge": "Access denied · 403",
+      "caption": "This action is restricted",
+      "title": "You do not have access",
+      "body": "Your account does not have permission to use this resource."
+    },
+    "conflict": {
+      "badge": "Progress changed · 409",
+      "caption": "Refresh the saved state",
+      "title": "This resource has changed",
+      "body": "Another action updated this resource. Reload its latest state before trying again."
+    },
+    "unavailable": {
+      "badge": "Temporarily unavailable · 503",
+      "caption": "Please try again shortly",
+      "title": "The service is temporarily unavailable",
+      "body": "Your access has not been changed. Please try again when the service is available."
+    }
   }
 }

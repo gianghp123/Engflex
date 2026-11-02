@@ -63,7 +63,7 @@ output "web_host" {
 }
 
 output "api_health_url" {
-  value = "${local.api_url}/health"
+  value = "${local.api_url}/readyz"
 }
 
 output "minio_uuid" {

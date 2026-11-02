@@ -6,13 +6,14 @@ import (
 
 	"gorm.io/datatypes"
 	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 
 	"engflex-api/internal/common/enums"
 	"engflex-api/internal/database/models"
 )
 
 type ConversationRepository interface {
+	ApplySnapshot(ctx context.Context, id, sessionID string, revision int64, fingerprint string, turns []*models.ConversationTurn, duration *int) (*models.Conversation, error)
+	StoreAnalysis(ctx context.Context, id string, revision int64, feedback *models.Feedback) error
 	Create(ctx context.Context, m *models.Conversation) error
 
 	CreateClosingActive(ctx context.Context, m *models.Conversation) error
@@ -96,38 +97,13 @@ func (r *conversationRepository) CountByUser(ctx context.Context, userID string,
 
 func (r *conversationRepository) CreateClosingActive(ctx context.Context, m *models.Conversation) error {
 	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-
-		var ids []string
-		if err := tx.Model(&models.Conversation{}).
-			Clauses(clause.Locking{Strength: "UPDATE"}).
-			Where("user_id = ? AND status IN ?", m.UserID,
-				[]enums.ConversationStatus{enums.ConversationStatusPending, enums.ConversationStatusLive}).
-			Pluck("id", &ids).Error; err != nil {
+		if err := tx.Exec("SELECT pg_advisory_xact_lock(hashtextextended(?, 0))", m.UserID).Error; err != nil {
 			return err
 		}
-		if len(ids) > 0 {
-
-			if err := tx.Where("id IN ?", ids).
-				Where("COALESCE(speech_session_id, '') = ''").
-				Where("NOT EXISTS (SELECT 1 FROM conversation_turns WHERE conversation_id = conversations.id)").
-				Delete(&models.Conversation{}).Error; err != nil {
-				return err
-			}
-			var remaining []string
-			if err := tx.Model(&models.Conversation{}).Where("id IN ?", ids).Pluck("id", &remaining).Error; err != nil {
-				return err
-			}
-			if len(remaining) > 0 {
-				if err := tx.Model(&models.Conversation{}).
-					Where("id IN ?", remaining).
-					Updates(map[string]any{
-						"status":     enums.ConversationStatusEnded,
-						"ended_at":   gorm.Expr("COALESCE(ended_at, now())"),
-						"updated_at": gorm.Expr("now()"),
-					}).Error; err != nil {
-					return err
-				}
-			}
+		// Do not infer an empty final transcript from a missing callback. Retain
+		// terminal rows for final snapshot delivery and idempotent replay.
+		if err := tx.Model(&models.Conversation{}).Where("user_id = ? AND status IN ?", m.UserID, []enums.ConversationStatus{enums.ConversationStatusPending, enums.ConversationStatusLive}).Updates(map[string]any{"status": enums.ConversationStatusEnded, "ended_at": gorm.Expr("COALESCE(ended_at, now())")}).Error; err != nil {
+			return err
 		}
 		return tx.Create(m).Error
 	})
@@ -139,7 +115,7 @@ func (r *conversationRepository) SetSpeechStart(ctx context.Context, id, speechS
 	}
 	res := r.db.WithContext(ctx).
 		Model(&models.Conversation{}).
-		Where("id = ? AND status = ? AND COALESCE(speech_session_id, '') = ''", id, enums.ConversationStatusPending).
+		Where("id = ? AND status = ?", id, enums.ConversationStatusPending).
 		Updates(map[string]any{
 			"speech_session_id":     speechSessionID,
 			"speech_start_response": datatypes.JSON(startResponse),

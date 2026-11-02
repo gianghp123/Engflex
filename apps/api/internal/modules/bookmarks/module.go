@@ -1,21 +1,13 @@
+// Package bookmarks registers routes over dependencies supplied by composition.
 package bookmarks
 
 import (
-	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
-
-	"engflex-api/internal/database/repositories"
 	"engflex-api/internal/modules/bookmarks/controllers"
-	"engflex-api/internal/modules/bookmarks/services"
 	"engflex-api/internal/server/middleware"
+	"github.com/gin-gonic/gin"
 )
 
-// RegisterRoutes mounts the bookmarks endpoints under /api/v1.
-func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB) {
-	repo := repositories.NewBookmarkRepository(db)
-	svc := services.NewBookmarkService(repo)
-	ctl := controllers.NewBookmarkController(svc)
-
+func RegisterRoutes(rg *gin.RouterGroup, ctl *controllers.BookmarkController) {
 	g := rg.Group("/bookmarks")
 	g.GET("", middleware.RequireAuth(), ctl.List)
 	g.POST("", middleware.RequireAuth(), ctl.Save)

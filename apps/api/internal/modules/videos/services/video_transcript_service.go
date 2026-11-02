@@ -23,11 +23,12 @@ type VideoTranscriptService interface {
 }
 
 type videoTranscriptService struct {
-	repo repositories.VideoTranscriptRepository
+	access VideoAccessPolicy
+	repo   repositories.VideoTranscriptRepository
 }
 
-func NewVideoTranscriptService(repo repositories.VideoTranscriptRepository) VideoTranscriptService {
-	return &videoTranscriptService{repo: repo}
+func NewVideoTranscriptService(repo repositories.VideoTranscriptRepository, access VideoAccessPolicy) VideoTranscriptService {
+	return &videoTranscriptService{repo: repo, access: access}
 }
 
 func (s *videoTranscriptService) Create(ctx context.Context, req requests.CreateVideoTranscript) (*models.VideoTranscript, error) {
@@ -86,11 +87,17 @@ func (s *videoTranscriptService) GetByID(ctx context.Context, id string) (*model
 		logger.Report(ctx, "failed to get video transcript", appErr, "id", id)
 		return nil, appErr
 	}
+	if err := s.access.CheckAccess(ctx, common.ActorFromContext(ctx).UserID, transcript.VideoExerciseID); err != nil {
+		return nil, err
+	}
 	slog.InfoContext(ctx, "video transcript found", "id", transcript.ID)
 	return transcript, nil
 }
 
 func (s *videoTranscriptService) List(ctx context.Context, limit, offset int) ([]*models.VideoTranscript, int64, error) {
+	if !common.ActorFromContext(ctx).Admin {
+		return nil, 0, common.Forbidden("admin required")
+	}
 	transcripts, err := s.repo.List(ctx, limit, offset)
 	if err != nil {
 		appErr := common.FromDBError(err, "video transcript")
@@ -108,6 +115,9 @@ func (s *videoTranscriptService) List(ctx context.Context, limit, offset int) ([
 }
 
 func (s *videoTranscriptService) GetByVideoExerciseID(ctx context.Context, videoExerciseID string) ([]*models.VideoTranscript, error) {
+	if err := s.access.CheckAccess(ctx, common.ActorFromContext(ctx).UserID, videoExerciseID); err != nil {
+		return nil, err
+	}
 	transcripts, err := s.repo.GetByVideoExerciseID(ctx, videoExerciseID)
 	if err != nil {
 		appErr := common.FromDBError(err, "video transcript")

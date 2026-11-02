@@ -41,10 +41,10 @@ func TestVocabularyItemService_List_FiltersDraftForNonAdmin(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			svc, mockRepo := setupItem(t)
-			mockRepo.On("List", mock.Anything, 20, 0, !tt.isAdmin).Return([]*models.VocabularyItem{}, nil)
-			mockRepo.On("Count", mock.Anything, !tt.isAdmin).Return(int64(0), nil)
+			mockRepo.On("List", mock.Anything, 20, 0, !tt.isAdmin, "", "").Return([]*models.VocabularyItem{}, nil)
+			mockRepo.On("Count", mock.Anything, !tt.isAdmin, "", "").Return(int64(0), nil)
 
-			_, _, err := svc.List(context.Background(), 20, 0, tt.isAdmin)
+			_, _, err := svc.List(context.Background(), 20, 0, tt.isAdmin, "", "")
 			require.NoError(t, err)
 		})
 	}

@@ -16,6 +16,7 @@ import (
 // LessonService owns section-first browsing: sections with units attached,
 // in path order. The hub renders the whole path, unpaginated.
 type LessonService interface {
+	CheckAccess(ctx context.Context, userID, id string) error
 	ListSections(ctx context.Context, req requests.ListLessons, isAdmin bool) ([]*models.LessonSection, error)
 	GetDetail(ctx context.Context, id, userID string, isAdmin bool) (*models.Lesson, error)
 	GetDetailBySlug(ctx context.Context, slug, userID string, isAdmin bool) (*models.Lesson, error)
@@ -89,22 +90,6 @@ func (s *lessonService) GetDetailBySlug(ctx context.Context, slug, userID string
 	return m, nil
 }
 
-// toLessonDetails hand-maps the wire input into the model's jsonb-backed
-// detail struct. copier's DeepCopy does not reliably recurse into a nested
-// field whose destination type implements sql.Scanner/driver.Valuer (as
-// LessonDetails does) when that field sits inside a larger struct copy —
-// verified empirically against the identical ScenarioDetail case, which
-// silently zeroed instead of erroring. This one nested field always gets an
-// explicit line-up instead of a blanket utils.Map.
-func toLessonDetails(in requests.LessonDetailsInput) models.LessonDetails {
-	return models.LessonDetails{
-		EstimatedDurationMin: in.EstimatedDurationMin,
-		AcousticTargetPct:    in.AcousticTargetPct,
-		CoverImageURL:        in.CoverImageURL,
-		Skill:                in.Skill,
-	}
-}
-
 // Create adds an admin-curated unit, starting as draft until explicitly
 // published.
 func (s *lessonService) Create(ctx context.Context, req requests.CreateLesson) (*models.Lesson, error) {
@@ -113,7 +98,10 @@ func (s *lessonService) Create(ctx context.Context, req requests.CreateLesson) (
 		logger.Report(ctx, "map create lesson failed", err)
 		return nil, common.Internal()
 	}
-	m.Details = toLessonDetails(req.Details)
+	if err := utils.Map(&m.Details, req.Details); err != nil {
+		logger.Report(ctx, "map lesson details failed", err)
+		return nil, common.Internal()
+	}
 	m.Status = enums.PublishStatusDraft
 	if err := s.lessons.Create(ctx, m); err != nil {
 		appErr := common.FromDBError(err, "lesson")
@@ -136,7 +124,10 @@ func (s *lessonService) Update(ctx context.Context, id string, req requests.Upda
 		return nil, common.Internal()
 	}
 	if req.Details != nil {
-		m.Details = toLessonDetails(*req.Details)
+		if err := utils.Map(&m.Details, *req.Details); err != nil {
+			logger.Report(ctx, "map lesson details failed", err, "id", id)
+			return nil, common.Internal()
+		}
 	}
 	if req.Status != nil {
 		m.Status = *req.Status
@@ -217,5 +208,23 @@ func (s *lessonService) DeleteSection(ctx context.Context, id string) error {
 		return appErr
 	}
 	slog.InfoContext(ctx, "lesson section deleted", "id", id)
+	return nil
+}
+
+func (s *lessonService) CheckAccess(ctx context.Context, userID, id string) error {
+	m, err := s.lessons.GetByID(ctx, id)
+	if err != nil {
+		appErr := common.FromDBError(err, "lesson")
+		logger.Report(ctx, "lesson access lookup failed", appErr, "id", id)
+		return appErr
+	}
+	admin := common.ActorFromContext(ctx).Admin
+	if !admin && m.Status != enums.PublishStatusPublished {
+		return common.NotFound("lesson not found")
+	}
+	if err := common.RequirePremiumAccess(ctx, s.premium, userID, admin, m.IsPremium); err != nil {
+		return err
+	}
+	slog.InfoContext(ctx, "lesson access allowed", "lessonID", id)
 	return nil
 }

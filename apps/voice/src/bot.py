@@ -21,6 +21,7 @@ from pipecat.transports.smallwebrtc.transport import SmallWebRTCTransport
 
 from app.routes import analyze  # noqa: F401 -- side effect: registers /analyze
 from app.schemas import RunnerBody
+from clients.go_turns import SnapshotPublisher
 from events import register_event_handlers
 from observability import bind_session, init_sentry
 from pipeline.services import build_context
@@ -61,6 +62,8 @@ async def bot(runner_args: RunnerArguments):
     start_time = time.time()
     context = build_context()
     collector = TurnCollector()
+    publisher = SnapshotPublisher(body.conversationId, runner_args.session_id, collector)
+    collector.on_change = publisher.notify
     level = resolve_level(
         body.learner.level if body.learner else None,
         body.scenario.cefrLevel if body.scenario else None,
@@ -81,6 +84,7 @@ async def bot(runner_args: RunnerArguments):
             conversation_id=body.conversationId,
             worker=worker,
             collector=collector,
+            publisher=publisher,
         ),
     )
     try:
@@ -92,6 +96,7 @@ async def bot(runner_args: RunnerArguments):
             body=body,
             start_time=start_time,
             collector=collector,
+            publisher=publisher,
         )
 
         from pipecat.workers.runner import WorkerRunner

@@ -10,14 +10,12 @@ import (
 	"net/url"
 	"strings"
 	"time"
-
-	"engflex-api/internal/modules/conversations/dtos/responses"
 )
 
 // PronounceEngine scores one attempt against its reference sentence on the
 // OpenPronounce container.
 type PronounceEngine interface {
-	Pronounce(ctx context.Context, expectedText, lang string, audio []byte, mime string) (*responses.PronounceResult, error)
+	Pronounce(ctx context.Context, expectedText, lang string, audio []byte, mime string) (*PronounceResult, error)
 }
 
 // pronounceMimeSuffix maps browser upload containers to the filename suffix
@@ -41,7 +39,7 @@ func NewHTTPPronounceEngine(serviceURL string, timeout time.Duration) PronounceE
 	return &httpPronounceEngine{baseURL: serviceURL, http: &http.Client{}, timeout: timeout}
 }
 
-func (e *httpPronounceEngine) Pronounce(ctx context.Context, expectedText, lang string, audio []byte, mime string) (*responses.PronounceResult, error) {
+func (e *httpPronounceEngine) Pronounce(ctx context.Context, expectedText, lang string, audio []byte, mime string) (*PronounceResult, error) {
 	// One timeout around both calls: it covers a cold container start.
 	ctx, cancel := context.WithTimeout(ctx, e.timeout)
 	defer cancel()

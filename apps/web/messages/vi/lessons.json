@@ -153,7 +153,8 @@
     "practice": {
       "noRunTitle": "Chưa có lượt làm bài",
       "noRunBody": "Hãy mở một lượt làm bài để bắt đầu luyện tập bài học này.",
-      "noRunAction": "Bắt đầu làm bài"
+      "noRunAction": "Bắt đầu làm bài",
+      "incomplete": "Hãy hoàn thành tất cả câu hỏi trước khi tiếp tục."
     }
   }
 }

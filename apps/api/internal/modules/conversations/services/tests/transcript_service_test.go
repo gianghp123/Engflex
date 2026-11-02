@@ -13,7 +13,6 @@ import (
 
 	"engflex-api/internal/database/models"
 	repomocks "engflex-api/internal/database/repositories/mocks"
-	"engflex-api/internal/modules/conversations/dtos/responses"
 	"engflex-api/internal/modules/conversations/services"
 	"engflex-api/internal/voice"
 	voicemocks "engflex-api/internal/voice/mocks"
@@ -25,7 +24,7 @@ func newTranscriptService(t *testing.T) (*services.ConversationService, *repomoc
 	engine := voicemocks.NewMockVoiceClient(t)
 	pronounce := voicemocks.NewMockPronounceEngine(t)
 	svc := services.NewConversationService(repo, repomocks.NewMockConversationTurnRepository(t), engine, pronounce, 300,
-		repomocks.NewMockFeedbackRepository(t), repomocks.NewMockScenarioRepository(t), repomocks.NewMockPersonaRepository(t))
+		repomocks.NewMockFeedbackRepository(t), repomocks.NewMockScenarioRepository(t), repomocks.NewMockPersonaRepository(t), allowScenarioAccess{})
 	return svc, repo, engine, pronounce
 }
 
@@ -41,7 +40,7 @@ func TestTranscript(t *testing.T) {
 		text       string
 		setup      func(*repomocks.MockConversationRepository, *voicemocks.MockVoiceClient)
 		wantStatus int
-		check      func(*testing.T, *responses.TranscriptResult)
+		check      func(*testing.T, *voice.TranscriptResult)
 	}{
 		{
 			name:   "forwards the action and text verbatim",
@@ -50,9 +49,9 @@ func TestTranscript(t *testing.T) {
 			setup: func(repo *repomocks.MockConversationRepository, engine *voicemocks.MockVoiceClient) {
 				ownedBy(repo)
 				engine.On("Transcript", mock.Anything, convID, "send", "I went yesterday.").
-					Return(&responses.TranscriptResult{State: "idle"}, nil)
+					Return(&voice.TranscriptResult{State: "idle"}, nil)
 			},
-			check: func(t *testing.T, got *responses.TranscriptResult) {
+			check: func(t *testing.T, got *voice.TranscriptResult) {
 				assert.Equal(t, "idle", got.State)
 			},
 		},
@@ -62,9 +61,9 @@ func TestTranscript(t *testing.T) {
 			setup: func(repo *repomocks.MockConversationRepository, engine *voicemocks.MockVoiceClient) {
 				ownedBy(repo)
 				engine.On("Transcript", mock.Anything, convID, "review", "").
-					Return(&responses.TranscriptResult{State: "reviewing", Text: "I go yesterday."}, nil)
+					Return(&voice.TranscriptResult{State: "reviewing", Text: "I go yesterday."}, nil)
 			},
-			check: func(t *testing.T, got *responses.TranscriptResult) {
+			check: func(t *testing.T, got *voice.TranscriptResult) {
 				assert.Equal(t, "reviewing", got.State)
 				assert.Equal(t, "I go yesterday.", got.Text)
 			},
@@ -169,7 +168,7 @@ func TestTranscriptDoesNotOwnTheState(t *testing.T) {
 	svc, repo, engine, _ := newTranscriptService(t)
 	ownedBy(repo)
 	engine.On("Transcript", mock.Anything, convID, "dismiss", "").
-		Return(&responses.TranscriptResult{State: "idle"}, nil)
+		Return(&voice.TranscriptResult{State: "idle"}, nil)
 
 	got, err := svc.Transcript(context.Background(), userID, convID, "dismiss", "")
 
@@ -184,7 +183,7 @@ func TestTranscribe(t *testing.T) {
 		audio      []byte
 		setup      func(*repomocks.MockConversationRepository, *voicemocks.MockVoiceClient)
 		wantStatus int
-		check      func(*testing.T, *responses.TranscribeResult)
+		check      func(*testing.T, *voice.TranscribeResult)
 	}{
 		{
 			name:  "forwards audio and returns the sentence",
@@ -192,9 +191,9 @@ func TestTranscribe(t *testing.T) {
 			setup: func(repo *repomocks.MockConversationRepository, engine *voicemocks.MockVoiceClient) {
 				ownedBy(repo)
 				engine.On("Transcribe", mock.Anything, convID, audio, "audio/webm").
-					Return(&responses.TranscribeResult{Text: "I went yesterday."}, nil)
+					Return(&voice.TranscribeResult{Text: "I went yesterday."}, nil)
 			},
-			check: func(t *testing.T, got *responses.TranscribeResult) {
+			check: func(t *testing.T, got *voice.TranscribeResult) {
 				assert.Equal(t, "I went yesterday.", got.Text)
 			},
 		},
@@ -245,13 +244,13 @@ func TestTranscribe(t *testing.T) {
 
 func TestPronounce(t *testing.T) {
 	audio := []byte("fake-webm-bytes")
-	scored := &responses.PronounceResult{Score: 91.11, Transcription: "I WENT YESTERDAY"}
+	scored := &voice.PronounceResult{Score: 91.11, Transcription: "I WENT YESTERDAY"}
 	tests := []struct {
 		name       string
 		audio      []byte
 		setup      func(*repomocks.MockConversationRepository, *voicemocks.MockPronounceEngine)
 		wantStatus int
-		check      func(*testing.T, *responses.PronounceResult)
+		check      func(*testing.T, *voice.PronounceResult)
 	}{
 		{
 			name:  "forwards attempt and returns the assessment",
@@ -261,7 +260,7 @@ func TestPronounce(t *testing.T) {
 				pronounce.On("Pronounce", mock.Anything, "I went yesterday.", "en", audio, "audio/webm").
 					Return(scored, nil)
 			},
-			check: func(t *testing.T, got *responses.PronounceResult) {
+			check: func(t *testing.T, got *voice.PronounceResult) {
 				assert.Equal(t, 91.11, got.Score)
 			},
 		},

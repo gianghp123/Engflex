@@ -91,7 +91,14 @@ async def _send(control: SessionControl, text: str) -> dict[str, Any]:
 
 async def _rewrite(control: SessionControl, cleaned: str) -> dict[str, Any]:
     """Rewrite the reviewed turn in place and regenerate the tutor's reply."""
-    position = control.collector.begin_correction(cleaned)
+    from pipecat.frames.frames import EndWorkerFrame
+
+    from transcript.capture import SnapshotLimitExceeded
+    try:
+        position = control.collector.begin_correction(cleaned)
+    except SnapshotLimitExceeded as exc:
+        await control.worker.queue_frame(EndWorkerFrame())
+        raise HTTPException(status_code=409 if control.collector.finalized else 413, detail=str(exc)) from exc
     if position is None:  # pragma: no cover - send resolved the record above
         raise HTTPException(status_code=409, detail="no user turn to correct")
 
@@ -105,7 +112,6 @@ async def _rewrite(control: SessionControl, cleaned: str) -> dict[str, Any]:
     await control.worker.queue_frame(
         LLMMessagesTransformFrame(transform=_correction_transform(cleaned), run_llm=True)
     )
-    await _repost_corrected(control, position)
     control.collector.clear_reviewed()
     logger.info(f"transcript_corrected position={position} chars={len(cleaned)}")
     return {"state": "idle", "text": cleaned}
@@ -120,21 +126,6 @@ def _correction_transform(corrected_text: str) -> Any:
         return messages if rebuilt is None else rebuilt
 
     return transform
-
-
-async def _repost_corrected(control: SessionControl, position: int) -> None:
-    """Re-send the corrected turn. At-most-once like every other turn post: a
-    failure is logged and dropped, because the teardown flush carries the same
-    corrected record anyway."""
-    from clients.go_turns import post_turn_batch
-
-    record = next((r for r in control.collector.records() if r.position == position), None)
-    if record is None:  # pragma: no cover - begin_correction just wrote it
-        return
-    try:
-        await post_turn_batch(control.conversation_id, [record])
-    except Exception:  # noqa: BLE001 - at-most-once, same as finalize
-        logger.warning(f"transcript_repost_failed position={position}")
 
 
 # --- dispatch ----------------------------------------------------------------

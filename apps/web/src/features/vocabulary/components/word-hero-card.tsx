@@ -43,7 +43,7 @@ export function WordHeroCard({
 			</div>
 
 			<div className="flex flex-wrap items-center gap-2">
-				<span className="chip font-mono text-xs">{item.ipa}</span>
+				<span className="chip font-mono text-xs">{item.details?.ipa}</span>
 				<AudioButton label={m["vocabulary.card.listenUs"]()} />
 				<AudioButton label={m["vocabulary.card.listenUk"]()} />
 			</div>

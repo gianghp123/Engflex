@@ -3,6 +3,8 @@ package services
 import (
 	"bytes"
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"log/slog"
 
@@ -85,7 +87,11 @@ func (s *ConversationService) BuildAnalyzeRequest(ctx context.Context, conversat
 // wrong-shaped payload returns an error and writes nothing, so a turn never
 // carries a half-decoded feedback.
 func (s *ConversationService) AnalyzeTurn(ctx context.Context, userID, conversationID string, position int, language string) (*models.Feedback, error) {
-	if _, err := s.getOwned(ctx, userID, conversationID); err != nil {
+	conv, err := s.getOwned(ctx, userID, conversationID)
+	if err != nil {
+		return nil, err
+	}
+	if err := s.checkAccess(ctx, userID, conv); err != nil {
 		return nil, err
 	}
 	languageName, ok := llm.ExplanationLanguage(language)
@@ -113,13 +119,19 @@ func (s *ConversationService) AnalyzeTurn(ctx context.Context, userID, conversat
 		return nil, common.ServiceUnavailable("analysis unavailable")
 	}
 
-	feedback := &models.Feedback{
-		UserID:      userID,
-		SubjectType: enums.FeedbackSubjectConversationTurn,
-		SubjectID:   req.TurnID,
-		Payload:     payload,
+	if err := s.checkAccess(ctx, userID, conv); err != nil {
+		return nil, err
 	}
-	if err := s.feedbacks.Upsert(ctx, feedback); err != nil {
+	rawInput, _ := json.Marshal(req)
+	fingerprint := sha256.Sum256(rawInput)
+	feedback := &models.Feedback{
+		InputFingerprint: hex.EncodeToString(fingerprint[:]),
+		UserID:           userID,
+		SubjectType:      enums.FeedbackSubjectConversationTurn,
+		SubjectID:        req.TurnID,
+		Payload:          payload,
+	}
+	if err := s.conversations.StoreAnalysis(ctx, conversationID, conv.TranscriptRevision, feedback); err != nil {
 		appErr := common.FromDBError(err, "feedback")
 		logger.Report(ctx, "store turn feedback failed", appErr, "conversationID", conversationID, "position", position)
 		return nil, appErr

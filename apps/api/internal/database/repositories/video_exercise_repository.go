@@ -13,6 +13,7 @@ import (
 // GetByID/GetDetail stay unfiltered; the service decides visibility for a
 // single fetch, same as vocabulary items/decks.
 type VideoExerciseRepository interface {
+	ListWithPractice(ctx context.Context, userID string, limit, offset int, onlyPublished bool) ([]*models.VideoExercise, error)
 	List(ctx context.Context, limit int, offset int, onlyPublished bool) ([]*models.VideoExercise, error)
 	GetByID(ctx context.Context, id string) (*models.VideoExercise, error)
 	// GetDetail returns the exercise with its category (one join) and its
@@ -78,7 +79,9 @@ func (r *videoExerciseRepository) GetDetail(ctx context.Context, id string) (*mo
 		return nil, err
 	}
 	var lesson models.VideoExercise
-	if err := r.db.WithContext(ctx).Joins("Category").First(&lesson, "video_exercises.id = ?", id).Error; err != nil {
+	// VideoCount is a computed category-list aggregate, not a persisted column.
+	// GORM's relation-specific selection must omit it from the joined columns.
+	if err := r.db.WithContext(ctx).Joins("Category", r.db.Omit("VideoCount")).First(&lesson, "video_exercises.id = ?", id).Error; err != nil {
 		return nil, err
 	}
 	transcripts := make([]*models.VideoTranscript, 0)
@@ -130,4 +133,47 @@ func (r *videoExerciseRepository) Count(ctx context.Context, onlyPublished bool)
 		return 0, err
 	}
 	return count, nil
+}
+
+func (r *videoExerciseRepository) ListWithPractice(ctx context.Context, userID string, limit, offset int, onlyPublished bool) ([]*models.VideoExercise, error) {
+	items, err := r.List(ctx, limit, offset, onlyPublished)
+	if err != nil {
+		return nil, err
+	}
+	if err := attachVideoPractice(ctx, r.db, userID, items); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+func attachVideoPractice(ctx context.Context, db *gorm.DB, userID string, videos []*models.VideoExercise) error {
+	if userID == "" || len(videos) == 0 {
+		return nil
+	}
+	ids := make([]string, 0, len(videos))
+	byID := make(map[string]*models.VideoExercise, len(videos))
+	for _, video := range videos {
+		ids = append(ids, video.ID)
+		byID[video.ID] = video
+		video.Practice = &models.VideoPracticeStatus{}
+	}
+	var attempts []*models.Attempt
+	if err := db.WithContext(ctx).Where("user_id = ? AND video_exercise_id IN ? AND status = ?", userID, ids, enums.AttemptStatusCompleted).Find(&attempts).Error; err != nil {
+		return err
+	}
+	for _, attempt := range attempts {
+		if attempt.VideoExerciseID == nil {
+			continue
+		}
+		video := byID[*attempt.VideoExerciseID]
+		if video == nil {
+			continue
+		}
+		switch attempt.Type {
+		case enums.AttemptTypeDictation:
+			video.Practice.Dictation = true
+		case enums.AttemptTypeShadowing:
+			video.Practice.Shadowing = true
+		}
+	}
+	return nil
 }

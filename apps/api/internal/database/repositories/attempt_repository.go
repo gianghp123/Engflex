@@ -14,6 +14,11 @@ import (
 )
 
 type AttemptRepository interface {
+	GetOpenLessonGraph(ctx context.Context, userID, lessonID string) (*models.Attempt, error)
+	ListLessonProgress(ctx context.Context, userID string) ([]*models.Attempt, error)
+	CreateOpen(ctx context.Context, m *models.Attempt) error
+	GetForUpdate(ctx context.Context, id string) (*models.Attempt, error)
+	SaveVideo(ctx context.Context, m *models.Attempt, revision int) error
 	GetExamStats(ctx context.Context, userID string) (*models.ExamAttemptStats, error)
 	GetExamAttemptForUpdate(context.Context, string, string) (*models.Attempt, error)
 	SaveExamAttempt(context.Context, *models.Attempt, int) error
@@ -23,6 +28,8 @@ type AttemptRepository interface {
 	Update(ctx context.Context, m *models.Attempt) error
 	ListCompletedDays(ctx context.Context, userID string, since time.Time) ([]string, error)
 	CountCompleted(ctx context.Context, userID string) (int64, error)
+	ListByUser(ctx context.Context, userID string, attemptType *enums.AttemptType, limit, offset int) ([]*models.Attempt, error)
+	CountByUser(ctx context.Context, userID string, attemptType *enums.AttemptType) (int64, error)
 	ListLessonAttempts(ctx context.Context, userID string) ([]*models.Attempt, error)
 	ListCompletedVideo(ctx context.Context, userID string, videoExerciseIDs []string) ([]*models.Attempt, error)
 	GetVideoAttempt(ctx context.Context, userID, videoExerciseID string, attemptType enums.AttemptType) (*models.Attempt, error)
@@ -128,6 +135,28 @@ func (r *attemptRepository) CountCompleted(ctx context.Context, userID string) (
 		Where("user_id = ? AND type = ? AND status = ?", userID, enums.AttemptTypeLesson, enums.AttemptStatusCompleted).
 		Count(&n).Error
 	return n, err
+}
+
+func (r *attemptRepository) ListByUser(ctx context.Context, userID string, attemptType *enums.AttemptType, limit, offset int) ([]*models.Attempt, error) {
+	q := r.db.WithContext(ctx).Model(&models.Attempt{}).Where("attempts.user_id = ?", userID)
+	if attemptType != nil && *attemptType != "" {
+		q = q.Where("attempts.type = ?", *attemptType)
+	}
+	var rows []*models.Attempt
+	err := q.Joins("Lesson").Joins("ExamTest").Joins("VideoExercise").
+		Order("attempts.created_at DESC").Order("attempts.id DESC").
+		Limit(limit).Offset(offset).Find(&rows).Error
+	return rows, err
+}
+
+func (r *attemptRepository) CountByUser(ctx context.Context, userID string, attemptType *enums.AttemptType) (int64, error) {
+	q := r.db.WithContext(ctx).Model(&models.Attempt{}).Where("attempts.user_id = ?", userID)
+	if attemptType != nil && *attemptType != "" {
+		q = q.Where("attempts.type = ?", *attemptType)
+	}
+	var total int64
+	err := q.Count(&total).Error
+	return total, err
 }
 
 func (r *attemptRepository) ListLessonAttempts(ctx context.Context, userID string) ([]*models.Attempt, error) {

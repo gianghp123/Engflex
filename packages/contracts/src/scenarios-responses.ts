@@ -70,5 +70,23 @@ export interface ScenarioTopic {
   name: string;
   shortName: string;
   position: number /* int */;
-  scenarios: Scenario[];
+  scenarios: ScenarioPreview[];
+}
+export interface ScenarioPreview {
+  id: string;
+  topic?: ScenarioTopic;
+  persona?: ScenarioPersonaPreview;
+  title: string;
+  objective: string;
+  cefrLevel: ScenarioDifficulty;
+  maxDuration: number /* int */;
+  status: PublishStatus;
+  isPremium: boolean;
+}
+export interface ScenarioPersonaPreview {
+  personality: string;
+  id: string;
+  name: string;
+  roleTitle: string;
+  gender: Gender;
 }

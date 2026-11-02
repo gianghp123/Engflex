@@ -2,6 +2,10 @@ package tests
 
 import (
 	"context"
+	"engflex-api/internal/llm"
+	"engflex-api/internal/voice/pronunciation"
+	"github.com/stretchr/testify/mock"
+	"gorm.io/gorm"
 	"testing"
 
 	"engflex-api/internal/common"
@@ -42,3 +46,16 @@ func requireAppError(t *testing.T, err error, expectedStatus int) *common.AppErr
 	assert.Equal(t, expectedStatus, appErr.Status)
 	return appErr
 }
+
+func newActivityService(t *testing.T, repo *mocks.MockLessonActivityRepository, scorer pronunciation.Scorer, llm llm.LLMClient, attempts *mocks.MockAttemptRepository) services.LessonActivityService {
+	t.Helper()
+	manager := mocks.NewMockTransactionManager(t)
+	manager.EXPECT().Run(mock.Anything, mock.Anything).RunAndReturn(func(ctx context.Context, fn func(*gorm.DB) error) error { return fn(&gorm.DB{}) }).Maybe()
+	repo.On("WithTx", mock.Anything).Return(repo).Maybe()
+	attempts.On("WithTx", mock.Anything).Return(attempts).Maybe()
+	return services.NewLessonActivityService(repo, scorer, llm, attempts, manager, allowLessonAccess{})
+}
+
+type allowLessonAccess struct{}
+
+func (allowLessonAccess) CheckAccess(context.Context, string, string) error { return nil }

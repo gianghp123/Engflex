@@ -12,6 +12,7 @@ const FORM_DEFAULT: WordForm[] = [{ formType: "Noun", forms: ["—"] }];
 export const TODAY = "2026-09-23";
 
 interface DetailsInput {
+	ipa?: string;
 	contextLabel: string;
 	contextQuote: string;
 	longDefinition: string;
@@ -26,6 +27,7 @@ interface DetailsInput {
 /** Fills the contract's required `VocabularyDetails` fields for hub-only cards. */
 function details(input: DetailsInput): VocabularyDetails {
 	return {
+		ipa: input.ipa ?? "",
 		audioUs: "",
 		audioUk: "",
 		syllables: input.syllables ?? "—",
@@ -48,8 +50,7 @@ export const VOCABULARY_ITEMS: VocabularyItem[] = [
 	{
 		id: "idempotent",
 		term: "idempotent",
-		ipa: "/ˌaɪ.dɛmˈpoʊ.tənt/",
-		partOfSpeech: "adj",
+		partOfSpeech: "adjective",
 		cefr: "C1",
 		status: "published",
 		isPremium: false,
@@ -57,6 +58,7 @@ export const VOCABULARY_ITEMS: VocabularyItem[] = [
 		definition:
 			"Denoting an operation or API request that can be applied multiple times without changing the result beyond the initial execution.",
 		details: {
+			ipa: "/ˌaɪ.dɛmˈpoʊ.tənt/",
 			audioUs: "",
 			audioUk: "",
 			syllables: "eye · dem · Poh · tent",
@@ -130,7 +132,6 @@ export const VOCABULARY_ITEMS: VocabularyItem[] = [
 	{
 		id: "backpressure",
 		term: "backpressure",
-		ipa: "/ˈbækˌprɛʃ.ər/",
 		partOfSpeech: "noun",
 		cefr: "B2",
 		status: "published",
@@ -139,6 +140,7 @@ export const VOCABULARY_ITEMS: VocabularyItem[] = [
 		definition:
 			"The resistance or opposing force exerted opposite to the desired flow of data in a software pipeline when a downstream consumer cannot handle the ingress rate.",
 		details: details({
+			ipa: "/ˈbækˌprɛʃ.ər/",
 			contextLabel: "Engineering context",
 			contextQuote:
 				"When the queue worker buffer saturated, the reactive stream applied backpressure to throttle the upstream producer before memory spikes crashed the container.",
@@ -157,7 +159,6 @@ export const VOCABULARY_ITEMS: VocabularyItem[] = [
 	{
 		id: "bottleneck",
 		term: "bottleneck",
-		ipa: "/ˈbɑː.t̬əl.nek/",
 		partOfSpeech: "noun",
 		cefr: "B1",
 		status: "published",
@@ -166,6 +167,7 @@ export const VOCABULARY_ITEMS: VocabularyItem[] = [
 		definition:
 			"A point of congestion in a production system that occurs when workloads arrive too quickly for the designated computing process to handle.",
 		details: details({
+			ipa: "/ˈbɑː.t̬əl.nek/",
 			contextLabel: "Engineering context",
 			contextQuote:
 				"Our latency profiling identified the unindexed Postgres foreign key query as the primary execution bottleneck during peak checkout spikes.",
@@ -184,7 +186,6 @@ export const VOCABULARY_ITEMS: VocabularyItem[] = [
 	{
 		id: "re-entrancy",
 		term: "re-entrancy",
-		ipa: "/riːˈɛn.trən.si/",
 		partOfSpeech: "noun",
 		cefr: "C1",
 		status: "published",
@@ -193,6 +194,7 @@ export const VOCABULARY_ITEMS: VocabularyItem[] = [
 		definition:
 			"The property of a computer program or routine allowing it to be safely executed concurrently or interrupted and called again before its previous invocation finishes.",
 		details: details({
+			ipa: "/riːˈɛn.trən.si/",
 			contextLabel: "Engineering context",
 			contextQuote:
 				"We mitigated the classical re-entrancy vulnerability by enforcing the Checks-Effects-Interactions design pattern and locking state mutators.",
@@ -212,7 +214,6 @@ export const VOCABULARY_ITEMS: VocabularyItem[] = [
 	{
 		id: "trade-off",
 		term: "trade-off",
-		ipa: "/ˈtreɪd.ɑːf/",
 		partOfSpeech: "noun",
 		cefr: "B1",
 		status: "published",
@@ -221,6 +222,7 @@ export const VOCABULARY_ITEMS: VocabularyItem[] = [
 		definition:
 			"A situational decision that involves diminishing or losing one desirable quality or aspect of a software system in return for gaining qualities in another aspect.",
 		details: details({
+			ipa: "/ˈtreɪd.ɑːf/",
 			contextLabel: "Engineering context",
 			contextQuote:
 				"Choosing an eventually consistent NoSQL cluster is a deliberate trade-off prioritizing global read throughput over immediate serializability.",
@@ -239,7 +241,6 @@ export const VOCABULARY_ITEMS: VocabularyItem[] = [
 	{
 		id: "concurrency",
 		term: "concurrency",
-		ipa: "/kənˈkɜː.ən.si/",
 		partOfSpeech: "noun",
 		cefr: "B2",
 		status: "published",
@@ -248,6 +249,7 @@ export const VOCABULARY_ITEMS: VocabularyItem[] = [
 		definition:
 			"Not parallelism. The composition of independently executing computations.",
 		details: details({
+			ipa: "/kənˈkɜː.ən.si/",
 			contextLabel: "Engineering context",
 			contextQuote:
 				"Locking discipline is what keeps concurrency safe when several workers mutate the same aggregate.",
@@ -266,7 +268,6 @@ export const VOCABULARY_ITEMS: VocabularyItem[] = [
 	{
 		id: "heuristics",
 		term: "heuristics",
-		ipa: "/hjʊˈrɪs.tɪks/",
 		partOfSpeech: "noun",
 		cefr: "C1",
 		status: "published",
@@ -275,6 +276,7 @@ export const VOCABULARY_ITEMS: VocabularyItem[] = [
 		definition:
 			"Practical rule-of-thumb method not guaranteed to be optimal, but sufficient for immediate goals.",
 		details: details({
+			ipa: "/hjʊˈrɪs.tɪks/",
 			contextLabel: "Engineering context",
 			contextQuote:
 				"We replaced the hand-tuned heuristics with a learned ranking model once the offline evaluation caught up.",
@@ -293,7 +295,6 @@ export const VOCABULARY_ITEMS: VocabularyItem[] = [
 	{
 		id: "fault-tolerance",
 		term: "fault tolerance",
-		ipa: "/fɔːlt ˈtɒl.ər.əns/",
 		partOfSpeech: "noun",
 		cefr: "B1",
 		status: "published",
@@ -302,6 +303,7 @@ export const VOCABULARY_ITEMS: VocabularyItem[] = [
 		definition:
 			"Enabling a system to continue operating properly in the event of the failure of one or more components.",
 		details: details({
+			ipa: "/fɔːlt ˈtɒl.ər.əns/",
 			contextLabel: "Engineering context",
 			contextQuote:
 				"Fault tolerance here means draining a zone without dropping in-flight checkout sessions.",

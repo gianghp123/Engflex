@@ -3,7 +3,7 @@ CREATE TABLE vocabulary_deck_items (
     id               uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     deck_id          uuid NOT NULL REFERENCES vocabulary_decks (id) ON DELETE CASCADE,
     item_id          uuid NOT NULL REFERENCES vocabulary_items (id) ON DELETE CASCADE,
-    sequence         integer NOT NULL DEFAULT 0,
+    sequence         integer NOT NULL DEFAULT 0 CHECK (sequence >= 0),
     example_sentence text,
     note             text,
     created_at       timestamptz NOT NULL DEFAULT now(),
