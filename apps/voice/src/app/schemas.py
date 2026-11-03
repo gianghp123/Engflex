@@ -12,10 +12,19 @@ class PersonaBody(BaseModel):
     gender: str = ""
 
 
+class ObjectiveBody(BaseModel):
+    """One roleplay task. ID is the 1-based position, local to the scenario."""
+
+    id: int = 0
+    label: str = ""
+    hint: str = ""
+
+
 class ScenarioBody(BaseModel):
     title: str = ""
     objective: str = ""
     cefrLevel: str = "B1"
+    objectives: list[ObjectiveBody] = Field(default_factory=list)
 
 
 class LearnerBody(BaseModel):

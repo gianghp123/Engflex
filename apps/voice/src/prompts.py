@@ -49,6 +49,14 @@ def build_system_prompt(
             parts.append(f"Your objective: {_clean(persona.objective)}.")
     if scenario is not None:
         parts.append(f"Scenario: {_clean(scenario.title)} - {_clean(scenario.objective)}.")
+        tasks = [o for o in (scenario.objectives or []) if _nonempty(o.label)]
+        if tasks:
+            labels = "; ".join(f"{i+1}. {_clean(o.label)}" for i, o in enumerate(tasks[:3]))
+            parts.append(
+                f"The learner has {len(tasks[:3])} tasks: {labels}. "
+                "Guide them toward each task naturally (hint, repeat, slow down on request). "
+                "Do NOT grade mid-conversation: end-of-session analysis is separate."
+            )
     parts.append(
         f"Vietnamese learner at CEFR level {level}. Keep replies short (1-3 sentences), "
         "warm, and natural. Ask one follow-up question at a time. Never use markdown, "

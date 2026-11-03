@@ -18,6 +18,7 @@ import {
 	listConversations,
 	listScenarios,
 	listTopicsWithPreview,
+	summarizeConversation,
 } from "#/features/voice/service";
 
 export const conversationKeys = {
@@ -67,6 +68,34 @@ export function useEndConversation(id: string) {
 			queryClient.invalidateQueries({ queryKey: conversationKeys.byId(id) }),
 	});
 }
+
+/** The post-session summary: a summarize-then-read query. Fires only on an
+ *  ended session with no stored summary yet; on success it invalidates the
+ *  conversation so the extended detail (with `summary`) flows into the card
+ *  and the transcript. Three retries at 3s cover the turn-batch window after
+ *  `POST /:id/end` returns before the engine's turns land. */
+export function useSessionSummary(
+	conversationId: string,
+	opts?: { enabled?: boolean },
+) {
+	const queryClient = useQueryClient();
+	return useQuery({
+		queryKey: ["conversation", conversationId, "summary"],
+		queryFn: () => summarizeConversation(conversationId),
+		enabled: conversationId.length > 0 && (opts?.enabled ?? true),
+		retry: 3,
+		retryDelay: 3000,
+		select: (summary) => {
+			queryClient.setQueryData<Conversation>(
+				conversationKeys.byId(conversationId),
+				(prev) => (prev ? { ...prev, summary } : prev),
+			);
+			return summary;
+		},
+	});
+}
+
+export { summarizeConversation };
 
 export function useAnalyzeTurn(conversationId: string) {
 	const queryClient = useQueryClient();

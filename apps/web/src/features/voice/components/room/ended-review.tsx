@@ -3,9 +3,14 @@ import { MoMascot } from "#/components/common/mo-mascot";
 import { PageSplit } from "#/components/common/page-layout";
 import { Button } from "#/components/ui/button";
 import { SurveyCard } from "#/features/voice/components/room/survey-card";
+import { SessionSummaryCard } from "#/features/voice/components/session-summary-card";
 import { PersistedTranscript } from "#/features/voice/components/transcript/persisted-transcript";
 import type { AnalyzeControl } from "#/features/voice/components/transcript/turn-feedback";
-import { useConversation, useScenario } from "#/features/voice/queries";
+import {
+	useConversation,
+	useScenario,
+	useSessionSummary,
+} from "#/features/voice/queries";
 import { m } from "#/paraglide/messages";
 
 /** Scene summary: what this session just was. The eyebrow frames it so a
@@ -80,6 +85,17 @@ export function EndedReview({
 		enabled: !useFixtures && Boolean(conversationId),
 	});
 	const sessionTurns = turns ?? conversation.data?.turns ?? [];
+	const summaryReady =
+		!useFixtures &&
+		Boolean(conversationId) &&
+		conversation.data?.status === "ended" &&
+		conversation.data?.summary == null &&
+		sessionTurns.length > 0;
+	const summaryQuery = useSessionSummary(conversationId ?? "", {
+		enabled: summaryReady,
+	});
+	const objectives = conversation.data?.objectives ?? [];
+	const summary = conversation.data?.summary ?? summaryQuery.data ?? null;
 	const scenarioId = useFixtures ? undefined : conversation.data?.scenarioId;
 	const scenario = useScenario(scenarioId);
 	const scene =
@@ -198,6 +214,13 @@ export function EndedReview({
 								{backText}
 							</Button>
 						</section>
+						{useFixtures ? null : (
+							<SessionSummaryCard
+								summary={summary}
+								objectives={objectives}
+								pending={summaryQuery.isPending && summaryReady}
+							/>
+						)}
 						{history ? null : <SurveyCard />}
 					</div>
 				}
