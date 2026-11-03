@@ -15,6 +15,7 @@ import (
 	"engflex-api/internal/common/enums"
 	"engflex-api/internal/database/models"
 	repomocks "engflex-api/internal/database/repositories/mocks"
+	llmmocks "engflex-api/internal/llm/mocks"
 	"engflex-api/internal/modules/conversations/dtos/requests"
 	"engflex-api/internal/modules/conversations/dtos/responses"
 	"engflex-api/internal/modules/conversations/services"
@@ -41,7 +42,7 @@ func newService(t *testing.T) (*services.ConversationService, *repomocks.MockCon
 	engine := voicemocks.NewMockVoiceClient(t)
 	pronounce := voicemocks.NewMockPronounceEngine(t)
 	scenarios := repomocks.NewMockScenarioRepository(t)
-	return services.NewConversationService(repo, turns, engine, pronounce, 300, repomocks.NewMockFeedbackRepository(t), scenarios, repomocks.NewMockPersonaRepository(t)), repo, turns, engine, scenarios
+	return services.NewConversationService(repo, turns, engine, pronounce, llmmocks.NewMockLLMClient(t), 300, repomocks.NewMockFeedbackRepository(t), scenarios, repomocks.NewMockPersonaRepository(t)), repo, turns, engine, scenarios
 }
 
 func pendingConv() *models.Conversation {
@@ -54,19 +55,19 @@ func TestCreate(t *testing.T) {
 	tests := []struct {
 		name       string
 		req        requests.StartConversation
-		setup      func(*repomocks.MockConversationRepository)
+		setup      func(*repomocks.MockConversationRepository, *repomocks.MockScenarioRepository)
 		wantStatus int
 	}{
 		{
 			name:       "roleplay without scenario",
 			req:        requests.StartConversation{Mode: enums.ConversationModeRoleplay},
-			setup:      func(*repomocks.MockConversationRepository) {},
+			setup:      func(*repomocks.MockConversationRepository, *repomocks.MockScenarioRepository) {},
 			wantStatus: http.StatusBadRequest,
 		},
 		{
 			name: "free talk atomically closes active rows and creates",
 			req:  requests.StartConversation{Mode: enums.ConversationModeFreeTalk},
-			setup: func(repo *repomocks.MockConversationRepository) {
+			setup: func(repo *repomocks.MockConversationRepository, _ *repomocks.MockScenarioRepository) {
 				repo.On("CreateClosingActive", mock.Anything, mock.MatchedBy(func(m *models.Conversation) bool {
 					return m.UserID == userID && m.Status == enums.ConversationStatusPending
 				})).Return(nil).Once()
@@ -76,9 +77,23 @@ func TestCreate(t *testing.T) {
 		{
 			name: "roleplay with scenario succeeds",
 			req:  requests.StartConversation{Mode: enums.ConversationModeRoleplay, ScenarioID: &scenarioID},
-			setup: func(repo *repomocks.MockConversationRepository) {
+			setup: func(repo *repomocks.MockConversationRepository, scenarios *repomocks.MockScenarioRepository) {
+				scenarios.On("GetByID", mock.Anything, scenarioID).
+					Return(&models.Scenario{ID: scenarioID}, nil).Once()
 				repo.On("CreateClosingActive", mock.Anything, mock.MatchedBy(func(m *models.Conversation) bool {
 					return m.ScenarioID != nil && *m.ScenarioID == scenarioID
+				})).Return(nil).Once()
+			},
+			wantStatus: 0,
+		},
+		{
+			name: "roleplay snapshots scenario objectives at create",
+			req:  requests.StartConversation{Mode: enums.ConversationModeRoleplay, ScenarioID: &scenarioID},
+			setup: func(repo *repomocks.MockConversationRepository, scenarios *repomocks.MockScenarioRepository) {
+				scenarios.On("GetByID", mock.Anything, scenarioID).
+					Return(&models.Scenario{ID: scenarioID, Objectives: []byte(`[{"id":1,"label":"Greet","hint":"Say hello"}]`)}, nil).Once()
+				repo.On("CreateClosingActive", mock.Anything, mock.MatchedBy(func(m *models.Conversation) bool {
+					return string(m.Objectives) == `[{"id":1,"label":"Greet","hint":"Say hello"}]`
 				})).Return(nil).Once()
 			},
 			wantStatus: 0,
@@ -87,8 +102,8 @@ func TestCreate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			svc, repo, _, _, _ := newService(t)
-			tt.setup(repo)
+			svc, repo, _, _, scenarios := newService(t)
+			tt.setup(repo, scenarios)
 
 			m, err := svc.Create(context.Background(), userID, tt.req)
 			if tt.wantStatus != 0 {

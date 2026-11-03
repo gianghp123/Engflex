@@ -74,6 +74,7 @@ func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB, voiceCfg config.VoiceConfi
 	}
 	la.POST("/:id/pronounce", append(strict, middleware.RequireAuth(), activityCtl.Pronounce)...)
 	la.POST("/:id/score", append(strict, middleware.RequireAuth(), activityCtl.ScoreWriting)...)
+	la.DELETE("/attempts/:attemptId/writing", middleware.RequireAuth(), activityCtl.RedactWriting)
 
 	// Admin-only: full (unstripped) activity config, needed to prefill the
 	// edit form — the learner-shaped GET /lesson-activities/:id strips

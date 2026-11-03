@@ -24,6 +24,8 @@ type Conversation struct {
 	SpeechSessionID     string                   `gorm:"column:speech_session_id" json:"-"`
 	SpeechStartResponse datatypes.JSON           `gorm:"column:speech_start_response;type:jsonb" json:"-"`
 	DurationSec         *int                     `gorm:"column:duration_sec" json:"durationSec,omitempty"`
+	Objectives          datatypes.JSON           `gorm:"type:jsonb;not null;default:'[]'" json:"-"`
+	Summary             datatypes.JSON           `gorm:"type:jsonb" json:"-"`
 	StartedAt           time.Time                `gorm:"not null;default:now()" json:"startedAt"`
 	EndedAt             *time.Time               `json:"endedAt"`
 	CreatedAt           time.Time                `gorm:"autoCreateTime" json:"createdAt"`
@@ -31,3 +33,18 @@ type Conversation struct {
 }
 
 func (Conversation) TableName() string { return "conversations" }
+
+// ObjectiveResult is one objective's post-session verdict.
+type ObjectiveResult struct {
+	ID       int    `json:"id"`
+	Status   string `json:"status"`
+	Evidence string `json:"evidence"`
+}
+
+// ConversationSummary is the stored post-session analysis: takeaways,
+// per-objective verdicts joined on objective id, and a level note.
+type ConversationSummary struct {
+	Takeaways  []string          `json:"takeaways"`
+	Objectives []ObjectiveResult `json:"objectives"`
+	LevelNote  string            `json:"levelNote"`
+}

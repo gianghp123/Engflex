@@ -13,6 +13,7 @@ import (
 
 	"engflex-api/internal/database/models"
 	repomocks "engflex-api/internal/database/repositories/mocks"
+	llmmocks "engflex-api/internal/llm/mocks"
 	"engflex-api/internal/modules/conversations/dtos/responses"
 	"engflex-api/internal/modules/conversations/services"
 	"engflex-api/internal/voice"
@@ -24,7 +25,7 @@ func newTranscriptService(t *testing.T) (*services.ConversationService, *repomoc
 	repo := repomocks.NewMockConversationRepository(t)
 	engine := voicemocks.NewMockVoiceClient(t)
 	pronounce := voicemocks.NewMockPronounceEngine(t)
-	svc := services.NewConversationService(repo, repomocks.NewMockConversationTurnRepository(t), engine, pronounce, 300,
+	svc := services.NewConversationService(repo, repomocks.NewMockConversationTurnRepository(t), engine, pronounce, llmmocks.NewMockLLMClient(t), 300,
 		repomocks.NewMockFeedbackRepository(t), repomocks.NewMockScenarioRepository(t), repomocks.NewMockPersonaRepository(t))
 	return svc, repo, engine, pronounce
 }

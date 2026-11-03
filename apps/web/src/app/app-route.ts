@@ -3,6 +3,7 @@ export const APP_ROUTES = {
 	/** Public landing page — the front door for signed-out visitors. */
 	LANDING: "/",
 	HOME: "/home",
+	MISTAKES: "/mistakes",
 	ABOUT: "/about",
 	PRICING: "/pricing",
 	ONBOARDING: "/onboarding",

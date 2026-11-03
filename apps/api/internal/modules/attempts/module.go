@@ -13,13 +13,19 @@ import (
 	"engflex-api/internal/server/middleware"
 )
 
-// RegisterRoutes mounts the progress endpoint.
+// RegisterRoutes mounts the progress endpoints.
 func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB) {
 	svc := services.NewProgressService(
 		repositories.NewAttemptRepository(db),
 		repositories.NewConversationRepository(db),
 		repositories.NewUserProfileRepository(db),
 	)
-	ctl := controllers.NewProgressController(svc)
+	errorsSvc := services.NewErrorStatsService(
+		repositories.NewFeedbackRepository(db),
+		repositories.NewAttemptRepository(db),
+	)
+	ctl := controllers.NewProgressController(svc, errorsSvc)
 	rg.GET("/progress", middleware.RequireAuth(), ctl.Get)
+	rg.GET("/progress/errors", middleware.RequireAuth(), ctl.Errors)
+	rg.GET("/progress/mistakes", middleware.RequireAuth(), ctl.Mistakes)
 }

@@ -1,0 +1,30 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "mistakes": {
+    "crumb": {
+      "hub": "Lỗi sai"
+    },
+    "hub": {
+      "title": "Các lỗi của bạn",
+      "subtitle": "Mọi lỗi Mo đã bắt được, nhóm theo loại — xem lại và sửa từng cái một.",
+      "emptyTitle": "Chưa có lỗi nào",
+      "emptyBody": "Cứ luyện tiếp nhé — lỗi nào Mo bắt được sẽ hiện ở đây.",
+      "loadingFailed": "Không tải được danh sách lỗi. Hãy thử lại sau."
+    },
+    "filter": {
+      "all": "Tất cả",
+      "label": "Loại lỗi"
+    },
+    "top": {
+      "title": "Lỗi hay gặp nhất",
+      "viewAll": "Xem tất cả",
+      "empty": "Chưa có gì cần sửa — cứ luyện tiếp nhé.",
+      "count": "{count}×"
+    },
+    "row": {
+      "example": "vd. “{text}” → “{correction}”",
+      "fromFeedback": "Trong hội thoại",
+      "fromWriting": "Trong bài viết"
+    }
+  }
+}

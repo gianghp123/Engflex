@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"encoding/json"
 	"log/slog"
 
 	"engflex-api/internal/common"
@@ -110,6 +111,20 @@ func (s *ScenarioService) GetByID(ctx context.Context, id string) (*models.Scena
 	return m, nil
 }
 
+// encodeObjectives assigns id = index+1 (1-based, local to the scenario)
+// and marshals the objectives for the jsonb column. Empty input writes '[]'.
+func encodeObjectives(in []requests.ScenarioObjectiveInput) []byte {
+	objs := make([]models.ScenarioObjective, 0, len(in))
+	for i, o := range in {
+		objs = append(objs, models.ScenarioObjective{ID: i + 1, Label: o.Label, Hint: o.Hint})
+	}
+	if objs == nil {
+		return []byte("[]")
+	}
+	raw, _ := json.Marshal(objs)
+	return raw
+}
+
 // toScenarioDetail hand-maps the wire input into the model's jsonb-backed
 // detail struct. copier's DeepCopy does NOT recurse into a nested field
 // when the source and destination are different named struct types, even
@@ -137,6 +152,7 @@ func (s *ScenarioService) Create(ctx context.Context, req requests.CreateScenari
 	}
 	m.Details = toScenarioDetail(req.Details)
 	m.Status = enums.PublishStatusDraft
+	m.Objectives = encodeObjectives(req.Objectives)
 	if err := s.scenarios.Create(ctx, m); err != nil {
 		appErr := common.FromDBError(err, "scenario")
 		logger.Report(ctx, "create scenario failed", appErr)
@@ -162,6 +178,9 @@ func (s *ScenarioService) Update(ctx context.Context, id string, req requests.Up
 	}
 	if req.Details != nil {
 		m.Details = toScenarioDetail(*req.Details)
+	}
+	if req.Objectives != nil {
+		m.Objectives = encodeObjectives(req.Objectives)
 	}
 	if req.Status != nil {
 		m.Status = *req.Status

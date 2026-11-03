@@ -12,11 +12,20 @@ type Scenario struct {
 	Persona     *Persona                 `json:"persona"`
 	Title       string                   `json:"title"`
 	Objective   string                   `json:"objective"`
+	Objectives  []ScenarioObjective      `json:"objectives"`
 	CEFRLevel   enums.ScenarioDifficulty `json:"cefrLevel"`
 	MaxDuration int                      `json:"maxDuration"`
 	Details     ScenarioDetail           `json:"details"`
 	Status      enums.PublishStatus      `json:"status"`
 	IsPremium   bool                     `json:"isPremium"`
+}
+
+// ScenarioObjective is one roleplay task. ID is the 1-based position, local
+// to the scenario. Field names mirror models.ScenarioObjective.
+type ScenarioObjective struct {
+	ID    int    `json:"id"`
+	Label string `json:"label"`
+	Hint  string `json:"hint"`
 }
 
 // ScenarioDetail mirrors models.ScenarioDetail field for field so copier

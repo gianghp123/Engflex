@@ -7,18 +7,27 @@ import (
 	"errors"
 	"log/slog"
 	"net/http"
+	"strings"
+
+	"gorm.io/datatypes"
 
 	"engflex-api/internal/common"
 	"engflex-api/internal/common/enums"
 	"engflex-api/internal/database/models"
 	"engflex-api/internal/database/repositories"
+	"engflex-api/internal/llm"
 	"engflex-api/internal/logger"
 	"engflex-api/internal/modules/conversations/dtos/callbacks"
 	"engflex-api/internal/modules/conversations/dtos/requests"
 	"engflex-api/internal/modules/conversations/dtos/responses"
+	"engflex-api/internal/modules/conversations/prompts"
+	"engflex-api/internal/modules/conversations/schemas"
 	"engflex-api/internal/utils"
 	"engflex-api/internal/voice"
 )
+
+// maxSummaryTranscriptChars bounds the LLM input: user turns only, truncated.
+const maxSummaryTranscriptChars = 4000
 
 var errEmptyAnswer = errors.New("voice engine returned an empty offer answer")
 
@@ -28,6 +37,7 @@ type ConversationService struct {
 	turns         repositories.ConversationTurnRepository
 	voice         voice.VoiceClient
 	pronounce     voice.PronounceEngine
+	llm           llm.LLMClient
 	maxDuration   int
 	feedbacks     repositories.FeedbackRepository
 	scenarios     repositories.ScenarioRepository
@@ -35,8 +45,8 @@ type ConversationService struct {
 }
 
 // NewConversationService builds the service over repository + engine interfaces.
-func NewConversationService(conversations repositories.ConversationRepository, turns repositories.ConversationTurnRepository, voice voice.VoiceClient, pronounce voice.PronounceEngine, maxDuration int, feedbacks repositories.FeedbackRepository, scenarios repositories.ScenarioRepository, personas repositories.PersonaRepository) *ConversationService {
-	return &ConversationService{conversations: conversations, turns: turns, voice: voice, pronounce: pronounce, maxDuration: maxDuration, feedbacks: feedbacks, scenarios: scenarios, personas: personas}
+func NewConversationService(conversations repositories.ConversationRepository, turns repositories.ConversationTurnRepository, voice voice.VoiceClient, pronounce voice.PronounceEngine, llm llm.LLMClient, maxDuration int, feedbacks repositories.FeedbackRepository, scenarios repositories.ScenarioRepository, personas repositories.PersonaRepository) *ConversationService {
+	return &ConversationService{conversations: conversations, turns: turns, voice: voice, pronounce: pronounce, llm: llm, maxDuration: maxDuration, feedbacks: feedbacks, scenarios: scenarios, personas: personas}
 }
 
 // Create provisions a pending conversation. The close of the caller's other
@@ -55,6 +65,11 @@ func (s *ConversationService) Create(ctx context.Context, userID string, req req
 	}
 	m.UserID = userID
 	m.Status = enums.ConversationStatusPending
+	if req.Mode == enums.ConversationModeRoleplay && req.ScenarioID != nil && *req.ScenarioID != "" {
+		if snap, ok := s.objectivesSnapshot(ctx, *req.ScenarioID); ok {
+			m.Objectives = datatypes.JSON(snap)
+		}
+	}
 	if err := s.conversations.CreateClosingActive(ctx, m); err != nil {
 		appErr := common.FromDBError(err, "conversation")
 		logger.Report(ctx, "create conversation failed", appErr, "userID", userID)
@@ -62,6 +77,18 @@ func (s *ConversationService) Create(ctx context.Context, userID string, req req
 	}
 	slog.InfoContext(ctx, "conversation created", "conversationID", m.ID, "mode", m.Mode)
 	return m, nil
+}
+
+// objectivesSnapshot copies the scenario's objectives at Create time, so a
+// later scenario edit cannot rewrite what the learner actually practiced.
+func (s *ConversationService) objectivesSnapshot(ctx context.Context, scenarioID string) ([]byte, bool) {
+	scenario, err := s.scenarios.GetByID(ctx, scenarioID)
+	if err != nil || scenario == nil || len(scenario.Objectives) == 0 {
+		return nil, false
+	}
+	raw := make([]byte, len(scenario.Objectives))
+	copy(raw, scenario.Objectives)
+	return raw, true
 }
 
 // Get returns the caller's conversation.
@@ -290,6 +317,90 @@ func (s *ConversationService) IngestTurns(ctx context.Context, id string, req ca
 	return stored, nil
 }
 
+// Summarize generates the post-session summary once, on first view, and
+// stores it. Idempotent: a stored summary is returned without an LLM call.
+// Live sessions are rejected (409); sessions with no learner turns get 422.
+func (s *ConversationService) Summarize(ctx context.Context, userID, id string) (*models.ConversationSummary, error) {
+	conv, err := s.getOwned(ctx, userID, id)
+	if err != nil {
+		return nil, err
+	}
+	if len(conv.Summary) > 0 && string(conv.Summary) != "null" && string(conv.Summary) != "{}" {
+		var existing models.ConversationSummary
+		if err := json.Unmarshal(conv.Summary, &existing); err == nil {
+			return &existing, nil
+		}
+	}
+	if conv.Status != enums.ConversationStatusEnded && conv.Status != enums.ConversationStatusFailed {
+		return nil, common.Conflict("conversation is not finished")
+	}
+	turns, err := s.turns.ListTurnsWithFeedback(ctx, id)
+	if err != nil {
+		appErr := common.FromDBError(err, "conversation turn")
+		logger.Report(ctx, "summarize turns load failed", appErr, "conversationID", id)
+		return nil, appErr
+	}
+	userTurns := filterUserTurns(turns)
+	if len(userTurns) == 0 {
+		return nil, common.UnprocessableEntity("no learner turns to summarize")
+	}
+	var objs []models.ScenarioObjective
+	_ = json.Unmarshal(conv.Objectives, &objs)
+	transcript := joinUserTurns(userTurns, maxSummaryTranscriptChars)
+	prompt := prompts.BuildSessionSummaryPrompt(objs, transcript)
+	var out schemas.SessionSummaryLLM
+	if err := s.llm.CompleteStructured(ctx, prompt, &out, schemas.SessionSummaryName, schemas.SessionSummarySchema); err != nil {
+		logger.Report(ctx, "session summary failed", err, "conversationID", id)
+		return nil, common.ServiceUnavailable("summary unavailable")
+	}
+	summary, err := schemas.NormalizeSessionSummary(out, objs, transcript)
+	if err != nil {
+		logger.Report(ctx, "session summary rejected", err, "conversationID", id)
+		return nil, common.ServiceUnavailable("summary unavailable")
+	}
+	raw, err := json.Marshal(summary)
+	if err != nil {
+		logger.Report(ctx, "encode summary failed", common.Internal(), "conversationID", id)
+		return nil, common.Internal()
+	}
+	conv.Summary = raw
+	if err := s.conversations.Update(ctx, conv); err != nil {
+		appErr := common.FromDBError(err, "conversation")
+		logger.Report(ctx, "store summary failed", appErr, "conversationID", id)
+		return nil, appErr
+	}
+	slog.InfoContext(ctx, "session summarized", "conversationID", id, "turns", len(userTurns))
+	return summary, nil
+}
+
+// filterUserTurns keeps learner turns with text, in position order.
+func filterUserTurns(turns []*models.ConversationTurn) []*models.ConversationTurn {
+	var out []*models.ConversationTurn
+	for _, t := range turns {
+		if t.Role == enums.TurnRoleUser && strings.TrimSpace(t.Text) != "" {
+			out = append(out, t)
+		}
+	}
+	return out
+}
+
+// joinUserTurns concatenates learner turns, truncated at maxChars.
+func joinUserTurns(turns []*models.ConversationTurn, maxChars int) string {
+	var b strings.Builder
+	for _, t := range turns {
+		text := strings.TrimSpace(t.Text)
+		if text == "" {
+			continue
+		}
+		if b.Len()+len(text)+1 > maxChars {
+			break
+		}
+		b.WriteString(text)
+		b.WriteString("\n")
+	}
+	return b.String()
+}
+
 // promptInputs resolves the conversation's scenario, persona, and learner for
 // the session prompt. A missing scenario or persona is not fatal: log a
 // warning and fall back to the engine's generic free-talk prompt, because a
@@ -305,6 +416,15 @@ func (s *ConversationService) promptInputs(ctx context.Context, conv *models.Con
 	}
 	var scenarioBody voice.VoiceScenarioBody
 	_ = utils.Map(&scenarioBody, scenario)
+	var objs []models.ScenarioObjective
+	if len(conv.Objectives) > 0 {
+		_ = json.Unmarshal(conv.Objectives, &objs)
+	} else {
+		_ = json.Unmarshal(scenario.Objectives, &objs)
+	}
+	for _, o := range objs {
+		scenarioBody.Objectives = append(scenarioBody.Objectives, voice.VoiceObjectiveBody{ID: o.ID, Label: o.Label, Hint: o.Hint})
+	}
 	out := &scenarioBody
 	if scenario.PersonaID == nil || *scenario.PersonaID == "" {
 		return nil, out

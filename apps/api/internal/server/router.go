@@ -157,7 +157,7 @@ func NewRouter(db *gorm.DB, cfg config.Config) *gin.Engine {
 		v1.Use(middleware.BypassRateLimitForPrefix("/api/v1/internal/", global))
 	}
 	sessionLimiter := buildLimiter("session", cfg.RateLimit.SessionRate, "session")
-	conversations.RegisterRoutes(v1, db, cfg.Voice, sessionLimiter)
+	conversations.RegisterRoutes(v1, db, cfg.Voice, cfg.LLM, sessionLimiter)
 	lessons.RegisterRoutes(v1, db, cfg.Voice, cfg.LLM, cfg.Media, sessionLimiter)
 	attempts.RegisterRoutes(v1, db)
 	exams.RegisterRoutes(v1, db)

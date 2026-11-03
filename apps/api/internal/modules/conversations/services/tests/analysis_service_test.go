@@ -15,6 +15,7 @@ import (
 	"engflex-api/internal/common/enums"
 	"engflex-api/internal/database/models"
 	repomocks "engflex-api/internal/database/repositories/mocks"
+	llmmocks "engflex-api/internal/llm/mocks"
 	"engflex-api/internal/modules/conversations/services"
 	"engflex-api/internal/voice"
 	voicemocks "engflex-api/internal/voice/mocks"
@@ -36,7 +37,7 @@ func newAnalysisService(t *testing.T) (*services.ConversationService, *repomocks
 	feedback := repomocks.NewMockFeedbackRepository(t)
 	engine := voicemocks.NewMockVoiceClient(t)
 	pronounce := voicemocks.NewMockPronounceEngine(t)
-	return services.NewConversationService(repo, turnsRepo, engine, pronounce, 300, feedback, repomocks.NewMockScenarioRepository(t), repomocks.NewMockPersonaRepository(t)), repo, turnsRepo, engine, feedback
+	return services.NewConversationService(repo, turnsRepo, engine, pronounce, llmmocks.NewMockLLMClient(t), 300, feedback, repomocks.NewMockScenarioRepository(t), repomocks.NewMockPersonaRepository(t)), repo, turnsRepo, engine, feedback
 }
 
 const goodFeedback = `{"corrected":"I went yesterday.","spans":[],"relevance":{"status":"relevant","reason":null},"alternatives":{"language":null,"contextual":null},"tip":"past tense"}`

@@ -27,6 +27,7 @@ type AttemptRepository interface {
 	ListExamAttempts(ctx context.Context, userID string, limit, offset int) ([]*models.Attempt, error)
 	CountExamAttempts(ctx context.Context, userID string) (int64, error)
 	GetExamAttempt(ctx context.Context, userID, attemptID string) (*models.Attempt, error)
+	ListRecentByUser(ctx context.Context, userID string, limit int) ([]*models.Attempt, error)
 	WithTx(tx *gorm.DB) AttemptRepository
 }
 
@@ -120,6 +121,21 @@ func (r *attemptRepository) ListLessonAttempts(ctx context.Context, userID strin
 
 func (r *attemptRepository) WithTx(tx *gorm.DB) AttemptRepository {
 	return &attemptRepository{db: tx}
+}
+
+// ListRecentByUser returns the caller's newest attempts for the error
+// aggregation endpoints (query-light: capped by the caller).
+func (r *attemptRepository) ListRecentByUser(ctx context.Context, userID string, limit int) ([]*models.Attempt, error) {
+	if limit <= 0 {
+		limit = 50
+	}
+	var rows []*models.Attempt
+	err := r.db.WithContext(ctx).
+		Where("user_id = ?", userID).
+		Order("created_at DESC").
+		Limit(limit).
+		Find(&rows).Error
+	return rows, err
 }
 
 func (r *attemptRepository) ListCompletedVideo(ctx context.Context, userID string, videoExerciseIDs []string) ([]*models.Attempt, error) {

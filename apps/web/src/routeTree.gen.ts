@@ -28,6 +28,7 @@ import { Route as AdminVocabularyRouteImport } from './routes/admin/vocabulary'
 import { Route as SignInSplatRouteImport } from './routes/sign-in.$'
 import { Route as SignUpSplatRouteImport } from './routes/sign-up.$'
 import { Route as AppLessonsIndexRouteImport } from './routes/_app/lessons/index'
+import { Route as AppMistakesIndexRouteImport } from './routes/_app/mistakes/index'
 import { Route as AppPaymentsPricingRouteImport } from './routes/_app/payments/pricing'
 import { Route as AppStoriesIndexRouteImport } from './routes/_app/stories/index'
 import { Route as AppStoriesSlugRouteImport } from './routes/_app/stories/$slug'
@@ -45,9 +46,6 @@ import { Route as AppPaymentsVnpayReturnRouteImport } from './routes/_app/paymen
 import { Route as AppVideosVideoIdDictationRouteImport } from './routes/_app/videos/$videoId/dictation'
 import { Route as AppVideosVideoIdShadowingRouteImport } from './routes/_app/videos/$videoId/shadowing'
 import { Route as AppVideosCategoriesCategorySlugRouteImport } from './routes/_app/videos/categories/$categorySlug'
-import { Route as AppVocabularyDecksIndexRouteImport } from './routes/_app/vocabulary/decks/index'
-import { Route as AppVocabularyWordsIndexRouteImport } from './routes/_app/vocabulary/words/index'
-import { Route as AppVocabularyWordsItemIdRouteImport } from './routes/_app/vocabulary/words/$itemId'
 import { Route as AppVoiceHistoryIndexRouteImport } from './routes/_app/voice/history/index'
 import { Route as AppVoiceHistoryConversationIdRouteImport } from './routes/_app/voice/history/$conversationId'
 import { Route as AppVoiceRoomConversationIdRouteImport } from './routes/_app/voice/room/$conversationId'
@@ -56,11 +54,9 @@ import { Route as AppVoiceScenariosScenarioIdRouteImport } from './routes/_app/v
 import { Route as ApiVoiceConversationIdOfferRouteImport } from './routes/api/voice/$conversationId/offer'
 import { Route as ApiVoiceConversationIdStartRouteImport } from './routes/api/voice/$conversationId/start'
 import { Route as AppExamsToeicCategoryIdIndexRouteImport } from './routes/_app/exams/toeic/$categoryId/index'
-import { Route as AppVocabularyDecksDeckIdIndexRouteImport } from './routes/_app/vocabulary/decks/$deckId/index'
 import { Route as AppExamsToeicCategoryIdTestIdIndexRouteImport } from './routes/_app/exams/toeic/$categoryId/$testId/index'
 import { Route as AppExamsToeicSessionIdIndexRouteImport } from './routes/_app/exams/toeic/session/$id/index'
 import { Route as AppExamsToeicSessionIdResultRouteImport } from './routes/_app/exams/toeic/session/$id/result'
-import { Route as AppVocabularyDecksDeckIdWordsItemIdRouteImport } from './routes/_app/vocabulary/decks/$deckId/words/$itemId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -156,6 +152,11 @@ const AppLessonsIndexRoute = AppLessonsIndexRouteImport.update({
   path: '/lessons/',
   getParentRoute: () => AppRouteRoute,
 } as any)
+const AppMistakesIndexRoute = AppMistakesIndexRouteImport.update({
+  id: '/mistakes/',
+  path: '/mistakes/',
+  getParentRoute: () => AppRouteRoute,
+} as any)
 const AppPaymentsPricingRoute = AppPaymentsPricingRouteImport.update({
   id: '/payments/pricing',
   path: '/payments/pricing',
@@ -244,22 +245,6 @@ const AppVideosCategoriesCategorySlugRoute =
     path: '/videos/categories/$categorySlug',
     getParentRoute: () => AppRouteRoute,
   } as any)
-const AppVocabularyDecksIndexRoute = AppVocabularyDecksIndexRouteImport.update({
-  id: '/vocabulary/decks/',
-  path: '/vocabulary/decks/',
-  getParentRoute: () => AppRouteRoute,
-} as any)
-const AppVocabularyWordsIndexRoute = AppVocabularyWordsIndexRouteImport.update({
-  id: '/vocabulary/words/',
-  path: '/vocabulary/words/',
-  getParentRoute: () => AppRouteRoute,
-} as any)
-const AppVocabularyWordsItemIdRoute =
-  AppVocabularyWordsItemIdRouteImport.update({
-    id: '/vocabulary/words/$itemId',
-    path: '/vocabulary/words/$itemId',
-    getParentRoute: () => AppRouteRoute,
-  } as any)
 const AppVoiceHistoryIndexRoute = AppVoiceHistoryIndexRouteImport.update({
   id: '/voice/history/',
   path: '/voice/history/',
@@ -306,12 +291,6 @@ const AppExamsToeicCategoryIdIndexRoute =
     path: '/exams/toeic/$categoryId/',
     getParentRoute: () => AppRouteRoute,
   } as any)
-const AppVocabularyDecksDeckIdIndexRoute =
-  AppVocabularyDecksDeckIdIndexRouteImport.update({
-    id: '/vocabulary/decks/$deckId/',
-    path: '/vocabulary/decks/$deckId/',
-    getParentRoute: () => AppRouteRoute,
-  } as any)
 const AppExamsToeicCategoryIdTestIdIndexRoute =
   AppExamsToeicCategoryIdTestIdIndexRouteImport.update({
     id: '/exams/toeic/$categoryId/$testId/',
@@ -328,12 +307,6 @@ const AppExamsToeicSessionIdResultRoute =
   AppExamsToeicSessionIdResultRouteImport.update({
     id: '/exams/toeic/session/$id/result',
     path: '/exams/toeic/session/$id/result',
-    getParentRoute: () => AppRouteRoute,
-  } as any)
-const AppVocabularyDecksDeckIdWordsItemIdRoute =
-  AppVocabularyDecksDeckIdWordsItemIdRouteImport.update({
-    id: '/vocabulary/decks/$deckId/words/$itemId',
-    path: '/vocabulary/decks/$deckId/words/$itemId',
     getParentRoute: () => AppRouteRoute,
   } as any)
 
@@ -361,6 +334,7 @@ export interface FileRoutesByFullPath {
   '/voice/preview': typeof AppVoicePreviewRoute
   '/api/media/$': typeof ApiMediaSplatRoute
   '/lessons/': typeof AppLessonsIndexRoute
+  '/mistakes/': typeof AppMistakesIndexRoute
   '/stories/': typeof AppStoriesIndexRoute
   '/videos/': typeof AppVideosIndexRoute
   '/vocabulary/': typeof AppVocabularyIndexRoute
@@ -371,7 +345,6 @@ export interface FileRoutesByFullPath {
   '/videos/$videoId/dictation': typeof AppVideosVideoIdDictationRoute
   '/videos/$videoId/shadowing': typeof AppVideosVideoIdShadowingRoute
   '/videos/categories/$categorySlug': typeof AppVideosCategoriesCategorySlugRoute
-  '/vocabulary/words/$itemId': typeof AppVocabularyWordsItemIdRoute
   '/voice/history/$conversationId': typeof AppVoiceHistoryConversationIdRoute
   '/voice/room/$conversationId': typeof AppVoiceRoomConversationIdRoute
   '/voice/scenarios/$scenarioId': typeof AppVoiceScenariosScenarioIdRoute
@@ -379,14 +352,10 @@ export interface FileRoutesByFullPath {
   '/api/voice/$conversationId/start': typeof ApiVoiceConversationIdStartRoute
   '/exams/toeic/': typeof AppExamsToeicIndexRoute
   '/lessons/$slug/': typeof AppLessonsSlugIndexRoute
-  '/vocabulary/decks/': typeof AppVocabularyDecksIndexRoute
-  '/vocabulary/words/': typeof AppVocabularyWordsIndexRoute
   '/voice/history/': typeof AppVoiceHistoryIndexRoute
   '/voice/scenarios/': typeof AppVoiceScenariosIndexRoute
   '/exams/toeic/$categoryId/': typeof AppExamsToeicCategoryIdIndexRoute
-  '/vocabulary/decks/$deckId/': typeof AppVocabularyDecksDeckIdIndexRoute
   '/exams/toeic/session/$id/result': typeof AppExamsToeicSessionIdResultRoute
-  '/vocabulary/decks/$deckId/words/$itemId': typeof AppVocabularyDecksDeckIdWordsItemIdRoute
   '/exams/toeic/$categoryId/$testId/': typeof AppExamsToeicCategoryIdTestIdIndexRoute
   '/exams/toeic/session/$id/': typeof AppExamsToeicSessionIdIndexRoute
 }
@@ -413,6 +382,7 @@ export interface FileRoutesByTo {
   '/voice/preview': typeof AppVoicePreviewRoute
   '/api/media/$': typeof ApiMediaSplatRoute
   '/lessons': typeof AppLessonsIndexRoute
+  '/mistakes': typeof AppMistakesIndexRoute
   '/stories': typeof AppStoriesIndexRoute
   '/videos': typeof AppVideosIndexRoute
   '/vocabulary': typeof AppVocabularyIndexRoute
@@ -423,7 +393,6 @@ export interface FileRoutesByTo {
   '/videos/$videoId/dictation': typeof AppVideosVideoIdDictationRoute
   '/videos/$videoId/shadowing': typeof AppVideosVideoIdShadowingRoute
   '/videos/categories/$categorySlug': typeof AppVideosCategoriesCategorySlugRoute
-  '/vocabulary/words/$itemId': typeof AppVocabularyWordsItemIdRoute
   '/voice/history/$conversationId': typeof AppVoiceHistoryConversationIdRoute
   '/voice/room/$conversationId': typeof AppVoiceRoomConversationIdRoute
   '/voice/scenarios/$scenarioId': typeof AppVoiceScenariosScenarioIdRoute
@@ -431,14 +400,10 @@ export interface FileRoutesByTo {
   '/api/voice/$conversationId/start': typeof ApiVoiceConversationIdStartRoute
   '/exams/toeic': typeof AppExamsToeicIndexRoute
   '/lessons/$slug': typeof AppLessonsSlugIndexRoute
-  '/vocabulary/decks': typeof AppVocabularyDecksIndexRoute
-  '/vocabulary/words': typeof AppVocabularyWordsIndexRoute
   '/voice/history': typeof AppVoiceHistoryIndexRoute
   '/voice/scenarios': typeof AppVoiceScenariosIndexRoute
   '/exams/toeic/$categoryId': typeof AppExamsToeicCategoryIdIndexRoute
-  '/vocabulary/decks/$deckId': typeof AppVocabularyDecksDeckIdIndexRoute
   '/exams/toeic/session/$id/result': typeof AppExamsToeicSessionIdResultRoute
-  '/vocabulary/decks/$deckId/words/$itemId': typeof AppVocabularyDecksDeckIdWordsItemIdRoute
   '/exams/toeic/$categoryId/$testId': typeof AppExamsToeicCategoryIdTestIdIndexRoute
   '/exams/toeic/session/$id': typeof AppExamsToeicSessionIdIndexRoute
 }
@@ -468,6 +433,7 @@ export interface FileRoutesById {
   '/_app/voice/preview': typeof AppVoicePreviewRoute
   '/api/media/$': typeof ApiMediaSplatRoute
   '/_app/lessons/': typeof AppLessonsIndexRoute
+  '/_app/mistakes/': typeof AppMistakesIndexRoute
   '/_app/stories/': typeof AppStoriesIndexRoute
   '/_app/videos/': typeof AppVideosIndexRoute
   '/_app/vocabulary/': typeof AppVocabularyIndexRoute
@@ -478,7 +444,6 @@ export interface FileRoutesById {
   '/_app/videos/$videoId/dictation': typeof AppVideosVideoIdDictationRoute
   '/_app/videos/$videoId/shadowing': typeof AppVideosVideoIdShadowingRoute
   '/_app/videos/categories/$categorySlug': typeof AppVideosCategoriesCategorySlugRoute
-  '/_app/vocabulary/words/$itemId': typeof AppVocabularyWordsItemIdRoute
   '/_app/voice/history/$conversationId': typeof AppVoiceHistoryConversationIdRoute
   '/_app/voice/room/$conversationId': typeof AppVoiceRoomConversationIdRoute
   '/_app/voice/scenarios/$scenarioId': typeof AppVoiceScenariosScenarioIdRoute
@@ -486,14 +451,10 @@ export interface FileRoutesById {
   '/api/voice/$conversationId/start': typeof ApiVoiceConversationIdStartRoute
   '/_app/exams/toeic/': typeof AppExamsToeicIndexRoute
   '/_app/lessons/$slug/': typeof AppLessonsSlugIndexRoute
-  '/_app/vocabulary/decks/': typeof AppVocabularyDecksIndexRoute
-  '/_app/vocabulary/words/': typeof AppVocabularyWordsIndexRoute
   '/_app/voice/history/': typeof AppVoiceHistoryIndexRoute
   '/_app/voice/scenarios/': typeof AppVoiceScenariosIndexRoute
   '/_app/exams/toeic/$categoryId/': typeof AppExamsToeicCategoryIdIndexRoute
-  '/_app/vocabulary/decks/$deckId/': typeof AppVocabularyDecksDeckIdIndexRoute
   '/_app/exams/toeic/session/$id/result': typeof AppExamsToeicSessionIdResultRoute
-  '/_app/vocabulary/decks/$deckId/words/$itemId': typeof AppVocabularyDecksDeckIdWordsItemIdRoute
   '/_app/exams/toeic/$categoryId/$testId/': typeof AppExamsToeicCategoryIdTestIdIndexRoute
   '/_app/exams/toeic/session/$id/': typeof AppExamsToeicSessionIdIndexRoute
 }
@@ -523,6 +484,7 @@ export interface FileRouteTypes {
     | '/voice/preview'
     | '/api/media/$'
     | '/lessons/'
+    | '/mistakes/'
     | '/stories/'
     | '/videos/'
     | '/vocabulary/'
@@ -533,7 +495,6 @@ export interface FileRouteTypes {
     | '/videos/$videoId/dictation'
     | '/videos/$videoId/shadowing'
     | '/videos/categories/$categorySlug'
-    | '/vocabulary/words/$itemId'
     | '/voice/history/$conversationId'
     | '/voice/room/$conversationId'
     | '/voice/scenarios/$scenarioId'
@@ -541,14 +502,10 @@ export interface FileRouteTypes {
     | '/api/voice/$conversationId/start'
     | '/exams/toeic/'
     | '/lessons/$slug/'
-    | '/vocabulary/decks/'
-    | '/vocabulary/words/'
     | '/voice/history/'
     | '/voice/scenarios/'
     | '/exams/toeic/$categoryId/'
-    | '/vocabulary/decks/$deckId/'
     | '/exams/toeic/session/$id/result'
-    | '/vocabulary/decks/$deckId/words/$itemId'
     | '/exams/toeic/$categoryId/$testId/'
     | '/exams/toeic/session/$id/'
   fileRoutesByTo: FileRoutesByTo
@@ -575,6 +532,7 @@ export interface FileRouteTypes {
     | '/voice/preview'
     | '/api/media/$'
     | '/lessons'
+    | '/mistakes'
     | '/stories'
     | '/videos'
     | '/vocabulary'
@@ -585,7 +543,6 @@ export interface FileRouteTypes {
     | '/videos/$videoId/dictation'
     | '/videos/$videoId/shadowing'
     | '/videos/categories/$categorySlug'
-    | '/vocabulary/words/$itemId'
     | '/voice/history/$conversationId'
     | '/voice/room/$conversationId'
     | '/voice/scenarios/$scenarioId'
@@ -593,14 +550,10 @@ export interface FileRouteTypes {
     | '/api/voice/$conversationId/start'
     | '/exams/toeic'
     | '/lessons/$slug'
-    | '/vocabulary/decks'
-    | '/vocabulary/words'
     | '/voice/history'
     | '/voice/scenarios'
     | '/exams/toeic/$categoryId'
-    | '/vocabulary/decks/$deckId'
     | '/exams/toeic/session/$id/result'
-    | '/vocabulary/decks/$deckId/words/$itemId'
     | '/exams/toeic/$categoryId/$testId'
     | '/exams/toeic/session/$id'
   id:
@@ -629,6 +582,7 @@ export interface FileRouteTypes {
     | '/_app/voice/preview'
     | '/api/media/$'
     | '/_app/lessons/'
+    | '/_app/mistakes/'
     | '/_app/stories/'
     | '/_app/videos/'
     | '/_app/vocabulary/'
@@ -639,7 +593,6 @@ export interface FileRouteTypes {
     | '/_app/videos/$videoId/dictation'
     | '/_app/videos/$videoId/shadowing'
     | '/_app/videos/categories/$categorySlug'
-    | '/_app/vocabulary/words/$itemId'
     | '/_app/voice/history/$conversationId'
     | '/_app/voice/room/$conversationId'
     | '/_app/voice/scenarios/$scenarioId'
@@ -647,14 +600,10 @@ export interface FileRouteTypes {
     | '/api/voice/$conversationId/start'
     | '/_app/exams/toeic/'
     | '/_app/lessons/$slug/'
-    | '/_app/vocabulary/decks/'
-    | '/_app/vocabulary/words/'
     | '/_app/voice/history/'
     | '/_app/voice/scenarios/'
     | '/_app/exams/toeic/$categoryId/'
-    | '/_app/vocabulary/decks/$deckId/'
     | '/_app/exams/toeic/session/$id/result'
-    | '/_app/vocabulary/decks/$deckId/words/$itemId'
     | '/_app/exams/toeic/$categoryId/$testId/'
     | '/_app/exams/toeic/session/$id/'
   fileRoutesById: FileRoutesById
@@ -810,6 +759,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppLessonsIndexRouteImport
       parentRoute: typeof AppRouteRoute
     }
+    '/_app/mistakes/': {
+      id: '/_app/mistakes/'
+      path: '/mistakes'
+      fullPath: '/mistakes/'
+      preLoaderRoute: typeof AppMistakesIndexRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
     '/_app/payments/pricing': {
       id: '/_app/payments/pricing'
       path: '/payments/pricing'
@@ -929,27 +885,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppVideosCategoriesCategorySlugRouteImport
       parentRoute: typeof AppRouteRoute
     }
-    '/_app/vocabulary/decks/': {
-      id: '/_app/vocabulary/decks/'
-      path: '/vocabulary/decks'
-      fullPath: '/vocabulary/decks/'
-      preLoaderRoute: typeof AppVocabularyDecksIndexRouteImport
-      parentRoute: typeof AppRouteRoute
-    }
-    '/_app/vocabulary/words/': {
-      id: '/_app/vocabulary/words/'
-      path: '/vocabulary/words'
-      fullPath: '/vocabulary/words/'
-      preLoaderRoute: typeof AppVocabularyWordsIndexRouteImport
-      parentRoute: typeof AppRouteRoute
-    }
-    '/_app/vocabulary/words/$itemId': {
-      id: '/_app/vocabulary/words/$itemId'
-      path: '/vocabulary/words/$itemId'
-      fullPath: '/vocabulary/words/$itemId'
-      preLoaderRoute: typeof AppVocabularyWordsItemIdRouteImport
-      parentRoute: typeof AppRouteRoute
-    }
     '/_app/voice/history/': {
       id: '/_app/voice/history/'
       path: '/voice/history'
@@ -1006,13 +941,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppExamsToeicCategoryIdIndexRouteImport
       parentRoute: typeof AppRouteRoute
     }
-    '/_app/vocabulary/decks/$deckId/': {
-      id: '/_app/vocabulary/decks/$deckId/'
-      path: '/vocabulary/decks/$deckId'
-      fullPath: '/vocabulary/decks/$deckId/'
-      preLoaderRoute: typeof AppVocabularyDecksDeckIdIndexRouteImport
-      parentRoute: typeof AppRouteRoute
-    }
     '/_app/exams/toeic/$categoryId/$testId/': {
       id: '/_app/exams/toeic/$categoryId/$testId/'
       path: '/exams/toeic/$categoryId/$testId'
@@ -1034,13 +962,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppExamsToeicSessionIdResultRouteImport
       parentRoute: typeof AppRouteRoute
     }
-    '/_app/vocabulary/decks/$deckId/words/$itemId': {
-      id: '/_app/vocabulary/decks/$deckId/words/$itemId'
-      path: '/vocabulary/decks/$deckId/words/$itemId'
-      fullPath: '/vocabulary/decks/$deckId/words/$itemId'
-      preLoaderRoute: typeof AppVocabularyDecksDeckIdWordsItemIdRouteImport
-      parentRoute: typeof AppRouteRoute
-    }
   }
 }
 
@@ -1051,6 +972,7 @@ interface AppRouteRouteChildren {
   AppVocabularyItemIdRoute: typeof AppVocabularyItemIdRoute
   AppVoicePreviewRoute: typeof AppVoicePreviewRoute
   AppLessonsIndexRoute: typeof AppLessonsIndexRoute
+  AppMistakesIndexRoute: typeof AppMistakesIndexRoute
   AppStoriesIndexRoute: typeof AppStoriesIndexRoute
   AppVideosIndexRoute: typeof AppVideosIndexRoute
   AppVocabularyIndexRoute: typeof AppVocabularyIndexRoute
@@ -1061,20 +983,15 @@ interface AppRouteRouteChildren {
   AppVideosVideoIdDictationRoute: typeof AppVideosVideoIdDictationRoute
   AppVideosVideoIdShadowingRoute: typeof AppVideosVideoIdShadowingRoute
   AppVideosCategoriesCategorySlugRoute: typeof AppVideosCategoriesCategorySlugRoute
-  AppVocabularyWordsItemIdRoute: typeof AppVocabularyWordsItemIdRoute
   AppVoiceHistoryConversationIdRoute: typeof AppVoiceHistoryConversationIdRoute
   AppVoiceRoomConversationIdRoute: typeof AppVoiceRoomConversationIdRoute
   AppVoiceScenariosScenarioIdRoute: typeof AppVoiceScenariosScenarioIdRoute
   AppExamsToeicIndexRoute: typeof AppExamsToeicIndexRoute
   AppLessonsSlugIndexRoute: typeof AppLessonsSlugIndexRoute
-  AppVocabularyDecksIndexRoute: typeof AppVocabularyDecksIndexRoute
-  AppVocabularyWordsIndexRoute: typeof AppVocabularyWordsIndexRoute
   AppVoiceHistoryIndexRoute: typeof AppVoiceHistoryIndexRoute
   AppVoiceScenariosIndexRoute: typeof AppVoiceScenariosIndexRoute
   AppExamsToeicCategoryIdIndexRoute: typeof AppExamsToeicCategoryIdIndexRoute
-  AppVocabularyDecksDeckIdIndexRoute: typeof AppVocabularyDecksDeckIdIndexRoute
   AppExamsToeicSessionIdResultRoute: typeof AppExamsToeicSessionIdResultRoute
-  AppVocabularyDecksDeckIdWordsItemIdRoute: typeof AppVocabularyDecksDeckIdWordsItemIdRoute
   AppExamsToeicCategoryIdTestIdIndexRoute: typeof AppExamsToeicCategoryIdTestIdIndexRoute
   AppExamsToeicSessionIdIndexRoute: typeof AppExamsToeicSessionIdIndexRoute
 }
@@ -1086,6 +1003,7 @@ const AppRouteRouteChildren: AppRouteRouteChildren = {
   AppVocabularyItemIdRoute: AppVocabularyItemIdRoute,
   AppVoicePreviewRoute: AppVoicePreviewRoute,
   AppLessonsIndexRoute: AppLessonsIndexRoute,
+  AppMistakesIndexRoute: AppMistakesIndexRoute,
   AppStoriesIndexRoute: AppStoriesIndexRoute,
   AppVideosIndexRoute: AppVideosIndexRoute,
   AppVocabularyIndexRoute: AppVocabularyIndexRoute,
@@ -1096,21 +1014,15 @@ const AppRouteRouteChildren: AppRouteRouteChildren = {
   AppVideosVideoIdDictationRoute: AppVideosVideoIdDictationRoute,
   AppVideosVideoIdShadowingRoute: AppVideosVideoIdShadowingRoute,
   AppVideosCategoriesCategorySlugRoute: AppVideosCategoriesCategorySlugRoute,
-  AppVocabularyWordsItemIdRoute: AppVocabularyWordsItemIdRoute,
   AppVoiceHistoryConversationIdRoute: AppVoiceHistoryConversationIdRoute,
   AppVoiceRoomConversationIdRoute: AppVoiceRoomConversationIdRoute,
   AppVoiceScenariosScenarioIdRoute: AppVoiceScenariosScenarioIdRoute,
   AppExamsToeicIndexRoute: AppExamsToeicIndexRoute,
   AppLessonsSlugIndexRoute: AppLessonsSlugIndexRoute,
-  AppVocabularyDecksIndexRoute: AppVocabularyDecksIndexRoute,
-  AppVocabularyWordsIndexRoute: AppVocabularyWordsIndexRoute,
   AppVoiceHistoryIndexRoute: AppVoiceHistoryIndexRoute,
   AppVoiceScenariosIndexRoute: AppVoiceScenariosIndexRoute,
   AppExamsToeicCategoryIdIndexRoute: AppExamsToeicCategoryIdIndexRoute,
-  AppVocabularyDecksDeckIdIndexRoute: AppVocabularyDecksDeckIdIndexRoute,
   AppExamsToeicSessionIdResultRoute: AppExamsToeicSessionIdResultRoute,
-  AppVocabularyDecksDeckIdWordsItemIdRoute:
-    AppVocabularyDecksDeckIdWordsItemIdRoute,
   AppExamsToeicCategoryIdTestIdIndexRoute:
     AppExamsToeicCategoryIdTestIdIndexRoute,
   AppExamsToeicSessionIdIndexRoute: AppExamsToeicSessionIdIndexRoute,
@@ -1162,3 +1074,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

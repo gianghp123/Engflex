@@ -96,6 +96,27 @@ export const ConversationStatusFailed = "failed";
 export type ConversationStatus = typeof ConversationStatusPending | typeof ConversationStatusLive | typeof ConversationStatusEnded | typeof ConversationStatusFailed;
 
 //////////
+// source: error_type.go
+
+/**
+ * ErrorType is the learner-facing grammar/lexis error taxonomy carried on
+ * every feedback span (conversation AnalysisSpan, writing Span). It answers
+ * "what am I weak at" for the dashboard aggregation (Plan 01, GAP-01).
+ */
+export const ErrorTypeVerbTense = "verb_tense";
+export const ErrorTypeSubjectVerb = "subject_verb_agreement";
+export const ErrorTypeArticle = "article";
+export const ErrorTypePreposition = "preposition";
+export const ErrorTypePlural = "plural";
+export const ErrorTypeWordOrder = "word_order";
+export const ErrorTypeSpelling = "spelling";
+export const ErrorTypePunctuation = "punctuation";
+export const ErrorTypeLexicalChoice = "lexical_choice";
+export const ErrorTypeCollocation = "collocation";
+export const ErrorTypeOther = "other";
+export type ErrorType = typeof ErrorTypeVerbTense | typeof ErrorTypeSubjectVerb | typeof ErrorTypeArticle | typeof ErrorTypePreposition | typeof ErrorTypePlural | typeof ErrorTypeWordOrder | typeof ErrorTypeSpelling | typeof ErrorTypePunctuation | typeof ErrorTypeLexicalChoice | typeof ErrorTypeCollocation | typeof ErrorTypeOther;
+
+//////////
 // source: exam_mode.go
 
 /**

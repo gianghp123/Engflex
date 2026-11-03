@@ -314,3 +314,19 @@ func (h *LessonActivityController) ScoreWriting(c *gin.Context) {
 	}
 	common.OK(c, "writing scored", res)
 }
+
+// RedactWriting godoc
+// @Summary      Delete stored writing text on one attempt
+// @Tags         lesson-attempts
+// @Security     BearerAuth
+// @Produce      json
+// @Param        attemptId path string true "attempt id"
+// @Success      200 {object} common.ApiResponse
+// @Router       /lesson-activities/attempts/{attemptId}/writing [delete]
+func (h *LessonActivityController) RedactWriting(c *gin.Context) {
+	if _, err := h.activities.RedactWriting(c.Request.Context(), middleware.UserID(c), c.Param("attemptId")); err != nil {
+		common.Fail(c, err)
+		return
+	}
+	common.OK(c, "writing redacted", nil)
+}

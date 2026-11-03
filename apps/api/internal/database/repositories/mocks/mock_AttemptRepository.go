@@ -906,6 +906,80 @@ func (_c *MockAttemptRepository_ListLessonAttempts_Call) RunAndReturn(run func(c
 	return _c
 }
 
+// ListRecentByUser provides a mock function for the type MockAttemptRepository
+func (_mock *MockAttemptRepository) ListRecentByUser(ctx context.Context, userID string, limit int) ([]*models.Attempt, error) {
+	ret := _mock.Called(ctx, userID, limit)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ListRecentByUser")
+	}
+
+	var r0 []*models.Attempt
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, int) ([]*models.Attempt, error)); ok {
+		return returnFunc(ctx, userID, limit)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, int) []*models.Attempt); ok {
+		r0 = returnFunc(ctx, userID, limit)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.Attempt)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, int) error); ok {
+		r1 = returnFunc(ctx, userID, limit)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockAttemptRepository_ListRecentByUser_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ListRecentByUser'
+type MockAttemptRepository_ListRecentByUser_Call struct {
+	*mock.Call
+}
+
+// ListRecentByUser is a helper method to define mock.On call
+//   - ctx context.Context
+//   - userID string
+//   - limit int
+func (_e *MockAttemptRepository_Expecter) ListRecentByUser(ctx any, userID any, limit any) *MockAttemptRepository_ListRecentByUser_Call {
+	return &MockAttemptRepository_ListRecentByUser_Call{Call: _e.mock.On("ListRecentByUser", ctx, userID, limit)}
+}
+
+func (_c *MockAttemptRepository_ListRecentByUser_Call) Run(run func(ctx context.Context, userID string, limit int)) *MockAttemptRepository_ListRecentByUser_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 int
+		if args[2] != nil {
+			arg2 = args[2].(int)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockAttemptRepository_ListRecentByUser_Call) Return(attempts []*models.Attempt, err error) *MockAttemptRepository_ListRecentByUser_Call {
+	_c.Call.Return(attempts, err)
+	return _c
+}
+
+func (_c *MockAttemptRepository_ListRecentByUser_Call) RunAndReturn(run func(ctx context.Context, userID string, limit int) ([]*models.Attempt, error)) *MockAttemptRepository_ListRecentByUser_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // SaveExamAttempt provides a mock function for the type MockAttemptRepository
 func (_mock *MockAttemptRepository) SaveExamAttempt(context1 context.Context, attempt *models.Attempt, n int) error {
 	ret := _mock.Called(context1, attempt, n)

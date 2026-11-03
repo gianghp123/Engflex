@@ -2,6 +2,8 @@ package services
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -40,6 +42,7 @@ type LessonActivityService interface {
 	GetOpenProgress(ctx context.Context, userID, lessonID string) (*responses.AttemptProgress, error)
 	AttachPartResult(ctx context.Context, userID, attemptID, activityID string, entry PartEntry) (*models.Attempt, error)
 	ScoreWriting(ctx context.Context, userID, id, attemptID, text string) (*responses.WritingScoreResponse, error)
+	RedactWriting(ctx context.Context, userID, attemptID string) (*models.Attempt, error)
 	Create(ctx context.Context, req requests.CreateLessonActivity) (*models.LessonActivity, error)
 	Update(ctx context.Context, id string, req requests.UpdateLessonActivity) (*models.LessonActivity, error)
 	Delete(ctx context.Context, id string) error
@@ -437,7 +440,9 @@ func (s *lessonActivityService) ScoreWriting(ctx context.Context, userID, id, at
 		return nil, common.ServiceUnavailable("scoring unavailable")
 	}
 	score := coverageScore(scored.Task.Verdicts)
-	attached, err := s.AttachPartResult(ctx, userID, attemptID, id, PartEntry{Type: enums.AttemptTypeWriting, Score: score, Detail: scored})
+	rawHash := sha256.Sum256([]byte(trimmed))
+	detail := WritingPartDetail{Feedback: scored, RawHash: hex.EncodeToString(rawHash[:]), WordCount: words, RawText: trimmed}
+	attached, err := s.AttachPartResult(ctx, userID, attemptID, id, PartEntry{Type: enums.AttemptTypeWriting, Score: score, Detail: detail})
 	if err != nil {
 		return nil, err
 	}
@@ -457,6 +462,62 @@ func (s *lessonActivityService) ScoreWriting(ctx context.Context, userID, id, at
 	dto.Attempt = responses.AttemptSummary{ID: attached.ID, Status: string(attached.Status), Score: attached.Score}
 	slog.InfoContext(ctx, "writing scored", "activityID", id, "score", score)
 	return &dto, nil
+}
+
+// RedactWriting clears stored learner prose from every writing part on the
+// attempt, keeping the feedback and hash so aggregates still work. The
+// attempt must be owned by the caller; closed attempts redact too (a delete
+// is a delete, whatever the run state).
+func (s *lessonActivityService) RedactWriting(ctx context.Context, userID, attemptID string) (*models.Attempt, error) {
+	if _, err := uuid.Parse(attemptID); err != nil {
+		return nil, common.BadRequest("invalid attempt id")
+	}
+	m, err := s.attempts.GetByID(ctx, attemptID)
+	if err != nil {
+		appErr := common.FromDBError(err, "attempt")
+		logger.Report(ctx, "redact writing load failed", appErr, "attemptID", attemptID)
+		return nil, appErr
+	}
+	if m.UserID != userID {
+		return nil, common.NotFound("attempt not found")
+	}
+	parts := decodePartMap(m)
+	redacted := false
+	for activityID, entry := range parts {
+		if entry.Type != enums.AttemptTypeWriting {
+			continue
+		}
+		raw, merr := json.Marshal(entry.Detail)
+		if merr != nil {
+			continue
+		}
+		var detail WritingPartDetail
+		if uerr := json.Unmarshal(raw, &detail); uerr != nil {
+			continue
+		}
+		if detail.RawText == "" {
+			continue
+		}
+		detail.RawText = ""
+		parts[activityID] = PartEntry{Type: entry.Type, Score: entry.Score, Detail: detail}
+		redacted = true
+	}
+	if !redacted {
+		return m, nil
+	}
+	encoded, err := encodePartMap(parts)
+	if err != nil {
+		logger.Report(ctx, "redact encode failed", common.Internal(), "attemptID", attemptID)
+		return nil, common.Internal()
+	}
+	m.Result = encoded
+	if err := s.attempts.Update(ctx, m); err != nil {
+		appErr := common.FromDBError(err, "attempt")
+		logger.Report(ctx, "redact save failed", appErr, "attemptID", attemptID)
+		return nil, appErr
+	}
+	slog.InfoContext(ctx, "writing redacted", "attemptID", attemptID)
+	return m, nil
 }
 
 // validateActivityConfig parses the raw config against the shape its type

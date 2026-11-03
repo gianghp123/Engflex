@@ -40,7 +40,35 @@ export interface Conversation {
   startedAt: string /* RFC3339 */;
   endedAt?: string /* RFC3339 */;
   durationSec?: number /* int */;
+  objectives: ConversationObjective[];
+  summary?: ConversationSummaryDTO;
   turns: Turn[];
+}
+/**
+ * ConversationObjective is one roleplay task from the objectives snapshot.
+ * Field names mirror models.ScenarioObjective so utils.Map copies whole.
+ */
+export interface ConversationObjective {
+  id: number /* int */;
+  label: string;
+  hint: string;
+}
+/**
+ * ObjectiveResult is one objective's post-session verdict.
+ * Field names mirror models.ObjectiveResult.
+ */
+export interface ObjectiveResult {
+  id: number /* int */;
+  status: string;
+  evidence: string;
+}
+/**
+ * ConversationSummaryDTO is the stored post-session analysis.
+ */
+export interface ConversationSummaryDTO {
+  takeaways: string[];
+  objectives: ObjectiveResult[];
+  levelNote: string;
 }
 
 //////////
@@ -99,6 +127,7 @@ export interface AnalysisSpan {
   text: string;
   occurrence: number /* int */;
   status: SpanStatus;
+  errorType: ErrorType;
   correction: string;
   reason: string;
 }

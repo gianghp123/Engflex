@@ -5,6 +5,7 @@ import type {
 } from "@engflex/contracts";
 import { cn } from "cn";
 import { Copy } from "lucide-react";
+import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
 import { m } from "#/paraglide/messages";
 
@@ -202,6 +203,11 @@ function SpanSection({
 							key={`${span.text}-${span.occurrence}`}
 							className="flex flex-col gap-0.5 text-[15px] font-medium text-foreground"
 						>
+							{span.errorType ? (
+								<Badge variant="outline" className="self-start">
+									{span.errorType}
+								</Badge>
+							) : null}
 							<span>
 								<span className="text-ai-coral line-through opacity-85">
 									{span.text}

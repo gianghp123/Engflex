@@ -9,6 +9,7 @@ import (
 
 	"engflex-api/config"
 	"engflex-api/internal/database/repositories"
+	"engflex-api/internal/llm"
 	"engflex-api/internal/modules/conversations/controllers"
 	"engflex-api/internal/modules/conversations/services"
 	"engflex-api/internal/server/middleware"
@@ -19,13 +20,13 @@ import (
 // sessionLimiter is an optional IP-keyed throttle (nil = disabled) applied
 // BEFORE auth on engine-costly routes (sona parity: limiter precedes auth
 // because the userID is unavailable pre-auth).
-func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB, cfg config.VoiceConfig, sessionLimiter gin.HandlerFunc) {
+func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB, cfg config.VoiceConfig, llmCfg config.LLMConfig, sessionLimiter gin.HandlerFunc) {
 	repo := repositories.NewConversationRepository(db)
 	turns := repositories.NewConversationTurnRepository(db)
 	feedbacks := repositories.NewFeedbackRepository(db)
 	engine := voice.NewHTTPVoiceClient(cfg)
 	pronounce := voice.NewHTTPPronounceEngine(cfg.PronounceURL, cfg.PronounceTimeout)
-	svc := services.NewConversationService(repo, turns, engine, pronounce, cfg.MaxDurationSec, feedbacks,
+	svc := services.NewConversationService(repo, turns, engine, pronounce, llm.NewHTTPLLMClient(llmCfg), cfg.MaxDurationSec, feedbacks,
 		repositories.NewScenarioRepository(db), repositories.NewPersonaRepository(db))
 	ctl := controllers.NewConversationController(svc, cfg.MaxDurationSec)
 
@@ -42,6 +43,7 @@ func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB, cfg config.VoiceConfig, se
 	g.POST("/:id/offer", append(strictAuth, ctl.Offer)...)
 	g.PATCH("/:id/offer", append(strictAuth, ctl.Offer)...)
 	g.POST("/:id/end", middleware.RequireAuth(), ctl.End)
+	g.POST("/:id/summarize", middleware.RequireAuth(), ctl.Summarize)
 	g.POST("/:id/turns/:position/analyze", append(strictAuth, ctl.AnalyzeTurn)...)
 	// One command for the correction modal: the engine owns the reviewed turn.
 	// Retake audio uploads here; gin buffers the multipart file in memory, so

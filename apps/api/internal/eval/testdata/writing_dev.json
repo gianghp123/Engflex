@@ -1,0 +1,22 @@
+[
+  {"text": "I have went to school yesterday.", "spans": [{"text": "have went", "occurrence": 1, "errorType": "verb_tense", "correction": "went", "reason": "simple past for finished time"}], "expectedErrorTypes": ["verb_tense"]},
+  {"text": "He go to work every day.", "spans": [{"text": "go", "occurrence": 1, "errorType": "subject_verb_agreement", "correction": "goes", "reason": "third person singular"}], "expectedErrorTypes": ["subject_verb_agreement"]},
+  {"text": "I saw a elephant.", "spans": [{"text": "a elephant", "occurrence": 1, "errorType": "article", "correction": "an elephant", "reason": "vowel sound"}], "expectedErrorTypes": ["article"]},
+  {"text": "She is married with him.", "spans": [{"text": "with", "occurrence": 1, "errorType": "preposition", "correction": "to", "reason": "married to"}], "expectedErrorTypes": ["preposition"]},
+  {"text": "I have two childs.", "spans": [{"text": "childs", "occurrence": 1, "errorType": "plural", "correction": "children", "reason": "irregular plural"}], "expectedErrorTypes": ["plural"]},
+  {"text": "Where you go yesterday?", "spans": [{"text": "Where you go", "occurrence": 1, "errorType": "word_order", "correction": "Where did you go", "reason": "question word order"}], "expectedErrorTypes": ["word_order"]},
+  {"text": "I recieve the letter.", "spans": [{"text": "recieve", "occurrence": 1, "errorType": "spelling", "correction": "receive", "reason": "i before e"}], "expectedErrorTypes": ["spelling"]},
+  {"text": "Lets go home.", "spans": [{"text": "Lets", "occurrence": 1, "errorType": "punctuation", "correction": "Let's", "reason": "contraction apostrophe"}], "expectedErrorTypes": ["punctuation"]},
+  {"text": "I made a mistake about it.", "spans": [{"text": "about", "occurrence": 1, "errorType": "preposition", "correction": "on", "reason": "mistake collocation"}], "expectedErrorTypes": ["preposition"]},
+  {"text": "The informations are useful.", "spans": [{"text": "informations", "occurrence": 1, "errorType": "plural", "correction": "information", "reason": "uncountable"}], "expectedErrorTypes": ["plural"]},
+  {"text": "She don't like coffee.", "spans": [{"text": "don't", "occurrence": 1, "errorType": "subject_verb_agreement", "correction": "doesn't", "reason": "third person"}], "expectedErrorTypes": ["subject_verb_agreement"]},
+  {"text": "I am agree with you.", "spans": [{"text": "am agree", "occurrence": 1, "errorType": "verb_tense", "correction": "agree", "reason": "stative verb"}], "expectedErrorTypes": ["verb_tense"]},
+  {"text": "He gave me an advice.", "spans": [{"text": "an advice", "occurrence": 1, "errorType": "article", "correction": "some advice", "reason": "uncountable"}], "expectedErrorTypes": ["article"]},
+  {"text": "I will explain you the rule.", "spans": [{"text": "explain you", "occurrence": 1, "errorType": "word_order", "correction": "explain the rule to you", "reason": "ditransitive order"}], "expectedErrorTypes": ["word_order"]},
+  {"text": "Its a nice day.", "spans": [{"text": "Its", "occurrence": 1, "errorType": "spelling", "correction": "It's", "reason": "contraction"}], "expectedErrorTypes": ["spelling"]},
+  {"text": "I look forward to hear from you.", "spans": [{"text": "hear", "occurrence": 1, "errorType": "verb_tense", "correction": "hearing", "reason": "gerund after to"}], "expectedErrorTypes": ["verb_tense"]},
+  {"text": "There is many people.", "spans": [{"text": "is", "occurrence": 1, "errorType": "subject_verb_agreement", "correction": "are", "reason": "plural subject"}], "expectedErrorTypes": ["subject_verb_agreement"]},
+  {"text": "I interested in music.", "spans": [{"text": "I interested", "occurrence": 1, "errorType": "verb_tense", "correction": "I am interested", "reason": "missing copula"}], "expectedErrorTypes": ["verb_tense"]},
+  {"text": "He is good in math.", "spans": [{"text": "in", "occurrence": 1, "errorType": "preposition", "correction": "at", "reason": "good at"}], "expectedErrorTypes": ["preposition"]},
+  {"text": "My informations is wrong.", "spans": [{"text": "informations", "occurrence": 1, "errorType": "plural", "correction": "information", "reason": "uncountable"}], "expectedErrorTypes": ["plural"]}
+]

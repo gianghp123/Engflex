@@ -32,11 +32,21 @@ export interface Scenario {
   persona?: Persona;
   title: string;
   objective: string;
+  objectives: ScenarioObjective[];
   cefrLevel: ScenarioDifficulty;
   maxDuration: number /* int */;
   details: ScenarioDetail;
   status: PublishStatus;
   isPremium: boolean;
+}
+/**
+ * ScenarioObjective is one roleplay task. ID is the 1-based position, local
+ * to the scenario. Field names mirror models.ScenarioObjective.
+ */
+export interface ScenarioObjective {
+  id: number /* int */;
+  label: string;
+  hint: string;
 }
 /**
  * ScenarioDetail mirrors models.ScenarioDetail field for field so copier

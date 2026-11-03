@@ -8,6 +8,7 @@ export const CEFR_VALUES = ["A1", "A2", "B1", "B2", "C1", "C2"] as const satisfi
 export const CONTENT_TYPE_VALUES = ["lesson", "video", "story"] as const satisfies readonly Enums.ContentType[];
 export const CONVERSATION_MODE_VALUES = ["free_talk", "roleplay"] as const satisfies readonly Enums.ConversationMode[];
 export const CONVERSATION_STATUS_VALUES = ["pending", "live", "ended", "failed"] as const satisfies readonly Enums.ConversationStatus[];
+export const ERROR_TYPE_VALUES = ["verb_tense", "subject_verb_agreement", "article", "preposition", "plural", "word_order", "spelling", "punctuation", "lexical_choice", "collocation", "other"] as const satisfies readonly Enums.ErrorType[];
 export const EXAM_MODE_VALUES = ["exam", "practice"] as const satisfies readonly Enums.ExamMode[];
 export const GENDER_VALUES = ["male", "female"] as const satisfies readonly Enums.Gender[];
 export const GOAL_VALUES = ["travel", "work", "exams", "daily", "fun"] as const satisfies readonly Enums.Goal[];

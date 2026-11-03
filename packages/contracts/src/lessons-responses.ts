@@ -152,6 +152,7 @@ export interface TaskVerdict {
 export interface Span {
   text: string;
   occurrence: number /* int */;
+  errorType: ErrorType;
   correction: string;
   reason: string;
 }

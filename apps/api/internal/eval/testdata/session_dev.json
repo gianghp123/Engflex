@@ -1,0 +1,20 @@
+[
+  {
+    "transcript": "Hi, I'm Lan.\nI come from Hanoi.\n",
+    "objectives": [{"id": 1, "label": "Greet and introduce yourself", "hint": "Say hello and your name"}, {"id": 2, "label": "Say where you are from", "hint": "Name your city"}],
+    "llm": {"takeaways": ["Clear greeting.", "Work on verb tense."], "objectives": [{"id": 1, "status": "done", "evidence": "Hi, I'm Lan."}, {"id": 2, "status": "done", "evidence": "I come from Hanoi."}], "levelNote": "Solid A2 start."},
+    "want": [{"id": 1, "status": "done", "evidence": "Hi, I'm Lan."}, {"id": 2, "status": "done", "evidence": "I come from Hanoi."}]
+  },
+  {
+    "transcript": "Hello.\n",
+    "objectives": [{"id": 1, "label": "Greet and introduce yourself", "hint": "Say hello and your name"}, {"id": 2, "label": "Say where you are from", "hint": "Name your city"}],
+    "llm": {"takeaways": ["Spoke up.", "Say more next time."], "objectives": [{"id": 1, "status": "partial", "evidence": "Hello."}, {"id": 2, "status": "missed", "evidence": ""}], "levelNote": "A1 effort."},
+    "want": [{"id": 1, "status": "partial", "evidence": "Hello."}, {"id": 2, "status": "missed", "evidence": ""}]
+  },
+  {
+    "transcript": "I like coffee.\n",
+    "objectives": [],
+    "llm": {"takeaways": ["Shared a preference."], "objectives": [], "levelNote": "Free talk."},
+    "want": []
+  }
+]

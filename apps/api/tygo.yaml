@@ -32,6 +32,7 @@ type_mappings:
   "enums.VocabularyPartOfSpeech": "VocabularyPartOfSpeech"
   "enums.ContentType": "ContentType"
   "enums.SpanStatus": "SpanStatus"
+  "enums.ErrorType": "ErrorType"
   "enums.RelevanceStatus": "RelevanceStatus"
   "enums.SubscriptionStatus": "SubscriptionStatus"
   "enums.SubscriptionPlan": "SubscriptionPlan"

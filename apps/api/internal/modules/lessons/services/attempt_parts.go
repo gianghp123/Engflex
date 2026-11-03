@@ -35,6 +35,16 @@ type PronouncePartDetail struct {
 	Items map[string]float64 `json:"items"`
 }
 
+// WritingPartDetail persists one scored writing part: the normalized
+// feedback plus the raw-text receipt. RawText is stored ONLY here, never in
+// logs, and is cleared by RedactWriting; RawHash proves what was scored.
+type WritingPartDetail struct {
+	Feedback  schemas.WritingFeedback `json:"feedback"`
+	RawHash   string                  `json:"rawHash"`
+	WordCount int                     `json:"wordCount"`
+	RawText   string                  `json:"rawText,omitempty"`
+}
+
 // decodePartMap reads the attempt result map; a broken blob self-heals to
 // empty (last-writer-wins) rather than failing the attach.
 func decodePartMap(m *models.Attempt) map[string]PartEntry {

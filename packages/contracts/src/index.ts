@@ -34,6 +34,7 @@ declare global {
   type ScenarioDifficulty = Enums.ScenarioDifficulty;
   type TurnRole = Enums.TurnRole;
   type SpanStatus = Enums.SpanStatus;
+  type ErrorType = Enums.ErrorType;
   type RelevanceStatus = Enums.RelevanceStatus;
   type VocabularySort = Enums.VocabularySort;
   type VocabularySource = Enums.VocabularySource;

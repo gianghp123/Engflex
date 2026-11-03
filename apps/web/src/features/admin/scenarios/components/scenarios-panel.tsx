@@ -143,6 +143,7 @@ export function ScenariosPanel() {
 			personaId: form.personaId || undefined,
 			title: form.title.trim(),
 			objective: form.objective,
+			objectives: [],
 			cefrLevel: form.cefrLevel,
 			maxDuration: Number(form.maxDuration) || 1,
 			isPremium: form.isPremium,
@@ -175,7 +176,7 @@ export function ScenariosPanel() {
 	function togglePublish(scenario: Scenario) {
 		const nextStatus = scenario.status === "published" ? "draft" : "published";
 		updateMutation.mutate(
-			{ id: scenario.id, payload: { status: nextStatus } },
+			{ id: scenario.id, payload: { status: nextStatus, objectives: [] } },
 			{
 				onSuccess: () =>
 					toast.success(

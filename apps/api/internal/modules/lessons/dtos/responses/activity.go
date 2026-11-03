@@ -146,10 +146,11 @@ type TaskVerdict struct {
 // Span is one quoted problem with a minimal fix. The array it sits in is the
 // label (grammar vs phrasing).
 type Span struct {
-	Text       string `json:"text"`
-	Occurrence int    `json:"occurrence"`
-	Correction string `json:"correction"`
-	Reason     string `json:"reason"`
+	Text       string          `json:"text"`
+	Occurrence int             `json:"occurrence"`
+	ErrorType  enums.ErrorType `json:"errorType"`
+	Correction string          `json:"correction"`
+	Reason     string          `json:"reason"`
 }
 
 // TaskCompletion is section 1; counts live in ScoreSummary, never here.

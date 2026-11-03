@@ -86,6 +86,7 @@ export const API_ROUTES = {
 		// to the live engine session.
 		TRANSCRIPT: (id: ApiId) => `/conversations/${id}/transcript`,
 		TRANSCRIBE: (id: ApiId) => `/conversations/${id}/transcribe`,
+		SUMMARIZE: (id: ApiId) => `/conversations/${id}/summarize`,
 	},
 	LESSONS: {
 		LIST: "/lessons",
@@ -101,6 +102,8 @@ export const API_ROUTES = {
 	},
 	PROGRESS: {
 		SUMMARY: "/progress",
+		ERRORS: "/progress/errors",
+		MISTAKES: "/progress/mistakes",
 	},
 	VIDEOS: {
 		LIST: "/video-exercises",

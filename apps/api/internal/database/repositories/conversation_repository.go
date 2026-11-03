@@ -25,6 +25,8 @@ type ConversationRepository interface {
 	SetStatus(ctx context.Context, id string, from, to enums.ConversationStatus) (int64, error)
 	SetEnded(ctx context.Context, id string, durationSec *int) (int64, error)
 
+	Update(ctx context.Context, m *models.Conversation) error
+
 	DeleteIfEmpty(ctx context.Context, id string) (bool, error)
 
 	ListEndedDays(ctx context.Context, userID string, since time.Time) ([]string, error)
@@ -176,6 +178,13 @@ func (r *conversationRepository) SetEnded(ctx context.Context, id string, durati
 		Where("id = ?", id).
 		Updates(updates)
 	return res.RowsAffected, res.Error
+}
+
+func (r *conversationRepository) Update(ctx context.Context, m *models.Conversation) error {
+	if _, err := parseID(m.ID, "conversationId"); err != nil {
+		return err
+	}
+	return r.db.WithContext(ctx).Save(m).Error
 }
 
 func (r *conversationRepository) DeleteIfEmpty(ctx context.Context, id string) (bool, error) {

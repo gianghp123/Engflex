@@ -37,6 +37,7 @@ func BuildWritingScorePrompt(cfg activityconfig.WritingConfig, text string, word
 		"when there are none — never invent errors.\n" +
 		"3. phrasing holds expressions that are grammatical but unnatural or less appropriate; same span rules. " +
 		"Never label a stylistic preference as an error and never put a grammar mistake here. Empty array when none.\n" +
+		"grammar[] items each carry errorType (verb_tense|subject_verb_agreement|article|preposition|plural|word_order|spelling|punctuation|other). phrasing[] items carry errorType lexical_choice|collocation|other.\n" +
 		"4. expressions holds 3-5 reusable phrases directly relevant to THIS task; practical sentence patterns " +
 		"with ... slots that work in other similar tasks too, not isolated vocabulary and not sentences " +
 		"specific to this one email.\n" +
