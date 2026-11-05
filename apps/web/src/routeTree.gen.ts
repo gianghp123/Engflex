@@ -37,6 +37,7 @@ import { Route as AppVocabularyItemIdRouteImport } from './routes/_app/vocabular
 import { Route as AppVoiceIndexRouteImport } from './routes/_app/voice/index'
 import { Route as AppVoicePreviewRouteImport } from './routes/_app/voice/preview'
 import { Route as ApiMediaSplatRouteImport } from './routes/api/media/$'
+import { Route as AppExamsIeltsIndexRouteImport } from './routes/_app/exams/ielts/index'
 import { Route as AppExamsToeicIndexRouteImport } from './routes/_app/exams/toeic/index'
 import { Route as AppExamsToeicHistoryRouteImport } from './routes/_app/exams/toeic/history'
 import { Route as AppLessonsSlugIndexRouteImport } from './routes/_app/lessons/$slug/index'
@@ -196,6 +197,11 @@ const ApiMediaSplatRoute = ApiMediaSplatRouteImport.update({
   path: '/api/media/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppExamsIeltsIndexRoute = AppExamsIeltsIndexRouteImport.update({
+  id: '/exams/ielts/',
+  path: '/exams/ielts/',
+  getParentRoute: () => AppRouteRoute,
+} as any)
 const AppExamsToeicIndexRoute = AppExamsToeicIndexRouteImport.update({
   id: '/exams/toeic/',
   path: '/exams/toeic/',
@@ -343,6 +349,7 @@ export interface FileRoutesByFullPath {
   '/voice/scenarios/$scenarioId': typeof AppVoiceScenariosScenarioIdRoute
   '/api/voice/$conversationId/offer': typeof ApiVoiceConversationIdOfferRoute
   '/api/voice/$conversationId/start': typeof ApiVoiceConversationIdStartRoute
+  '/exams/ielts/': typeof AppExamsIeltsIndexRoute
   '/exams/toeic/': typeof AppExamsToeicIndexRoute
   '/lessons/$slug/': typeof AppLessonsSlugIndexRoute
   '/voice/history/': typeof AppVoiceHistoryIndexRoute
@@ -390,6 +397,7 @@ export interface FileRoutesByTo {
   '/voice/scenarios/$scenarioId': typeof AppVoiceScenariosScenarioIdRoute
   '/api/voice/$conversationId/offer': typeof ApiVoiceConversationIdOfferRoute
   '/api/voice/$conversationId/start': typeof ApiVoiceConversationIdStartRoute
+  '/exams/ielts': typeof AppExamsIeltsIndexRoute
   '/exams/toeic': typeof AppExamsToeicIndexRoute
   '/lessons/$slug': typeof AppLessonsSlugIndexRoute
   '/voice/history': typeof AppVoiceHistoryIndexRoute
@@ -440,6 +448,7 @@ export interface FileRoutesById {
   '/_app/voice/scenarios/$scenarioId': typeof AppVoiceScenariosScenarioIdRoute
   '/api/voice/$conversationId/offer': typeof ApiVoiceConversationIdOfferRoute
   '/api/voice/$conversationId/start': typeof ApiVoiceConversationIdStartRoute
+  '/_app/exams/ielts/': typeof AppExamsIeltsIndexRoute
   '/_app/exams/toeic/': typeof AppExamsToeicIndexRoute
   '/_app/lessons/$slug/': typeof AppLessonsSlugIndexRoute
   '/_app/voice/history/': typeof AppVoiceHistoryIndexRoute
@@ -490,6 +499,7 @@ export interface FileRouteTypes {
     | '/voice/scenarios/$scenarioId'
     | '/api/voice/$conversationId/offer'
     | '/api/voice/$conversationId/start'
+    | '/exams/ielts/'
     | '/exams/toeic/'
     | '/lessons/$slug/'
     | '/voice/history/'
@@ -537,6 +547,7 @@ export interface FileRouteTypes {
     | '/voice/scenarios/$scenarioId'
     | '/api/voice/$conversationId/offer'
     | '/api/voice/$conversationId/start'
+    | '/exams/ielts'
     | '/exams/toeic'
     | '/lessons/$slug'
     | '/voice/history'
@@ -586,6 +597,7 @@ export interface FileRouteTypes {
     | '/_app/voice/scenarios/$scenarioId'
     | '/api/voice/$conversationId/offer'
     | '/api/voice/$conversationId/start'
+    | '/_app/exams/ielts/'
     | '/_app/exams/toeic/'
     | '/_app/lessons/$slug/'
     | '/_app/voice/history/'
@@ -810,6 +822,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiMediaSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_app/exams/ielts/': {
+      id: '/_app/exams/ielts/'
+      path: '/exams/ielts'
+      fullPath: '/exams/ielts/'
+      preLoaderRoute: typeof AppExamsIeltsIndexRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
     '/_app/exams/toeic/': {
       id: '/_app/exams/toeic/'
       path: '/exams/toeic'
@@ -966,6 +985,7 @@ interface AppRouteRouteChildren {
   AppVoiceHistoryConversationIdRoute: typeof AppVoiceHistoryConversationIdRoute
   AppVoiceRoomConversationIdRoute: typeof AppVoiceRoomConversationIdRoute
   AppVoiceScenariosScenarioIdRoute: typeof AppVoiceScenariosScenarioIdRoute
+  AppExamsIeltsIndexRoute: typeof AppExamsIeltsIndexRoute
   AppExamsToeicIndexRoute: typeof AppExamsToeicIndexRoute
   AppLessonsSlugIndexRoute: typeof AppLessonsSlugIndexRoute
   AppVoiceHistoryIndexRoute: typeof AppVoiceHistoryIndexRoute
@@ -996,6 +1016,7 @@ const AppRouteRouteChildren: AppRouteRouteChildren = {
   AppVoiceHistoryConversationIdRoute: AppVoiceHistoryConversationIdRoute,
   AppVoiceRoomConversationIdRoute: AppVoiceRoomConversationIdRoute,
   AppVoiceScenariosScenarioIdRoute: AppVoiceScenariosScenarioIdRoute,
+  AppExamsIeltsIndexRoute: AppExamsIeltsIndexRoute,
   AppExamsToeicIndexRoute: AppExamsToeicIndexRoute,
   AppLessonsSlugIndexRoute: AppLessonsSlugIndexRoute,
   AppVoiceHistoryIndexRoute: AppVoiceHistoryIndexRoute,
@@ -1053,3 +1074,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

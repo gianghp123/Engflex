@@ -38,13 +38,13 @@
         "load": {
           "categoriesFailed": "Could not load exam sets. Please try again.",
           "attemptsFailed": "Could not load exam history. Please try again.",
-          "retry": "Retry"
+          "retry": "Retry",
+          "statisticsFailed": "Could not load exam statistics. Please try again."
         }
       },
       "category": {
         "back": "Exam Sets",
         "testsListTitle": "TEST LIST",
-        "freeBadge": "FREE",
         "questionsCount": "{count} questions",
         "durationMinutes": "{count} mins",
         "viewDetail": "VIEW DETAILS",
@@ -187,6 +187,56 @@
           "range": "Showing {from}–{to} of {total} attempts",
           "all": "{count} attempts"
         }
+      }
+    },
+    "ielts": {
+      "take": {
+        "section": "Section {number}",
+        "submitButton": "SUBMIT",
+        "exitButton": "EXIT",
+        "resetButton": "RESET",
+        "highlightToggle": "Highlight content",
+        "highlightHint": "Select text in the passage to highlight or remove highlight.",
+        "clearHighlight": "Clear highlight",
+        "progress": "Progress",
+        "remaining": "Time remaining:",
+        "bookmark": "Bookmark",
+        "bookmarked": "Bookmarked",
+        "question": "Question {number}",
+        "passageTitle": "Reading Passage",
+        "questionsTitle": "Questions",
+        "inputPlaceholder": "Type your answer...",
+        "collapsePalette": "Collapse question palette",
+        "expandPalette": "Expand question palette",
+        "confirmSubmitTitle": "Confirm Submission",
+        "confirmSubmitDesc": "You completed {answered}/{total} questions. Are you sure you want to submit your test?",
+        "confirmSubmitCancel": "Continue test",
+        "confirmSubmitAction": "Submit now",
+        "confirmExitTitle": "Exit test?",
+        "confirmExitDesc": "Are you sure you want to exit this test?",
+        "confirmExitCancel": "Stay and continue",
+        "confirmExitAction": "Exit test",
+        "confirmResetTitle": "Reset test?",
+        "confirmResetDesc": "All answers, highlights, and the timer will be reset from the beginning.",
+        "confirmResetCancel": "Cancel",
+        "confirmResetAction": "Reset now",
+        "saved": "Autosaved test progress"
+      },
+      "result": {
+        "title": "IELTS Reading Test Result",
+        "bandScore": "Band Score",
+        "correctCount": "Correct: {correct}/{total}",
+        "accuracy": "Accuracy: {percent}%",
+        "timeSpent": "Time spent: {duration}",
+        "reviewTitle": "Detailed Answer Review",
+        "yourAnswer": "Your answer: {answer}",
+        "correctAnswer": "Correct answer: {answer}",
+        "explanation": "Explanation:",
+        "filterAll": "All",
+        "filterCorrect": "Correct",
+        "filterIncorrect": "Incorrect",
+        "retakeButton": "Retake test",
+        "closeButton": "Close"
       }
     },
     "attempt": {

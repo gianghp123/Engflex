@@ -50,6 +50,9 @@ export const APP_ROUTES = {
 			RESULT: "/exams/toeic/session/$id/result",
 			HISTORY: "/exams/toeic/history",
 		},
+		IELTS: {
+			LIST: "/exams/ielts",
+		},
 	},
 	/**
 	 * Clerk's catch-all pages. The file routes are `/sign-in/$` splats, so a

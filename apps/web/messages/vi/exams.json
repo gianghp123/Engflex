@@ -38,13 +38,13 @@
         "load": {
           "categoriesFailed": "Không tải được các bộ đề. Vui lòng thử lại.",
           "attemptsFailed": "Không tải được lịch sử làm bài. Vui lòng thử lại.",
-          "retry": "Thử lại"
+          "retry": "Thử lại",
+          "statisticsFailed": "Không thể tải thống kê luyện thi. Vui lòng thử lại."
         }
       },
       "category": {
         "back": "Bộ đề thi",
         "testsListTitle": "DANH SÁCH ĐỀ",
-        "freeBadge": "MIỄN PHÍ",
         "questionsCount": "{count} câu hỏi",
         "durationMinutes": "{count} phút",
         "viewDetail": "XEM CHI TIẾT",
@@ -187,6 +187,56 @@
           "range": "Hiển thị {from}–{to} trong {total} lượt làm bài",
           "all": "{count} lượt làm bài"
         }
+      }
+    },
+    "ielts": {
+      "take": {
+        "section": "Section {number}",
+        "submitButton": "NỘP BÀI",
+        "exitButton": "THOÁT",
+        "resetButton": "LÀM LẠI",
+        "highlightToggle": "Highlight nội dung",
+        "highlightHint": "Bôi đen văn bản trong bài đọc để highlight hoặc xóa highlight.",
+        "clearHighlight": "Xóa highlight",
+        "progress": "Tiến độ",
+        "remaining": "Thời gian còn lại:",
+        "bookmark": "Đánh dấu",
+        "bookmarked": "Đã đánh dấu",
+        "question": "Câu {number}",
+        "passageTitle": "Bài đọc",
+        "questionsTitle": "Câu hỏi",
+        "inputPlaceholder": "Nhập câu trả lời...",
+        "collapsePalette": "Thu gọn bảng câu hỏi",
+        "expandPalette": "Mở rộng bảng câu hỏi",
+        "confirmSubmitTitle": "Xác nhận nộp bài",
+        "confirmSubmitDesc": "Bạn đã hoàn thành {answered}/{total} câu hỏi. Bạn có chắc chắn muốn nộp bài thi?",
+        "confirmSubmitCancel": "Tiếp tục làm bài",
+        "confirmSubmitAction": "Nộp bài ngay",
+        "confirmExitTitle": "Thoát bài thi?",
+        "confirmExitDesc": "Bạn có chắc muốn thoát khỏi bài thi này?",
+        "confirmExitCancel": "Ở lại làm tiếp",
+        "confirmExitAction": "Thoát bài thi",
+        "confirmResetTitle": "Làm lại bài thi?",
+        "confirmResetDesc": "Toàn bộ câu trả lời, highlight và thời gian sẽ được thiết lập lại từ đầu.",
+        "confirmResetCancel": "Hủy",
+        "confirmResetAction": "Xác nhận làm lại",
+        "saved": "Đã tự động lưu bài làm"
+      },
+      "result": {
+        "title": "Kết quả bài thi IELTS Reading",
+        "bandScore": "Band Score",
+        "correctCount": "Số câu đúng: {correct}/{total}",
+        "accuracy": "Độ chính xác: {percent}%",
+        "timeSpent": "Thời gian làm bài: {duration}",
+        "reviewTitle": "Xem lại chi tiết đáp án",
+        "yourAnswer": "Đáp án của bạn: {answer}",
+        "correctAnswer": "Đáp án đúng: {answer}",
+        "explanation": "Giải thích:",
+        "filterAll": "Tất cả",
+        "filterCorrect": "Đúng",
+        "filterIncorrect": "Sai",
+        "retakeButton": "Làm lại bài thi",
+        "closeButton": "Đóng"
       }
     },
     "attempt": {
