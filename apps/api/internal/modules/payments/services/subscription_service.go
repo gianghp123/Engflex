@@ -23,7 +23,7 @@ import (
 type SubscriptionService interface {
 	GrantUser(ctx context.Context, userID string, plan enums.SubscriptionPlan, note string) (*models.Subscription, error)
 	// IsPremium has exactly this (bool, error) shape so the service
-	// satisfies middleware.PremiumChecker structurally, with no adapter.
+	// satisfies common.PremiumChecker structurally, with no adapter.
 	IsPremium(ctx context.Context, userID string) (bool, error)
 	GetActive(ctx context.Context, userID string) (*models.Subscription, error)
 	ListByUserID(ctx context.Context, userID string, limit, offset int) ([]*models.Subscription, int64, error)

@@ -6,7 +6,7 @@ import "context"
 // need to gate a premium-only item. Defined here (not in the payments
 // module) so every content module can depend on it without an inter-module
 // import; services.SubscriptionService satisfies this structurally, no
-// adapter needed — same shape as middleware.PremiumChecker.
+// adapter needed.
 type PremiumChecker interface {
 	IsPremium(ctx context.Context, userID string) (bool, error)
 }

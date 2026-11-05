@@ -1,0 +1,28 @@
+{
+  "source": {
+    "site": "STUDY4",
+    "url": "https://study4.com/tests/6852/toeic-lr-collection-1-test-1/",
+    "exam_id": "6852",
+    "observed_on": "2026-11-02"
+  },
+  "title": "TOEIC LR Collection 1 Test 1",
+  "duration_minutes": 120,
+  "question_count": 200,
+  "parts": [
+    { "number": 1, "question_count": 6 },
+    { "number": 2, "question_count": 25 },
+    { "number": 3, "question_count": 39 },
+    { "number": 4, "question_count": 30 },
+    { "number": 5, "question_count": 30 },
+    { "number": 6, "question_count": 16 },
+    { "number": 7, "question_count": 54 }
+  ],
+  "inspection": {
+    "scope": "Public landing page only; no exam session started.",
+    "complete_exam_export": false,
+    "questions_extracted": 0,
+    "assets_downloaded": 0,
+    "authentication_requirement": "Not determined for question and solution pages.",
+    "notes": "The landing-page text inspected does not expose question bodies, choices, answers, explanations, transcripts, or exam media."
+  }
+}

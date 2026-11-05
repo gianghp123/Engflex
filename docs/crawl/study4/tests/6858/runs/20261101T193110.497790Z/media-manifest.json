@@ -1,0 +1,101 @@
+{
+  "schemaVersion": "1.0.0",
+  "source": {
+    "url": "https://study4.com/tests/6858/toeic-lr-collection-1-test-7/solutions/",
+    "title": "Đáp án/transcript: TOEIC LR Collection 1 Test 7 - STUDY4"
+  },
+  "sourceTestId": "6858",
+  "runId": "20261101T193110.497790Z",
+  "assetRoot": "../..",
+  "status": "complete",
+  "objectKeyPattern": "exams/toeic/{testId}/{kind}/{filename}",
+  "assets": [
+    {
+      "id": "asset-1",
+      "kind": "image",
+      "url": "https://s4-media1.study4.com/media/new_toeic_tests/new_toeic_updated/toeic-lr-collection-1-test-7/images/1_updated_resized.jpg",
+      "status": "uploaded",
+      "sourceId": "exams/toeic/6858/images/q01.jpg",
+      "localPath": null,
+      "sha256": "297f5b5e3dcf5373577c8adc577c5e6b56c6c31c9f51cc5f57c2660a81e1205c",
+      "bytes": 37160,
+      "contentType": "image/jpeg",
+      "minioKey": "exams/toeic/6858/images/q01.jpg",
+      "minioBucket": "lesson-audio",
+      "filename": "q01.jpg"
+    },
+    {
+      "id": "asset-2",
+      "kind": "image",
+      "url": "https://s4-media1.study4.com/media/new_toeic_tests/new_toeic_updated/toeic-lr-collection-1-test-7/images/2_updated_resized.jpg",
+      "status": "uploaded",
+      "sourceId": "exams/toeic/6858/images/q02.jpg",
+      "localPath": null,
+      "sha256": "0577dd2f70869705f1e29b9dc0fb5be3c3754ce78ba665ca1d6c71d13bb9b74e",
+      "bytes": 40399,
+      "contentType": "image/jpeg",
+      "minioKey": "exams/toeic/6858/images/q02.jpg",
+      "minioBucket": "lesson-audio",
+      "filename": "q02.jpg"
+    },
+    {
+      "id": "asset-3",
+      "kind": "image",
+      "url": "https://study4.com/media/new_toeic_tests/new_toeic_updated/toeic-lr-collection-1-test-7/images/3_updated_resized.jpg",
+      "status": "uploaded",
+      "sourceId": "exams/toeic/6858/images/q03.jpg",
+      "localPath": null,
+      "sha256": "e333079ed7609a98e9f04e2cec06a3619f42c53528dd1c2325d810fdad60fc9b",
+      "bytes": 32198,
+      "contentType": "image/jpeg",
+      "minioKey": "exams/toeic/6858/images/q03.jpg",
+      "minioBucket": "lesson-audio",
+      "filename": "q03.jpg"
+    },
+    {
+      "id": "asset-4",
+      "kind": "image",
+      "url": "https://study4.com/media/new_toeic_tests/new_toeic_updated/toeic-lr-collection-1-test-7/images/4_updated_resized.jpg",
+      "status": "uploaded",
+      "sourceId": "exams/toeic/6858/images/q04.jpg",
+      "localPath": null,
+      "sha256": "b6808ece13850dd6ee00b90c8e78da71b368f5d0e6ef535acc7477db5d4ff859",
+      "bytes": 30865,
+      "contentType": "image/jpeg",
+      "minioKey": "exams/toeic/6858/images/q04.jpg",
+      "minioBucket": "lesson-audio",
+      "filename": "q04.jpg"
+    },
+    {
+      "id": "asset-5",
+      "kind": "image",
+      "url": "https://study4.com/media/new_toeic_tests/new_toeic_updated/toeic-lr-collection-1-test-7/images/5_updated_resized.jpg",
+      "status": "uploaded",
+      "sourceId": "exams/toeic/6858/images/q05.jpg",
+      "localPath": null,
+      "sha256": "3a904d64a81a676b522ba160379fdec8992de66b3e4e88440d81d055948b501b",
+      "bytes": 44583,
+      "contentType": "image/jpeg",
+      "minioKey": "exams/toeic/6858/images/q05.jpg",
+      "minioBucket": "lesson-audio",
+      "filename": "q05.jpg"
+    },
+    {
+      "id": "asset-6",
+      "kind": "image",
+      "url": "https://study4.com/media/new_toeic_tests/new_toeic_updated/toeic-lr-collection-1-test-7/images/6_updated_resized.jpg",
+      "status": "uploaded",
+      "sourceId": "exams/toeic/6858/images/q06.jpg",
+      "localPath": null,
+      "sha256": "d0820f1922c2ffe857445984e7305bb5bd7866d2f668234105a5b19721eec03a",
+      "bytes": 41246,
+      "contentType": "image/jpeg",
+      "minioKey": "exams/toeic/6858/images/q06.jpg",
+      "minioBucket": "lesson-audio",
+      "filename": "q06.jpg"
+    }
+  ],
+  "downloadedCount": 6,
+  "failedCount": 0,
+  "minioBucket": "lesson-audio"
+}

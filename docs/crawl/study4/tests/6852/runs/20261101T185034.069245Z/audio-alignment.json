@@ -1,0 +1,710 @@
+{
+  "testId": "6852",
+  "runId": "20261101T185034.069245Z",
+  "audioKey": "exams/toeic/6852/audio/audio_full.mp3",
+  "audioSha256": "4a911d4976baf633cc9899302ffdc4828121abae08a059fac865eb330103a84d",
+  "audioDuration": 2748.865306122449,
+  "exportHash": "3d61452eb8dff5014e1de74d65ae1d6ec82d3fd2d0278064968b675274583265",
+  "asrHash": "3a13ea2cce1f46b73dbe373aac96f2e17f10e191dbb7e46bca0a9b17b77610fb",
+  "model": "base.en",
+  "itemCount": 54,
+  "alignedCount": 54,
+  "items": [
+    {
+      "id": "item_q01",
+      "questions": [
+        1
+      ],
+      "transcript": "(A) Some people are waiting in line. (B) Some people are sitting on chairs. (C) Some people are pulling their suitcases. (D) Some people are standing outside.",
+      "audioRange": {
+        "assetId": "exams/toeic/6852/audio/audio_full.mp3",
+        "startTime": 54.73,
+        "endTime": 73.75
+      }
+    },
+    {
+      "id": "item_q02",
+      "questions": [
+        2
+      ],
+      "transcript": "(A) Some bicycles are lying on the ground. (B) Some benches are being repaired in a park. (C) Some people are riding bicycles on a path. (D) Some bicycles are parked in a rack.",
+      "audioRange": {
+        "assetId": "exams/toeic/6852/audio/audio_full.mp3",
+        "startTime": 78.15,
+        "endTime": 100.09
+      }
+    },
+    {
+      "id": "item_q03",
+      "questions": [
+        3
+      ],
+      "transcript": "(A) A man is stacking some finished baskets. (B) A customer is examining a large basket. (C) Some baskets are being carried away. (D) A man is weaving a round basket.",
+      "audioRange": {
+        "assetId": "exams/toeic/6852/audio/audio_full.mp3",
+        "startTime": 104.15,
+        "endTime": 126.15
+      }
+    },
+    {
+      "id": "item_q04",
+      "questions": [
+        4
+      ],
+      "transcript": "(A) He's cutting up some vegetables. (B) He's wiping down the counter. (C) He's wearing a hat. (D) He's holding a mug.",
+      "audioRange": {
+        "assetId": "exams/toeic/6852/audio/audio_full.mp3",
+        "startTime": 130.31,
+        "endTime": 148.59
+      }
+    },
+    {
+      "id": "item_q05",
+      "questions": [
+        5
+      ],
+      "transcript": "(A) Brochures have been spread out on the carpet. (B) The man is arranging cushions on a sofa. (C) A suitcase has been placed on the floor. (D) The man is posting a notice on the board.",
+      "audioRange": {
+        "assetId": "exams/toeic/6852/audio/audio_full.mp3",
+        "startTime": 152.94,
+        "endTime": 172.02
+      }
+    },
+    {
+      "id": "item_q06",
+      "questions": [
+        6
+      ],
+      "transcript": "(A) A worker is wrapping a pallet. (B) Some crates are being stacked outdoors. (C) A man is sweeping the warehouse floor. (D) A worker is driving a forklift.",
+      "audioRange": {
+        "assetId": "exams/toeic/6852/audio/audio_full.mp3",
+        "startTime": 176.19,
+        "endTime": 195.35
+      }
+    },
+    {
+      "id": "item_q07",
+      "questions": [
+        7
+      ],
+      "transcript": "How will the crew get the new copier up to the fourth floor? (A) Yes, by four o'clock. (B) The copier's on the fourth floor. (C) They'll use the freight elevator.",
+      "audioRange": {
+        "assetId": "exams/toeic/6852/audio/audio_full.mp3",
+        "startTime": 224.95,
+        "endTime": 243.42
+      }
+    },
+    {
+      "id": "item_q08",
+      "questions": [
+        8
+      ],
+      "transcript": "Do you want me to add you to the weekly project-update emails? (A) The projector's in the other room. (B) We sent the schedule around yesterday. (C) Sure, that would be helpful.",
+      "audioRange": {
+        "assetId": "exams/toeic/6852/audio/audio_full.mp3",
+        "startTime": 248.14,
+        "endTime": 264.4
+      }
+    },
+    {
+      "id": "item_q09",
+      "questions": [
+        9
+      ],
+      "transcript": "You haven't always biked to work, have you? (A) The bread baked all morning. (B) I don't like driving downtown. (C) No, just since this spring.",
+      "audioRange": {
+        "assetId": "exams/toeic/6852/audio/audio_full.mp3",
+        "startTime": 268.74,
+        "endTime": 284.58
+      }
+    },
+    {
+      "id": "item_q10",
+      "questions": [
+        10
+      ],
+      "transcript": "Could we move the delivery to a different day? (A) The materials arrived in great shape. (B) Of course, which day works better? (C) Around thirty boxes total.",
+      "audioRange": {
+        "assetId": "exams/toeic/6852/audio/audio_full.mp3",
+        "startTime": 288.98,
+        "endTime": 306.7
+      }
+    },
+    {
+      "id": "item_q11",
+      "questions": [
+        11
+      ],
+      "transcript": "Which main dish should we serve at the company lunch? (A) Yes, the caterer already confirmed everything. (B) Why don't we go with the grilled chicken? (C) Sometime next Friday, probably.",
+      "audioRange": {
+        "assetId": "exams/toeic/6852/audio/audio_full.mp3",
+        "startTime": 311.08,
+        "endTime": 326.68
+      }
+    },
+    {
+      "id": "item_q12",
+      "questions": [
+        12
+      ],
+      "transcript": "The checkout time isn't any later than eleven, is it? (A) Yes, it was quite spacious. (B) No, everyone has to be out by then. (C) You can leave your bags with us.",
+      "audioRange": {
+        "assetId": "exams/toeic/6852/audio/audio_full.mp3",
+        "startTime": 331.44,
+        "endTime": 348.18
+      }
+    },
+    {
+      "id": "item_q13",
+      "questions": [
+        13
+      ],
+      "transcript": "Please water the plants before you leave for the weekend. (A) My plans have changed. (B) Sure, I'll take care of them. (C) It's a brand-new leaf design.",
+      "audioRange": {
+        "assetId": "exams/toeic/6852/audio/audio_full.mp3",
+        "startTime": 352.99,
+        "endTime": 367.83
+      }
+    },
+    {
+      "id": "item_q14",
+      "questions": [
+        14
+      ],
+      "transcript": "When are the crews supposed to finish repairing the road on Main Street? (A) Yes, the traffic was pretty heavy this morning. (B) Not before the middle of next week. (C) Along the north side of the street.",
+      "audioRange": {
+        "assetId": "exams/toeic/6852/audio/audio_full.mp3",
+        "startTime": 372.58,
+        "endTime": 391.66
+      }
+    },
+    {
+      "id": "item_q15",
+      "questions": [
+        15
+      ],
+      "transcript": "How do you like the main course so far? (A) Of course, help yourself. (B) It's absolutely delicious. (C) At the new place downtown.",
+      "audioRange": {
+        "assetId": "exams/toeic/6852/audio/audio_full.mp3",
+        "startTime": 395.84,
+        "endTime": 412.47
+      }
+    },
+    {
+      "id": "item_q16",
+      "questions": [
+        16
+      ],
+      "transcript": "Would you like to join the pottery class this weekend? (A) The instructor is really talented. (B) I take that class on Mondays. (C) Sure, that sounds fun.",
+      "audioRange": {
+        "assetId": "exams/toeic/6852/audio/audio_full.mp3",
+        "startTime": 417.38,
+        "endTime": 434.24
+      }
+    },
+    {
+      "id": "item_q17",
+      "questions": [
+        17
+      ],
+      "transcript": "Who has to approve the final proof before we start printing? (A) Right after lunch, probably. (B) Yes, it's already been printed. (C) Rachel, the production manager.",
+      "audioRange": {
+        "assetId": "exams/toeic/6852/audio/audio_full.mp3",
+        "startTime": 438.59,
+        "endTime": 455.77
+      }
+    },
+    {
+      "id": "item_q18",
+      "questions": [
+        18
+      ],
+      "transcript": "Who's going to teach Saturday's yoga class? (A) About an hour and a half. (B) The mirrors need cleaning. (C) They haven't posted the schedule yet.",
+      "audioRange": {
+        "assetId": "exams/toeic/6852/audio/audio_full.mp3",
+        "startTime": 460.2,
+        "endTime": 475.34
+      }
+    },
+    {
+      "id": "item_q19",
+      "questions": [
+        19
+      ],
+      "transcript": "What should I do to get the reading room ready for tonight's author event? (A) I already placed the order this morning. (B) There's a setup checklist in the staff binder. (C) Yes, it starts at seven.",
+      "audioRange": {
+        "assetId": "exams/toeic/6852/audio/audio_full.mp3",
+        "startTime": 479.8,
+        "endTime": 494.98
+      }
+    },
+    {
+      "id": "item_q20",
+      "questions": [
+        20
+      ],
+      "transcript": "This exhibition room is pretty dark, isn't it? (A) There's a parking lot next door. (B) That painting's by a local artist. (C) Let me turn the lights up.",
+      "audioRange": {
+        "assetId": "exams/toeic/6852/audio/audio_full.mp3",
+        "startTime": 499.69,
+        "endTime": 514.93
+      }
+    },
+    {
+      "id": "item_q21",
+      "questions": [
+        21
+      ],
+      "transcript": "Did all the seedlings make it through last night's frost? (A) Just the ones we covered survived. (B) The frosting was a bit too sweet. (C) I make breakfast for everyone here.",
+      "audioRange": {
+        "assetId": "exams/toeic/6852/audio/audio_full.mp3",
+        "startTime": 519.14,
+        "endTime": 535.38
+      }
+    },
+    {
+      "id": "item_q22",
+      "questions": [
+        22
+      ],
+      "transcript": "When's the deadline for renewing our parking permit? (A) The facilities team would know that. (B) In the newer parking structure. (C) Yes, I renewed mine last month.",
+      "audioRange": {
+        "assetId": "exams/toeic/6852/audio/audio_full.mp3",
+        "startTime": 539.46,
+        "endTime": 554.22
+      }
+    },
+    {
+      "id": "item_q23",
+      "questions": [
+        23
+      ],
+      "transcript": "Do you want a hand decorating the cakes? (A) I'd like a slice, please. (B) The icing turned out beautifully. (C) The new baker is starting his shift soon.",
+      "audioRange": {
+        "assetId": "exams/toeic/6852/audio/audio_full.mp3",
+        "startTime": 559.39,
+        "endTime": 575.39
+      }
+    },
+    {
+      "id": "item_q24",
+      "questions": [
+        24
+      ],
+      "transcript": "Would you like me to set up the new phone for you? (A) The phones have been ringing all morning. (B) Yes, please, I'm not great with that. (C) They're setting up chairs in the back.",
+      "audioRange": {
+        "assetId": "exams/toeic/6852/audio/audio_full.mp3",
+        "startTime": 579.58,
+        "endTime": 596.66
+      }
+    },
+    {
+      "id": "item_q25",
+      "questions": [
+        25
+      ],
+      "transcript": "Do you want the walls painted in a matte or a glossy finish? (A) Glossy, if you don't mind. (B) The mats are over by the entrance. (C) About three cans, probably.",
+      "audioRange": {
+        "assetId": "exams/toeic/6852/audio/audio_full.mp3",
+        "startTime": 596.66,
+        "endTime": 616.7
+      }
+    },
+    {
+      "id": "item_q26",
+      "questions": [
+        26
+      ],
+      "transcript": "You're editing the audio for the latest episode, right? (A) About forty minutes. (B) Yes, I'll send you the file soon. (C) By Friday afternoon.",
+      "audioRange": {
+        "assetId": "exams/toeic/6852/audio/audio_full.mp3",
+        "startTime": 620.87,
+        "endTime": 634.37
+      }
+    },
+    {
+      "id": "item_q27",
+      "questions": [
+        27
+      ],
+      "transcript": "Can I start restocking the shelves now? (A) The stocks dropped today. (B) Not yet, let's wait for the morning delivery. (C) They sold out really fast.",
+      "audioRange": {
+        "assetId": "exams/toeic/6852/audio/audio_full.mp3",
+        "startTime": 638.78,
+        "endTime": 654.94
+      }
+    },
+    {
+      "id": "item_q28",
+      "questions": [
+        28
+      ],
+      "transcript": "Didn't we already check in online for this flight? (A) No, I'll have the chicken, please. (B) I did it from my phone last night. (C) Gate twenty-two, near the coffee shop.",
+      "audioRange": {
+        "assetId": "exams/toeic/6852/audio/audio_full.mp3",
+        "startTime": 659.48,
+        "endTime": 675.2
+      }
+    },
+    {
+      "id": "item_q29",
+      "questions": [
+        29
+      ],
+      "transcript": "Should I submit the budget report now, or wait for the updated figures? (A) Wait until the figures come in. (B) About forty pages, I think. (C) Sure, that should be fine.",
+      "audioRange": {
+        "assetId": "exams/toeic/6852/audio/audio_full.mp3",
+        "startTime": 679.3,
+        "endTime": 695.26
+      }
+    },
+    {
+      "id": "item_q30",
+      "questions": [
+        30
+      ],
+      "transcript": "Can you show me how to use the postage meter? (A) It costs about fifty cents to send that. (B) Ramon usually takes care of all that. (C) Where do the outgoing packages go?",
+      "audioRange": {
+        "assetId": "exams/toeic/6852/audio/audio_full.mp3",
+        "startTime": 699.6,
+        "endTime": 714.78
+      }
+    },
+    {
+      "id": "item_q31",
+      "questions": [
+        31
+      ],
+      "transcript": "What did Dr. Lopez say about my dog's blood test? (A) At the front desk. (B) She said it's completely normal. (C) About three tests total.",
+      "audioRange": {
+        "assetId": "exams/toeic/6852/audio/audio_full.mp3",
+        "startTime": 719.97,
+        "endTime": 735.57
+      }
+    },
+    {
+      "id": "item_q32_34",
+      "questions": [
+        32,
+        33,
+        34
+      ],
+      "transcript": "W1: Hi, good morning. I live in one of the units here, and I'm having a problem with my heater. It just stopped working. M1: Oh, I'm sorry to hear that. Let me get this written down for you. Could you tell me which apartment you're in? W1: Sure, I'm in apartment three-oh-four. There's been no heat at all since yesterday afternoon, and it's really getting cold in there. M1: I understand. Let me send one of our technicians over to take a look. He should be able to come by sometime this afternoon. W1: That would be great, but I have to warn you, I'll be at work until fairly late this evening, so I won't be home during the day. M1: That's not a problem at all. I'll have him give you a call before he heads over, so the two of you can agree on a time that works.",
+      "audioRange": {
+        "assetId": "exams/toeic/6852/audio/audio_full.mp3",
+        "startTime": 768.89,
+        "endTime": 842.46
+      }
+    },
+    {
+      "id": "item_q35_37",
+      "questions": [
+        35,
+        36,
+        37
+      ],
+      "transcript": "M1: Good afternoon, and welcome to Harborview Electronics. How can I help you today? W1: Hi. I was looking at laptops earlier, but I ended up buying a large television, and I'd like to have it delivered to my home. M1: Of course. I can see it here on your receipt — the sixty-inch model. Would you prefer standard or express delivery? W1: I'm not really sure. What are my options? M1: Well, standard delivery arrives within about a week, and you set it up yourself. Express comes tomorrow, and our team installs it and mounts it on the wall for you. W1: Let's go with express, then. I'm having friends over this weekend, so I'd like it working by then. M1: Sounds good. Which day should the driver come — tomorrow, or the day after? W1: Tomorrow would be perfect. Oh, and one more thing — will they take away all the boxes and packaging afterward? M1: Absolutely, they'll clear everything away for you. Let me schedule it right now and print out all your details.",
+      "audioRange": {
+        "assetId": "exams/toeic/6852/audio/audio_full.mp3",
+        "startTime": 849.82,
+        "endTime": 945.34
+      }
+    },
+    {
+      "id": "item_q38_40",
+      "questions": [
+        38,
+        39,
+        40
+      ],
+      "transcript": "W1: Hi, I registered for the conference online last week, but I can't seem to find my name badge here at the pickup table. Would you mind checking the attendee list for me? My name is Fatima Okafor. M1: Of course, let me have a look. I'm going through the list right now, but I'm not seeing your name here. That's odd. The system was updated this morning, so some of the more recent registrations may not have transferred over yet. M2: Don't worry, that happens now and then after an update. If you head over to the help desk just down the hall, they can print a new badge for you right there once they confirm your details.",
+      "audioRange": {
+        "assetId": "exams/toeic/6852/audio/audio_full.mp3",
+        "startTime": 952.76,
+        "endTime": 1020.18
+      }
+    },
+    {
+      "id": "item_q41_43",
+      "questions": [
+        41,
+        42,
+        43
+      ],
+      "transcript": "M1: Hi there. I'm here to pick up my bicycle. The name is Dario Halvorsen. W1: Let me check our records for you. Just a moment. W1: Hmm, I'm afraid it isn't quite ready yet. The new brake part we ordered from our supplier hasn't arrived, so we couldn't finish the repair today. M1: Oh, that's disappointing. When do you think it will be done? W1: The delivery should come in tomorrow morning, and we'll have everything fitted by tomorrow afternoon. I'd be happy to phone you as soon as it's ready. M1: That would be great, thank you. My number should already be on file from when I dropped it off. W1: Yes, I can see it right here. We'll be in touch tomorrow.",
+      "audioRange": {
+        "assetId": "exams/toeic/6852/audio/audio_full.mp3",
+        "startTime": 1027.58,
+        "endTime": 1096.52
+      }
+    },
+    {
+      "id": "item_q44_46",
+      "questions": [
+        44,
+        45,
+        46
+      ],
+      "transcript": "M1: You've probably heard that our company is turning twenty-five next month, and the leadership team wants to hold a big celebration for all the staff. I've been asked to put a small planning committee together. W1: Oh, that sounds wonderful! Naomi and I would love to help out with the arrangements, if you still need a few more people. M1: That would be great, actually. We've already booked the venue, but we still need someone to coordinate the decorations and the entertainment. W2: We'd be happy to take that on. The two of us organized the staff appreciation lunch last year, so we've done something like this before. W1: Perfect. Just one thing — do we have a set budget to work within, or should we come up with a rough figure first? M1: There's a budget, and I'll share those details with you soon. For now, could you both send me your ideas by the end of next week?",
+      "audioRange": {
+        "assetId": "exams/toeic/6852/audio/audio_full.mp3",
+        "startTime": 1103.74,
+        "endTime": 1183.05
+      }
+    },
+    {
+      "id": "item_q47_49",
+      "questions": [
+        47,
+        48,
+        49
+      ],
+      "transcript": "W1: Excuse me — Bilal, is it? I saw your name badge. I'm hoping you can help me pick out some plants for my balcony, but it faces north and hardly gets any direct sunlight during the day. M1: Of course, happy to help. For a shady spot like that, you'll want shade-tolerant plants, and we've got a nice range right here in the garden section. Ferns do really well with very little light, and hostas are a great choice too. W1: Oh, they both look lovely. I should be honest with you, though — I'm usually only home to water anything on the weekends.",
+      "audioRange": {
+        "assetId": "exams/toeic/6852/audio/audio_full.mp3",
+        "startTime": 1190.14,
+        "endTime": 1258.53
+      }
+    },
+    {
+      "id": "item_q50_52",
+      "questions": [
+        50,
+        51,
+        52
+      ],
+      "transcript": "W1: Hi there. I'd like to order a custom cake for our office party next Thursday. There'll be about thirty of us — can you have it ready by two o'clock that afternoon? M1: Absolutely. A cake that size would serve thirty people comfortably, and Thursday gives us plenty of time. We can even print your company logo on top in edible icing. W1: Oh, that's a nice touch. What flavors do you have available for the filling? M1: We've got several. Our most popular one this month is the chocolate hazelnut, and it's really been a hit with customers. W1: That does sound delicious. A lot of my coworkers can't eat nuts, though.",
+      "audioRange": {
+        "assetId": "exams/toeic/6852/audio/audio_full.mp3",
+        "startTime": 1265.98,
+        "endTime": 1339.45
+      }
+    },
+    {
+      "id": "item_q53_55",
+      "questions": [
+        53,
+        54,
+        55
+      ],
+      "transcript": "M1: Good morning. My name is Theo Vandenberg. I'm planning a trip to Verona next week, and I'd like to book one of your guided walking tours of the old town for while I'm there. W1: Of course, sir. Which tour did you have in mind, and what date were you hoping for? M1: The full-day city tour, ideally on the Saturday. W1: Let me pull up the schedule. Actually, my colleague Camila is the one who manages the tour bookings. One moment ... Camila? W2: Yes, what's up? W1: Mr. Vandenberg would like the full-day Verona city tour, Saturday if it's available. Can you check? W2: Let me see. Hmm, I'm afraid Saturday is completely full, so the only date still open that week is the Thursday. If you'd like, I can hold it for you, but I'll need you to leave a deposit to secure the spot. M1: That works for me. And will the rest be due on the day of the tour?",
+      "audioRange": {
+        "assetId": "exams/toeic/6852/audio/audio_full.mp3",
+        "startTime": 1346.59,
+        "endTime": 1438.02
+      }
+    },
+    {
+      "id": "item_q56_58",
+      "questions": [
+        56,
+        57,
+        58
+      ],
+      "transcript": "M1: Hi, good morning. My name's Tomasz Werner, and I'm here to pick up the car I reserved online for the week. I've got the confirmation right here on my phone if you need it. W1: Let me just pull that up for you, Mr. Werner. Hmm, I see the issue. You booked our compact model, but the last one hasn't been returned to the lot yet, so I can't hand it over to you at the moment. M1: Oh, that's a bit of a problem. I'm driving out to the coast this afternoon with my family, and there are four of us plus quite a lot of luggage. I really need something for the whole trip today. W1: I completely understand, and I don't want to hold you up. What I can do is give you a mid-size vehicle instead, at no extra charge. It has plenty of room for everyone. I've already started the paperwork, so you'll be on the road in just a few minutes.",
+      "audioRange": {
+        "assetId": "exams/toeic/6852/audio/audio_full.mp3",
+        "startTime": 1445.18,
+        "endTime": 1526.99
+      }
+    },
+    {
+      "id": "item_q59_61",
+      "questions": [
+        59,
+        60,
+        61
+      ],
+      "transcript": "W1: Hi, I'd like to sign up for the beginner pottery class I saw on the community center's activity list. Are there still any spots left? M1: Let me check ... yes, we do have a few places open. The class meets every Thursday evening at seven o'clock. W1: That works well for my schedule, so please put my name down for it. Do I need to pay a separate fee for the clay and other materials? M1: No, a small materials fee is already included in the price you pay when you register, so there's nothing extra to worry about. W1: Oh, that's good to hear. Thank you so much for all your help. M1: You're welcome. Just remember to bring an apron to the first session, since working with the clay can get quite messy.",
+      "audioRange": {
+        "assetId": "exams/toeic/6852/audio/audio_full.mp3",
+        "startTime": 1534.02,
+        "endTime": 1608.33
+      }
+    },
+    {
+      "id": "item_q62_64",
+      "questions": [
+        62,
+        63,
+        64
+      ],
+      "transcript": "W1: Hi, I'd like to reserve a group study room for this afternoon, please. M1: Of course. How many people will be in your group, and do you need any particular equipment? W1: There'll be five of us. One of my colleagues might need a computer at some point, but the essential thing is a projector so we can show our slides on the screen. M1: Let me have a look. Hmm, based on that, this room right here would suit you best. W1: Great, thank you. It's a practice run for a pitch my team at Ferndale Marketing is giving to a client next week, so we really want to get the timing right. M1: Understood. I can book it from two o'clock, and the reservation runs for two hours. W1: Perfect. Oh, one more thing — is it all right to bring some food and drinks? M1: Light refreshments are fine in the study rooms, as long as you clear everything away before you leave.",
+      "audioRange": {
+        "assetId": "exams/toeic/6852/audio/audio_full.mp3",
+        "startTime": 1615.68,
+        "endTime": 1704.82
+      }
+    },
+    {
+      "id": "item_q65_67",
+      "questions": [
+        65,
+        66,
+        67
+      ],
+      "transcript": "M1: Good afternoon, and welcome to RapidRoute Courier. How can I help you today? W1: Hi. I need to send this box of product samples to a client, and they really need it to arrive within two days. M1: Sure. Here's our rate sheet with all the service levels listed. A two-day arrival would put you in this category right here — the delivery time matches exactly what you need. W1: That one's perfect, then. Let's go with that service. I'd also like to have the box picked up this afternoon, if that's possible. M1: No problem at all. Since the box holds fragile samples, I'd also recommend adding insurance, just in case anything gets damaged in transit.",
+      "audioRange": {
+        "assetId": "exams/toeic/6852/audio/audio_full.mp3",
+        "startTime": 1712.27,
+        "endTime": 1790.02
+      }
+    },
+    {
+      "id": "item_q68_70",
+      "questions": [
+        68,
+        69,
+        70
+      ],
+      "transcript": "M1: Good morning, welcome to Coastline Energy. How can I help you today? W1: Hi. I'd like to start electricity service at my new address. I'm moving in this weekend, so I need it active by then. M1: Of course, I can set that up for you. Which day exactly are you moving in? W1: Saturday. And while you're at it, could you also set me up for automatic monthly payments? I'd rather not have to remember each bill. M1: Sure, automatic payments are easy to add. Actually, hold on. I'm looking at your form here, and there's a problem with one of the lines. W1: Oh? What's wrong? M1: Whoever took your details entered the street incorrectly. I've just corrected it, so everything's right now and your service will still start on time.",
+      "audioRange": {
+        "assetId": "exams/toeic/6852/audio/audio_full.mp3",
+        "startTime": 1797.14,
+        "endTime": 1878.39
+      }
+    },
+    {
+      "id": "item_q71_73",
+      "questions": [
+        71,
+        72,
+        73
+      ],
+      "transcript": "M: Do you want to get in shape this year? Well, here's some great news — PulsePoint Fitness is opening a brand-new studio on Chestnut Avenue this coming Saturday, March third. Our bright, modern space offers group classes, free weights, and plenty of cardio machines for members of every fitness level. And to celebrate our grand opening, everyone who signs up during our first week receives a completely free seven-day trial to explore the whole studio. Simply download the PulsePoint app to reserve your spot before Sunday. We can't wait to see you there!",
+      "audioRange": {
+        "assetId": "exams/toeic/6852/audio/audio_full.mp3",
+        "startTime": 1918.13,
+        "endTime": 1988.51
+      }
+    },
+    {
+      "id": "item_q74_76",
+      "questions": [
+        74,
+        75,
+        76
+      ],
+      "transcript": "M: Attention shoppers, and thank you for visiting Brookmont Market this afternoon. Right now, over in aisle six, we're holding a free tasting of our new range of local cheeses, so please stop by and try a sample. If you show your membership card at the tasting counter, you'll receive twenty percent off any cheese you buy today. You'll find aisle six just past the fresh produce, near the back of the store. And remember, this special offer ends when we close at nine o'clock tonight.",
+      "audioRange": {
+        "assetId": "exams/toeic/6852/audio/audio_full.mp3",
+        "startTime": 1995.79,
+        "endTime": 2058.8
+      }
+    },
+    {
+      "id": "item_q77_79",
+      "questions": [
+        77,
+        78,
+        79
+      ],
+      "transcript": "W: Good morning, everyone. I'd like to let all staff know that, starting next Monday, we'll begin using a new online system called RoomLink to reserve our meeting rooms. This will replace the paper sign-up sheets we've kept by each door, which too often led to double bookings and confusion. From now on, please book any room by logging in to the company intranet and simply choosing an open time slot. And if you'd like some help getting started, a short training session will be held in the main hall this Thursday at two o'clock. Thank you.",
+      "audioRange": {
+        "assetId": "exams/toeic/6852/audio/audio_full.mp3",
+        "startTime": 2066.18,
+        "endTime": 2134.0
+      }
+    },
+    {
+      "id": "item_q80_82",
+      "questions": [
+        80,
+        81,
+        82
+      ],
+      "transcript": "W: Hello, Mr. Ferreira. This is Ingrid Sorensen calling from Northgate Staffing. I'm phoning about the application you sent us last week for the office assistant position. I'm very pleased to tell you that our hiring team would like to meet you for an interview. We've set aside a time on Thursday, the fourteenth, at ten in the morning. When you come in, please remember to bring copies of your identification documents and a short list of references. Now, one more thing—the position has attracted a lot of interest, so I would really encourage you to get back to me. Could you please call my direct line to let me know whether that time works for you? I look forward to hearing from you very soon.",
+      "audioRange": {
+        "assetId": "exams/toeic/6852/audio/audio_full.mp3",
+        "startTime": 2141.46,
+        "endTime": 2215.59
+      }
+    },
+    {
+      "id": "item_q83_85",
+      "questions": [
+        83,
+        84,
+        85
+      ],
+      "transcript": "M: Good morning, everyone, and thanks so much for coming in. Before we get started, I want to say how impressed I was with all of you this past weekend—it was our busiest sale of the year so far, and every one of you really pulled together. In fact, our sales were up thirty percent compared to the same weekend last year, which is a fantastic result. Now, moving on, starting next Monday we're going to change the way we set up the plant displays near the front entrance. Since spring is our busiest season, we want the flowering plants and our new Meadowbright line to be the very first thing customers see when they walk in. I've drawn up a full layout showing exactly where everything should go—it's posted on the board in the break room.",
+      "audioRange": {
+        "assetId": "exams/toeic/6852/audio/audio_full.mp3",
+        "startTime": 2222.93,
+        "endTime": 2297.83
+      }
+    },
+    {
+      "id": "item_q86_88",
+      "questions": [
+        86,
+        87,
+        88
+      ],
+      "transcript": "W: Hi, good morning. I'm calling for the customer service team at Willowbrook Furnishings. My name is Delphine Achebe, and my order number is four-seven-two-nine. A delivery arrived at my home yesterday afternoon. When I opened the box, I found a small side table, but this isn't what I ordered. I actually ordered a matching floor lamp for my living room. I'm hosting a family gathering next Saturday, so I really need the correct piece before then. Could you please arrange a replacement and pick up the wrong item? I'm sorry for any inconvenience. You can reach me any weekday after five o'clock.",
+      "audioRange": {
+        "assetId": "exams/toeic/6852/audio/audio_full.mp3",
+        "startTime": 2304.33,
+        "endTime": 2381.54
+      }
+    },
+    {
+      "id": "item_q89_91",
+      "questions": [
+        89,
+        90,
+        91
+      ],
+      "transcript": "M: Good afternoon, everyone, and welcome to your very first pottery class here at Larkfield Community Centre. I'm really glad you could all join us today. Now, I can see one or two nervous faces out there, but please don't worry — nobody here has to be an artist. This is just a relaxed session for complete beginners, so there's really no pressure at all. And there's no need to have brought anything with you, because the center supplies all the clay, the tools, and even the aprons. One thing to keep in mind is that the kiln in the corner gets extremely hot, so please stay well back from it. Alright, so to get us started, I'd like each of you to pick up an apron from the shelf by the door and then choose any open workstation.",
+      "audioRange": {
+        "assetId": "exams/toeic/6852/audio/audio_full.mp3",
+        "startTime": 2388.51,
+        "endTime": 2469.24
+      }
+    },
+    {
+      "id": "item_q92_94",
+      "questions": [
+        92,
+        93,
+        94
+      ],
+      "transcript": "M: Could I have everyone's attention, please? Thank you all for gathering here this afternoon to celebrate a very special occasion. As many of you know, we're here today to say goodbye to Gordon Ashworth, who is retiring after twenty-eight years of service with Bramley Freight. Some of you will remember that it was Gordon who built our very first regional delivery network, back when the whole company had only two small branches. I have to say, I'm not sure the rest of us will ever quite manage to fill his shoes... To thank him for everything he's given us, we've put together a small gift, which I'll present to him in just a moment. And after that, please stay and join us for some cake and refreshments in the room right next door.",
+      "audioRange": {
+        "assetId": "exams/toeic/6852/audio/audio_full.mp3",
+        "startTime": 2476.35,
+        "endTime": 2556.12
+      }
+    },
+    {
+      "id": "item_q95_97",
+      "questions": [
+        95,
+        96,
+        97
+      ],
+      "transcript": "W: Could everyone gather around me here by the door? Before we go any further, I'll need each of you to put on a pair of safety glasses — you'll find them in the box on my right. Now, this is one of the busiest sites Halvern Motors runs, and in fact we build more cars here at the Redbank plant than at any of the company's other locations. We've just finished up in Building A, and now we're heading to the workshop where the cars are painted. Once we're inside, please don't touch any of the equipment, since the machines run on their own and can start up without warning. And after that, we'll finish in the showroom, where you're welcome to sit inside our newest model and take as many photos as you'd like.",
+      "audioRange": {
+        "assetId": "exams/toeic/6852/audio/audio_full.mp3",
+        "startTime": 2563.27,
+        "endTime": 2644.84
+      }
+    },
+    {
+      "id": "item_q98_100",
+      "questions": [
+        98,
+        99,
+        100
+      ],
+      "transcript": "W: Hi, this is a message from Meridian Car Rental, calling to confirm your upcoming reservation. You've reserved one of our midsize vehicles, so please check the daily rate shown on the rate list we've sent to your e-mail. Your car will be ready for pickup on Saturday, March fourth, at our Fairview Road branch, any time after ten in the morning. When you arrive, please remember to bring a valid driver's license and the credit card you used to make the booking. If you'd like, you can also add a satellite navigation device at the counter for a small extra daily charge. Should you need to change any of the details, just call us at 555-0173. Thank you.",
+      "audioRange": {
+        "assetId": "exams/toeic/6852/audio/audio_full.mp3",
+        "startTime": 2655.09,
+        "endTime": 2741.54
+      }
+    }
+  ],
+  "issues": [],
+  "status": "complete"
+}

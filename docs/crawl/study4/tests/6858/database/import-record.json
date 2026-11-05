@@ -1,0 +1,19 @@
+{
+  "importedAt": "2026-11-02T05:15:50.562353+00:00",
+  "testId": "8c65d189-3964-4ec4-9209-5058d6c1bdbb",
+  "sourceKey": "study4_6858",
+  "categoryId": "d32290d7-68a3-4c70-9195-93543bc1a55a",
+  "categorySlug": "toeic-lr-collection-1",
+  "contentHash": "fbdad35bfb9cceec894a17d1f790b91dc0ea0650b9d756d0513163485503d9b3",
+  "questionCount": 200,
+  "assetCount": 12,
+  "sourceReviewStatus": "preview-needs-review",
+  "authorization": "User explicitly requested importing these two previews into the configured database",
+  "checks": {
+    "sourceProvenance": "passed",
+    "goValidator": "passed",
+    "mediaBytesAndHashes": "passed",
+    "publishedMediaReadback": "passed",
+    "committedJsonbReadback": "passed"
+  }
+}

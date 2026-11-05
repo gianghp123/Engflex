@@ -327,17 +327,6 @@ func (s *ConversationService) getOwned(ctx context.Context, userID, id string) (
 	return m, nil
 }
 
-func decodeStartResponse(raw []byte) (*voice.StartResponse, bool) {
-	var out voice.StartResponse
-	if err := json.Unmarshal(raw, &out); err != nil {
-		return nil, false
-	}
-	if out.SessionID == "" {
-		return nil, false
-	}
-	return &out, true
-}
-
 func (s *ConversationService) checkAccess(ctx context.Context, userID string, conv *models.Conversation) error {
 	if conv.ScenarioID != nil {
 		return s.access.CheckAccess(ctx, userID, *conv.ScenarioID)
