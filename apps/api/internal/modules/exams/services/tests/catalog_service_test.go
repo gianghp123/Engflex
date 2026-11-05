@@ -40,7 +40,11 @@ func TestGetCatalogTest(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			categories := repomocks.NewMockExamCategoryRepository(t)
 			repo := repomocks.NewMockExamTestRepository(t)
-			repo.On("GetByID", mock.Anything, "test").Return(tt.test, tt.err)
+			var catalog *models.ExamTestCatalog
+			if tt.test != nil {
+				catalog = &models.ExamTestCatalog{ExamTest: *tt.test}
+			}
+			repo.On("GetByID", mock.Anything, "test").Return(catalog, tt.err)
 			svc := services.NewCatalogService(categories, repo)
 			got, err := svc.GetTest(context.Background(), "test")
 			if tt.status != http.StatusOK {

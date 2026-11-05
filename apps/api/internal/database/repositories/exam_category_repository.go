@@ -10,7 +10,7 @@ import (
 )
 
 type ExamCategoryRepository interface {
-	List(ctx context.Context, examType enums.ExamType) ([]*models.ExamCategory, error)
+	List(ctx context.Context, examType enums.ExamType) ([]*models.ExamCategoryCatalog, error)
 	GetByID(ctx context.Context, id string) (*models.ExamCategory, error)
 }
 
@@ -20,9 +20,9 @@ func NewExamCategoryRepository(db *gorm.DB) ExamCategoryRepository {
 	return &examCategoryRepository{db: db}
 }
 
-func (r *examCategoryRepository) List(ctx context.Context, examType enums.ExamType) ([]*models.ExamCategory, error) {
-	var categories []*models.ExamCategory
-	query := r.db.WithContext(ctx)
+func (r *examCategoryRepository) List(ctx context.Context, examType enums.ExamType) ([]*models.ExamCategoryCatalog, error) {
+	var categories []*models.ExamCategoryCatalog
+	query := r.catalogQuery(ctx)
 	if examType != "" {
 		query = query.Where("type = ?", examType)
 	}
@@ -36,8 +36,16 @@ func (r *examCategoryRepository) GetByID(ctx context.Context, id string) (*model
 		return nil, err
 	}
 	var category models.ExamCategory
-	if err := r.db.WithContext(ctx).First(&category, "id = ?", parsed).Error; err != nil {
+	if err := r.db.WithContext(ctx).First(&category, "exam_categories.id = ?", parsed).Error; err != nil {
 		return nil, err
 	}
 	return &category, nil
+}
+
+// Correlated aggregates preserve one category per row, including empty ones.
+func (r *examCategoryRepository) catalogQuery(ctx context.Context) *gorm.DB {
+	return r.db.WithContext(ctx).Select(`exam_categories.*,
+		(SELECT count(*) FROM exam_tests t WHERE t.category_id = exam_categories.id) AS tests_count,
+		(SELECT count(*) FROM attempts a JOIN exam_tests t ON t.id = a.exam_test_id
+		 WHERE t.category_id = exam_categories.id AND a.type = 'exam') AS attempts_count`)
 }

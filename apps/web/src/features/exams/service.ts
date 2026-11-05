@@ -5,6 +5,7 @@ import type {
 	ExamCategory,
 	ExamReviewAttempt,
 	ExamReviewContent,
+	ExamStatistics,
 	ExamTakingContent,
 	ExamTestDetail,
 	ExamTestMetadata,
@@ -15,6 +16,10 @@ import type {
 } from "@engflex/contracts";
 import { API_ROUTES } from "#/app/api-routes";
 import { api, apiPage } from "#/lib/api/api";
+
+export function getExamStatistics(): Promise<ExamStatistics> {
+	return api<ExamStatistics>(API_ROUTES.EXAMS.ATTEMPTS.STATISTICS);
+}
 
 export function listExamCategories(params?: {
 	type?: ExamType;
@@ -111,6 +116,7 @@ export type {
 	ExamTakingContent,
 	ExamTestMetadata,
 	ExamType,
+	ExamStatistics,
 	PatchExamAttempt,
 	StartExamAttempt,
 };

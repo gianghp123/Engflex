@@ -3,10 +3,11 @@ import type {
 	PatchExamAttempt,
 	StartExamAttempt,
 } from "@engflex/contracts";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
 	cancelExamAttempt,
 	getExamAttempt,
+	getExamStatistics,
 	getExamTest,
 	listExamAttempts,
 	listExamCategories,
@@ -17,6 +18,7 @@ import {
 
 export const examKeys = {
 	all: ["exams"] as const,
+	statistics: () => [...examKeys.all, "statistics"] as const,
 	categories: (params?: { type?: ExamType }) =>
 		[...examKeys.all, "categories", params?.type ?? "all"] as const,
 	tests: (categoryId: string, params?: { page?: number; pageSize?: number }) =>
@@ -28,11 +30,30 @@ export const examKeys = {
 };
 
 export function useCancelExamAttempt() {
-	return useMutation({ mutationFn: cancelExamAttempt, retry: false });
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: cancelExamAttempt,
+		retry: false,
+		onSuccess: () => {
+			void queryClient.invalidateQueries({ queryKey: examKeys.statistics() });
+		},
+	});
 }
 
 export function useContinueExamAttempt() {
-	return useMutation({ mutationFn: getExamAttempt, retry: false });
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: getExamAttempt,
+		retry: false,
+		onSuccess: (attempt) => {
+			if (attempt.status === "completed")
+				void queryClient.invalidateQueries({ queryKey: examKeys.statistics() });
+		},
+	});
+}
+
+export function examStatisticsQueryOptions() {
+	return { queryKey: examKeys.statistics(), queryFn: getExamStatistics };
 }
 
 export function examTestQueryOptions(id: string) {
@@ -102,17 +123,31 @@ export function useExamAttempt(id: string | undefined) {
 }
 
 export function useStartExamAttempt() {
+	const queryClient = useQueryClient();
 	return useMutation({
 		retry: false,
 		mutationFn: (input: { testId: string; req: StartExamAttempt }) =>
 			startExamAttempt(input.testId, input.req),
+		onSuccess: (_, input) => {
+			void queryClient.invalidateQueries({
+				queryKey: [...examKeys.all, "categories"],
+			});
+			void queryClient.invalidateQueries({
+				queryKey: examKeys.test(input.testId),
+			});
+		},
 	});
 }
 
 export function usePatchExamAttempt() {
+	const queryClient = useQueryClient();
 	return useMutation({
 		retry: false,
 		mutationFn: (input: { attemptId: string; req: PatchExamAttempt }) =>
 			patchExamAttempt(input.attemptId, input.req),
+		onSuccess: (attempt) => {
+			if (attempt.status === "completed")
+				void queryClient.invalidateQueries({ queryKey: examKeys.statistics() });
+		},
 	});
 }

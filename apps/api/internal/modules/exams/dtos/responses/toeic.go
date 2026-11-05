@@ -3,20 +3,24 @@
 package responses
 
 type TestDetail struct {
-	ID            string           `json:"id"`
-	CategoryID    string           `json:"categoryId"`
-	Slug          string           `json:"slug"`
-	Title         string           `json:"title"`
-	ParsedContent *ContentMetadata `json:"content"`
-	Category      *Category        `json:"category"`
+	AttemptsCount   int64              `json:"attemptsCount"`
+	DurationMinutes int                `json:"durationMinutes"`
+	ID              string             `json:"id"`
+	CategoryID      string             `json:"categoryId"`
+	Slug            string             `json:"slug"`
+	Title           string             `json:"title"`
+	ParsedContent   *ContentMetadata   `json:"content"`
+	Category        *CategoryReference `json:"category"`
 }
 
 type TestMetadata struct {
-	ID            string           `json:"id"`
-	CategoryID    string           `json:"categoryId"`
-	Slug          string           `json:"slug"`
-	Title         string           `json:"title"`
-	ParsedContent *ContentMetadata `json:"content"`
+	AttemptsCount   int64            `json:"attemptsCount"`
+	DurationMinutes int              `json:"durationMinutes"`
+	ID              string           `json:"id"`
+	CategoryID      string           `json:"categoryId"`
+	Slug            string           `json:"slug"`
+	Title           string           `json:"title"`
+	ParsedContent   *ContentMetadata `json:"content"`
 }
 type ContentMetadata struct {
 	Parts []PartMetadata `json:"parts"`

@@ -13,6 +13,7 @@ import (
 )
 
 type AttemptRepository interface {
+	GetExamStatistics(ctx context.Context, userID string) (*models.ExamStatistics, error)
 	GetExamAttemptForUpdate(context.Context, string, string) (*models.Attempt, error)
 	SaveExamAttempt(context.Context, *models.Attempt, int) error
 	Create(ctx context.Context, m *models.Attempt) error
@@ -28,6 +29,19 @@ type AttemptRepository interface {
 	CountExamAttempts(ctx context.Context, userID string) (int64, error)
 	GetExamAttempt(ctx context.Context, userID, attemptID string) (*models.Attempt, error)
 	WithTx(tx *gorm.DB) AttemptRepository
+}
+
+func (r *attemptRepository) GetExamStatistics(ctx context.Context, userID string) (*models.ExamStatistics, error) {
+	var stats models.ExamStatistics
+	err := r.db.WithContext(ctx).Raw(`SELECT count(*) AS completed_tests,
+		max(a.score) AS highest_score, avg(a.score) AS average_score,
+		(array_agg(a.score ORDER BY a.submitted_at DESC NULLS LAST, a.created_at DESC, a.id DESC))[1] AS latest_score
+		FROM attempts a
+		JOIN exam_tests t ON t.id = a.exam_test_id
+		JOIN exam_categories c ON c.id = t.category_id
+		WHERE a.user_id = ? AND a.type = ? AND a.status = ? AND a.mode = ? AND c.type = ?`,
+		userID, enums.AttemptTypeExam, enums.AttemptStatusCompleted, enums.ExamModeExam, enums.ExamTypeTOEIC).Scan(&stats).Error
+	return &stats, err
 }
 
 func (r *attemptRepository) ListExamAttempts(ctx context.Context, userID string, limit, offset int) ([]*models.Attempt, error) {

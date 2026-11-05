@@ -1,0 +1,710 @@
+{
+  "testId": "6859",
+  "runId": "20261105T172933.428478Z",
+  "audioKey": "media/audio/ebba4b8c146ed4bd14c0e0c266b6c29899f2cebdc41100c3115b19921eba05db.mp3",
+  "audioSha256": "ebba4b8c146ed4bd14c0e0c266b6c29899f2cebdc41100c3115b19921eba05db",
+  "audioDuration": 2629.694693877551,
+  "exportHash": "eda4cb96198e428f1e88f650488b7e1192246dbd9933b840b19f06f9975cc5e0",
+  "asrHash": "d52bfcfc02bdc3f032e48b303853c2ec78c34b4dcc0d4573764e485454ac7c1e",
+  "model": "base.en",
+  "itemCount": 54,
+  "alignedCount": 54,
+  "items": [
+    {
+      "id": "item_q01",
+      "questions": [
+        1
+      ],
+      "transcript": "(A) Some pictures are mounted on a wall. (B) A man is hanging up a picture. (C) A rug is being rolled up. (D) A lamp is standing on the floor.",
+      "audioRange": {
+        "assetId": "media/audio/ebba4b8c146ed4bd14c0e0c266b6c29899f2cebdc41100c3115b19921eba05db.mp3",
+        "startTime": 54.76,
+        "endTime": 73.18
+      }
+    },
+    {
+      "id": "item_q02",
+      "questions": [
+        2
+      ],
+      "transcript": "(A) He's installing a door. (B) He's watering some plants. (C) He's trimming a hedge. (D) He's sweeping a patio.",
+      "audioRange": {
+        "assetId": "media/audio/ebba4b8c146ed4bd14c0e0c266b6c29899f2cebdc41100c3115b19921eba05db.mp3",
+        "startTime": 77.4,
+        "endTime": 95.1
+      }
+    },
+    {
+      "id": "item_q03",
+      "questions": [
+        3
+      ],
+      "transcript": "(A) The sidewalk is covered with leaves. (B) Some bushes are being trimmed. (C) Some workers are washing a window. (D) A van is being loaded.",
+      "audioRange": {
+        "assetId": "media/audio/ebba4b8c146ed4bd14c0e0c266b6c29899f2cebdc41100c3115b19921eba05db.mp3",
+        "startTime": 99.34,
+        "endTime": 119.46
+      }
+    },
+    {
+      "id": "item_q04",
+      "questions": [
+        4
+      ],
+      "transcript": "(A) They're sitting on a bench. (B) They're spreading a blanket on the grass. (C) They're folding an umbrella. (D) They're carrying a basket.",
+      "audioRange": {
+        "assetId": "media/audio/ebba4b8c146ed4bd14c0e0c266b6c29899f2cebdc41100c3115b19921eba05db.mp3",
+        "startTime": 123.43,
+        "endTime": 142.65
+      }
+    },
+    {
+      "id": "item_q05",
+      "questions": [
+        5
+      ],
+      "transcript": "(A) A man is reading a document. (B) A woman is answering a telephone. (C) They're shaking hands across a counter. (D) They're stacking boxes on a cart.",
+      "audioRange": {
+        "assetId": "media/audio/ebba4b8c146ed4bd14c0e0c266b6c29899f2cebdc41100c3115b19921eba05db.mp3",
+        "startTime": 147.12,
+        "endTime": 167.7
+      }
+    },
+    {
+      "id": "item_q06",
+      "questions": [
+        6
+      ],
+      "transcript": "(A) He's looking into a microscope. (B) He's typing on a keyboard. (C) He's opening a drawer. (D) He's talking on a phone.",
+      "audioRange": {
+        "assetId": "media/audio/ebba4b8c146ed4bd14c0e0c266b6c29899f2cebdc41100c3115b19921eba05db.mp3",
+        "startTime": 171.94,
+        "endTime": 189.96
+      }
+    },
+    {
+      "id": "item_q07",
+      "questions": [
+        7
+      ],
+      "transcript": "Would you be interested in coming along with our cycling group this Saturday morning? (A) Sure, that would be great. (B) About twenty miles altogether. (C) A brand-new road bike.",
+      "audioRange": {
+        "assetId": "media/audio/ebba4b8c146ed4bd14c0e0c266b6c29899f2cebdc41100c3115b19921eba05db.mp3",
+        "startTime": 221.64,
+        "endTime": 238.66
+      }
+    },
+    {
+      "id": "item_q08",
+      "questions": [
+        8
+      ],
+      "transcript": "Is my cleaning appointment this Friday or next Friday? (A) It's this Friday, at nine in the morning. (B) The same hygienist as last time. (C) Please take the next available seat.",
+      "audioRange": {
+        "assetId": "media/audio/ebba4b8c146ed4bd14c0e0c266b6c29899f2cebdc41100c3115b19921eba05db.mp3",
+        "startTime": 242.87,
+        "endTime": 260.37
+      }
+    },
+    {
+      "id": "item_q09",
+      "questions": [
+        9
+      ],
+      "transcript": "Aren't the new fare gates already fully contactless? (A) I haven't ridden that line yet. (B) The doors close pretty quickly on this platform. (C) No, just a single ride pass, please.",
+      "audioRange": {
+        "assetId": "media/audio/ebba4b8c146ed4bd14c0e0c266b6c29899f2cebdc41100c3115b19921eba05db.mp3",
+        "startTime": 264.47,
+        "endTime": 282.59
+      }
+    },
+    {
+      "id": "item_q10",
+      "questions": [
+        10
+      ],
+      "transcript": "Why did you move this afternoon's lessons to a later time? (A) At four o'clock instead. (B) He printed the new schedules. (C) The main room was still in use.",
+      "audioRange": {
+        "assetId": "media/audio/ebba4b8c146ed4bd14c0e0c266b6c29899f2cebdc41100c3115b19921eba05db.mp3",
+        "startTime": 286.9,
+        "endTime": 305.26
+      }
+    },
+    {
+      "id": "item_q11",
+      "questions": [
+        11
+      ],
+      "transcript": "Do you want to book the early morning flight or the one in the late afternoon? (A) Yes, that would be great. (B) From the main terminal. (C) I'm still waiting to hear back about the meeting time.",
+      "audioRange": {
+        "assetId": "media/audio/ebba4b8c146ed4bd14c0e0c266b6c29899f2cebdc41100c3115b19921eba05db.mp3",
+        "startTime": 309.7,
+        "endTime": 326.84
+      }
+    },
+    {
+      "id": "item_q12",
+      "questions": [
+        12
+      ],
+      "transcript": "Where can I get some water for my bottle? (A) Fill it up at the stand near gate five. (B) A large plastic bottle. (C) Just before we board.",
+      "audioRange": {
+        "assetId": "media/audio/ebba4b8c146ed4bd14c0e0c266b6c29899f2cebdc41100c3115b19921eba05db.mp3",
+        "startTime": 330.97,
+        "endTime": 345.81
+      }
+    },
+    {
+      "id": "item_q13",
+      "questions": [
+        13
+      ],
+      "transcript": "Vivian's coordinating the wedding order, right? (A) The colors really coordinate well. (B) No, Denise is. (C) There's plenty of food left over.",
+      "audioRange": {
+        "assetId": "media/audio/ebba4b8c146ed4bd14c0e0c266b6c29899f2cebdc41100c3115b19921eba05db.mp3",
+        "startTime": 349.92,
+        "endTime": 366.46
+      }
+    },
+    {
+      "id": "item_q14",
+      "questions": [
+        14
+      ],
+      "transcript": "Do you like the new lunch menu in the cafeteria? (A) Yes, the launch went really well. (B) No, I'm not too impressed, honestly. (C) The café is just down the hall.",
+      "audioRange": {
+        "assetId": "media/audio/ebba4b8c146ed4bd14c0e0c266b6c29899f2cebdc41100c3115b19921eba05db.mp3",
+        "startTime": 370.85,
+        "endTime": 387.03
+      }
+    },
+    {
+      "id": "item_q15",
+      "questions": [
+        15
+      ],
+      "transcript": "Could you water the plants in the greenhouse this afternoon? (A) The weather's been really dry lately. (B) I'm leaving at noon today. (C) By the back entrance.",
+      "audioRange": {
+        "assetId": "media/audio/ebba4b8c146ed4bd14c0e0c266b6c29899f2cebdc41100c3115b19921eba05db.mp3",
+        "startTime": 391.42,
+        "endTime": 406.36
+      }
+    },
+    {
+      "id": "item_q16",
+      "questions": [
+        16
+      ],
+      "transcript": "Let me know when the shipment gets here, so I can help you move the boxes. (A) Those boxes are really heavy. (B) She's down in the loading area. (C) Gabriel's already taking care of it.",
+      "audioRange": {
+        "assetId": "media/audio/ebba4b8c146ed4bd14c0e0c266b6c29899f2cebdc41100c3115b19921eba05db.mp3",
+        "startTime": 411.04,
+        "endTime": 427.98
+      }
+    },
+    {
+      "id": "item_q17",
+      "questions": [
+        17
+      ],
+      "transcript": "Have we finished resurfacing the lanes before we open? (A) Yes, the crew wrapped up that job about an hour ago. (B) When exactly do we open to the public today? (C) They're right behind the shoe rental counter.",
+      "audioRange": {
+        "assetId": "media/audio/ebba4b8c146ed4bd14c0e0c266b6c29899f2cebdc41100c3115b19921eba05db.mp3",
+        "startTime": 432.1,
+        "endTime": 451.98
+      }
+    },
+    {
+      "id": "item_q18",
+      "questions": [
+        18
+      ],
+      "transcript": "What flavor would you like me to add to your drink? (A) As soon as the machine's free. (B) Yes, that's a big favor, thanks. (C) I'd love some caramel, thanks.",
+      "audioRange": {
+        "assetId": "media/audio/ebba4b8c146ed4bd14c0e0c266b6c29899f2cebdc41100c3115b19921eba05db.mp3",
+        "startTime": 456.11,
+        "endTime": 473.17
+      }
+    },
+    {
+      "id": "item_q19",
+      "questions": [
+        19
+      ],
+      "transcript": "Did you buy the annual movie membership? (A) Yes, right at the start of the year. (B) I've already found my seat. (C) I'm reading the manual now.",
+      "audioRange": {
+        "assetId": "media/audio/ebba4b8c146ed4bd14c0e0c266b6c29899f2cebdc41100c3115b19921eba05db.mp3",
+        "startTime": 477.05,
+        "endTime": 493.47
+      }
+    },
+    {
+      "id": "item_q20",
+      "questions": [
+        20
+      ],
+      "transcript": "How long has the packing machine been out of service? (A) I'm afraid I don't have any free time. (B) The machine's just past the loading area. (C) Close to two days now.",
+      "audioRange": {
+        "assetId": "media/audio/ebba4b8c146ed4bd14c0e0c266b6c29899f2cebdc41100c3115b19921eba05db.mp3",
+        "startTime": 497.9,
+        "endTime": 514.08
+      }
+    },
+    {
+      "id": "item_q21",
+      "questions": [
+        21
+      ],
+      "transcript": "Why don't we haul the kayaks up before the tide comes in? (A) The hall is being repainted this week. (B) Actually, I've already started on that. (C) Because the tide's higher than usual.",
+      "audioRange": {
+        "assetId": "media/audio/ebba4b8c146ed4bd14c0e0c266b6c29899f2cebdc41100c3115b19921eba05db.mp3",
+        "startTime": 518.22,
+        "endTime": 535.44
+      }
+    },
+    {
+      "id": "item_q22",
+      "questions": [
+        22
+      ],
+      "transcript": "Would you like me to arrange delivery for your table? (A) No thanks, I'd rather load it into my car. (B) They delivered the results this morning. (C) She's really good at her job.",
+      "audioRange": {
+        "assetId": "media/audio/ebba4b8c146ed4bd14c0e0c266b6c29899f2cebdc41100c3115b19921eba05db.mp3",
+        "startTime": 540.04,
+        "endTime": 556.44
+      }
+    },
+    {
+      "id": "item_q23",
+      "questions": [
+        23
+      ],
+      "transcript": "Here are some color swatches for you to choose from. (A) It opens at nine tomorrow. (B) My watch needs a new battery. (C) Let me look through them first.",
+      "audioRange": {
+        "assetId": "media/audio/ebba4b8c146ed4bd14c0e0c266b6c29899f2cebdc41100c3115b19921eba05db.mp3",
+        "startTime": 560.82,
+        "endTime": 576.64
+      }
+    },
+    {
+      "id": "item_q24",
+      "questions": [
+        24
+      ],
+      "transcript": "Are these lenses single-vision or bifocal? (A) Yes, I renewed my license last week. (B) They're single-vision. (C) About ninety dollars altogether.",
+      "audioRange": {
+        "assetId": "media/audio/ebba4b8c146ed4bd14c0e0c266b6c29899f2cebdc41100c3115b19921eba05db.mp3",
+        "startTime": 580.9,
+        "endTime": 596.72
+      }
+    },
+    {
+      "id": "item_q25",
+      "questions": [
+        25
+      ],
+      "transcript": "Who's presenting the station's new evening program? (A) A present for the top listener. (B) Bernard's been picked for it. (C) Every weekday at seven.",
+      "audioRange": {
+        "assetId": "media/audio/ebba4b8c146ed4bd14c0e0c266b6c29899f2cebdc41100c3115b19921eba05db.mp3",
+        "startTime": 601.32,
+        "endTime": 616.88
+      }
+    },
+    {
+      "id": "item_q26",
+      "questions": [
+        26
+      ],
+      "transcript": "You're fixing the brakes on that car, right? (A) That was a close game last night. (B) No, it's the second door on the left. (C) Yes, it's just about finished.",
+      "audioRange": {
+        "assetId": "media/audio/ebba4b8c146ed4bd14c0e0c266b6c29899f2cebdc41100c3115b19921eba05db.mp3",
+        "startTime": 621.19,
+        "endTime": 637.45
+      }
+    },
+    {
+      "id": "item_q27",
+      "questions": [
+        27
+      ],
+      "transcript": "Which segment of the documentary do you think we should start editing first? (A) The client hasn't approved anything yet. (B) My computer wouldn't start up this morning. (C) He's directing the next project.",
+      "audioRange": {
+        "assetId": "media/audio/ebba4b8c146ed4bd14c0e0c266b6c29899f2cebdc41100c3115b19921eba05db.mp3",
+        "startTime": 641.66,
+        "endTime": 659.91
+      }
+    },
+    {
+      "id": "item_q28",
+      "questions": [
+        28
+      ],
+      "transcript": "Could you email the supplier to confirm the amount on this invoice? (A) Sure, the file room downstairs. (B) They ship every Thursday. (C) I'm busy until noon.",
+      "audioRange": {
+        "assetId": "media/audio/ebba4b8c146ed4bd14c0e0c266b6c29899f2cebdc41100c3115b19921eba05db.mp3",
+        "startTime": 664.31,
+        "endTime": 681.77
+      }
+    },
+    {
+      "id": "item_q29",
+      "questions": [
+        29
+      ],
+      "transcript": "When will my dress be ready for pickup? (A) You could address that at the counter. (B) We just have a few buttons left to sew on. (C) Right by the pickup window.",
+      "audioRange": {
+        "assetId": "media/audio/ebba4b8c146ed4bd14c0e0c266b6c29899f2cebdc41100c3115b19921eba05db.mp3",
+        "startTime": 686.2,
+        "endTime": 702.26
+      }
+    },
+    {
+      "id": "item_q30",
+      "questions": [
+        30
+      ],
+      "transcript": "We're setting off early Saturday for the group hike. (A) Did they reach the top? (B) Just two water bottles. (C) I already have weekend plans.",
+      "audioRange": {
+        "assetId": "media/audio/ebba4b8c146ed4bd14c0e0c266b6c29899f2cebdc41100c3115b19921eba05db.mp3",
+        "startTime": 706.45,
+        "endTime": 721.42
+      }
+    },
+    {
+      "id": "item_q31",
+      "questions": [
+        31
+      ],
+      "transcript": "The clinic switched to sending appointment reminders by text instead of by phone, didn't it? (A) They upgraded their whole system last month. (B) I'd like a later appointment, please. (C) Could you remind me of the address?",
+      "audioRange": {
+        "assetId": "media/audio/ebba4b8c146ed4bd14c0e0c266b6c29899f2cebdc41100c3115b19921eba05db.mp3",
+        "startTime": 725.81,
+        "endTime": 744.97
+      }
+    },
+    {
+      "id": "item_q32_34",
+      "questions": [
+        32,
+        33,
+        34
+      ],
+      "transcript": "M1: Hi, I'm Elias Moreno from sales. I'm dropping off the receipts from our three-day sales meeting in Torrington — four of them. W1: Welcome, but we don't take the paper packet anymore. Since the first of this month, everything goes through our new online system, ExpenseLink. The cut-off date is still the fifteenth, same as before. M1: Oh, I hadn't heard. Could you take the paper copies just this once? I have a meeting at two. W1: I could type them in for you, but you should do your own first entry — you'll need it every month. The log-in is on the staff page. M1: Thanks, but I'd rather learn it myself. I'll enter the receipts online right after my meeting, before I leave today. W1: That works. I'll look for it this evening.",
+      "audioRange": {
+        "assetId": "media/audio/ebba4b8c146ed4bd14c0e0c266b6c29899f2cebdc41100c3115b19921eba05db.mp3",
+        "startTime": 778.55,
+        "endTime": 856.06
+      }
+    },
+    {
+      "id": "item_q35_37",
+      "questions": [
+        35,
+        36,
+        37
+      ],
+      "transcript": "W1: Hi, I'd like to reserve some kayaks for a group outing during our lake trip this Saturday. There are eight of us. M1: Sure, thanks for calling Pinecrest Boat Rentals. So that's eight single kayaks for Saturday. Let me check with my colleague who keeps the schedule. M2: I'm sorry, but all of our single kayaks are already fully booked for that day. W1: Oh, that's a shame. Is there anything else we could use? M2: Well, we still have several two-person canoes free, so I can set aside four of those for your group instead. W1: That sounds great. Let's go with the canoes.",
+      "audioRange": {
+        "assetId": "media/audio/ebba4b8c146ed4bd14c0e0c266b6c29899f2cebdc41100c3115b19921eba05db.mp3",
+        "startTime": 863.64,
+        "endTime": 930.91
+      }
+    },
+    {
+      "id": "item_q38_40",
+      "questions": [
+        38,
+        39,
+        40
+      ],
+      "transcript": "M1: Hi, I'd like to bring my bicycle on the next departure to the north shore. I have to be there by two o'clock for a meeting, so the sooner the better. W1: Welcome to Redcliff Ferry. Let me check for you. Unfortunately, the bicycle spaces on that sailing are already fully booked, and I can see you're in a real hurry. W1: But here's some good news. There's an earlier boat leaving in about twenty minutes, and it still has room for bikes. It arrives well before two, so I can book you onto that one right now if you'd like.",
+      "audioRange": {
+        "assetId": "media/audio/ebba4b8c146ed4bd14c0e0c266b6c29899f2cebdc41100c3115b19921eba05db.mp3",
+        "startTime": 938.26,
+        "endTime": 1002.56
+      }
+    },
+    {
+      "id": "item_q41_43",
+      "questions": [
+        41,
+        42,
+        43
+      ],
+      "transcript": "W1: Julian, thanks so much for coming in this morning. We're really glad Aperture Lane Portraits could take the staff photos for our new website. M1: Happy to be here. Before we start, could you bring the team together in the conference room? I'll set up the lighting and background while you round everyone up. W1: Of course. I'll gather everyone right now — there are eight of us, and I emailed you the name list yesterday. M1: Great, I got it. Hmm, one thing though — the list has everyone's names, but their job titles aren't included, and I need those for the captions. Could you send them over?",
+      "audioRange": {
+        "assetId": "media/audio/ebba4b8c146ed4bd14c0e0c266b6c29899f2cebdc41100c3115b19921eba05db.mp3",
+        "startTime": 1009.71,
+        "endTime": 1075.34
+      }
+    },
+    {
+      "id": "item_q44_46",
+      "questions": [
+        44,
+        45,
+        46
+      ],
+      "transcript": "W1: Hi, good morning. I'm looking for work, and a friend suggested I come in and register with your agency for some placement help. M1: Welcome! You've come to the right place. Once you register, I'll get to know your background and match you with employers who are hiring. And here's what makes us really useful — a lot of the openings we fill are never advertised publicly, so you'll hear about roles you couldn't find on your own. W1: Oh, that's really helpful. My résumé isn't quite finished, though. Would it be all right if I used one of your computers here to update it before we start? M1: Absolutely, no problem. Take that desk in the corner, and once you're done, we'll fill out your registration together.",
+      "audioRange": {
+        "assetId": "media/audio/ebba4b8c146ed4bd14c0e0c266b6c29899f2cebdc41100c3115b19921eba05db.mp3",
+        "startTime": 1082.69,
+        "endTime": 1156.24
+      }
+    },
+    {
+      "id": "item_q47_49",
+      "questions": [
+        47,
+        48,
+        49
+      ],
+      "transcript": "M1: Good morning, Elmwood Collection Services. How can I help you? W1: Hi. I'd like to arrange a pickup for two large items — an old refrigerator and a couch I'm getting rid of. M1: Certainly. We can collect those next Thursday. There's a fee of ten dollars per item, so twenty in total. W1: That's fine. I should mention, though — the refrigerator is extremely heavy, and I live alone. M1: No need to worry. Our crew handles all the lifting themselves. I'll send you a confirmation e-mail with the day and the address details. W1: Wonderful. Thank you so much for your help.",
+      "audioRange": {
+        "assetId": "media/audio/ebba4b8c146ed4bd14c0e0c266b6c29899f2cebdc41100c3115b19921eba05db.mp3",
+        "startTime": 1163.78,
+        "endTime": 1236.64
+      }
+    },
+    {
+      "id": "item_q50_52",
+      "questions": [
+        50,
+        51,
+        52
+      ],
+      "transcript": "M1: Good morning, Ms. Pell. I'd like to attend the Regional Marketing Summit next month. W1: Oh, that's a great idea, Warren. Building your skills is just what we want. M1: Thanks. The sessions on new campaign strategies would really benefit our whole team. W1: Definitely. For an extra two hundred dollars, you could add the hands-on workshop day. Shall I include that? M1: Hmm, well, our department funds are pretty tight this quarter. W1: I understand completely. The main summit is still approved, so go ahead and register. M1: Great. One question — do I need to submit my receipts before I'm reimbursed for the travel? W1: Yes, just turn them in within a week, and finance will handle the rest.",
+      "audioRange": {
+        "assetId": "media/audio/ebba4b8c146ed4bd14c0e0c266b6c29899f2cebdc41100c3115b19921eba05db.mp3",
+        "startTime": 1243.96,
+        "endTime": 1321.87
+      }
+    },
+    {
+      "id": "item_q53_55",
+      "questions": [
+        53,
+        54,
+        55
+      ],
+      "transcript": "W1: Come in, welcome. I'm Hannah, and this is my business partner, Rosa. We've been looking over the concepts you sent through. M1: Thank you both. I'm Everett, and I design websites and brand materials for small businesses. I've been developing those layouts all week. W2: Great. So Hannah and I run a yoga studio together, and we're really hoping the new site will bring in more members. M1: That's exactly what I aimed for. This first concept puts your class photos right at the top to draw people in. W1: Oh, I love that. It feels warm and inviting. M1: Perfect. One thing I need to know — when would you like the site ready to launch? W1: By the first of March, ideally, before our spring sign-up period begins.",
+      "audioRange": {
+        "assetId": "media/audio/ebba4b8c146ed4bd14c0e0c266b6c29899f2cebdc41100c3115b19921eba05db.mp3",
+        "startTime": 1329.05,
+        "endTime": 1408.15
+      }
+    },
+    {
+      "id": "item_q56_58",
+      "questions": [
+        56,
+        57,
+        58
+      ],
+      "transcript": "W1: Mr. Osborne, I'm Rosalind from Vertex Lift Services. I'm here to arrange the annual servicing for the building's elevators. M1: Nice to meet you. I should mention, though — our lobby gets very busy every morning, so shutting an elevator down during work hours would really slow everyone down. W1: I understand completely. The good news is we can finish the whole job in about six hours. I'd suggest we carry it out on a Saturday, when the building is mostly empty. M1: That sounds sensible. Before I confirm a date, though, could you send me a written cost estimate? I'll need to run it by the property owner first.",
+      "audioRange": {
+        "assetId": "media/audio/ebba4b8c146ed4bd14c0e0c266b6c29899f2cebdc41100c3115b19921eba05db.mp3",
+        "startTime": 1408.15,
+        "endTime": 1486.21
+      }
+    },
+    {
+      "id": "item_q59_61",
+      "questions": [
+        59,
+        60,
+        61
+      ],
+      "transcript": "W1: Thanks for calling Coppertop Linen Supply, this is Vera. How can I help you today? M1: Hi, I manage Harvest Table Bistro, and I'd like to set up regular rental and cleaning of our tablecloths and napkins for the dining room. W1: Of course. For a place your size, I'd recommend our scheduled service. We collect your used linens once a week and drop off freshly laundered replacements at the very same time. M1: That sounds workable. My one worry is the weekends. We get extremely busy, and I'm not sure a single weekly delivery would leave us with enough clean linens to get through the rush.",
+      "audioRange": {
+        "assetId": "media/audio/ebba4b8c146ed4bd14c0e0c266b6c29899f2cebdc41100c3115b19921eba05db.mp3",
+        "startTime": 1493.48,
+        "endTime": 1560.87
+      }
+    },
+    {
+      "id": "item_q62_64",
+      "questions": [
+        62,
+        63,
+        64
+      ],
+      "transcript": "W1: Good morning, and welcome to the Ashcombe Events House. May I ask who you are and what you're delivering today? M1: Of course. I'm Damon Reyes — I run a flower shop, and I've brought all the arrangements for the wedding this afternoon. They're fairly tall, so I really need to know exactly which room to set them up in. W1: Let me check the floor plan for you. Your wedding is in the third hall from the main entrance — the one directly below the garden terrace. M1: Got it, thank you. And where should I leave my van while I unload everything? W1: Here's a parking permit for the lot. Just use the side entrance on your right, and someone will come help you carry things in.",
+      "audioRange": {
+        "assetId": "media/audio/ebba4b8c146ed4bd14c0e0c266b6c29899f2cebdc41100c3115b19921eba05db.mp3",
+        "startTime": 1568.11,
+        "endTime": 1645.88
+      }
+    },
+    {
+      "id": "item_q65_67",
+      "questions": [
+        65,
+        66,
+        67
+      ],
+      "transcript": "W1: Good morning, Theo. I'm so sorry — I emailed everyone the wrong version of the schedule yesterday. Did it cause any confusion? M1: Don't worry, I sent a correction right away. But we do have a bigger problem — the projector in the Willow Room has stopped working. W1: Oh no. Then we'll have to move that session to a different room. I'll figure out where. M1: Sounds good. Also, the caterer still needs a final headcount before eleven o'clock. W1: Right — can you call them with the number? Meanwhile, I'll update the signs on all the doors.",
+      "audioRange": {
+        "assetId": "media/audio/ebba4b8c146ed4bd14c0e0c266b6c29899f2cebdc41100c3115b19921eba05db.mp3",
+        "startTime": 1653.28,
+        "endTime": 1724.02
+      }
+    },
+    {
+      "id": "item_q68_70",
+      "questions": [
+        68,
+        69,
+        70
+      ],
+      "transcript": "W1: Welcome to Ridgeline Cycles. Can I help you find something today? M1: Yes, I'm looking for a new bike. My current one is just too heavy—I'm honestly tired of lifting it around. W1: I completely understand. And where do you normally ride? M1: Mostly on rough dirt paths through the woods near my house. There are lots of bumps and loose, uneven ground. W1: In that case, take a look at this printed list. Each model is matched to a type of riding, so one of them will suit you perfectly. M1: That's really helpful. So which one should I go with? W1: Let me check your size in the back and bring that one out for you to try.",
+      "audioRange": {
+        "assetId": "media/audio/ebba4b8c146ed4bd14c0e0c266b6c29899f2cebdc41100c3115b19921eba05db.mp3",
+        "startTime": 1731.72,
+        "endTime": 1808.96
+      }
+    },
+    {
+      "id": "item_q71_73",
+      "questions": [
+        71,
+        72,
+        73
+      ],
+      "transcript": "W: Hi, Gerald. I've just finished going through the results of the customer feedback survey we sent out last month, and overall the numbers are really encouraging. Most people said they're happy with our frame selection and the service they get here in the shop. There was one thing that came up again and again, though — a lot of customers complained about long wait times when they call to book an appointment. I think the phone line simply gets too busy in the afternoons. So I'd like to suggest hiring an additional employee to handle those calls. Could you help me put together a proposal for the manager?",
+      "audioRange": {
+        "assetId": "media/audio/ebba4b8c146ed4bd14c0e0c266b6c29899f2cebdc41100c3115b19921eba05db.mp3",
+        "startTime": 1843.45,
+        "endTime": 1910.72
+      }
+    },
+    {
+      "id": "item_q74_76",
+      "questions": [
+        74,
+        75,
+        76
+      ],
+      "transcript": "M: Are you looking for a better way to keep your pet looking its best? Come and visit Willowpaw Pet Grooming Salon, right here in town. Every one of our groomers is fully certified and highly experienced. You can trust that your pet is always in caring, expert hands. And as a special welcome, all first-time customers receive a free nail trim with their appointment. Our schedule fills up quickly, especially on weekends, so spaces are limited. So don't wait—call us today to reserve a time that suits you.",
+      "audioRange": {
+        "assetId": "media/audio/ebba4b8c146ed4bd14c0e0c266b6c29899f2cebdc41100c3115b19921eba05db.mp3",
+        "startTime": 1917.94,
+        "endTime": 1981.73
+      }
+    },
+    {
+      "id": "item_q77_79",
+      "questions": [
+        77,
+        78,
+        79
+      ],
+      "transcript": "W: Good evening, and welcome to our six-week course here at the Fernbrook Learning Center. Over these sessions, we'll focus on managing your personal finances — how to track what you spend and plan ahead with confidence. Each week I'll hand out a short worksheet, and we'll work through it together. Before our next meeting, I'd like each of you to create a weekly schedule mapping out where your money goes. Now, if that sounds intimidating, don't worry — I struggled with this myself when I first started. Believe me, it gets much easier over time. Next time, we'll look at simple ways to set savings goals.",
+      "audioRange": {
+        "assetId": "media/audio/ebba4b8c146ed4bd14c0e0c266b6c29899f2cebdc41100c3115b19921eba05db.mp3",
+        "startTime": 1988.85,
+        "endTime": 2066.65
+      }
+    },
+    {
+      "id": "item_q80_82",
+      "questions": [
+        80,
+        81,
+        82
+      ],
+      "transcript": "W: And now for our weekly local business update. Larkfield Farmers Market, a favorite with shoppers here for over a decade, is moving to a larger site in the town center. The new location on Bexley Street offers room for eighty vendor stalls—nearly double what the current lot can hold. Organizers say the move was needed to accommodate the growing number of visitors who show up each weekend. To mark the occasion, an opening-day celebration is planned, with live music and free food samples. So if you'd like to join in, just head down to the new Bexley Street site this Saturday morning.",
+      "audioRange": {
+        "assetId": "media/audio/ebba4b8c146ed4bd14c0e0c266b6c29899f2cebdc41100c3115b19921eba05db.mp3",
+        "startTime": 2073.8,
+        "endTime": 2144.62
+      }
+    },
+    {
+      "id": "item_q83_85",
+      "questions": [
+        83,
+        84,
+        85
+      ],
+      "transcript": "W: As front-desk assistants here at Maplebrook Clinic, one of your main duties is checking in patients as soon as they arrive at the counter. This step is important because it lets our nurses and doctors know right away that a patient is waiting for an appointment. When someone walks up, greet them, find their name on the screen in front of you, and confirm their appointment time. Once you've done that, a green checkmark will appear next to their name, which means they've been successfully checked in. Now, let me introduce you to the rest of the team you'll be working with.",
+      "audioRange": {
+        "assetId": "media/audio/ebba4b8c146ed4bd14c0e0c266b6c29899f2cebdc41100c3115b19921eba05db.mp3",
+        "startTime": 2151.53,
+        "endTime": 2216.99
+      }
+    },
+    {
+      "id": "item_q86_88",
+      "questions": [
+        86,
+        87,
+        88
+      ],
+      "transcript": "M: Hi, Greta. This is Roman Whitfield calling from Cordell Appliances. We're a company that designs and produces kitchen appliances at our own factory here in town, and I wanted to tell you about our newest item, the BreezeBlend Mini compact blender. Actually, yesterday our sales figures showed that demand for this little blender has risen sharply over the past month, so I really think it would be a great fit for the shelves at your store. It's lightweight, quiet, and very affordable. Now, I should mention that these units tend to sell out quickly, so I'd hate for you to miss the chance to stock them. Please give me a call back when you get this message.",
+      "audioRange": {
+        "assetId": "media/audio/ebba4b8c146ed4bd14c0e0c266b6c29899f2cebdc41100c3115b19921eba05db.mp3",
+        "startTime": 2224.25,
+        "endTime": 2293.79
+      }
+    },
+    {
+      "id": "item_q89_91",
+      "questions": [
+        89,
+        90,
+        91
+      ],
+      "transcript": "M: Hello, and welcome to Brightlock Self Storage. Thank you for renting a unit with us—we're really glad to have you as a customer. One thing our renters especially appreciate is that every unit is kept at a steady temperature all year round, so your belongings stay safe from heat and humidity. In this short video, I'll show you how to reach your unit on your very first visit. Before you come by, I strongly recommend downloading our mobile app. With it, you can open the entrance gate right from your phone, so you won't have to stop and type a code at the panel every single time.",
+      "audioRange": {
+        "assetId": "media/audio/ebba4b8c146ed4bd14c0e0c266b6c29899f2cebdc41100c3115b19921eba05db.mp3",
+        "startTime": 2300.96,
+        "endTime": 2368.75
+      }
+    },
+    {
+      "id": "item_q92_94",
+      "questions": [
+        92,
+        93,
+        94
+      ],
+      "transcript": "W: Good morning, and welcome to the weekend arts hour here on Millbrook Community Radio. I'm your host, Gloria Hartman. Our top story today: a brand-new photography exhibition has just opened at the Pelham Art Museum downtown. The collection is the work of local photographer Ruth Halvorsen, who spent the past three years traveling along our coast. Now, what makes this show truly special is that nearly every photograph was taken underwater — something you rarely see in a gallery. The exhibition opens to the public this Saturday, and admission is completely free for the first two weeks. So do plan a trip soon, because it only runs through the end of the month.",
+      "audioRange": {
+        "assetId": "media/audio/ebba4b8c146ed4bd14c0e0c266b6c29899f2cebdc41100c3115b19921eba05db.mp3",
+        "startTime": 2368.75,
+        "endTime": 2449.66
+      }
+    },
+    {
+      "id": "item_q95_97",
+      "questions": [
+        95,
+        96,
+        97
+      ],
+      "transcript": "M: Before we finish today's session here at Grovepoint Fitness Center, I have a couple of program updates. First, we're launching a series of guest classes this week, and the full schedule is posted on the board near the entrance. One of them has already filled up quickly, so our Tuesday class will now run a second time on Friday as well, so please book early if you'd like a spot. Next, I'd like to introduce Rebecca Cole, our newest fitness instructor. She'll be observing classes this week and will begin leading her own sessions next week. I've also placed a sign-up sheet at the front desk, so please add your name before you leave today. Thank you all.",
+      "audioRange": {
+        "assetId": "media/audio/ebba4b8c146ed4bd14c0e0c266b6c29899f2cebdc41100c3115b19921eba05db.mp3",
+        "startTime": 2456.9,
+        "endTime": 2538.2
+      }
+    },
+    {
+      "id": "item_q98_100",
+      "questions": [
+        98,
+        99,
+        100
+      ],
+      "transcript": "W: Is your living room carpet looking dull and tired? At Meadowbrook Carpet Care, we bring your floors back to life again. Our cleaning teams are fully trained, and we only use gentle products that are safe for children and pets. We offer four different cleaning plans to suit every home, so just take a look at the chart to compare them. This month, our plan that covers up to four rooms is available for a special price of only seventy-nine dollars, well below the usual rate. Don't miss out on this deal. To claim it, simply book your appointment online at our Web site before the end of the month.",
+      "audioRange": {
+        "assetId": "media/audio/ebba4b8c146ed4bd14c0e0c266b6c29899f2cebdc41100c3115b19921eba05db.mp3",
+        "startTime": 2545.56,
+        "endTime": 2622.32
+      }
+    }
+  ],
+  "issues": [],
+  "status": "complete"
+}

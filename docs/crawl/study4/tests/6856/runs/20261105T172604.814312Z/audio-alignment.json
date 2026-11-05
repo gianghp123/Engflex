@@ -1,0 +1,710 @@
+{
+  "testId": "6856",
+  "runId": "20261105T172604.814312Z",
+  "audioKey": "media/audio/28898fad2b6c900b61cb71683212112d4607a15ce064ecaccd5a5c5959fe8aaa.mp3",
+  "audioSha256": "28898fad2b6c900b61cb71683212112d4607a15ce064ecaccd5a5c5959fe8aaa",
+  "audioDuration": 2616.0326530612247,
+  "exportHash": "dc0bd0b7074365ac7aaa935d7a543aa0ca1a85fd1f7b9e51966d3ffb3912a012",
+  "asrHash": "2fe72149f3194c7e7cfe9636c998d421a94c7f5a6914b9b7b60b8bb356b52d84",
+  "model": "base.en",
+  "itemCount": 54,
+  "alignedCount": 54,
+  "items": [
+    {
+      "id": "item_q01",
+      "questions": [
+        1
+      ],
+      "transcript": "(A) A man is pushing a cart. (B) A man is opening a door. (C) A woman is folding an umbrella. (D) A woman is carrying a box.",
+      "audioRange": {
+        "assetId": "media/audio/28898fad2b6c900b61cb71683212112d4607a15ce064ecaccd5a5c5959fe8aaa.mp3",
+        "startTime": 54.75,
+        "endTime": 74.39
+      }
+    },
+    {
+      "id": "item_q02",
+      "questions": [
+        2
+      ],
+      "transcript": "(A) The people are climbing some stairs. (B) The man is leaning over a railing. (C) The people are sitting on a bench. (D) The woman is opening an umbrella.",
+      "audioRange": {
+        "assetId": "media/audio/28898fad2b6c900b61cb71683212112d4607a15ce064ecaccd5a5c5959fe8aaa.mp3",
+        "startTime": 78.69,
+        "endTime": 100.05
+      }
+    },
+    {
+      "id": "item_q03",
+      "questions": [
+        3
+      ],
+      "transcript": "(A) Some boats are sailing on the water. (B) Some crates are stacked near a railing. (C) A bridge spans the water. (D) A walkway is crowded with people.",
+      "audioRange": {
+        "assetId": "media/audio/28898fad2b6c900b61cb71683212112d4607a15ce064ecaccd5a5c5959fe8aaa.mp3",
+        "startTime": 104.34,
+        "endTime": 125.86
+      }
+    },
+    {
+      "id": "item_q04",
+      "questions": [
+        4
+      ],
+      "transcript": "(A) The woman is pushing a cart. (B) The woman is opening a trunk. (C) The woman is tying her shoe. (D) The woman is putting on a jacket.",
+      "audioRange": {
+        "assetId": "media/audio/28898fad2b6c900b61cb71683212112d4607a15ce064ecaccd5a5c5959fe8aaa.mp3",
+        "startTime": 129.91,
+        "endTime": 148.43
+      }
+    },
+    {
+      "id": "item_q05",
+      "questions": [
+        5
+      ],
+      "transcript": "(A) Some people are being served coffee. (B) Some people are reading menus. (C) Some people are stacking chairs. (D) Some people are standing at an entrance.",
+      "audioRange": {
+        "assetId": "media/audio/28898fad2b6c900b61cb71683212112d4607a15ce064ecaccd5a5c5959fe8aaa.mp3",
+        "startTime": 152.73,
+        "endTime": 175.31
+      }
+    },
+    {
+      "id": "item_q06",
+      "questions": [
+        6
+      ],
+      "transcript": "(A) Some musicians are playing instruments. (B) The chairs have been stacked to one side. (C) All of the people are sitting down. (D) A car is parked in a garage.",
+      "audioRange": {
+        "assetId": "media/audio/28898fad2b6c900b61cb71683212112d4607a15ce064ecaccd5a5c5959fe8aaa.mp3",
+        "startTime": 179.57,
+        "endTime": 201.99
+      }
+    },
+    {
+      "id": "item_q07",
+      "questions": [
+        7
+      ],
+      "transcript": "Who made this dining table? (A) A small workshop out in Portland. (B) The maid dusts it every morning. (C) Yes, that table's on sale now.",
+      "audioRange": {
+        "assetId": "media/audio/28898fad2b6c900b61cb71683212112d4607a15ce064ecaccd5a5c5959fe8aaa.mp3",
+        "startTime": 233.66,
+        "endTime": 249.02
+      }
+    },
+    {
+      "id": "item_q08",
+      "questions": [
+        8
+      ],
+      "transcript": "Where can I find the floor manager later this afternoon? (A) To mop the floor before we close. (B) No, around four o'clock. (C) She'll be over by the loading dock.",
+      "audioRange": {
+        "assetId": "media/audio/28898fad2b6c900b61cb71683212112d4607a15ce064ecaccd5a5c5959fe8aaa.mp3",
+        "startTime": 253.48,
+        "endTime": 269.52
+      }
+    },
+    {
+      "id": "item_q09",
+      "questions": [
+        9
+      ],
+      "transcript": "When will the pool open again after the tile repairs? (A) Over by the shallow end. (B) Not until next Friday. (C) A spare pair of goggles.",
+      "audioRange": {
+        "assetId": "media/audio/28898fad2b6c900b61cb71683212112d4607a15ce064ecaccd5a5c5959fe8aaa.mp3",
+        "startTime": 273.87,
+        "endTime": 289.31
+      }
+    },
+    {
+      "id": "item_q10",
+      "questions": [
+        10
+      ],
+      "transcript": "Excuse me, may I take your coat for you, please? (A) Yes, it was on sale. (B) The coat rack's over there. (C) Of course—here you are.",
+      "audioRange": {
+        "assetId": "media/audio/28898fad2b6c900b61cb71683212112d4607a15ce064ecaccd5a5c5959fe8aaa.mp3",
+        "startTime": 293.34,
+        "endTime": 309.4
+      }
+    },
+    {
+      "id": "item_q11",
+      "questions": [
+        11
+      ],
+      "transcript": "Is Nathan taking any more clients this afternoon? (A) The front desk keeps that schedule. (B) A cut and color, please. (C) Yes, it was a warm afternoon.",
+      "audioRange": {
+        "assetId": "media/audio/28898fad2b6c900b61cb71683212112d4607a15ce064ecaccd5a5c5959fe8aaa.mp3",
+        "startTime": 313.59,
+        "endTime": 329.45
+      }
+    },
+    {
+      "id": "item_q12",
+      "questions": [
+        12
+      ],
+      "transcript": "Where do I collect the day pass I reserved online? (A) Just over at the front desk. (B) Right after ten this morning. (C) Yes, it was already paid.",
+      "audioRange": {
+        "assetId": "media/audio/28898fad2b6c900b61cb71683212112d4607a15ce064ecaccd5a5c5959fe8aaa.mp3",
+        "startTime": 333.62,
+        "endTime": 350.4
+      }
+    },
+    {
+      "id": "item_q13",
+      "questions": [
+        13
+      ],
+      "transcript": "Isn't this the line for passport renewals? (A) I'd prefer the earliest appointment. (B) They're closed on weekends, aren't they? (C) Yes, you're at the correct window.",
+      "audioRange": {
+        "assetId": "media/audio/28898fad2b6c900b61cb71683212112d4607a15ce064ecaccd5a5c5959fe8aaa.mp3",
+        "startTime": 354.61,
+        "endTime": 372.15
+      }
+    },
+    {
+      "id": "item_q14",
+      "questions": [
+        14
+      ],
+      "transcript": "Can I take pictures of the artwork here? (A) As long as you don't use the flash. (B) She left it near the entrance. (C) To see the new exhibit.",
+      "audioRange": {
+        "assetId": "media/audio/28898fad2b6c900b61cb71683212112d4607a15ce064ecaccd5a5c5959fe8aaa.mp3",
+        "startTime": 376.3,
+        "endTime": 391.92
+      }
+    },
+    {
+      "id": "item_q15",
+      "questions": [
+        15
+      ],
+      "transcript": "I don't think our regular customer will like the new sourdough. (A) Oh, you really think not? (B) About twenty minutes in the oven. (C) Because my back's a little sore.",
+      "audioRange": {
+        "assetId": "media/audio/28898fad2b6c900b61cb71683212112d4607a15ce064ecaccd5a5c5959fe8aaa.mp3",
+        "startTime": 396.13,
+        "endTime": 413.11
+      }
+    },
+    {
+      "id": "item_q16",
+      "questions": [
+        16
+      ],
+      "transcript": "Doesn't the evening sky show start at eight? (A) I already ate dinner. (B) They started running it last month. (C) Only during the summer.",
+      "audioRange": {
+        "assetId": "media/audio/28898fad2b6c900b61cb71683212112d4607a15ce064ecaccd5a5c5959fe8aaa.mp3",
+        "startTime": 417.45,
+        "endTime": 432.19
+      }
+    },
+    {
+      "id": "item_q17",
+      "questions": [
+        17
+      ],
+      "transcript": "Could you pull that customer's car up to the front? (A) It took about ten minutes. (B) No problem, I'll get it right now. (C) The front tires are new.",
+      "audioRange": {
+        "assetId": "media/audio/28898fad2b6c900b61cb71683212112d4607a15ce064ecaccd5a5c5959fe8aaa.mp3",
+        "startTime": 436.34,
+        "endTime": 452.32
+      }
+    },
+    {
+      "id": "item_q18",
+      "questions": [
+        18
+      ],
+      "transcript": "Have you finished restocking the linen closet on the second floor? (A) I'd rather start on the top floor. (B) The gift shop closes at nine. (C) Not yet — the carts just arrived.",
+      "audioRange": {
+        "assetId": "media/audio/28898fad2b6c900b61cb71683212112d4607a15ce064ecaccd5a5c5959fe8aaa.mp3",
+        "startTime": 456.88,
+        "endTime": 474.06
+      }
+    },
+    {
+      "id": "item_q19",
+      "questions": [
+        19
+      ],
+      "transcript": "I'll have to change the bindings on these rental skis. (A) Everyone agreed on the new opening hours. (B) Will he be in the shop tomorrow? (C) Yes, that's what the safety inspector recommended.",
+      "audioRange": {
+        "assetId": "media/audio/28898fad2b6c900b61cb71683212112d4607a15ce064ecaccd5a5c5959fe8aaa.mp3",
+        "startTime": 478.38,
+        "endTime": 495.36
+      }
+    },
+    {
+      "id": "item_q20",
+      "questions": [
+        20
+      ],
+      "transcript": "When would you like to come in for your suit fitting? (A) It's right past the mirrors. (B) I'm only free on the weekends. (C) That jacket fits him perfectly.",
+      "audioRange": {
+        "assetId": "media/audio/28898fad2b6c900b61cb71683212112d4607a15ce064ecaccd5a5c5959fe8aaa.mp3",
+        "startTime": 499.47,
+        "endTime": 516.35
+      }
+    },
+    {
+      "id": "item_q21",
+      "questions": [
+        21
+      ],
+      "transcript": "When are we heading over to the exhibit hall? (A) As soon as the morning session ends. (B) Yes, everyone's already registered. (C) They just painted the back wall.",
+      "audioRange": {
+        "assetId": "media/audio/28898fad2b6c900b61cb71683212112d4607a15ce064ecaccd5a5c5959fe8aaa.mp3",
+        "startTime": 520.74,
+        "endTime": 536.6
+      }
+    },
+    {
+      "id": "item_q22",
+      "questions": [
+        22
+      ],
+      "transcript": "You realize the large-format printer hasn't been serviced in over a year, don't you? (A) The finished prints go on that back table. (B) Right — I'll book the technician for this week. (C) Could you let Mr. Winters know we're closing early?",
+      "audioRange": {
+        "assetId": "media/audio/28898fad2b6c900b61cb71683212112d4607a15ce064ecaccd5a5c5959fe8aaa.mp3",
+        "startTime": 540.8,
+        "endTime": 560.52
+      }
+    },
+    {
+      "id": "item_q23",
+      "questions": [
+        23
+      ],
+      "transcript": "How often do the exercise machines here get a full service? (A) For around twenty minutes each. (B) Roughly every three months, I think. (C) Yes, that one's out of order today.",
+      "audioRange": {
+        "assetId": "media/audio/28898fad2b6c900b61cb71683212112d4607a15ce064ecaccd5a5c5959fe8aaa.mp3",
+        "startTime": 560.52,
+        "endTime": 582.86
+      }
+    },
+    {
+      "id": "item_q24",
+      "questions": [
+        24
+      ],
+      "transcript": "Shouldn't we order more tasting glasses before the weekend? (A) Please wipe down the tables before we open. (B) My reading glasses are on the counter. (C) A whole case is being dropped off this afternoon.",
+      "audioRange": {
+        "assetId": "media/audio/28898fad2b6c900b61cb71683212112d4607a15ce064ecaccd5a5c5959fe8aaa.mp3",
+        "startTime": 587.16,
+        "endTime": 604.74
+      }
+    },
+    {
+      "id": "item_q25",
+      "questions": [
+        25
+      ],
+      "transcript": "How do I reserve a plot for the growing season? (A) There's really no reason to change it. (B) You'll just fill out a form at the office. (C) Those tomatoes look ready to pick.",
+      "audioRange": {
+        "assetId": "media/audio/28898fad2b6c900b61cb71683212112d4607a15ce064ecaccd5a5c5959fe8aaa.mp3",
+        "startTime": 609.17,
+        "endTime": 625.97
+      }
+    },
+    {
+      "id": "item_q26",
+      "questions": [
+        26
+      ],
+      "transcript": "Haven't you confirmed the final guest count with the client yet? (A) Around ninety guests, I believe. (B) Yes, I settled it with them earlier today. (C) Over at the main ballroom.",
+      "audioRange": {
+        "assetId": "media/audio/28898fad2b6c900b61cb71683212112d4607a15ce064ecaccd5a5c5959fe8aaa.mp3",
+        "startTime": 630.11,
+        "endTime": 647.61
+      }
+    },
+    {
+      "id": "item_q27",
+      "questions": [
+        27
+      ],
+      "transcript": "Where can I pick up the tickets I reserved online? (A) Just past the main staircase, on your left. (B) The doors open half an hour before the game. (C) They sold out within a couple of hours.",
+      "audioRange": {
+        "assetId": "media/audio/28898fad2b6c900b61cb71683212112d4607a15ce064ecaccd5a5c5959fe8aaa.mp3",
+        "startTime": 651.88,
+        "endTime": 669.8
+      }
+    },
+    {
+      "id": "item_q28",
+      "questions": [
+        28
+      ],
+      "transcript": "Where's the new touch tank going to be installed? (A) Probably next week. (B) You'd have to ask Bernard. (C) The installation looks great.",
+      "audioRange": {
+        "assetId": "media/audio/28898fad2b6c900b61cb71683212112d4607a15ce064ecaccd5a5c5959fe8aaa.mp3",
+        "startTime": 673.96,
+        "endTime": 688.8
+      }
+    },
+    {
+      "id": "item_q29",
+      "questions": [
+        29
+      ],
+      "transcript": "The microphone in the studio needs replacing, doesn't it? (A) The studio's booked all afternoon. (B) Actually, a new one arrived this morning. (C) I'll place them on the shelf.",
+      "audioRange": {
+        "assetId": "media/audio/28898fad2b6c900b61cb71683212112d4607a15ce064ecaccd5a5c5959fe8aaa.mp3",
+        "startTime": 693.35,
+        "endTime": 709.05
+      }
+    },
+    {
+      "id": "item_q30",
+      "questions": [
+        30
+      ],
+      "transcript": "Should we count the cash before or after we lock the doors? (A) The cash register drawer. (B) He fixed the clock earlier. (C) How much is there to count?",
+      "audioRange": {
+        "assetId": "media/audio/28898fad2b6c900b61cb71683212112d4607a15ce064ecaccd5a5c5959fe8aaa.mp3",
+        "startTime": 713.59,
+        "endTime": 729.65
+      }
+    },
+    {
+      "id": "item_q31",
+      "questions": [
+        31
+      ],
+      "transcript": "Where's the bike with the broken wheel now? (A) I leaned it against the back wall. (B) Sure, that would be a big help. (C) Because it hit a pothole.",
+      "audioRange": {
+        "assetId": "media/audio/28898fad2b6c900b61cb71683212112d4607a15ce064ecaccd5a5c5959fe8aaa.mp3",
+        "startTime": 733.8,
+        "endTime": 749.8
+      }
+    },
+    {
+      "id": "item_q32_34",
+      "questions": [
+        32,
+        33,
+        34
+      ],
+      "transcript": "M1: Hi, I bought this jacket here a couple of months ago, but it feels a bit loose now. I'd like to have it taken in at the sides. W1: Of course, we can handle that. Alterations here usually take about a week, so when exactly do you need it? M1: My brother is getting married next Saturday, and I'd really like to wear it then. W1: That gives us just enough time, Mr. Dalton. Leave me your number, and I'll let you know the moment it's finished. You can settle the fee when you pick it up.",
+      "audioRange": {
+        "assetId": "media/audio/28898fad2b6c900b61cb71683212112d4607a15ce064ecaccd5a5c5959fe8aaa.mp3",
+        "startTime": 783.12,
+        "endTime": 841.04
+      }
+    },
+    {
+      "id": "item_q35_37",
+      "questions": [
+        35,
+        36,
+        37
+      ],
+      "transcript": "W1: Have you checked the registration list for tonight's wine tasting? Nearly forty guests have signed up — our biggest turnout yet. M1: Impressive. But the tasting room's capacity is only about twenty-five, so it'll get uncomfortably crowded in there. W1: You're right. Let's relocate the whole event out to the courtyard, where there's plenty of space. M1: Good thinking. I'll set up the chairs and tables out there this afternoon. W1: Perfect, that's a big help. And afterward, we're leading everyone out among the vines to watch the harvest. M1: Sounds lovely. What time does that part get going? W1: The tasting wraps up around seven, and that's exactly when the vineyard walk begins.",
+      "audioRange": {
+        "assetId": "media/audio/28898fad2b6c900b61cb71683212112d4607a15ce064ecaccd5a5c5959fe8aaa.mp3",
+        "startTime": 848.37,
+        "endTime": 925.24
+      }
+    },
+    {
+      "id": "item_q38_40",
+      "questions": [
+        38,
+        39,
+        40
+      ],
+      "transcript": "M1: Bianca, do you know which room was reserved for next week's staff training? I need to check the details. W1: Yes, Conference Room 2. But there's a problem — it only seats twenty, and thirty-five people have signed up. M1: That won't fit everyone. Let's use the large room on the fourth floor instead — it's free that day. The only issue is it has no projector or microphone. W1: Good idea. I'll take care of printing the extra handouts. But only the facilities department can install that equipment, and they need a day's notice. M1: Right, and the training is on Monday. I'd better handle that part today, then. W1: Perfect. Then we'll be all set for next week.",
+      "audioRange": {
+        "assetId": "media/audio/28898fad2b6c900b61cb71683212112d4607a15ce064ecaccd5a5c5959fe8aaa.mp3",
+        "startTime": 932.87,
+        "endTime": 1006.34
+      }
+    },
+    {
+      "id": "item_q41_43",
+      "questions": [
+        41,
+        42,
+        43
+      ],
+      "transcript": "M1: Good morning. This is Colton Reeves—I lead several photography workshops at the Westbrook Adult Learning Center. I'm calling to propose adding a new evening course next term. W1: Hello, Colton. I'm Sylvia Warren, the program coordinator. That sounds interesting—what did you have in mind? M1: A beginner digital photography class. Enrollment in similar courses has been strong, so I'm sure we'd fill the seats. W1: Promising. But new courses need curriculum-committee approval first. Could you send me a course outline by Friday so I can pass it along for review? M1: Of course. I'll email it this afternoon.",
+      "audioRange": {
+        "assetId": "media/audio/28898fad2b6c900b61cb71683212112d4607a15ce064ecaccd5a5c5959fe8aaa.mp3",
+        "startTime": 1013.29,
+        "endTime": 1083.16
+      }
+    },
+    {
+      "id": "item_q44_46",
+      "questions": [
+        44,
+        45,
+        46
+      ],
+      "transcript": "W1: Hi, I'd like to order forty engraved trophies for our youth football tournament next month. Could they be ready by the fifteenth? M1: Sure, I can help with that. Unfortunately, our engraving machine is being serviced all this week, so the standard two-week turnaround won't work. I can offer rush service for an extra fee instead. W1: That's fine, let's go with the rush service. What do I need to pay to secure the order today?",
+      "audioRange": {
+        "assetId": "media/audio/28898fad2b6c900b61cb71683212112d4607a15ce064ecaccd5a5c5959fe8aaa.mp3",
+        "startTime": 1083.16,
+        "endTime": 1150.51
+      }
+    },
+    {
+      "id": "item_q47_49",
+      "questions": [
+        47,
+        48,
+        49
+      ],
+      "transcript": "W1: Hi, I came to several shows at the Belmont Playhouse last year, and now I'd like to sign up for the full season instead of buying individual tickets. M1: Wonderful. We offer two annual packages. The Reserved package keeps the same seats every night, while the Flexible package lets you exchange dates whenever your schedule changes. W1: That matters to me. I travel a lot for work, so I can't commit to fixed evenings and don't want to waste shows I've paid for. M1: Then the Flexible package suits you best. Fill out this sign-up form with your details first, and once you've paid I'll set up your subscriber account online.",
+      "audioRange": {
+        "assetId": "media/audio/28898fad2b6c900b61cb71683212112d4607a15ce064ecaccd5a5c5959fe8aaa.mp3",
+        "startTime": 1157.76,
+        "endTime": 1231.87
+      }
+    },
+    {
+      "id": "item_q50_52",
+      "questions": [
+        50,
+        51,
+        52
+      ],
+      "transcript": "W1: Hello, and welcome to Calverton Studios. How can I help you two today? M1: Hi there. We're here to attend the taping of the midday cooking show. W1: Wonderful. Before I let you through, could I see your booking confirmation, please? M2: Of course. Here's the email with our confirmation number. Should we head straight into the studio? W1: Almost. The doors open at eleven thirty. In the meantime, I'd recommend downloading our studio app — it shows your seat updates, today's full schedule, and a map of the parking lot.",
+      "audioRange": {
+        "assetId": "media/audio/28898fad2b6c900b61cb71683212112d4607a15ce064ecaccd5a5c5959fe8aaa.mp3",
+        "startTime": 1239.16,
+        "endTime": 1307.54
+      }
+    },
+    {
+      "id": "item_q53_55",
+      "questions": [
+        53,
+        54,
+        55
+      ],
+      "transcript": "M1: Good morning. I dropped my tablet last week — the screen is cracked and it's completely unresponsive now. W1: I'm sorry to hear that. A screen replacement runs about eighty dollars and takes roughly three days. M1: Three days? I use it for all my delivery work, so I really can't be without one that long. W1: In that case, I'd recommend our loaner tablet while yours is being fixed. There's a small refundable deposit. M1: And how do I get that deposit back? W1: It's returned to you as soon as you bring the loaner back and pick up your repaired tablet. M1: Great. Let's set it up.",
+      "audioRange": {
+        "assetId": "media/audio/28898fad2b6c900b61cb71683212112d4607a15ce064ecaccd5a5c5959fe8aaa.mp3",
+        "startTime": 1314.85,
+        "endTime": 1386.54
+      }
+    },
+    {
+      "id": "item_q56_58",
+      "questions": [
+        56,
+        57,
+        58
+      ],
+      "transcript": "M1: Good afternoon, welcome to Meadowcrest Motors. I'm Colin. How can I help you? W1: Hi. I noticed your advertisement in the weekend paper, and I'd love to come try out the Trailmark SUV that's featured in it. Would that be possible? M1: Certainly. That model has been in high demand lately, so I only have two left on the lot right now. Its cargo space is what most people mention. W1: That's exactly what I'm after. My family and I are driving out to the coast next month, and our current car is just too small for all our luggage. M1: I understand completely. Once you've had a chance to drive it, I can connect you with our finance team to walk through the monthly plans.",
+      "audioRange": {
+        "assetId": "media/audio/28898fad2b6c900b61cb71683212112d4607a15ce064ecaccd5a5c5959fe8aaa.mp3",
+        "startTime": 1393.95,
+        "endTime": 1464.99
+      }
+    },
+    {
+      "id": "item_q59_61",
+      "questions": [
+        59,
+        60,
+        61
+      ],
+      "transcript": "W1: Okay, before we finish up, I want to plan out who's covering our maintenance shutdown next week. The whole plant goes offline while the crew services the production lines. M1: Sounds good. How many of us do you need on hand that day? W1: It's set for Thursday, and I'll need at least four people from our line to help the maintenance crew. M2: Hold on — Thursday? We've got an ingredient delivery coming in that same morning. Someone has to be here to receive it. W1: Oh, you're right. We can't have both at once. Devin, can you get in touch with the supplier and see if they'll move the delivery to Friday? M1: Sure, I'll call Ashby Ingredients first thing tomorrow and ask them to reschedule.",
+      "audioRange": {
+        "assetId": "media/audio/28898fad2b6c900b61cb71683212112d4607a15ce064ecaccd5a5c5959fe8aaa.mp3",
+        "startTime": 1472.31,
+        "endTime": 1544.9
+      }
+    },
+    {
+      "id": "item_q62_64",
+      "questions": [
+        62,
+        63,
+        64
+      ],
+      "transcript": "W1: Hi, is this Stonebridge Aggregates? I'm putting in a new patio out back where our old flower bed used to be, and I'll need some crushed stone for the base. Do you deliver? M1: Yes, we deliver right across the area. How much stone are you thinking? W1: Well, the patio's about three hundred square feet, so I figure I'll need around three tons. M1: Let me check our rate card. Okay, I've got the price right here. And good news — delivery is free on any order over two tons, so yours qualifies. W1: Great. And will three tons really be enough to cover the whole space? M1: It should just about, but stone always settles once it's laid, so I'd order a bit beyond what you need — otherwise you risk coming up short and paying for a second delivery.",
+      "audioRange": {
+        "assetId": "media/audio/28898fad2b6c900b61cb71683212112d4607a15ce064ecaccd5a5c5959fe8aaa.mp3",
+        "startTime": 1552.53,
+        "endTime": 1633.78
+      }
+    },
+    {
+      "id": "item_q65_67",
+      "questions": [
+        65,
+        66,
+        67
+      ],
+      "transcript": "M1: We've got about twenty minutes before the race begins, so let's do one last check of our stations. W1: Sounds good. The turnout is incredible this year — all the registration fees go to the children's hospital. M1: I printed out the station assignments this morning. Here, take a look at the sheet. W1: Thanks. I'll be making sure the runners have something to drink as they reach the midway point. M1: Perfect. And a local shop dropped off all the printed route maps yesterday, so every marshal will have one.",
+      "audioRange": {
+        "assetId": "media/audio/28898fad2b6c900b61cb71683212112d4607a15ce064ecaccd5a5c5959fe8aaa.mp3",
+        "startTime": 1641.1,
+        "endTime": 1709.97
+      }
+    },
+    {
+      "id": "item_q68_70",
+      "questions": [
+        68,
+        69,
+        70
+      ],
+      "transcript": "W1: Hi, I'm looking for a bracelet as a graduation gift for my niece, and I'd like it engraved with her name. M1: Wonderful. All of our handmade designs can be engraved. Did you have a particular style in mind—something simple, or more decorative? W1: Something elegant. But my niece's ceremony is this Saturday, so I really need it finished before then. Is that possible? M1: Let me check. The decorative piece by Lucas Berg won't be ready until next week. But the elegant design by Diane Whitlock is in stock, and we can engrave it today—I'll bring it out.",
+      "audioRange": {
+        "assetId": "media/audio/28898fad2b6c900b61cb71683212112d4607a15ce064ecaccd5a5c5959fe8aaa.mp3",
+        "startTime": 1717.74,
+        "endTime": 1788.56
+      }
+    },
+    {
+      "id": "item_q71_73",
+      "questions": [
+        71,
+        72,
+        73
+      ],
+      "transcript": "M: Thanks for coming, everyone. I've called this short meeting to share some exciting news. Next month, our firm will have a booth at the regional home-improvement exhibition downtown. As you know, our repair and remodeling services rarely get this kind of visibility, so this is a great chance to meet homeowners who need our help. The event runs three full days, so I'll need several of you to help staff the booth. To help me plan the schedule, please mark the days you're available on the sign-up sheet in the break room before Friday.",
+      "audioRange": {
+        "assetId": "media/audio/28898fad2b6c900b61cb71683212112d4607a15ce064ecaccd5a5c5959fe8aaa.mp3",
+        "startTime": 1828.52,
+        "endTime": 1894.07
+      }
+    },
+    {
+      "id": "item_q74_76",
+      "questions": [
+        74,
+        75,
+        76
+      ],
+      "transcript": "W: Thanks so much for stopping by the demonstration here at Brightwater Kitchen Shop, where I'll be showing off our newest blender. It does a lot of things well, but the feature I'm proudest of is how it breaks down a full tray of ice in just a couple of seconds. And this week only, you can take twenty percent off the purchase price. Keep in mind, though, that discount is for store members only. Before you go, please sign up for one of our free cooking classes using the tablet by the register.",
+      "audioRange": {
+        "assetId": "media/audio/28898fad2b6c900b61cb71683212112d4607a15ce064ecaccd5a5c5959fe8aaa.mp3",
+        "startTime": 1901.47,
+        "endTime": 1965.08
+      }
+    },
+    {
+      "id": "item_q77_79",
+      "questions": [
+        77,
+        78,
+        79
+      ],
+      "transcript": "W: Hi, this is Melanie Grant from Crestwood Facilities, following up on the office cleaning your company arranged with us last week. I'm pleased to confirm that our cleaning team will make its first visit next Tuesday evening, after your staff leave. Before then, could you let us know how our crews should get into the building after everyone's gone home? There won't be anyone at the security desk after six to let them in. I should also mention that we're fully booked all next week, and our next open evening isn't until month's end. So please get back to me as soon as you can. Thanks.",
+      "audioRange": {
+        "assetId": "media/audio/28898fad2b6c900b61cb71683212112d4607a15ce064ecaccd5a5c5959fe8aaa.mp3",
+        "startTime": 1972.35,
+        "endTime": 2044.44
+      }
+    },
+    {
+      "id": "item_q80_82",
+      "questions": [
+        80,
+        81,
+        82
+      ],
+      "transcript": "M: Good morning, and thank you to the officials and reporters gathered here as we cut the ribbon on our new facility in Fairhaven. The organization I represent is not a private operator; we're a taxpayer-funded agency overseeing rail and bus service across the region. This station links downtown with the northern communities, part of a plan to run trains every fifteen minutes by next spring. To introduce residents to the line, every fare on this route will be waived all week. So rather than watch from the platform, I encourage you to climb aboard and ride the route yourselves. We look forward to serving this community for years to come.",
+      "audioRange": {
+        "assetId": "media/audio/28898fad2b6c900b61cb71683212112d4607a15ce064ecaccd5a5c5959fe8aaa.mp3",
+        "startTime": 2051.81,
+        "endTime": 2122.27
+      }
+    },
+    {
+      "id": "item_q83_85",
+      "questions": [
+        83,
+        84,
+        85
+      ],
+      "transcript": "W: Good morning, everyone, and thank you all for coming to this month's all-staff assembly here at Danforth Manufacturing. I'm very pleased to announce that we're launching a brand-new mentorship program, starting this month. Here's how it will work: each of our newer employees will be paired with a more experienced member of staff. The main benefit is that you'll receive personal guidance from a seasoned colleague throughout your first months on the job. If you'd simply like to hear more first, we'll hold a brief information session next Wednesday. But if you'd like to take part, whether as a mentor or as a mentee, please sign up on the company website by this Friday. We really look forward to seeing you all get involved.",
+      "audioRange": {
+        "assetId": "media/audio/28898fad2b6c900b61cb71683212112d4607a15ce064ecaccd5a5c5959fe8aaa.mp3",
+        "startTime": 2129.63,
+        "endTime": 2205.97
+      }
+    },
+    {
+      "id": "item_q86_88",
+      "questions": [
+        86,
+        87,
+        88
+      ],
+      "transcript": "M: Good evening, and thank you for signing up for tonight's public stargazing program at Glenmore Observatory. No experience with astronomy is needed, so just relax and enjoy the view. Please pick up a red flashlight at the front desk and dress warmly, since it gets cold outside. We'll begin indoors with a short introductory presentation. Then we'll move to the deck, where our guides will help you find planets and constellations through the telescopes. Before you leave, each of you will receive a booklet mapping the night sky to keep.",
+      "audioRange": {
+        "assetId": "media/audio/28898fad2b6c900b61cb71683212112d4607a15ce064ecaccd5a5c5959fe8aaa.mp3",
+        "startTime": 2213.12,
+        "endTime": 2277.46
+      }
+    },
+    {
+      "id": "item_q89_91",
+      "questions": [
+        89,
+        90,
+        91
+      ],
+      "transcript": "M: Good afternoon, listeners, and thank you for tuning in! Here's some exciting news for every homeowner in town: Havenbrook Appliances is celebrating twenty-five years in business. To mark the occasion, we're holding our big Anniversary Weekend Sale on Saturday, June twenty-first. You'll find up to forty percent off refrigerators, washing machines, ovens, and much more. And here's the best part—every purchase you make that day automatically enters you to win our grand prize, a state-of-the-art home espresso machine. Now remember, last year the best deals were gone by lunchtime. So visit us bright and early at our showroom on Larkmoor Avenue. We can't wait to see you there!",
+      "audioRange": {
+        "assetId": "media/audio/28898fad2b6c900b61cb71683212112d4607a15ce064ecaccd5a5c5959fe8aaa.mp3",
+        "startTime": 2284.9,
+        "endTime": 2360.25
+      }
+    },
+    {
+      "id": "item_q92_94",
+      "questions": [
+        92,
+        93,
+        94
+      ],
+      "transcript": "W: Good morning, and welcome to Local Business Spotlight on Harborview Community Radio. I'm your host, Carol Denning. This week we're featuring Halewood's, a family business where residents have bought their guitars, violins, and printed scores for over thirty years. The owners tell me they've just relocated a few doors down to a roomier storefront, with space for two new soundproof practice rooms. They've also launched a program of small-group classes aimed at those picking up an instrument for the very first time. So if that describes you, drop by this Saturday, when instructors will run a complimentary trial class—just visit the store's website first to reserve one of the limited places.",
+      "audioRange": {
+        "assetId": "media/audio/28898fad2b6c900b61cb71683212112d4607a15ce064ecaccd5a5c5959fe8aaa.mp3",
+        "startTime": 2367.54,
+        "endTime": 2441.64
+      }
+    },
+    {
+      "id": "item_q95_97",
+      "questions": [
+        95,
+        96,
+        97
+      ],
+      "transcript": "W: Good morning, everyone, and welcome to Larkhaven Studios. I'm your guide, Nadia Brooks, and I'm glad the whole group has gathered here at the main entrance. We'd planned to show you five buildings, but the editing suites are closed today for a private screening, so we'll walk through the four on your map instead. We'll begin at the building that borders the visitor parking lot, so please follow me that way. Later this afternoon, you'll watch a live stunt demonstration performed by our professional crew. Before we head inside, I'd ask everyone to silence your phones, since filming may be underway. All right, let's get started.",
+      "audioRange": {
+        "assetId": "media/audio/28898fad2b6c900b61cb71683212112d4607a15ce064ecaccd5a5c5959fe8aaa.mp3",
+        "startTime": 2449.25,
+        "endTime": 2528.2
+      }
+    },
+    {
+      "id": "item_q98_100",
+      "questions": [
+        98,
+        99,
+        100
+      ],
+      "transcript": "M: Good morning, everyone, and welcome to opening day here at the Riverbank Green Market. The gates won't open to the public for another hour, so let's get you settled first. Your group has been assigned to the plant nursery, which sits in the far corner of the grounds, so please head over that way to set up your stalls. Now, a market inspector will be coming through at ten o'clock to check that everyone's permits are properly displayed, so make sure those are up before then. And before I open the gates, I'll come around to collect your signed vendor agreements, so please have them ready.",
+      "audioRange": {
+        "assetId": "media/audio/28898fad2b6c900b61cb71683212112d4607a15ce064ecaccd5a5c5959fe8aaa.mp3",
+        "startTime": 2535.42,
+        "endTime": 2608.55
+      }
+    }
+  ],
+  "issues": [],
+  "status": "complete"
+}

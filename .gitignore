@@ -67,6 +67,9 @@ Thumbs.db
 *.log
 tmp/
 temp/
+.tmp/
+.codegraph/
+.playwright-mcp/
 
 # --- Design handoff bundles (Stitch exports; large, binary, not source) ---
 *.zip

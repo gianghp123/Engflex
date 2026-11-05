@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "batch_id": "20261105T172912.548450Z",
+  "created_at": "2026-11-05T17:31:10.226416+00:00",
+  "total": 3,
+  "successful": 2,
+  "failed": 1,
+  "results": [
+    {
+      "url": "https://study4.com/tests/6859/toeic-lr-collection-1-test-8/results/39332626/",
+      "status": "success",
+      "run_root": "D:\\Engflex-Ultimate\\docs\\crawl\\study4\\tests\\6859\\runs\\20261105T172933.428478Z",
+      "page_kind": "exam",
+      "counts": {
+        "parts": 7,
+        "questions": 200,
+        "explanation_blocks": 200,
+        "transcript_blocks": 73
+      },
+      "exported_at": "2026-11-05T17:29:33.417413+00:00"
+    },
+    {
+      "url": "https://study4.com/tests/6860/toeic-lr-collection-1-test-9/results/39332628/",
+      "status": "success",
+      "run_root": "D:\\Engflex-Ultimate\\docs\\crawl\\study4\\tests\\6860\\runs\\20261105T172957.501040Z",
+      "page_kind": "exam",
+      "counts": {
+        "parts": 7,
+        "questions": 200,
+        "explanation_blocks": 200,
+        "transcript_blocks": 73
+      },
+      "exported_at": "2026-11-05T17:29:57.500299+00:00"
+    },
+    {
+      "url": "https://study4.com/tests/6861/toeic-lr-collection-1-test-10/results/39332629/",
+      "status": "failed",
+      "error": "ValueError: Expected seven source parts, found 4"
+    }
+  ]
+}

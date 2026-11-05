@@ -1,0 +1,22 @@
+{
+  "payloadHash": "59536bb2e2460f908ef5e0e4134df27014d2ba442dcb93d73d49503ce7c48ee1",
+  "releaseReady": false,
+  "issues": [
+    {
+      "code": "sourceReviewRequired",
+      "status": "open",
+      "detail": "Review all source questions/answers/passages and listen to every audio range before release"
+    }
+  ],
+  "issueCounts": {
+    "sourceReviewRequired": 1
+  },
+  "stageErrors": [],
+  "checks": {
+    "goContentValidator": "passed",
+    "questionCount": 200,
+    "listeningItems": 54
+  },
+  "reviewedBy": null,
+  "contentHash": "7104afc0d0c3c6cb48eb589750cafd389b2f3faa3876a9686a2983fa6c7a3c4e"
+}

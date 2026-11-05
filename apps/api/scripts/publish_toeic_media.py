@@ -1,8 +1,8 @@
 """Publish all hash-verified media for an existing TOEIC test (Part 1-7).
 
-Reads the stored manifest without changing exam content, review status, answers
-or attempts. Local source identities and HTTP(S) assets use the same MinIO keys
-served through the web app's same-origin media route. Run from apps/api with uv.
+Publishes to toeic/<category>/<test>/{content.json,images/,audio/} and updates
+media identities consistently. Review status, questions, answers and attempts
+are preserved. Run from apps/api with uv.
 """
 
 import argparse
@@ -15,6 +15,8 @@ import re
 import tempfile
 from urllib.parse import urlsplit
 from urllib.request import urlopen
+
+from toeic_storage import BUCKET, assert_json_available, ensure_bucket, export_package, media_key, media_labels, minio_client, publish_json, relocate_content, test_prefix, verify_object
 
 
 def media_assets(content):
@@ -84,16 +86,29 @@ def remote_asset(asset, download_root):
     return path, f"exams/toeic/{digest}"
 
 
-def prepare(content, source_root, crop_root, download_root):
+def prepare(content, source_root, crop_root, download_root, category_slug, test_slug):
     # Validate every source before performing the first upload.
     from mutagen.mp3 import MP3
     from PIL import Image
 
     prepared = []
+    labels = media_labels(content)
     duration = None
     for asset in media_assets(content):
         source = asset["sourceId"]
-        if urlsplit(source).scheme in ("http", "https"):
+        if source.startswith("toeic/") and source_root is not None:
+            path, key = local_asset(asset, source_root, crop_root)
+        elif source.startswith(("toeic/", "exams/toeic/")):
+            client = minio_client()
+            bucket, key = (BUCKET, source.removeprefix("toeic/")) if source.startswith("toeic/") else (os.environ.get("MINIO_BUCKET") or "lesson-audio", source)
+            if ".." in key or "\\" in key:
+                raise ValueError("Unsafe stored media key")
+            path = download_root / asset["sha256"].lower()
+            client.fget_object(bucket, key, str(path))
+            with path.open("rb") as stream:
+                if hashlib.file_digest(stream, "sha256").hexdigest() != asset["sha256"].lower():
+                    raise ValueError(f"Stored media hash mismatch: {source}")
+        elif urlsplit(source).scheme in ("http", "https"):
             path, key = remote_asset(asset, download_root)
         else:
             path, key = local_asset(asset, source_root, crop_root)
@@ -108,6 +123,7 @@ def prepare(content, source_root, crop_root, download_root):
                 image.verify()
             if content_type is None:
                 raise ValueError(f"Unsupported image format: {source}")
+        key = media_key(category_slug, test_slug, asset, content_type, label=labels[source])
         prepared.append((asset, path, key, content_type))
     for part in content["parts"]:
         for item in part["items"]:
@@ -118,38 +134,28 @@ def prepare(content, source_root, crop_root, download_root):
     return prepared
 
 
-def publish_content(content, source_root=None, crop_root=None, dry_run=False):
+def publish_content(content, source_root=None, crop_root=None, dry_run=False, *, category_slug, test_slug, output_root=None):
     from dotenv import load_dotenv
 
     load_dotenv()
     with tempfile.TemporaryDirectory() as directory:
-        prepared = prepare(content, source_root, crop_root, Path(directory))
+        test_prefix(category_slug, test_slug)
+        prepared = prepare(content, source_root, crop_root, Path(directory), category_slug, test_slug)
+        stored = relocate_content(content, {asset["sourceId"]: f"{BUCKET}/{key}" for asset, _, key, _ in prepared})
         summary = {"validatedAssets": len(prepared), "bytes": sum(path.stat().st_size for _, path, _, _ in prepared)}
+        if output_root is not None:
+            summary["outputDirectory"] = str(export_package(stored, prepared, output_root, category_slug, test_slug))
         if dry_run:
-            return summary
-        from minio import Minio
-
-        endpoint = urlsplit(os.environ.get("MINIO_ENDPOINT") or "http://localhost:9000")
-        if endpoint.scheme not in ("http", "https") or not endpoint.netloc:
-            raise ValueError("MINIO_ENDPOINT must be an HTTP(S) URL")
-        client = Minio(endpoint.netloc, access_key=os.environ["MINIO_ROOT_USER"], secret_key=os.environ["MINIO_ROOT_PASSWORD"], secure=endpoint.scheme == "https")
-        bucket = os.environ.get("MINIO_BUCKET") or "lesson-audio"
-        if not client.bucket_exists(bucket):
-            raise ValueError("Media bucket missing; run docker compose run --rm minio-init first")
+            return stored, summary
+        client = minio_client()
+        ensure_bucket(client)
+        assert_json_available(client, category_slug, test_slug, stored, expected_content=content)
         for asset, path, key, content_type in prepared:
-            client.fput_object(bucket, key, str(path), content_type=content_type)
-            response = client.get_object(bucket, key)
-            try:
-                digest = hashlib.sha256()
-                for chunk in response.stream(1024 * 1024):
-                    digest.update(chunk)
-                if digest.hexdigest() != asset["sha256"].lower():
-                    raise ValueError(f"Published media hash mismatch: {asset['sourceId']}")
-            finally:
-                response.close()
-                response.release_conn()
+            client.fput_object(BUCKET, key, str(path), content_type=content_type)
+            verify_object(client, BUCKET, key, asset["sha256"])
             print(f"Verified {asset['sourceId']} -> {key}")
-        return summary
+        summary["contentKey"] = publish_json(client, category_slug, test_slug, stored, expected_content=content)
+        return stored, summary
 
 
 def main():
@@ -158,6 +164,7 @@ def main():
     parser.add_argument("--source-root", type=Path, help="Required for relative non-crop assets")
     parser.add_argument("--crop-root", type=Path, help="Required for relative crop assets")
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--output-root", type=Path, help="Also export the MinIO bucket/key tree locally, including with --dry-run")
     args = parser.parse_args()
     from dotenv import load_dotenv
     import psycopg
@@ -165,14 +172,20 @@ def main():
     load_dotenv()
     with psycopg.connect(os.environ["DATABASE_URL"]) as connection:
         with connection.cursor() as cursor:
-            cursor.execute("SELECT content FROM exam_tests WHERE id = %s", (args.test_id,))
+            cursor.execute("SELECT t.content,c.slug,t.slug FROM exam_tests t JOIN exam_categories c ON c.id=t.category_id WHERE t.id = %s AND c.type='toeic'", (args.test_id,))
             row = cursor.fetchone()
     if row is None:
         raise SystemExit("Exam test not found")
-    summary = publish_content(row[0], args.source_root, args.crop_root, args.dry_run)
+    stored, summary = publish_content(row[0], args.source_root, args.crop_root, args.dry_run, category_slug=row[1], test_slug=row[2], output_root=args.output_root)
+    if not args.dry_run:
+        from psycopg.types.json import Jsonb
+        with psycopg.connect(os.environ["DATABASE_URL"]) as connection, connection.cursor() as cursor:
+            cursor.execute("UPDATE exam_tests SET content=%s WHERE id=%s AND content=%s", (Jsonb(stored), args.test_id, Jsonb(row[0])))
+            if cursor.rowcount != 1:
+                raise ValueError("Exam content changed during publication; database left unchanged")
     print(json.dumps(summary))
     if not args.dry_run:
-        print("Published all TOEIC media; exam content and attempts unchanged")
+        print("Published TOEIC JSON/media and updated media identities; questions, answers and attempts unchanged")
 
 
 if __name__ == "__main__":

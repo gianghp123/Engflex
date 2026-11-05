@@ -116,23 +116,23 @@ func (_c *MockExamTestRepository_CountByCategory_Call) RunAndReturn(run func(ctx
 }
 
 // GetByID provides a mock function for the type MockExamTestRepository
-func (_mock *MockExamTestRepository) GetByID(ctx context.Context, id string) (*models.ExamTest, error) {
+func (_mock *MockExamTestRepository) GetByID(ctx context.Context, id string) (*models.ExamTestCatalog, error) {
 	ret := _mock.Called(ctx, id)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetByID")
 	}
 
-	var r0 *models.ExamTest
+	var r0 *models.ExamTestCatalog
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string) (*models.ExamTest, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) (*models.ExamTestCatalog, error)); ok {
 		return returnFunc(ctx, id)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string) *models.ExamTest); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) *models.ExamTestCatalog); ok {
 		r0 = returnFunc(ctx, id)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*models.ExamTest)
+			r0 = ret.Get(0).(*models.ExamTestCatalog)
 		}
 	}
 	if returnFunc, ok := ret.Get(1).(func(context.Context, string) error); ok {
@@ -173,12 +173,12 @@ func (_c *MockExamTestRepository_GetByID_Call) Run(run func(ctx context.Context,
 	return _c
 }
 
-func (_c *MockExamTestRepository_GetByID_Call) Return(examTest *models.ExamTest, err error) *MockExamTestRepository_GetByID_Call {
-	_c.Call.Return(examTest, err)
+func (_c *MockExamTestRepository_GetByID_Call) Return(examTestCatalog *models.ExamTestCatalog, err error) *MockExamTestRepository_GetByID_Call {
+	_c.Call.Return(examTestCatalog, err)
 	return _c
 }
 
-func (_c *MockExamTestRepository_GetByID_Call) RunAndReturn(run func(ctx context.Context, id string) (*models.ExamTest, error)) *MockExamTestRepository_GetByID_Call {
+func (_c *MockExamTestRepository_GetByID_Call) RunAndReturn(run func(ctx context.Context, id string) (*models.ExamTestCatalog, error)) *MockExamTestRepository_GetByID_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -252,23 +252,23 @@ func (_c *MockExamTestRepository_GetForUpdate_Call) RunAndReturn(run func(ctx co
 }
 
 // ListByCategory provides a mock function for the type MockExamTestRepository
-func (_mock *MockExamTestRepository) ListByCategory(ctx context.Context, categoryID string, limit int, offset int) ([]*models.ExamTest, error) {
+func (_mock *MockExamTestRepository) ListByCategory(ctx context.Context, categoryID string, limit int, offset int) ([]*models.ExamTestCatalog, error) {
 	ret := _mock.Called(ctx, categoryID, limit, offset)
 
 	if len(ret) == 0 {
 		panic("no return value specified for ListByCategory")
 	}
 
-	var r0 []*models.ExamTest
+	var r0 []*models.ExamTestCatalog
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, int, int) ([]*models.ExamTest, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, int, int) ([]*models.ExamTestCatalog, error)); ok {
 		return returnFunc(ctx, categoryID, limit, offset)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, int, int) []*models.ExamTest); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, int, int) []*models.ExamTestCatalog); ok {
 		r0 = returnFunc(ctx, categoryID, limit, offset)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*models.ExamTest)
+			r0 = ret.Get(0).([]*models.ExamTestCatalog)
 		}
 	}
 	if returnFunc, ok := ret.Get(1).(func(context.Context, string, int, int) error); ok {
@@ -321,12 +321,12 @@ func (_c *MockExamTestRepository_ListByCategory_Call) Run(run func(ctx context.C
 	return _c
 }
 
-func (_c *MockExamTestRepository_ListByCategory_Call) Return(examTests []*models.ExamTest, err error) *MockExamTestRepository_ListByCategory_Call {
-	_c.Call.Return(examTests, err)
+func (_c *MockExamTestRepository_ListByCategory_Call) Return(examTestCatalogs []*models.ExamTestCatalog, err error) *MockExamTestRepository_ListByCategory_Call {
+	_c.Call.Return(examTestCatalogs, err)
 	return _c
 }
 
-func (_c *MockExamTestRepository_ListByCategory_Call) RunAndReturn(run func(ctx context.Context, categoryID string, limit int, offset int) ([]*models.ExamTest, error)) *MockExamTestRepository_ListByCategory_Call {
+func (_c *MockExamTestRepository_ListByCategory_Call) RunAndReturn(run func(ctx context.Context, categoryID string, limit int, offset int) ([]*models.ExamTestCatalog, error)) *MockExamTestRepository_ListByCategory_Call {
 	_c.Call.Return(run)
 	return _c
 }

@@ -19,6 +19,26 @@ type ExamController struct {
 	attempts *services.AttemptService
 }
 
+// Statistics godoc
+// @Summary Get my completed full TOEIC exam statistics
+// @Description Practice and unfinished attempts are excluded. Missing scores are null.
+// @Tags exams
+// @Security BearerAuth
+// @Produce json
+// @Success 200 {object} common.ApiResponse{data=responses.ExamStatistics}
+// @Router /exam-attempts/statistics [get]
+func (h *ExamController) Statistics(c *gin.Context) {
+	c.Header("Cache-Control", "private, no-store")
+	stats, err := h.attempts.Statistics(c.Request.Context(), middleware.UserID(c))
+	if err != nil {
+		common.Fail(c, err)
+		return
+	}
+	var dto responses.ExamStatistics
+	_ = utils.Map(&dto, stats)
+	common.OK(c, "exam statistics", dto)
+}
+
 func NewExamController(catalog *services.CatalogService, attempts *services.AttemptService) *ExamController {
 	return &ExamController{catalog: catalog, attempts: attempts}
 }

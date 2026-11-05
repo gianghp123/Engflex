@@ -15,6 +15,7 @@ line-length = 110
 select = ["E4", "E7", "E9", "F", "I"]
 [dependency-groups]
 dev = ["pytest>=8,<10", "ruff>=0.14,<1"]
+study4 = ["mcp>=1.20,<2", "python-dotenv>=1,<2", "minio>=7.2,<8", "psycopg[binary]>=3.2,<4"]
 [tool.pytest.ini_options]
 pythonpath = ["."]
 testpaths = ["tests"]

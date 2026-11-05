@@ -4,10 +4,28 @@
 // source: attempt.go
 
 export interface Category {
+  testsCount: number /* int64 */;
+  attemptsCount: number /* int64 */;
   id: string;
   slug: string;
   title: string;
   type: ExamType;
+}
+/**
+ * CategoryReference is the category relation on a test or attempt. Live catalog
+ * counters are returned by the categories list, not by these identity joins.
+ */
+export interface CategoryReference {
+  id: string;
+  slug: string;
+  title: string;
+  type: ExamType;
+}
+export interface ExamStatistics {
+  completedTests: number /* int64 */;
+  highestScore: number /* float64 */ | null;
+  averageScore: number /* float64 */ | null;
+  latestScore: number /* float64 */ | null;
 }
 export interface ExamAttemptSummary {
   result: ResultSummary | null;
@@ -33,7 +51,7 @@ export interface AttemptTestSummary {
   categoryId: string;
   slug: string;
   title: string;
-  category: Category | null;
+  category: CategoryReference | null;
 }
 export interface ExamAttempt {
   id: string;
@@ -54,7 +72,7 @@ export interface TakingTest {
   categoryId: string;
   slug: string;
   title: string;
-  category: Category | null;
+  category: CategoryReference | null;
   content: TakingContent | null;
 }
 export interface ReviewAttempt {
@@ -76,7 +94,7 @@ export interface ReviewTest {
   categoryId: string;
   slug: string;
   title: string;
-  category: Category | null;
+  category: CategoryReference | null;
   content: ReviewContent | null;
 }
 
@@ -88,14 +106,18 @@ exclude all answer-bearing and translated fields.
 */
 
 export interface TestDetail {
+  attemptsCount: number /* int64 */;
+  durationMinutes: number /* int */;
   id: string;
   categoryId: string;
   slug: string;
   title: string;
   content: ContentMetadata | null;
-  category: Category | null;
+  category: CategoryReference | null;
 }
 export interface TestMetadata {
+  attemptsCount: number /* int64 */;
+  durationMinutes: number /* int */;
   id: string;
   categoryId: string;
   slug: string;

@@ -22,7 +22,7 @@ func NewCatalogService(categories repositories.ExamCategoryRepository, tests rep
 	return &CatalogService{categories: categories, tests: tests}
 }
 
-func (s *CatalogService) GetTest(ctx context.Context, testID string) (*models.ExamTest, error) {
+func (s *CatalogService) GetTest(ctx context.Context, testID string) (*models.ExamTestCatalog, error) {
 	test, err := s.tests.GetByID(ctx, testID)
 	if err != nil {
 		appErr := common.FromDBError(err, "exam test")
@@ -38,11 +38,12 @@ func (s *CatalogService) GetTest(ctx context.Context, testID string) (*models.Ex
 		logger.Report(ctx, "parse catalog exam failed", appErr, "testID", testID, "error", err)
 		return nil, appErr
 	}
+	test.DurationMinutes = toeic.DurationMinutes
 	slog.InfoContext(ctx, "exam test retrieved", "testID", testID)
 	return test, nil
 }
 
-func (s *CatalogService) ListCategories(ctx context.Context, examType enums.ExamType) ([]*models.ExamCategory, error) {
+func (s *CatalogService) ListCategories(ctx context.Context, examType enums.ExamType) ([]*models.ExamCategoryCatalog, error) {
 	if examType != "" && examType != enums.ExamTypeTOEIC {
 		return nil, common.BadRequest("invalid exam type")
 	}
@@ -56,7 +57,7 @@ func (s *CatalogService) ListCategories(ctx context.Context, examType enums.Exam
 	return categories, nil
 }
 
-func (s *CatalogService) ListTests(ctx context.Context, categoryID string, page, pageSize int) ([]*models.ExamTest, int64, error) {
+func (s *CatalogService) ListTests(ctx context.Context, categoryID string, page, pageSize int) ([]*models.ExamTestCatalog, int64, error) {
 	category, err := s.categories.GetByID(ctx, categoryID)
 	if err != nil {
 		appErr := common.FromDBError(err, "exam category")
@@ -79,6 +80,7 @@ func (s *CatalogService) ListTests(ctx context.Context, categoryID string, page,
 		return nil, 0, appErr
 	}
 	for _, test := range tests {
+		test.DurationMinutes = toeic.DurationMinutes
 		test.ParsedContent, err = toeic.ParseContent(test.Content)
 		if err != nil {
 			logger.Report(ctx, "parse catalog exam failed", common.Internal(), "testID", test.ID)

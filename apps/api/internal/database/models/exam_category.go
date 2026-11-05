@@ -17,3 +17,12 @@ type ExamCategory struct {
 }
 
 func (ExamCategory) TableName() string { return "exam_categories" }
+
+// ExamCategoryCatalog keeps the category identity with its live catalog counts.
+// Aggregate columns belong to this read model, so ordinary relation joins never
+// attempt to select them from the physical exam_categories table.
+type ExamCategoryCatalog struct {
+	ExamCategory  `gorm:"embedded"`
+	TestsCount    int64 `gorm:"->"`
+	AttemptsCount int64 `gorm:"->"`
+}

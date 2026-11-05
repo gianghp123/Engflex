@@ -29,14 +29,12 @@ import {
 	type ToeicAttemptItem,
 	ToeicHistoryPanel,
 } from "#/features/exams/components/toeic-history-panel";
-import {
-	type ToeicStats,
-	ToeicStatsPanel,
-} from "#/features/exams/components/toeic-stats-panel";
+import { ToeicStatsPanel } from "#/features/exams/components/toeic-stats-panel";
 import {
 	examAttemptsQueryOptions,
 	examCategoriesQueryOptions,
 	examKeys,
+	examStatisticsQueryOptions,
 	useCancelExamAttempt,
 } from "#/features/exams/queries";
 import { ApiError } from "#/lib/api/api";
@@ -49,13 +47,6 @@ const CATEGORY_COLORS = [
 	"bg-[#9333ea]",
 	"bg-[#2563eb]",
 ];
-
-const MOCK_STATS: ToeicStats = {
-	completedTests: 1,
-	highestScore: 0,
-	averageScore: 0,
-	latestScore: 0,
-};
 
 function formatAttemptDate(iso: string | null | undefined): string {
 	if (!iso) return "";
@@ -162,6 +153,12 @@ function ToeicHubPage() {
 		retry: retryHubRead,
 	});
 
+	const statsQuery = useQuery({
+		...examStatisticsQueryOptions(),
+		enabled: isLoaded,
+		retry: retryHubRead,
+	});
+
 	async function handleCancel() {
 		if (!attemptToCancel || cancelLock.current) return;
 		cancelLock.current = true;
@@ -215,9 +212,9 @@ function ToeicHubPage() {
 		(cat, idx) => ({
 			id: cat.id,
 			title: cat.title,
-			tags: ["TOEIC", "Practice"],
-			testsCount: 10,
-			attemptsCount: 25000,
+			tags: [cat.type.toUpperCase()],
+			testsCount: cat.testsCount,
+			attemptsCount: cat.attemptsCount,
 			iconBgColor: CATEGORY_COLORS[idx % CATEGORY_COLORS.length],
 		}),
 	);
@@ -284,7 +281,20 @@ function ToeicHubPage() {
 			</div>
 
 			<div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-				<ToeicStatsPanel stats={MOCK_STATS} />
+				{statsQuery.isError ? (
+					<HubQueryError
+						message={m["exams.toeic.hub.load.statisticsFailed"]()}
+						pending={statsQuery.isFetching}
+						onRetry={() => {
+							void statsQuery.refetch();
+						}}
+					/>
+				) : (
+					<ToeicStatsPanel
+						stats={statsQuery.data}
+						pending={statsQuery.isPending}
+					/>
+				)}
 				{attemptsQuery.isError ? (
 					<HubQueryError
 						message={m["exams.toeic.hub.load.attemptsFailed"]()}

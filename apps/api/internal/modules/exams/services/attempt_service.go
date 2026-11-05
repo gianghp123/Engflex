@@ -92,7 +92,7 @@ func (s *AttemptService) Start(ctx context.Context, userID, testID string, req r
 		now := time.Now().UTC()
 		attempt.UserID, attempt.ExamTestID, attempt.Mode = userID, &test.ID, &mode
 		if req.Mode == enums.ExamModeExam {
-			deadline := now.Add(120 * time.Minute)
+			deadline := now.Add(toeic.DurationMinutes * time.Minute)
 			attempt.DeadlineAt = &deadline
 		}
 		attempt.Type, attempt.Status, attempt.StartedAt = enums.AttemptTypeExam, enums.AttemptStatusInProgress, &now

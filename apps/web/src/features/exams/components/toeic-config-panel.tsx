@@ -5,6 +5,7 @@ import { m } from "#/paraglide/messages";
 import type { ToeicPartItem } from "./toeic-parts-breakdown";
 
 export interface ToeicConfigPanelProps {
+	durationMinutes: number;
 	parts: ToeicPartItem[];
 	selectedMode: ExamMode;
 	selectedParts: number[];
@@ -28,6 +29,7 @@ const MODE_DESCRIPTIONS: Record<ExamMode, () => string> = {
 };
 
 export function ToeicConfigPanel({
+	durationMinutes,
 	parts,
 	selectedMode,
 	selectedParts,
@@ -139,7 +141,7 @@ export function ToeicConfigPanel({
 					? m["exams.toeic.test.config.summary"]({
 							parts: selectedParts.length,
 							questions: questionCount,
-							duration: 120,
+							duration: durationMinutes,
 						})
 					: m["exams.toeic.test.config.practiceSummary"]({
 							parts: selectedParts.length,

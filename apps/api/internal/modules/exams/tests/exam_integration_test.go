@@ -275,6 +275,7 @@ func TestExamPhase2HTTP(t *testing.T) {
 			{"GET", "/api/v1/exam-categories/" + category.ID + "/tests"},
 			{"POST", "/api/v1/exam-tests/" + test.ID + "/attempts"},
 			{"GET", "/api/v1/exam-attempts"},
+			{"GET", "/api/v1/exam-attempts/statistics"},
 			{"GET", "/api/v1/exam-attempts/" + attemptID},
 			{"PATCH", "/api/v1/exam-attempts/" + attemptID},
 		} {

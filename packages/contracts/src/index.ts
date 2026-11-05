@@ -71,6 +71,7 @@ export type {
   TestDetail as ExamTestDetail,
   ExamAttempt,
   ExamAttemptSummary,
+  ExamStatistics,
   ReviewAttempt as ExamReviewAttempt,
   TakingContent as ExamTakingContent,
   ReviewContent as ExamReviewContent,

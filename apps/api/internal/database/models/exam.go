@@ -25,3 +25,11 @@ type ExamTest struct {
 }
 
 func (ExamTest) TableName() string { return "exam_tests" }
+
+// ExamTestCatalog extends the same test graph with live catalog metadata.
+// It is read directly by GORM; no layer rebuilds an ExamTest from a row shape.
+type ExamTestCatalog struct {
+	ExamTest        `gorm:"embedded"`
+	AttemptsCount   int64 `gorm:"->"`
+	DurationMinutes int   `gorm:"-"`
+}
