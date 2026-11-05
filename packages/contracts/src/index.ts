@@ -20,6 +20,8 @@ declare global {
   type AttemptStatus = Enums.AttemptStatus;
   type ExamMode = Enums.ExamMode;
   type ExamType = Enums.ExamType;
+  type ExamSkill = Enums.ExamSkill;
+  type ExamSubType = Enums.ExamSubType;
   type CEFR = Enums.CEFR;
   type ConversationMode = Enums.ConversationMode;
   type ConversationStatus = Enums.ConversationStatus;

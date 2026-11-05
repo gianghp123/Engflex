@@ -2,25 +2,33 @@
 // exclude all answer-bearing and translated fields.
 package responses
 
+import "engflex-api/internal/common/enums"
+
 type TestDetail struct {
-	AttemptsCount   int64              `json:"attemptsCount"`
-	DurationMinutes int                `json:"durationMinutes"`
-	ID              string             `json:"id"`
-	CategoryID      string             `json:"categoryId"`
-	Slug            string             `json:"slug"`
-	Title           string             `json:"title"`
-	ParsedContent   *ContentMetadata   `json:"content"`
-	Category        *CategoryReference `json:"category"`
+	AttemptsCount      int64                 `json:"attemptsCount"`
+	DurationMinutes    int                   `json:"durationMinutes"`
+	ID                 string                `json:"id"`
+	CategoryID         string                `json:"categoryId"`
+	Slug               string                `json:"slug"`
+	Title              string                `json:"title"`
+	Skill              *enums.ExamSkill      `json:"skill,omitempty"`
+	SubType            *enums.ExamSubType    `json:"subType,omitempty"`
+	ParsedContent      *ContentMetadata      `json:"content,omitempty"`
+	ParsedIeltsContent *IeltsContentMetadata `json:"ieltsContent,omitempty"`
+	Category           *CategoryReference    `json:"category"`
 }
 
 type TestMetadata struct {
-	AttemptsCount   int64            `json:"attemptsCount"`
-	DurationMinutes int              `json:"durationMinutes"`
-	ID              string           `json:"id"`
-	CategoryID      string           `json:"categoryId"`
-	Slug            string           `json:"slug"`
-	Title           string           `json:"title"`
-	ParsedContent   *ContentMetadata `json:"content"`
+	AttemptsCount      int64                 `json:"attemptsCount"`
+	DurationMinutes    int                   `json:"durationMinutes"`
+	ID                 string                `json:"id"`
+	CategoryID         string                `json:"categoryId"`
+	Slug               string                `json:"slug"`
+	Title              string                `json:"title"`
+	Skill              *enums.ExamSkill      `json:"skill,omitempty"`
+	SubType            *enums.ExamSubType    `json:"subType,omitempty"`
+	ParsedContent      *ContentMetadata      `json:"content,omitempty"`
+	ParsedIeltsContent *IeltsContentMetadata `json:"ieltsContent,omitempty"`
 }
 type ContentMetadata struct {
 	Parts []PartMetadata `json:"parts"`
@@ -166,9 +174,12 @@ type Result struct {
 	CorrectCount *int     `json:"correctCount"`
 	AccuracyPct  *float64 `json:"accuracyPct"`
 	ScaledScore  *float64 `json:"scaledScore"`
+	BandScore    *float64 `json:"bandScore,omitempty"`
 }
 type Answer struct {
-	QuestionID  string  `json:"questionId"`
-	SelectedKey *string `json:"selectedKey"`
-	Flagged     bool    `json:"flagged"`
+	QuestionID   string   `json:"questionId"`
+	SelectedKey  *string  `json:"selectedKey"`
+	SelectedKeys []string `json:"selectedKeys,omitempty" tstype:"string[] | null"`
+	TextValue    *string  `json:"textValue,omitempty" tstype:"string | null"`
+	Flagged      bool     `json:"flagged"`
 }

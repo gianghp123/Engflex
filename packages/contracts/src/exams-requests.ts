@@ -23,5 +23,7 @@ export interface PatchAttempt {
 export interface Answer {
   questionId: string;
   selectedKey?: string | null;
+  selectedKeys?: string[] | null;
+  textValue?: string | null;
   flagged: boolean;
 }
