@@ -3,6 +3,7 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import { cn } from "cn";
 import {
 	AudioWaveform,
+	Award,
 	BookMarked,
 	BookmarkCheck,
 	BookOpen,
@@ -83,6 +84,12 @@ const NAV_GROUPS = [
 				to: APP_ROUTES.EXAMS.TOEIC.LIST,
 				icon: GraduationCap,
 				tile: "bg-[#059669]",
+			},
+			{
+				title: () => m["nav.item.ielts"](),
+				to: APP_ROUTES.EXAMS.IELTS.LIST,
+				icon: Award,
+				tile: "bg-[#dc2626]",
 			},
 			{
 				title: () => m["nav.item.voice"](),
