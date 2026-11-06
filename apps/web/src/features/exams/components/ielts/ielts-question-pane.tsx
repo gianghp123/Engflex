@@ -24,7 +24,6 @@ export function IeltsQuestionPane({
 }) {
 	return (
 		<div className="flex h-full flex-col overflow-hidden bg-background">
-			{/* Header */}
 			<div className="flex h-10 shrink-0 items-center justify-between border-b border-border/70 px-4 bg-muted/30">
 				<div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
 					<HelpCircle className="size-3.5 text-sky-500" />
@@ -32,21 +31,18 @@ export function IeltsQuestionPane({
 				</div>
 			</div>
 
-			{/* Questions Content */}
 			<div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-8">
 				{groups.map((group) => (
 					<div
 						key={group.id}
 						className="space-y-5 rounded-xl border border-border/70 bg-card p-4 md:p-6 shadow-xs"
 					>
-						{/* Group Instruction */}
 						<div className="rounded-lg border border-sky-200 bg-sky-50/60 p-3.5 text-xs md:text-sm text-sky-950 dark:border-sky-800/80 dark:bg-sky-950/30 dark:text-sky-200">
 							<p className="font-semibold whitespace-pre-line leading-relaxed">
 								{group.instruction}
 							</p>
 						</div>
 
-						{/* Flowchart Diagram (Section 2 - Q22 to Q27) */}
 						{group.isFlowchart ? (
 							<IeltsFlowchartGroup
 								questions={group.questions}
@@ -57,7 +53,6 @@ export function IeltsQuestionPane({
 								onToggleBookmark={onToggleBookmark}
 							/>
 						) : (
-							/* Standard Questions List */
 							<div className="space-y-4">
 								{group.questions.map((question) => (
 									<IeltsQuestionCard
@@ -139,14 +134,12 @@ function IeltsQuestionCard({
 				</Button>
 			</div>
 
-			{/* Prompt */}
 			{question.prompt && (
 				<p className="mt-2 text-sm md:text-[15px] font-medium leading-relaxed text-foreground">
 					{question.prompt}
 				</p>
 			)}
 
-			{/* Options / Input based on question type */}
 			<div className="mt-3">
 				{question.type === "true_false_not_given" && question.options && (
 					<div className="flex flex-wrap gap-2">
@@ -239,7 +232,6 @@ function IeltsFlowchartGroup({
 				Sending Office Meeting Invites Flowchart
 			</div>
 
-			{/* Flow Step 1 */}
 			<div className="rounded-xl border border-sky-200/80 bg-sky-50/30 p-4 space-y-3 dark:border-sky-900/60 dark:bg-sky-950/20">
 				<h4 className="text-xs font-bold uppercase tracking-wider text-sky-700 dark:text-sky-300">
 					1. Checking Before Sending
@@ -284,12 +276,10 @@ function IeltsFlowchartGroup({
 				</div>
 			</div>
 
-			{/* Flow Arrow */}
 			<div className="flex justify-center text-muted-foreground">
 				<ArrowDown className="size-5 animate-bounce" />
 			</div>
 
-			{/* Flow Step 2 */}
 			<div className="rounded-xl border border-indigo-200/80 bg-indigo-50/30 p-4 space-y-3 dark:border-indigo-900/60 dark:bg-indigo-950/20">
 				<h4 className="text-xs font-bold uppercase tracking-wider text-indigo-700 dark:text-indigo-300">
 					2. Sending in Two Steps (Larger / Formal Meetings)

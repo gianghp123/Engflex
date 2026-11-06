@@ -106,21 +106,18 @@ func GradeIeltsAttempt(content *Content, answers []Answer) (*Result, error) {
 
 				isCorrect := false
 
-				// Case 1: Single choice or True/False/Not Given
 				if q.CorrectKey != nil && ans.SelectedKey != nil {
 					if strings.EqualFold(strings.TrimSpace(*ans.SelectedKey), strings.TrimSpace(*q.CorrectKey)) {
 						isCorrect = true
 					}
 				}
 
-				// Case 2: Multi-select answers (e.g. choose TWO letters)
 				if !isCorrect && len(q.CorrectKeys) > 0 && len(ans.SelectedKeys) > 0 {
 					if checkMultiKeys(ans.SelectedKeys, q.CorrectKeys) {
 						isCorrect = true
 					}
 				}
 
-				// Case 3: Gap-fill text / number alternatives
 				if !isCorrect && len(q.CorrectAnswers) > 0 && ans.TextValue != nil {
 					candidate := NormalizeText(*ans.TextValue)
 					if candidate != "" {

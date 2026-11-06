@@ -77,6 +77,18 @@ export type {
   ReviewAttempt as ExamReviewAttempt,
   TakingContent as ExamTakingContent,
   ReviewContent as ExamReviewContent,
+  IeltsContentMetadata,
+  IeltsSectionMetadata,
+  IeltsTakingContent,
+  IeltsTakingSection,
+  IeltsPassage,
+  IeltsParagraph,
+  IeltsTakingQuestionGroup,
+  IeltsTakingQuestion,
+  IeltsReviewContent,
+  IeltsReviewSection,
+  IeltsReviewQuestionGroup,
+  IeltsReviewQuestion,
 } from './exams-responses.ts';
 export * from './videos-requests.ts';
 export * from './videos-responses.ts';

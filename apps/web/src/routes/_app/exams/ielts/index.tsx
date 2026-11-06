@@ -1,318 +1,182 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { toast } from "sonner";
+import { useQuery } from "@tanstack/react-query";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { History } from "lucide-react";
+import { useState } from "react";
 import { APP_ROUTES } from "#/app/app-route";
-import { IeltsConfirmModal } from "#/features/exams/components/ielts/ielts-confirm-modal";
-import { IeltsHeader } from "#/features/exams/components/ielts/ielts-header";
-import { IeltsPassagePane } from "#/features/exams/components/ielts/ielts-passage-pane";
-import { IeltsQuestionPalette } from "#/features/exams/components/ielts/ielts-question-palette";
-import { IeltsQuestionPane } from "#/features/exams/components/ielts/ielts-question-pane";
-import { IeltsResultModal } from "#/features/exams/components/ielts/ielts-result-modal";
-import { IeltsTabBar } from "#/features/exams/components/ielts/ielts-tab-bar";
-import { GT_IELTS_TEST_1 } from "#/features/exams/ielts/mock-data";
+import { useBreadcrumbs } from "#/app/breadcrumbs";
+import { MoMascot } from "#/components/common/mo-mascot";
+import { PageHero } from "#/components/common/page-layout";
+import { Button } from "#/components/ui/button";
+import { Skeleton } from "#/components/ui/skeleton";
+import {
+	IeltsCategoryCard,
+	type IeltsCategoryCardItem,
+} from "#/features/exams/components/ielts/ielts-category-card";
+import { examCategoriesQueryOptions } from "#/features/exams/queries";
 import { m } from "#/paraglide/messages";
 
 export const Route = createFileRoute("/_app/exams/ielts/")({
-	component: IeltsExamPage,
+	component: IeltsHubPage,
 });
 
-const STORAGE_ANSWERS = "engflex_ielts_answers";
-const STORAGE_BOOKMARKS = "engflex_ielts_bookmarks";
-const STORAGE_TIME = "engflex_ielts_time_left";
+const CATEGORY_COLORS = [
+	"bg-[#0284c7]",
+	"bg-[#ea580c]",
+	"bg-[#9333ea]",
+	"bg-[#2563eb]",
+];
 
-function IeltsExamPage() {
-	const navigate = useNavigate();
-	const test = GT_IELTS_TEST_1;
+function CategoryCardSkeleton() {
+	return (
+		<div className="flex items-center justify-between gap-4 rounded-2xl border border-border/80 bg-card p-5 shadow-sm">
+			<div className="flex min-w-0 flex-1 flex-col gap-3">
+				<Skeleton className="h-6 w-3/4 rounded-md" />
+				<div className="flex gap-1.5">
+					<Skeleton className="h-4 w-14 rounded-md" />
+					<Skeleton className="h-4 w-14 rounded-md" />
+				</div>
+				<Skeleton className="h-4 w-28 rounded-md" />
+			</div>
+			<Skeleton className="size-14 shrink-0 rounded-2xl md:size-16" />
+		</div>
+	);
+}
 
-	// Initial State from LocalStorage
-	const [answers, setAnswers] = useState<Record<string, string>>(() => {
-		if (typeof window === "undefined") return {};
-		try {
-			const saved = localStorage.getItem(STORAGE_ANSWERS);
-			return saved ? JSON.parse(saved) : {};
-		} catch {
-			return {};
-		}
+function IeltsHubPage() {
+	useBreadcrumbs([{ label: m["exams.ielts.hub.title"]() }]);
+	const [subTypeFilter, setSubTypeFilter] = useState<
+		"all" | "academic" | "general_training"
+	>("all");
+	const [skillFilter, setSkillFilter] = useState<
+		"all" | "reading" | "listening"
+	>("all");
+
+	const {
+		data: categories,
+		isLoading,
+		isError,
+		refetch,
+	} = useQuery(examCategoriesQueryOptions({ type: "ielts" }));
+
+	const filteredCategories = (categories ?? []).filter((c) => {
+		if (subTypeFilter !== "all" && c.subType !== subTypeFilter) return false;
+		return true;
 	});
-
-	const [bookmarks, setBookmarks] = useState<Set<string>>(() => {
-		if (typeof window === "undefined") return new Set();
-		try {
-			const saved = localStorage.getItem(STORAGE_BOOKMARKS);
-			return saved ? new Set(JSON.parse(saved)) : new Set();
-		} catch {
-			return new Set();
-		}
-	});
-
-	const [timeLeft, setTimeLeft] = useState<number>(() => {
-		if (typeof window === "undefined") return test.durationSeconds;
-		try {
-			const saved = localStorage.getItem(STORAGE_TIME);
-			return saved ? Number(saved) : test.durationSeconds;
-		} catch {
-			return test.durationSeconds;
-		}
-	});
-
-	const [activeSection, setActiveSection] = useState<number>(1);
-	const [activeQuestionId, setActiveQuestionId] = useState<string | null>(null);
-	const [highlightMode, setHighlightMode] = useState<boolean>(false);
-	const [isPaletteCollapsed, setIsPaletteCollapsed] = useState<boolean>(false);
-	const [actionModal, setActionModal] = useState<
-		"submit" | "exit" | "reset" | null
-	>(null);
-	const [resultModalOpen, setResultModalOpen] = useState<boolean>(false);
-
-	// Persist answers
-	useEffect(() => {
-		try {
-			localStorage.setItem(STORAGE_ANSWERS, JSON.stringify(answers));
-		} catch {
-			// Ignore localStorage write errors
-		}
-	}, [answers]);
-
-	// Persist bookmarks
-	useEffect(() => {
-		try {
-			localStorage.setItem(
-				STORAGE_BOOKMARKS,
-				JSON.stringify(Array.from(bookmarks)),
-			);
-		} catch {
-			// Ignore localStorage write errors
-		}
-	}, [bookmarks]);
-
-	// Timer countdown & persistence
-	useEffect(() => {
-		if (resultModalOpen) return;
-
-		const timer = setInterval(() => {
-			setTimeLeft((prev) => {
-				if (prev <= 1) {
-					clearInterval(timer);
-					setResultModalOpen(true);
-					return 0;
-				}
-				const next = prev - 1;
-				try {
-					localStorage.setItem(STORAGE_TIME, String(next));
-				} catch {
-					// Ignore
-				}
-				return next;
-			});
-		}, 1000);
-
-		return () => clearInterval(timer);
-	}, [resultModalOpen]);
-
-	// Handler: Answer input
-	const handleAnswerChange = (questionId: string, value: string) => {
-		setAnswers((prev) => ({
-			...prev,
-			[questionId]: value,
-		}));
-	};
-
-	// Handler: Bookmark toggle
-	const handleToggleBookmark = (questionId: string) => {
-		setBookmarks((prev) => {
-			const next = new Set(prev);
-			if (next.has(questionId)) {
-				next.delete(questionId);
-			} else {
-				next.add(questionId);
-			}
-			return next;
-		});
-	};
-
-	// Handler: Palette question selection
-	const handleSelectQuestion = (
-		questionId: string,
-		targetSectionNumber: number,
-	) => {
-		if (activeSection !== targetSectionNumber) {
-			setActiveSection(targetSectionNumber);
-		}
-		setActiveQuestionId(questionId);
-
-		setTimeout(() => {
-			document.getElementById(questionId)?.scrollIntoView({
-				behavior: "smooth",
-				block: "center",
-			});
-		}, 100);
-	};
-
-	// Handler: Reset test
-	const handleReset = () => {
-		setAnswers({});
-		setBookmarks(new Set());
-		setTimeLeft(test.durationSeconds);
-		setActiveSection(1);
-		setActiveQuestionId(null);
-		setResultModalOpen(false);
-		try {
-			localStorage.removeItem(STORAGE_ANSWERS);
-			localStorage.removeItem(STORAGE_BOOKMARKS);
-			localStorage.removeItem(STORAGE_TIME);
-		} catch {
-			// Ignore
-		}
-		toast.success(m["exams.ielts.take.saved"]());
-	};
-
-	// Handler: Exit test
-	const handleExit = () => {
-		void navigate({ to: APP_ROUTES.HOME });
-	};
-
-	// Current Section
-	const currentSection =
-		test.sections.find((s) => s.sectionNumber === activeSection) ??
-		test.sections[0];
-
-	// Tab bar items meta
-	const tabSectionsMeta = test.sections.map((sec) => {
-		const secQuestions = sec.groups.flatMap((g) => g.questions);
-		const answered = secQuestions.filter(
-			(q) => answers[q.id] != null && answers[q.id].trim() !== "",
-		).length;
-		return {
-			sectionNumber: sec.sectionNumber,
-			label: m["exams.ielts.take.section"]({ number: sec.sectionNumber }),
-			totalQuestions: secQuestions.length,
-			answeredCount: answered,
-		};
-	});
-
-	// Palette groups meta
-	const paletteGroups = test.sections.map((sec) => ({
-		sectionNumber: sec.sectionNumber,
-		title: m["exams.ielts.take.section"]({ number: sec.sectionNumber }),
-		questions: sec.groups.flatMap((g) =>
-			g.questions.map((q) => ({
-				id: q.id,
-				questionNumber: q.number,
-			})),
-		),
-	}));
-
-	const answeredTotal = Object.values(answers).filter(
-		(v) => v != null && v.trim() !== "",
-	).length;
 
 	return (
-		<div className="fixed inset-0 z-50 flex flex-col overflow-hidden bg-background text-foreground">
-			{/* Top Header */}
-			<IeltsHeader
-				testTitle={test.title}
-				timeLeft={timeLeft}
-				highlightMode={highlightMode}
-				onToggleHighlight={() => setHighlightMode((prev) => !prev)}
-				onReset={() => setActionModal("reset")}
-				onExit={() => setActionModal("exit")}
-				onSubmit={() => setActionModal("submit")}
-			/>
-
-			{/* Section Tab Bar */}
-			<IeltsTabBar
-				sections={tabSectionsMeta}
-				activeSection={activeSection}
-				onSelectSection={(secNum) => {
-					setActiveSection(secNum);
-					setActiveQuestionId(null);
-				}}
-			/>
-
-			{/* Status Bar */}
-			<div
-				className="flex items-center justify-between gap-2 border-b border-border/70 px-4 py-1.5 text-xs text-muted-foreground bg-muted/10 select-none"
-				aria-live="polite"
-			>
-				<span className="flex items-center gap-1.5 font-medium">
-					<span className="inline-block size-2 rounded-full bg-emerald-500 animate-pulse" />
-					{m["exams.ielts.take.saved"]()}
-				</span>
-				<span>
-					{m["exams.ielts.take.section"]({ number: activeSection })} •{" "}
-					{currentSection.passages.map((p) => p.title).join(" & ")}
-				</span>
+		<div className="flex flex-col gap-8 pb-12">
+			<div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+				<PageHero
+					icon={<MoMascot variant="nice" size={84} />}
+					title={m["exams.ielts.hub.title"]()}
+					description={m["exams.ielts.hub.description"]()}
+				/>
+				<div className="flex shrink-0 items-center gap-3">
+					<Link
+						to={APP_ROUTES.EXAMS.IELTS.HISTORY}
+						className="inline-flex items-center gap-2 rounded-xl border border-border/80 bg-background/80 px-4 py-2.5 text-sm font-semibold text-foreground shadow-sm backdrop-blur transition-colors hover:bg-muted"
+					>
+						<History className="size-4" aria-hidden="true" />
+						<span>{m["exams.ielts.hub.historyButton"]()}</span>
+					</Link>
+				</div>
 			</div>
 
-			{/* Main Split Layout */}
-			<div className="flex min-h-0 flex-1 overflow-hidden">
-				<main className="grid grid-cols-1 lg:grid-cols-2 min-w-0 flex-1 overflow-hidden">
-					{/* Left: Reading Passage */}
-					<IeltsPassagePane
-						key={`passage-${activeSection}`}
-						passages={currentSection.passages}
-						highlightMode={highlightMode}
-						onClearHighlights={() => {
-							const marks = document.querySelectorAll("mark");
-							for (const m of marks) {
-								const text = document.createTextNode(m.textContent ?? "");
-								m.parentNode?.replaceChild(text, m);
-							}
-						}}
-					/>
-
-					{/* Right: Questions Pane */}
-					<IeltsQuestionPane
-						key={`questions-${activeSection}`}
-						groups={currentSection.groups}
-						answers={answers}
-						bookmarks={bookmarks}
-						activeQuestionId={activeQuestionId}
-						onAnswerChange={handleAnswerChange}
-						onToggleBookmark={handleToggleBookmark}
-					/>
-				</main>
-
-				{/* Right Sidebar: Palette */}
-				<aside className="shrink-0">
-					<IeltsQuestionPalette
-						isCollapsed={isPaletteCollapsed}
-						onToggleCollapse={() => setIsPaletteCollapsed((prev) => !prev)}
-						groups={paletteGroups}
-						activeQuestionId={activeQuestionId}
-						answers={answers}
-						bookmarks={bookmarks}
-						onSelectQuestion={handleSelectQuestion}
-					/>
-				</aside>
-			</div>
-
-			{/* Confirm Action Modal */}
-			<IeltsConfirmModal
-				action={actionModal}
-				answeredCount={answeredTotal}
-				totalCount={test.totalQuestions}
-				onClose={() => setActionModal(null)}
-				onConfirm={() => {
-					if (actionModal === "submit") {
-						setResultModalOpen(true);
-					} else if (actionModal === "exit") {
-						handleExit();
-					} else if (actionModal === "reset") {
-						handleReset();
+			<div className="flex flex-wrap items-center gap-2 border-b border-border/60 pb-4">
+				<Button
+					variant={subTypeFilter === "all" ? "default" : "outline"}
+					size="sm"
+					onClick={() => setSubTypeFilter("all")}
+					className="rounded-full"
+				>
+					{m["exams.ielts.hub.filterAll"]()}
+				</Button>
+				<Button
+					variant={subTypeFilter === "academic" ? "default" : "outline"}
+					size="sm"
+					onClick={() => setSubTypeFilter("academic")}
+					className="rounded-full"
+				>
+					{m["exams.ielts.hub.filterAcademic"]()}
+				</Button>
+				<Button
+					variant={subTypeFilter === "general_training" ? "default" : "outline"}
+					size="sm"
+					onClick={() => setSubTypeFilter("general_training")}
+					className="rounded-full"
+				>
+					{m["exams.ielts.hub.filterGeneral"]()}
+				</Button>
+				<div className="mx-2 h-4 w-px bg-border/80" />
+				<Button
+					variant={skillFilter === "reading" ? "secondary" : "ghost"}
+					size="sm"
+					onClick={() =>
+						setSkillFilter(skillFilter === "reading" ? "all" : "reading")
 					}
-				}}
-			/>
+					className="rounded-full"
+				>
+					{m["exams.ielts.hub.filterReading"]()}
+				</Button>
+				<Button
+					variant={skillFilter === "listening" ? "secondary" : "ghost"}
+					size="sm"
+					onClick={() =>
+						setSkillFilter(skillFilter === "listening" ? "all" : "listening")
+					}
+					className="rounded-full"
+				>
+					{m["exams.ielts.hub.filterListening"]()}
+				</Button>
+			</div>
 
-			{/* Result Review Modal */}
-			<IeltsResultModal
-				open={resultModalOpen}
-				test={test}
-				answers={answers}
-				timeSpentSeconds={test.durationSeconds - timeLeft}
-				onClose={() => setResultModalOpen(false)}
-				onRetake={handleReset}
-			/>
+			{isLoading ? (
+				<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+					{[1, 2, 3, 4, 5, 6].map((i) => (
+						<CategoryCardSkeleton key={i} />
+					))}
+				</div>
+			) : isError ? (
+				<div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-border/80 bg-card p-10 text-center">
+					<p className="text-sm font-medium text-destructive">
+						{m["exams.ielts.hub.loadFailed"]()}
+					</p>
+					<Button
+						variant="outline"
+						size="sm"
+						onClick={() => void refetch()}
+						className="rounded-lg"
+					>
+						{m["exams.ielts.hub.retry"]()}
+					</Button>
+				</div>
+			) : filteredCategories.length === 0 ? (
+				<div className="flex flex-col items-center justify-center gap-4 rounded-3xl border border-dashed border-border/80 bg-card/50 p-12 text-center">
+					<MoMascot variant="thinking" className="size-24" />
+					<div className="flex flex-col gap-1">
+						<h3 className="text-lg font-bold text-foreground">
+							{m["exams.ielts.hub.emptyTitle"]()}
+						</h3>
+						<p className="max-w-md text-sm text-muted-foreground">
+							{m["exams.ielts.hub.emptyDesc"]()}
+						</p>
+					</div>
+				</div>
+			) : (
+				<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+					{filteredCategories.map((category, index) => {
+						const item: IeltsCategoryCardItem = {
+							id: category.id,
+							title: category.title,
+							subType: category.subType,
+							testsCount: category.testsCount ?? 0,
+							iconBgColor:
+								CATEGORY_COLORS[index % CATEGORY_COLORS.length] ?? "bg-primary",
+						};
+						return <IeltsCategoryCard key={category.id} item={item} />;
+					})}
+				</div>
+			)}
 		</div>
 	);
 }

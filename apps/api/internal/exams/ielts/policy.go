@@ -9,17 +9,14 @@ import (
 )
 
 const (
-	// Duration limits in minutes for standard IELTS test formats.
 	ReadingDurationMinutes   = 60
 	ListeningDurationMinutes = 40
 	WritingDurationMinutes   = 60
 
-	// Official IELTS section counts per skill.
 	ReadingSectionsCount   = 3
 	ListeningSectionsCount = 4
 	WritingTasksCount      = 2
 
-	// Standard objective question total per test.
 	StandardTotalQuestions = 40
 )
 
@@ -76,7 +73,6 @@ func CalculateReadingBand(rawCorrect int, subType enums.ExamSubType) float64 {
 		}
 	}
 
-	// Default to Academic Reading band score cutoffs
 	switch {
 	case rawCorrect >= 39:
 		return 9.0

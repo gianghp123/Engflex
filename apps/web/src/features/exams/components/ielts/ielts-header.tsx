@@ -29,7 +29,6 @@ export function IeltsHeader({
 }) {
 	return (
 		<header className="flex h-14 w-full shrink-0 items-center justify-between border-b border-border/80 bg-background px-3 md:px-6">
-			{/* Left: Test Branding */}
 			<div className="flex items-center gap-2.5 min-w-0">
 				<div className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-red-600 text-white font-bold text-xs shadow-xs">
 					🇬🇧
@@ -39,7 +38,6 @@ export function IeltsHeader({
 				</h1>
 			</div>
 
-			{/* Center: Countdown Timer Badge */}
 			<div className="flex items-center gap-1.5 rounded-full border border-sky-200 bg-sky-50/80 px-3.5 py-1 text-xs font-mono font-bold text-sky-700 shadow-xs dark:border-sky-800 dark:bg-sky-950/40 dark:text-sky-300 md:text-sm">
 				<Clock className="size-4" aria-hidden="true" />
 				<span>
@@ -47,9 +45,7 @@ export function IeltsHeader({
 				</span>
 			</div>
 
-			{/* Right: Actions */}
 			<div className="flex items-center gap-2">
-				{/* Highlight Toggle */}
 				<div className="hidden sm:flex items-center gap-2 mr-2 rounded-lg border border-border/70 bg-muted/30 px-2.5 py-1 text-xs">
 					<Highlighter className="size-3.5 text-amber-500" />
 					<label
@@ -65,7 +61,6 @@ export function IeltsHeader({
 					/>
 				</div>
 
-				{/* Reset Button */}
 				<Button
 					variant="outline"
 					size="sm"
@@ -77,7 +72,6 @@ export function IeltsHeader({
 					<span>{m["exams.ielts.take.resetButton"]()}</span>
 				</Button>
 
-				{/* Exit Button */}
 				<Button
 					type="button"
 					onClick={onExit}
@@ -86,7 +80,6 @@ export function IeltsHeader({
 					{m["exams.ielts.take.exitButton"]()}
 				</Button>
 
-				{/* Submit Button */}
 				<SubmitButton
 					type="button"
 					onClick={onSubmit}
