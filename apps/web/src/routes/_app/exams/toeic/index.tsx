@@ -20,6 +20,13 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from "#/components/ui/alert-dialog";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogHeader,
+	DialogTitle,
+} from "#/components/ui/dialog";
 import { Skeleton } from "#/components/ui/skeleton";
 import {
 	ToeicCategoryCard,
@@ -134,6 +141,7 @@ function HubQueryError({
 }
 
 function ToeicHubPage() {
+	const [statisticsOpen, setStatisticsOpen] = useState(false);
 	useBreadcrumbs([{ label: m["exams.toeic.hub.title"]() }]);
 	const { isLoaded } = useAuth();
 	const queryClient = useQueryClient();
@@ -248,6 +256,7 @@ function ToeicHubPage() {
 						<span>{m["exams.toeic.hub.historyButton"]()}</span>
 					</Link>
 					<button
+						onClick={() => setStatisticsOpen(true)}
 						type="button"
 						className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-xs font-bold text-white shadow-sm transition-colors hover:bg-emerald-700"
 					>
@@ -291,6 +300,7 @@ function ToeicHubPage() {
 					/>
 				) : (
 					<ToeicStatsPanel
+						onViewAll={() => setStatisticsOpen(true)}
 						stats={statsQuery.data}
 						pending={statsQuery.isPending}
 					/>
@@ -318,6 +328,32 @@ function ToeicHubPage() {
 					/>
 				)}
 			</div>
+			<Dialog open={statisticsOpen} onOpenChange={setStatisticsOpen}>
+				<DialogContent className="sm:max-w-2xl">
+					<DialogHeader>
+						<DialogTitle>{m["exams.toeic.hub.analyticsButton"]()}</DialogTitle>
+						<DialogDescription>
+							{m["exams.toeic.hub.analytics.scoreDescription"]()}
+						</DialogDescription>
+					</DialogHeader>
+					{statsQuery.isError ? (
+						<HubQueryError
+							message={m["exams.toeic.hub.load.statisticsFailed"]()}
+							pending={statsQuery.isFetching}
+							onRetry={() => void statsQuery.refetch()}
+						/>
+					) : (
+						<ToeicStatsPanel
+							stats={statsQuery.data}
+							pending={statsQuery.isPending}
+							showAction={false}
+						/>
+					)}
+					<Link to={APP_ROUTES.EXAMS.TOEIC.HISTORY}>
+						{m["exams.toeic.hub.history.viewAll"]()}
+					</Link>
+				</DialogContent>
+			</Dialog>
 			<AlertDialog
 				open={attemptToCancel !== null}
 				onOpenChange={(open) => {

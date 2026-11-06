@@ -8,11 +8,20 @@
       "scenarios": "Scenarios",
       "lessons": "Lessons",
       "users": "Users",
-      "premium": "Premium"
+      "premium": "Premium",
+      "exams": "Exams"
     },
     "overview": {
       "title": "Admin console",
-      "description": "Manage Engflex content and users."
+      "description": "Manage Engflex content and users.",
+      "metrics": {
+        "subscriptions": "Subscriptions",
+        "retry": "Retry",
+        "manage": "Manage"
+      },
+      "quickActions": {
+        "title": "Quick actions"
+      }
     },
     "actions": {
       "create": "Create",
@@ -95,6 +104,85 @@
         "created": "Created",
         "allStatuses": "All statuses",
         "allPlans": "All plans"
+      }
+    },
+    "videos": {
+      "transcripts": {
+        "title": "Transcripts",
+        "sequence": "Sequence",
+        "start": "Start (seconds)",
+        "end": "End (seconds)",
+        "content": "English transcript",
+        "phonetic": "Phonetic transcription",
+        "vietnamese": "Vietnamese translation",
+        "retry": "Retry",
+        "invalid": "Could not save. Check the content, positive sequence and time range (0 ≤ start < end ≤ video duration), then retry."
+      }
+    },
+    "exams": {
+      "page": {
+        "title": "TOEIC exams",
+        "catalog": "Catalog",
+        "authoring": "Authoring",
+        "categories": "Categories",
+        "tests": "Tests",
+        "reset": "Reset workspace",
+        "open": "Open",
+        "select": "Select a category to view its tests.",
+        "invalidCategory": "Title and slug are required; slugs must be unique."
+      },
+      "editor": {
+        "title": "Edit test",
+        "assets": "Assets",
+        "addAsset": "Add asset reference",
+        "parts": "Parts",
+        "part": "Part {number}",
+        "item": "Item {number}",
+        "question": "Question {number}",
+        "addPart": "Add part",
+        "addItem": "Add item",
+        "addQuestion": "Add question",
+        "passages": "Passages",
+        "addPassage": "Add passage",
+        "media": "Media blocks",
+        "transcript": "Transcript",
+        "addTranscript": "Add transcript line",
+        "addOption": "Add option",
+        "addInline": "Add inline node",
+        "addBlock": "Add block",
+        "invalid": "Check required fields, unique IDs and numbers, answer keys, asset hashes, audio ranges and content references."
+      },
+      "fields": {
+        "title": "Title",
+        "slug": "Slug",
+        "sourceKey": "Source key",
+        "collection": "Collection ID",
+        "testNumber": "Test number",
+        "audioAsset": "Main audio asset ID",
+        "assetId": "Asset ID",
+        "hash": "SHA-256",
+        "partNumber": "Part number",
+        "id": "ID",
+        "itemType": "Item type",
+        "itemAudio": "Item audio",
+        "stimulusAudio": "Stimulus audio",
+        "start": "Start (seconds)",
+        "end": "End (seconds)",
+        "format": "Format",
+        "role": "Role",
+        "speaker": "Speaker",
+        "text": "Text",
+        "translation": "Vietnamese translation",
+        "questionNumber": "Question number",
+        "stem": "Question",
+        "optionKey": "Option key",
+        "correctKey": "Correct option key",
+        "explanation": "Explanation",
+        "targetIds": "Target IDs (comma separated)",
+        "blockType": "Block type",
+        "rows": "Table rows (tab-separated cells)",
+        "inlineType": "Inline type",
+        "questionId": "Question ID"
       }
     }
   }

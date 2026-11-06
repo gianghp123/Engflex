@@ -13,9 +13,13 @@ import { getLocale } from "#/paraglide/runtime";
 export function ToeicStatsPanel({
 	stats,
 	pending = false,
+	onViewAll,
+	showAction = true,
 }: {
 	stats?: ExamStatistics;
 	pending?: boolean;
+	onViewAll?: () => void;
+	showAction?: boolean;
 }) {
 	const formatScore = (score: number | null | undefined) =>
 		score == null
@@ -64,13 +68,16 @@ export function ToeicStatsPanel({
 					<TrendingUp className="size-5 text-emerald-600" aria-hidden="true" />
 					<span>{m["exams.toeic.hub.analytics.title"]()}</span>
 				</div>
-				<button
-					type="button"
-					className="inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground transition-colors hover:text-foreground"
-				>
-					<span>{m["exams.toeic.hub.analytics.viewAll"]()}</span>
-					<ArrowRight className="size-3.5" aria-hidden="true" />
-				</button>
+				{showAction && onViewAll && (
+					<button
+						onClick={onViewAll}
+						type="button"
+						className="inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground transition-colors hover:text-foreground"
+					>
+						<span>{m["exams.toeic.hub.analytics.viewAll"]()}</span>
+						<ArrowRight className="size-3.5" aria-hidden="true" />
+					</button>
+				)}
 			</div>
 			<div className="grid grid-cols-2 gap-3 md:gap-4">
 				{metrics.map((metric) => (

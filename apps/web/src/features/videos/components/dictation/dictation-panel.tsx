@@ -68,9 +68,9 @@ export function DictationPanel({
 	onReplaySentence?: () => void;
 	onPlaySentence?: () => void;
 	onNextSentence?: () => void;
-	onSpeed?: () => void;
-	onSettings?: () => void;
-	onShortcuts?: () => void;
+	onSpeed: () => void;
+	onSettings: () => void;
+	onShortcuts: () => void;
 }) {
 	return (
 		<section className="surface-card flex flex-col gap-3 p-3">

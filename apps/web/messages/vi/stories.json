@@ -28,7 +28,24 @@
       "showTranslation": "HIỆN BẢN DỊCH",
       "save": "LƯU",
       "saved": "ĐÃ LƯU",
-      "disclaimer": "Nội dung bài học được biên soạn bởi team Parroto và thuộc sở hữu trí tuệ của Parroto. Vui lòng không sao chép hoặc tái phân phối dưới mọi hình thức."
+      "disclaimer": "Nội dung bài học được biên soạn bởi team Parroto và thuộc sở hữu trí tuệ của Parroto. Vui lòng không sao chép hoặc tái phân phối dưới mọi hình thức.",
+      "settings": {
+        "title": "Cài đặt đọc",
+        "fontSize": "Cỡ chữ",
+        "fontFamily": "Kiểu chữ",
+        "lineHeight": "Giãn dòng",
+        "sans": "Không chân",
+        "serif": "Có chân",
+        "reset": "Khôi phục mặc định",
+        "back": "Quay lại danh sách truyện"
+      }
+    },
+    "bookmarks": {
+      "error": "Không thể tải hoặc cập nhật truyện. Vui lòng thử lại.",
+      "retry": "Thử lại",
+      "unavailable": "Truyện đã lưu này không còn khả dụng.",
+      "remove": "Bỏ lưu",
+      "empty": "Không có truyện đã lưu phù hợp với bộ lọc."
     }
   }
 }

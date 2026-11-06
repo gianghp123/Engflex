@@ -101,6 +101,22 @@
         "progress": "{value}%",
         "item": "Câu {index}",
         "edit": "Sửa câu"
+      },
+      "preferences": {
+        "description": "Thay đổi áp dụng ngay và được ghi nhớ trên trình duyệt này.",
+        "speed": "Tốc độ phát",
+        "transcript": "Hiện bản chép lời",
+        "video": "Hiện video",
+        "largeVideo": "Video lớn",
+        "reset": "Khôi phục mặc định"
+      },
+      "shortcuts": {
+        "focus": "Phím áp dụng cho điều khiển đang được chọn. Trình phát video có thể có phím tắt riêng.",
+        "tab": "Di chuyển giữa các điều khiển (Shift + Tab để quay lại).",
+        "activate": "Kích hoạt nút đang được chọn.",
+        "submit": "Trong ô nhập từ: gửi từ hiện tại.",
+        "backspace": "Khi ô nhập từ rỗng: quay lại từ trước.",
+        "close": "Đóng hộp thoại này."
       }
     },
     "shadowing": {

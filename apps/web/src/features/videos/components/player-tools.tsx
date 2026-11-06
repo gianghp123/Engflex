@@ -33,9 +33,9 @@ export function PlayerTools({
 	onShortcuts,
 }: {
 	speed: number;
-	onSpeed?: () => void;
-	onSettings?: () => void;
-	onShortcuts?: () => void;
+	onSpeed: () => void;
+	onSettings: () => void;
+	onShortcuts: () => void;
 }) {
 	return (
 		<div className="flex items-center gap-1">

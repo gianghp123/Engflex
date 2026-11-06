@@ -29,6 +29,12 @@ import { m } from "#/paraglide/messages";
 
 const NAV_ITEMS = [
 	{
+		title: () => m["admin.nav.exams"](),
+		to: APP_ROUTES.ADMIN.EXAMS,
+		icon: GraduationCap,
+		tile: "bg-violet-600",
+	},
+	{
 		title: () => m["admin.nav.overview"](),
 		to: APP_ROUTES.ADMIN.OVERVIEW,
 		icon: LayoutDashboard,

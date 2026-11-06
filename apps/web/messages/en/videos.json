@@ -101,6 +101,22 @@
         "progress": "{value}%",
         "item": "Sentence {index}",
         "edit": "Edit sentence"
+      },
+      "preferences": {
+        "description": "Changes apply immediately and are remembered in this browser.",
+        "speed": "Playback speed",
+        "transcript": "Show transcript",
+        "video": "Show video",
+        "largeVideo": "Large video",
+        "reset": "Restore defaults"
+      },
+      "shortcuts": {
+        "focus": "Keys work in the focused control. Video iframe controls may use their own shortcuts.",
+        "tab": "Move between controls (Shift + Tab to go back).",
+        "activate": "Activate the focused button.",
+        "submit": "In the word input: submit the current word.",
+        "backspace": "In an empty word input: return to the previous word.",
+        "close": "Close this dialog."
       }
     },
     "shadowing": {
