@@ -23,7 +23,7 @@ export const examKeys = {
 		[...examKeys.all, "categories", params?.type ?? "all"] as const,
 	tests: (categoryId: string, params?: { page?: number; pageSize?: number }) =>
 		[...examKeys.all, "categories", categoryId, "tests", params] as const,
-	attempts: (params?: { page?: number; pageSize?: number }) =>
+	attempts: (params?: { page?: number; pageSize?: number; type?: ExamType }) =>
 		[...examKeys.all, "attempts", params] as const,
 	attempt: (id: string) => [...examKeys.all, "attempt", id] as const,
 	test: (id: string) => [...examKeys.all, "test", id] as const,
@@ -83,6 +83,7 @@ export function examTestsQueryOptions(
 export function examAttemptsQueryOptions(params?: {
 	page?: number;
 	pageSize?: number;
+	type?: ExamType;
 }) {
 	return {
 		queryKey: examKeys.attempts(params),
@@ -111,7 +112,11 @@ export function useExamTests(
 	});
 }
 
-export function useExamAttempts(params?: { page?: number; pageSize?: number }) {
+export function useExamAttempts(params?: {
+	page?: number;
+	pageSize?: number;
+	type?: ExamType;
+}) {
 	return useQuery(examAttemptsQueryOptions(params));
 }
 

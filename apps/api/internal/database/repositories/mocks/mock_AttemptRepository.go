@@ -118,8 +118,8 @@ func (_c *MockAttemptRepository_CountCompleted_Call) RunAndReturn(run func(ctx c
 }
 
 // CountExamAttempts provides a mock function for the type MockAttemptRepository
-func (_mock *MockAttemptRepository) CountExamAttempts(ctx context.Context, userID string) (int64, error) {
-	ret := _mock.Called(ctx, userID)
+func (_mock *MockAttemptRepository) CountExamAttempts(ctx context.Context, userID string, examType enums.ExamType) (int64, error) {
+	ret := _mock.Called(ctx, userID, examType)
 
 	if len(ret) == 0 {
 		panic("no return value specified for CountExamAttempts")
@@ -127,16 +127,16 @@ func (_mock *MockAttemptRepository) CountExamAttempts(ctx context.Context, userI
 
 	var r0 int64
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string) (int64, error)); ok {
-		return returnFunc(ctx, userID)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, enums.ExamType) (int64, error)); ok {
+		return returnFunc(ctx, userID, examType)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string) int64); ok {
-		r0 = returnFunc(ctx, userID)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, enums.ExamType) int64); ok {
+		r0 = returnFunc(ctx, userID, examType)
 	} else {
 		r0 = ret.Get(0).(int64)
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, string) error); ok {
-		r1 = returnFunc(ctx, userID)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, enums.ExamType) error); ok {
+		r1 = returnFunc(ctx, userID, examType)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -151,11 +151,12 @@ type MockAttemptRepository_CountExamAttempts_Call struct {
 // CountExamAttempts is a helper method to define mock.On call
 //   - ctx context.Context
 //   - userID string
-func (_e *MockAttemptRepository_Expecter) CountExamAttempts(ctx any, userID any) *MockAttemptRepository_CountExamAttempts_Call {
-	return &MockAttemptRepository_CountExamAttempts_Call{Call: _e.mock.On("CountExamAttempts", ctx, userID)}
+//   - examType enums.ExamType
+func (_e *MockAttemptRepository_Expecter) CountExamAttempts(ctx any, userID any, examType any) *MockAttemptRepository_CountExamAttempts_Call {
+	return &MockAttemptRepository_CountExamAttempts_Call{Call: _e.mock.On("CountExamAttempts", ctx, userID, examType)}
 }
 
-func (_c *MockAttemptRepository_CountExamAttempts_Call) Run(run func(ctx context.Context, userID string)) *MockAttemptRepository_CountExamAttempts_Call {
+func (_c *MockAttemptRepository_CountExamAttempts_Call) Run(run func(ctx context.Context, userID string, examType enums.ExamType)) *MockAttemptRepository_CountExamAttempts_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -165,9 +166,14 @@ func (_c *MockAttemptRepository_CountExamAttempts_Call) Run(run func(ctx context
 		if args[1] != nil {
 			arg1 = args[1].(string)
 		}
+		var arg2 enums.ExamType
+		if args[2] != nil {
+			arg2 = args[2].(enums.ExamType)
+		}
 		run(
 			arg0,
 			arg1,
+			arg2,
 		)
 	})
 	return _c
@@ -178,7 +184,7 @@ func (_c *MockAttemptRepository_CountExamAttempts_Call) Return(n int64, err erro
 	return _c
 }
 
-func (_c *MockAttemptRepository_CountExamAttempts_Call) RunAndReturn(run func(ctx context.Context, userID string) (int64, error)) *MockAttemptRepository_CountExamAttempts_Call {
+func (_c *MockAttemptRepository_CountExamAttempts_Call) RunAndReturn(run func(ctx context.Context, userID string, examType enums.ExamType) (int64, error)) *MockAttemptRepository_CountExamAttempts_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -827,8 +833,8 @@ func (_c *MockAttemptRepository_ListCompletedVideo_Call) RunAndReturn(run func(c
 }
 
 // ListExamAttempts provides a mock function for the type MockAttemptRepository
-func (_mock *MockAttemptRepository) ListExamAttempts(ctx context.Context, userID string, limit int, offset int) ([]*models.Attempt, error) {
-	ret := _mock.Called(ctx, userID, limit, offset)
+func (_mock *MockAttemptRepository) ListExamAttempts(ctx context.Context, userID string, examType enums.ExamType, limit int, offset int) ([]*models.Attempt, error) {
+	ret := _mock.Called(ctx, userID, examType, limit, offset)
 
 	if len(ret) == 0 {
 		panic("no return value specified for ListExamAttempts")
@@ -836,18 +842,18 @@ func (_mock *MockAttemptRepository) ListExamAttempts(ctx context.Context, userID
 
 	var r0 []*models.Attempt
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, int, int) ([]*models.Attempt, error)); ok {
-		return returnFunc(ctx, userID, limit, offset)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, enums.ExamType, int, int) ([]*models.Attempt, error)); ok {
+		return returnFunc(ctx, userID, examType, limit, offset)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, int, int) []*models.Attempt); ok {
-		r0 = returnFunc(ctx, userID, limit, offset)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, enums.ExamType, int, int) []*models.Attempt); ok {
+		r0 = returnFunc(ctx, userID, examType, limit, offset)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*models.Attempt)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, string, int, int) error); ok {
-		r1 = returnFunc(ctx, userID, limit, offset)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, enums.ExamType, int, int) error); ok {
+		r1 = returnFunc(ctx, userID, examType, limit, offset)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -862,13 +868,14 @@ type MockAttemptRepository_ListExamAttempts_Call struct {
 // ListExamAttempts is a helper method to define mock.On call
 //   - ctx context.Context
 //   - userID string
+//   - examType enums.ExamType
 //   - limit int
 //   - offset int
-func (_e *MockAttemptRepository_Expecter) ListExamAttempts(ctx any, userID any, limit any, offset any) *MockAttemptRepository_ListExamAttempts_Call {
-	return &MockAttemptRepository_ListExamAttempts_Call{Call: _e.mock.On("ListExamAttempts", ctx, userID, limit, offset)}
+func (_e *MockAttemptRepository_Expecter) ListExamAttempts(ctx any, userID any, examType any, limit any, offset any) *MockAttemptRepository_ListExamAttempts_Call {
+	return &MockAttemptRepository_ListExamAttempts_Call{Call: _e.mock.On("ListExamAttempts", ctx, userID, examType, limit, offset)}
 }
 
-func (_c *MockAttemptRepository_ListExamAttempts_Call) Run(run func(ctx context.Context, userID string, limit int, offset int)) *MockAttemptRepository_ListExamAttempts_Call {
+func (_c *MockAttemptRepository_ListExamAttempts_Call) Run(run func(ctx context.Context, userID string, examType enums.ExamType, limit int, offset int)) *MockAttemptRepository_ListExamAttempts_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -878,19 +885,24 @@ func (_c *MockAttemptRepository_ListExamAttempts_Call) Run(run func(ctx context.
 		if args[1] != nil {
 			arg1 = args[1].(string)
 		}
-		var arg2 int
+		var arg2 enums.ExamType
 		if args[2] != nil {
-			arg2 = args[2].(int)
+			arg2 = args[2].(enums.ExamType)
 		}
 		var arg3 int
 		if args[3] != nil {
 			arg3 = args[3].(int)
+		}
+		var arg4 int
+		if args[4] != nil {
+			arg4 = args[4].(int)
 		}
 		run(
 			arg0,
 			arg1,
 			arg2,
 			arg3,
+			arg4,
 		)
 	})
 	return _c
@@ -901,7 +913,7 @@ func (_c *MockAttemptRepository_ListExamAttempts_Call) Return(attempts []*models
 	return _c
 }
 
-func (_c *MockAttemptRepository_ListExamAttempts_Call) RunAndReturn(run func(ctx context.Context, userID string, limit int, offset int) ([]*models.Attempt, error)) *MockAttemptRepository_ListExamAttempts_Call {
+func (_c *MockAttemptRepository_ListExamAttempts_Call) RunAndReturn(run func(ctx context.Context, userID string, examType enums.ExamType, limit int, offset int) ([]*models.Attempt, error)) *MockAttemptRepository_ListExamAttempts_Call {
 	_c.Call.Return(run)
 	return _c
 }

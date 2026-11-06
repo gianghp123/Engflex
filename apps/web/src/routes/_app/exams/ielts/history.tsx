@@ -32,7 +32,7 @@ export const Route = createFileRoute("/_app/exams/ielts/history")({
 	loader: async ({ context: { queryClient }, deps: { page } }) => {
 		const data = await loadOr404(
 			queryClient,
-			examAttemptsQueryOptions({ page, pageSize: PAGE_SIZE }),
+			examAttemptsQueryOptions({ page, pageSize: PAGE_SIZE, type: "ielts" }),
 		);
 		const last = Math.max(1, data.pagination.totalPages);
 		if (page > last)

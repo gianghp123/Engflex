@@ -194,14 +194,17 @@ func (s *AttemptService) Start(ctx context.Context, userID, testID string, req r
 	return attempt, nil
 }
 
-func (s *AttemptService) List(ctx context.Context, userID string, page, pageSize int) ([]*models.Attempt, int64, error) {
+func (s *AttemptService) List(ctx context.Context, userID string, page, pageSize int, examType enums.ExamType) ([]*models.Attempt, int64, error) {
+	if examType != "" && examType != enums.ExamTypeTOEIC && examType != enums.ExamTypeIELTS {
+		return nil, 0, common.BadRequest("invalid exam type")
+	}
 	if page < 1 {
 		page = common.DefaultPage
 	}
 	if pageSize < 1 {
 		pageSize = common.DefaultPageSize
 	}
-	attempts, err := s.attempts.ListExamAttempts(ctx, userID, pageSize, utils.Offset(page, pageSize))
+	attempts, err := s.attempts.ListExamAttempts(ctx, userID, examType, pageSize, utils.Offset(page, pageSize))
 	if err != nil {
 		appErr := common.FromDBError(err, "attempt")
 		logger.Report(ctx, "list exam attempts failed", appErr)
@@ -224,7 +227,7 @@ func (s *AttemptService) List(ctx context.Context, userID string, page, pageSize
 			}
 		}
 	}
-	total, err := s.attempts.CountExamAttempts(ctx, userID)
+	total, err := s.attempts.CountExamAttempts(ctx, userID, examType)
 	if err != nil {
 		appErr := common.FromDBError(err, "attempt")
 		logger.Report(ctx, "count exam attempts failed", appErr)

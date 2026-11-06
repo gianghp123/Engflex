@@ -154,12 +154,13 @@ func (h *ExamController) Start(c *gin.Context) {
 // @Produce json
 // @Param page query int false "page"
 // @Param pageSize query int false "page size"
+// @Param type query string false "exam type (toeic, ielts)"
 // @Success 200 {object} common.ApiResponse{data=[]responses.ExamAttemptSummary}
 // @Router /exam-attempts [get]
 func (h *ExamController) ListAttempts(c *gin.Context) {
 	c.Header("Cache-Control", "private, no-store")
 	page, pageSize := utils.ParsePagination(c)
-	items, total, err := h.attempts.List(c.Request.Context(), middleware.UserID(c), page, pageSize)
+	items, total, err := h.attempts.List(c.Request.Context(), middleware.UserID(c), page, pageSize, enums.ExamType(c.Query("type")))
 	if err != nil {
 		common.Fail(c, err)
 		return

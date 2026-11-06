@@ -113,6 +113,11 @@ func TestResultParsing(t *testing.T) {
 		valid     bool
 	}{
 		{"nullable answer and score", `{"revision":1,"answers":[{"questionId":"q1","selectedKey":null,"flagged":true}],"correctCount":null,"accuracyPct":null,"scaledScore":null}`, true},
+		{"legacy scoring placeholders", `{"revision":1,"answers":[{"questionId":"q1","selectedKey":null,"flagged":true}],"sections":null,"scoringVersion":null}`, true},
+		{"unknown result field", `{"revision":1,"answers":[],"unexpected":null}`, false},
+		{"unknown answer field", `{"revision":1,"answers":[{"questionId":"q1","unexpected":null}]}`, false},
+		{"unsupported legacy sections", `{"revision":1,"answers":[],"sections":[]}`, false},
+		{"unsupported legacy scoring version", `{"revision":1,"answers":[],"scoringVersion":"unknown"}`, false},
 		{"invalid revision", `{"revision":0,"answers":[]}`, false},
 		{"missing answers", `{"revision":1}`, false},
 		{"duplicate question", `{"revision":1,"answers":[{"questionId":"q1"},{"questionId":"q1"}]}`, false},

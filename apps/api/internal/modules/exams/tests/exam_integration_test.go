@@ -74,7 +74,7 @@ func TestExamPhase2HTTP(t *testing.T) {
 		check                          func(*testing.T, map[string]any, string)
 	}{
 		{"categories", "GET", "/exam-categories?type=toeic", "", "user-a", http.StatusOK, func(t *testing.T, v map[string]any, body string) { require.NotEmpty(t, v["data"]) }},
-		{"bad category type", "GET", "/exam-categories?type=ielts", "", "user-a", http.StatusBadRequest, nil},
+		{"bad category type", "GET", "/exam-categories?type=unknown", "", "user-a", http.StatusBadRequest, nil},
 		{"invalid test id", "GET", "/exam-tests/bad", "", "user-a", http.StatusBadRequest, nil},
 		{"unknown test", "GET", "/exam-tests/" + uuid.NewString(), "", "user-a", http.StatusNotFound, nil},
 		{"test detail metadata", "GET", "/exam-tests/" + test.ID, "", "user-a", http.StatusOK, func(t *testing.T, v map[string]any, body string) {

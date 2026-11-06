@@ -90,6 +90,7 @@ func TestHistoryResultParsing(t *testing.T) {
 		status int
 	}{
 		{"valid summary", `{"revision":2,"answers":[{"questionId":"q1","selectedKey":"A","flagged":false}],"correctCount":1,"accuracyPct":100,"scaledScore":null}`, http.StatusOK},
+		{"legacy summary", `{"revision":2,"answers":[{"questionId":"q1","selectedKey":"A","flagged":false}],"correctCount":1,"accuracyPct":100,"scaledScore":null,"sections":null,"scoringVersion":null}`, http.StatusOK},
 		{"invalid result", `{}`, http.StatusInternalServerError},
 	}
 	for _, tt := range tests {
@@ -97,11 +98,11 @@ func TestHistoryResultParsing(t *testing.T) {
 			repo := repomocks.NewMockAttemptRepository(t)
 			tests := repomocks.NewMockExamTestRepository(t)
 			tx := repomocks.NewMockTransactionManager(t)
-			repo.On("ListExamAttempts", mock.Anything, "owner", 10, 0).Return([]*models.Attempt{{ID: "attempt", Result: datatypes.JSON(tt.raw)}}, nil)
+			repo.On("ListExamAttempts", mock.Anything, "owner", enums.ExamType(""), 10, 0).Return([]*models.Attempt{{ID: "attempt", Result: datatypes.JSON(tt.raw)}}, nil)
 			if tt.status == http.StatusOK {
-				repo.On("CountExamAttempts", mock.Anything, "owner").Return(int64(1), nil)
+				repo.On("CountExamAttempts", mock.Anything, "owner", enums.ExamType("")).Return(int64(1), nil)
 			}
-			got, _, err := services.NewAttemptService(repo, tests, tx).List(context.Background(), "owner", 1, 10)
+			got, _, err := services.NewAttemptService(repo, tests, tx).List(context.Background(), "owner", 1, 10, "")
 			if tt.status != http.StatusOK {
 				var app *common.AppError
 				require.ErrorAs(t, err, &app)
@@ -279,7 +280,7 @@ func TestIeltsHistoryResultParsing(t *testing.T) {
 			repo := repomocks.NewMockAttemptRepository(t)
 			tests := repomocks.NewMockExamTestRepository(t)
 			tx := repomocks.NewMockTransactionManager(t)
-			repo.On("ListExamAttempts", mock.Anything, "owner", 10, 0).Return([]*models.Attempt{
+			repo.On("ListExamAttempts", mock.Anything, "owner", enums.ExamType(""), 10, 0).Return([]*models.Attempt{
 				{
 					ID:     "attempt-ielts",
 					Result: datatypes.JSON(tt.raw),
@@ -292,9 +293,9 @@ func TestIeltsHistoryResultParsing(t *testing.T) {
 				},
 			}, nil)
 			if tt.status == http.StatusOK {
-				repo.On("CountExamAttempts", mock.Anything, "owner").Return(int64(1), nil)
+				repo.On("CountExamAttempts", mock.Anything, "owner", enums.ExamType("")).Return(int64(1), nil)
 			}
-			got, _, err := services.NewAttemptService(repo, tests, tx).List(context.Background(), "owner", 1, 10)
+			got, _, err := services.NewAttemptService(repo, tests, tx).List(context.Background(), "owner", 1, 10, "")
 			if tt.status != http.StatusOK {
 				var app *common.AppError
 				require.ErrorAs(t, err, &app)

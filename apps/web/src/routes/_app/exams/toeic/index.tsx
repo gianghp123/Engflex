@@ -156,7 +156,7 @@ function ToeicHubPage() {
 		retry: retryHubRead,
 	});
 	const attemptsQuery = useQuery({
-		...examAttemptsQueryOptions({ page: 1, pageSize: 5 }),
+		...examAttemptsQueryOptions({ page: 1, pageSize: 5, type: "toeic" }),
 		enabled: isLoaded,
 		retry: retryHubRead,
 	});
@@ -230,11 +230,14 @@ function ToeicHubPage() {
 	const attempts: ToeicAttemptItem[] = (attemptsQuery.data?.items ?? []).map(
 		(att) => ({
 			id: att.id,
-			title: att.examTest?.title ?? "TOEIC Test",
+			title: att.examTest?.title ?? m["exams.toeic.history.missingTest"](),
 			mode: (att.mode ?? "exam") as "exam" | "practice",
 			status: att.status,
 			date: formatAttemptDate(att.startedAt ?? att.createdAt),
-			scorePct: att.score != null ? Math.round(att.score) : undefined,
+			scorePct:
+				att.result?.accuracyPct != null
+					? Math.round(att.result.accuracyPct)
+					: undefined,
 		}),
 	);
 
