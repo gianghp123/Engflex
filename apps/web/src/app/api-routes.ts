@@ -2,6 +2,11 @@ type ApiId = string | number;
 
 /** Backend paths only. No hardcoded URLs in services — import from here. */
 export const API_ROUTES = {
+	VIDEO_TRANSCRIPTS: {
+		LIST: "/video-transcripts",
+		BY_ID: (id: ApiId) => `/video-transcripts/${id}`,
+		BY_VIDEO: (id: ApiId) => `/video-transcripts/video-exercise/${id}`,
+	},
 	PROFILES: {
 		ME: "/profiles/me",
 		BY_ID: (id: ApiId) => `/profiles/${id}`,

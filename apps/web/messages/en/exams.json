@@ -16,7 +16,8 @@
           "completedTests": "COMPLETED TESTS",
           "highestScore": "HIGHEST SCORE",
           "averageScore": "AVERAGE SCORE",
-          "latestScore": "LATEST ATTEMPT"
+          "latestScore": "LATEST ATTEMPT",
+          "scoreDescription": "Scores show answer accuracy (%). Only completed tests are included."
         },
         "history": {
           "title": "Exam History",

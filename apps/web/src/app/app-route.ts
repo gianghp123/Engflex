@@ -70,6 +70,7 @@ export const APP_ROUTES = {
 		SERVER: "/error",
 	},
 	ADMIN: {
+		EXAMS: "/admin/exams",
 		OVERVIEW: "/admin",
 		VOCABULARY: "/admin/vocabulary",
 		VIDEOS: "/admin/videos",

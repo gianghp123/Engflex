@@ -1,14 +1,43 @@
 import type {
 	CreateVideoCategory,
 	CreateVideoExercise,
+	CreateVideoTranscript,
 	Pagination,
 	UpdateVideoCategory,
 	UpdateVideoExercise,
+	UpdateVideoTranscript,
 	VideoCategoryResponse,
 	VideoExerciseResponse,
+	VideoTranscriptResponse,
 } from "@engflex/contracts";
 import { API_ROUTES } from "#/app/api-routes";
 import { api, apiPage } from "#/lib/api";
+
+export function listVideoTranscripts(videoId: string) {
+	return api<VideoTranscriptResponse[]>(
+		API_ROUTES.VIDEO_TRANSCRIPTS.BY_VIDEO(videoId),
+	);
+}
+export function createVideoTranscript(payload: CreateVideoTranscript) {
+	return api<VideoTranscriptResponse>(API_ROUTES.VIDEO_TRANSCRIPTS.LIST, {
+		method: "POST",
+		body: JSON.stringify(payload),
+	});
+}
+export function updateVideoTranscript(
+	id: string,
+	payload: UpdateVideoTranscript,
+) {
+	return api<VideoTranscriptResponse>(API_ROUTES.VIDEO_TRANSCRIPTS.BY_ID(id), {
+		method: "PUT",
+		body: JSON.stringify(payload),
+	});
+}
+export function deleteVideoTranscript(id: string) {
+	return api<void>(API_ROUTES.VIDEO_TRANSCRIPTS.BY_ID(id), {
+		method: "DELETE",
+	});
+}
 
 export function listVideoExercises(
 	page: number,

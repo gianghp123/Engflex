@@ -12,7 +12,7 @@ import {
 } from "@tanstack/react-router";
 import { cn } from "cn";
 import { ArrowLeft, Eye, EyeOff } from "lucide-react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { APP_ROUTES } from "#/app/app-route";
 import { type CrumbItem, useBreadcrumbs } from "#/app/breadcrumbs";
 import { MoMascot } from "#/components/common/mo-mascot";
@@ -28,6 +28,7 @@ import { DictationPanel } from "#/features/videos/components/dictation/dictation
 import { DictationSummaryDialog } from "#/features/videos/components/dictation/dictation-summary-dialog";
 import type { WordSlotState } from "#/features/videos/components/dictation/dictation-word-input";
 import { VideoPanel } from "#/features/videos/components/dictation/video-panel";
+import { PracticeToolsDialogs } from "#/features/videos/components/practice-tools-dialogs";
 import { TranscriptPanel } from "#/features/videos/components/transcript-panel";
 import { VideoHubSkeleton } from "#/features/videos/components/video-hub-skeleton";
 import type { YouTubePlayerRef } from "#/features/videos/components/youtube-player";
@@ -45,6 +46,7 @@ import {
 	videoDetailQueryOptions,
 	videoKeys,
 } from "#/features/videos/queries";
+import { dictationPreferences } from "#/features/videos/store";
 import { m } from "#/paraglide/messages";
 
 export const Route = createFileRoute("/_app/videos/$videoId/dictation")({
@@ -141,13 +143,22 @@ function DictationWorkspace({
 	const [currentAttemptId, setCurrentAttemptId] = useState<string | null>(
 		initialAttempt?.id ?? null,
 	);
-	const [showMedia, setShowMedia] = useState(true);
-	const [showTranscript, setShowTranscript] = useState(true);
+	const [settings, setSettings] = dictationPreferences.usePreferences();
+	const { showMedia, showTranscript, speed } = settings;
+	const setShowMedia = (update: (value: boolean) => boolean) =>
+		setSettings({ showMedia: update(showMedia) });
+	const setShowTranscript = (update: (value: boolean) => boolean) =>
+		setSettings({ showTranscript: update(showTranscript) });
+	const [toolsOpen, setToolsOpen] = useState<"settings" | "shortcuts" | null>(
+		null,
+	);
 	const [level, setLevel] = useState<DictationLevel>(() => {
 		const lvl = initialAttempt?.result?.level;
 		return lvl === "easy" || lvl === "hard" ? lvl : "normal";
 	});
-	const [speed, setSpeed] = useState(1);
+	useEffect(() => {
+		playerRef.current?.setSpeed(speed);
+	}, [speed]);
 
 	const [activeIndex, setActiveIndex] = useState(() => {
 		const seq = initialAttempt?.result?.activeSequence ?? 0;
@@ -330,6 +341,7 @@ function DictationWorkspace({
 	const youtubeId = extractYouTubeId(video.videoUrl);
 
 	const handlePlayerReady = () => {
+		playerRef.current?.setSpeed(speed);
 		if (activeIndex > 0 && currentLine) {
 			playerRef.current?.seekTo(currentLine.startTimestamp);
 		}
@@ -401,7 +413,7 @@ function DictationWorkspace({
 	const handleSpeedCycle = () => {
 		const nextIndex = (SPEEDS.indexOf(speed) + 1) % SPEEDS.length;
 		const nextSpeed = SPEEDS[nextIndex];
-		setSpeed(nextSpeed);
+		setSettings({ speed: nextSpeed });
 		playerRef.current?.setSpeed(nextSpeed);
 	};
 
@@ -647,6 +659,8 @@ function DictationWorkspace({
 					onPlaySentence={handlePlaySentence}
 					onReplaySentence={handleReplaySentence}
 					onSpeed={handleSpeedCycle}
+					onSettings={() => setToolsOpen("settings")}
+					onShortcuts={() => setToolsOpen("shortcuts")}
 				/>
 
 				{showTranscript ? (
@@ -666,6 +680,14 @@ function DictationWorkspace({
 				incorrectWords={totalIncorrectWords}
 				onRestart={handleRestart}
 				onBackToHub={() => navigate({ to: APP_ROUTES.VIDEOS.LIST })}
+			/>
+			<PracticeToolsDialogs
+				mode="dictation"
+				open={toolsOpen}
+				onOpenChange={setToolsOpen}
+				settings={settings}
+				onChange={setSettings}
+				onReset={dictationPreferences.reset}
 			/>
 		</PageLayout>
 	);

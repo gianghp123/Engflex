@@ -57,9 +57,9 @@ export function ShadowingPanel({
 	onStart?: () => void;
 	onRecord?: () => void;
 	onPlayRecording?: () => void;
-	onSpeed?: () => void;
-	onSettings?: () => void;
-	onShortcuts?: () => void;
+	onSpeed: () => void;
+	onSettings: () => void;
+	onShortcuts: () => void;
 	children?: React.ReactNode;
 }) {
 	return (

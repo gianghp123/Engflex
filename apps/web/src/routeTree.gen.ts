@@ -19,6 +19,7 @@ import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as AppHomeRouteImport } from './routes/_app/home'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
+import { Route as AdminExamsRouteImport } from './routes/admin/exams'
 import { Route as AdminLessonsRouteImport } from './routes/admin/lessons'
 import { Route as AdminPremiumRouteImport } from './routes/admin/premium'
 import { Route as AdminScenariosRouteImport } from './routes/admin/scenarios'
@@ -105,6 +106,11 @@ const AppHomeRoute = AppHomeRouteImport.update({
 const AdminIndexRoute = AdminIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminExamsRoute = AdminExamsRouteImport.update({
+  id: '/exams',
+  path: '/exams',
   getParentRoute: () => AdminRouteRoute,
 } as any)
 const AdminLessonsRoute = AdminLessonsRouteImport.update({
@@ -319,6 +325,7 @@ export interface FileRoutesByFullPath {
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
   '/home': typeof AppHomeRoute
+  '/admin/exams': typeof AdminExamsRoute
   '/admin/lessons': typeof AdminLessonsRoute
   '/admin/premium': typeof AdminPremiumRoute
   '/admin/scenarios': typeof AdminScenariosRoute
@@ -367,6 +374,7 @@ export interface FileRoutesByTo {
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
   '/home': typeof AppHomeRoute
+  '/admin/exams': typeof AdminExamsRoute
   '/admin/lessons': typeof AdminLessonsRoute
   '/admin/premium': typeof AdminPremiumRoute
   '/admin/scenarios': typeof AdminScenariosRoute
@@ -418,6 +426,7 @@ export interface FileRoutesById {
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
   '/_app/home': typeof AppHomeRoute
+  '/admin/exams': typeof AdminExamsRoute
   '/admin/lessons': typeof AdminLessonsRoute
   '/admin/premium': typeof AdminPremiumRoute
   '/admin/scenarios': typeof AdminScenariosRoute
@@ -469,6 +478,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/pricing'
     | '/home'
+    | '/admin/exams'
     | '/admin/lessons'
     | '/admin/premium'
     | '/admin/scenarios'
@@ -517,6 +527,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/pricing'
     | '/home'
+    | '/admin/exams'
     | '/admin/lessons'
     | '/admin/premium'
     | '/admin/scenarios'
@@ -567,6 +578,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/pricing'
     | '/_app/home'
+    | '/admin/exams'
     | '/admin/lessons'
     | '/admin/premium'
     | '/admin/scenarios'
@@ -694,6 +706,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/admin/'
       preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/exams': {
+      id: '/admin/exams'
+      path: '/exams'
+      fullPath: '/admin/exams'
+      preLoaderRoute: typeof AdminExamsRouteImport
       parentRoute: typeof AdminRouteRoute
     }
     '/admin/lessons': {
@@ -1033,6 +1052,7 @@ const AppRouteRouteWithChildren = AppRouteRoute._addFileChildren(
 )
 
 interface AdminRouteRouteChildren {
+  AdminExamsRoute: typeof AdminExamsRoute
   AdminLessonsRoute: typeof AdminLessonsRoute
   AdminPremiumRoute: typeof AdminPremiumRoute
   AdminScenariosRoute: typeof AdminScenariosRoute
@@ -1043,6 +1063,7 @@ interface AdminRouteRouteChildren {
 }
 
 const AdminRouteRouteChildren: AdminRouteRouteChildren = {
+  AdminExamsRoute: AdminExamsRoute,
   AdminLessonsRoute: AdminLessonsRoute,
   AdminPremiumRoute: AdminPremiumRoute,
   AdminScenariosRoute: AdminScenariosRoute,

@@ -16,7 +16,8 @@
           "completedTests": "SỐ BÀI ĐÃ LÀM",
           "highestScore": "ĐIỂM CAO NHẤT",
           "averageScore": "ĐIỂM TRUNG BÌNH",
-          "latestScore": "LẦN GẦN NHẤT"
+          "latestScore": "LẦN GẦN NHẤT",
+          "scoreDescription": "Kết quả hiển thị tỷ lệ trả lời đúng (%). Chỉ tính các lượt thi đã hoàn thành."
         },
         "history": {
           "title": "Lịch sử làm bài",
