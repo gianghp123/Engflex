@@ -12,6 +12,7 @@ import {
 	GraduationCap,
 	House,
 	Info,
+	NotebookPen,
 	ShieldCheck,
 	Sparkles,
 } from "lucide-react";
@@ -124,6 +125,12 @@ const NAV_GROUPS = [
 				to: APP_ROUTES.VOCABULARY.LIST,
 				icon: BookmarkCheck,
 				tile: "bg-nav-vocab",
+			},
+			{
+				title: () => m["nav.item.notes"](),
+				to: APP_ROUTES.NOTES.LIST,
+				icon: NotebookPen,
+				tile: "bg-[#7c3aed]",
 			},
 		],
 	},

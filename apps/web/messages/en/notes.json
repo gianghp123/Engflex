@@ -1,0 +1,58 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "notes": {
+    "hub": {
+      "title": "My Notes",
+      "description": "Review your bookmarked vocabulary, lessons, videos, and stories with personal study notes."
+    },
+    "tabs": {
+      "all": "All",
+      "vocab": "Vocabulary",
+      "lesson": "Lessons",
+      "video": "Videos",
+      "story": "Stories"
+    },
+    "search": {
+      "placeholder": "Search by title, vocabulary, or notes..."
+    },
+    "stats": {
+      "total": "Saved Items",
+      "withNotes": "With Notes",
+      "vocabCount": "Saved Words"
+    },
+    "actions": {
+      "newNote": "New Note",
+      "flipNote": "Flip Note",
+      "flipBack": "Flip Front",
+      "editNote": "Edit Note",
+      "save": "Save Changes",
+      "cancel": "Cancel",
+      "unsave": "Unsave",
+      "openContent": "Open Content"
+    },
+    "card": {
+      "personalNoteLabel": "Study Note",
+      "emptyNote": "No personal note yet. Click the edit button below to write one!",
+      "savedDatePrefix": "Saved on:"
+    },
+    "dialog": {
+      "newTitle": "Add New Study Note",
+      "titleLabel": "Title or Word",
+      "titlePlaceholder": "E.g. Flexible, -ed pronunciation rule...",
+      "kindLabel": "Content Kind",
+      "noteLabel": "Personal Study Note",
+      "notePlaceholder": "Enter memory tips, common mistakes, or learning notes...",
+      "tagsLabel": "Tags (comma-separated)",
+      "tagsPlaceholder": "toeic, listening, vocabulary..."
+    },
+    "empty": {
+      "title": "No notes found",
+      "description": "Try changing your search query or switching to another category tab."
+    },
+    "toast": {
+      "saved": "Note updated successfully",
+      "created": "New note created",
+      "removed": "Removed from saved items"
+    }
+  }
+}

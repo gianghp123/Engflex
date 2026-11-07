@@ -6,6 +6,9 @@ export const APP_ROUTES = {
 	ABOUT: "/about",
 	PRICING: "/pricing",
 	ONBOARDING: "/onboarding",
+	NOTES: {
+		LIST: "/notes",
+	},
 	LESSONS: {
 		LIST: "/lessons",
 		DETAIL: "/lessons/$slug",
