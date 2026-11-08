@@ -1,4 +1,4 @@
-import type { ExamAttempt } from "@engflex/contracts";
+import type { ExamAnswer, ExamAttempt } from "@engflex/contracts";
 import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -8,10 +8,9 @@ import type {
 	IeltsQuestionGroup,
 	IeltsQuestionType,
 } from "#/features/exams/ielts/mock-data";
-import {
-	useCancelExamAttempt,
-	usePatchExamAttempt,
-} from "#/features/exams/queries";
+import { usePatchExamAttempt } from "#/features/exams/queries";
+import { getExamAttempt } from "#/features/exams/service";
+import { ApiError } from "#/lib/api/api";
 import { m } from "#/paraglide/messages";
 import { IeltsConfirmModal } from "./ielts-confirm-modal";
 import { IeltsHeader } from "./ielts-header";
@@ -30,7 +29,6 @@ export function IeltsSession({
 }) {
 	const navigate = useNavigate();
 	const patch = usePatchExamAttempt();
-	const cancel = useCancelExamAttempt();
 
 	const attempt = initialAttempt;
 	const ieltsContent = attempt.examTest?.ieltsContent;
@@ -79,108 +77,149 @@ export function IeltsSession({
 		return 3600;
 	});
 
-	const revisionRef = useRef<number>(attempt.ieltsResult?.revision ?? 1);
-	const answersRef = useRef(answers);
-	answersRef.current = answers;
-	const bookmarksRef = useRef(bookmarks);
-	bookmarksRef.current = bookmarks;
-	const handleSubmitRef = useRef<() => Promise<void>>(() => Promise.resolve());
+	const revision = useRef(attempt.ieltsResult?.revision ?? 1);
+	const drafts = useRef(new Map<string, ExamAnswer>());
+	const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
+	const queue = useRef<Promise<void>>(Promise.resolve());
+	const closed = useRef(false);
+	const finalizing = useRef(false);
+	const expire = useRef<() => Promise<void>>(async () => {});
+	const questionById = new Map(
+		sections.flatMap((section) =>
+			section.questionGroups.flatMap((group) =>
+				group.questions.map((question) => [question.id, question] as const),
+			),
+		),
+	);
 
 	useEffect(() => {
-		if (attempt.mode !== "exam") return;
-		const timer = setInterval(() => {
-			setTimeLeft((prev) => {
-				if (prev <= 1) {
-					clearInterval(timer);
-					void handleSubmitRef.current();
-					return 0;
+		if (attempt.mode !== "exam" || !attempt.deadlineAt) return;
+		const deadline = Date.parse(attempt.deadlineAt);
+		const tick = () => {
+			const remaining = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
+			setTimeLeft(remaining);
+			if (remaining === 0 && !finalizing.current && !closed.current)
+				void expire.current();
+		};
+		const interval = setInterval(tick, 1000);
+		window.addEventListener("focus", tick);
+		return () => {
+			clearInterval(interval);
+			window.removeEventListener("focus", tick);
+			clearTimeout(timer.current);
+		};
+	}, [attempt.deadlineAt, attempt.mode]);
+	useEffect(() => () => clearTimeout(timer.current), []);
+
+	function saveToServer(submit = false) {
+		clearTimeout(timer.current);
+		const job = queue.current.then(async () => {
+			if (closed.current || (!submit && drafts.current.size === 0)) return;
+			const batch = [...drafts.current.values()];
+			const write = () =>
+				patch.mutateAsync({
+					attemptId: attempt.id,
+					req: { revision: revision.current, submit, answers: batch },
+				});
+			let updated: Awaited<ReturnType<typeof write>>;
+			try {
+				updated = await write();
+			} catch (error) {
+				if (!(error instanceof ApiError && error.status === 409)) throw error;
+				const fresh = await getExamAttempt(attempt.id);
+				if (fresh.status === "completed") {
+					updated = fresh;
+				} else {
+					revision.current = fresh.ieltsResult?.revision ?? revision.current;
+					updated = await write();
 				}
-				return prev - 1;
-			});
-		}, 1000);
-		return () => clearInterval(timer);
-	}, [attempt.mode]);
-
-	const debounceTimerRef = useRef<NodeJS.Timeout | undefined>(undefined);
-	const saveToServer = (submit = false) => {
-		const currentAnswers = answersRef.current;
-		const currentBookmarks = bookmarksRef.current;
-		const answerPayload = Object.entries(currentAnswers).map(
-			([questionId, val]) => ({
-				questionId,
-				selectedKey: val.length === 1 && "ABCD".includes(val) ? val : null,
-				textValue: val.length === 1 && "ABCD".includes(val) ? null : val,
-				flagged: currentBookmarks.has(questionId),
-			}),
-		);
-
-		return patch.mutateAsync({
-			attemptId: attempt.id,
-			req: {
-				revision: revisionRef.current,
-				submit,
-				answers: answerPayload,
-			},
+			}
+			revision.current = updated.ieltsResult?.revision ?? revision.current;
+			for (const sent of batch) {
+				if (drafts.current.get(sent.questionId) === sent)
+					drafts.current.delete(sent.questionId);
+			}
+			if (updated.status === "completed") {
+				closed.current = true;
+				await navigate({
+					to: APP_ROUTES.EXAMS.IELTS.RESULT,
+					params: { id: attempt.id },
+					replace: true,
+				});
+			}
 		});
-	};
+		queue.current = job.catch(() => {});
+		return job;
+	}
 
-	const handleAnswerChange = (questionId: string, answer: string) => {
-		setAnswers((prev) => {
-			const next = { ...prev, [questionId]: answer };
-			return next;
+	function scheduleSave(questionId: string, value: string, flagged: boolean) {
+		if (finalizing.current || closed.current) return;
+		const choice = Boolean(questionById.get(questionId)?.options?.length);
+		drafts.current.set(questionId, {
+			questionId,
+			selectedKey: choice ? value || null : null,
+			textValue: choice ? null : value || null,
+			flagged,
 		});
+		clearTimeout(timer.current);
+		timer.current = setTimeout(() => {
+			void saveToServer().then(
+				() => {
+					if (!closed.current && !drafts.current.size)
+						toast.success(m["exams.ielts.take.saved"]());
+				},
+				() => toast.error(m["exams.ielts.take.saveFailed"]()),
+			);
+		}, 500);
+	}
 
-		if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
-		debounceTimerRef.current = setTimeout(() => {
-			saveToServer(false)
-				.then((updated) => {
-					if (updated.ieltsResult?.revision) {
-						revisionRef.current = updated.ieltsResult.revision;
-					}
-					toast.success(m["exams.ielts.take.saved"]());
-				})
-				.catch(() => {});
-		}, 2000);
+	const handleAnswerChange = (questionId: string, displayed: string) => {
+		if (finalizing.current || closed.current) return;
+		const choice = questionById
+			.get(questionId)
+			?.options?.find(
+				(option) => `${option.key}. ${option.text}` === displayed,
+			);
+		const value = choice?.key ?? displayed;
+		setAnswers((prev) => ({ ...prev, [questionId]: value }));
+		scheduleSave(questionId, value, bookmarks.has(questionId));
 	};
 
 	const handleToggleBookmark = (questionId: string) => {
-		setBookmarks((prev) => {
-			const next = new Set(prev);
-			if (next.has(questionId)) next.delete(questionId);
-			else next.add(questionId);
-			return next;
-		});
+		if (finalizing.current || closed.current) return;
+		const next = new Set(bookmarks);
+		const flagged = !next.delete(questionId);
+		if (flagged) next.add(questionId);
+		setBookmarks(next);
+		scheduleSave(questionId, answers[questionId] ?? "", flagged);
 	};
 
 	const handleSubmit = async () => {
+		if (finalizing.current || closed.current) return;
+		finalizing.current = true;
 		setActionModal(null);
 		try {
 			await saveToServer(true);
-			toast.success("Nộp bài thi thành công!");
-			void navigate({
-				to: APP_ROUTES.EXAMS.IELTS.RESULT,
-				params: { id: attempt.id },
-				replace: true,
-			});
 		} catch {
-			toast.error("Không thể nộp bài thi. Vui lòng thử lại.");
+			toast.error(m["exams.ielts.take.saveFailed"]());
+		} finally {
+			finalizing.current = false;
 		}
 	};
-	handleSubmitRef.current = handleSubmit;
+	expire.current = handleSubmit;
 
 	const handleExit = async () => {
+		if (finalizing.current || closed.current) return;
+		finalizing.current = true;
 		setActionModal(null);
 		try {
-			await cancel.mutateAsync(attempt.id);
-			void navigate({
-				to: APP_ROUTES.EXAMS.IELTS.HISTORY,
-				replace: true,
-			});
+			await saveToServer();
+			if (!closed.current)
+				await navigate({ to: APP_ROUTES.EXAMS.IELTS.HISTORY, replace: true });
 		} catch {
-			void navigate({
-				to: APP_ROUTES.EXAMS.IELTS.HISTORY,
-				replace: true,
-			});
+			toast.error(m["exams.ielts.take.saveFailed"]());
+		} finally {
+			finalizing.current = false;
 		}
 	};
 
@@ -214,6 +253,15 @@ export function IeltsSession({
 			explanation: "",
 		})),
 	}));
+
+	const displayedAnswers = Object.fromEntries(
+		Object.entries(answers).map(([id, value]) => {
+			const option = questionById
+				.get(id)
+				?.options?.find((choice) => choice.key === value);
+			return [id, option ? `${option.key}. ${option.text}` : value];
+		}),
+	);
 
 	const paletteGroups: IeltsPaletteGroup[] = sections.map((s) => ({
 		sectionNumber: s.sectionNumber,
@@ -268,7 +316,7 @@ export function IeltsSession({
 				<div className="flex-1 overflow-hidden">
 					<IeltsQuestionPane
 						groups={adaptedGroups}
-						answers={answers}
+						answers={displayedAnswers}
 						bookmarks={bookmarks}
 						activeQuestionId={activeQuestionId}
 						onAnswerChange={handleAnswerChange}
@@ -305,7 +353,9 @@ export function IeltsSession({
 					answeredCount={answeredCount}
 					totalCount={totalQuestions}
 					onConfirm={
-						actionModal === "submit" ? () => void handleSubmit() : handleExit
+						actionModal === "submit"
+							? () => void handleSubmit()
+							: () => void handleExit()
 					}
 					onClose={() => setActionModal(null)}
 				/>

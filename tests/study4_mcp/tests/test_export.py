@@ -29,6 +29,29 @@ def response(text, error=False):
 
 
 class ExportTests(unittest.TestCase):
+    def test_ielts_reading_accepts_complete_questions_without_audio(self):
+        sections = [
+            {
+                "class": "test-questions-wrapper",
+                "children": [
+                    {
+                        "class": "question-wrapper",
+                        "children": [
+                            {"class": "question-number", "children": [{"text": str(number)}]}
+                        ],
+                    }
+                    for number in range(start, end)
+                ],
+            }
+            for start, end in ((1, 15), (15, 28), (28, 41))
+        ]
+        data = {"page_kind": "exam", "content": sections, "assets": []}
+        export.validate_exam_export(data, "ielts-reading")
+
+        sections[-1]["children"].pop()
+        with self.assertRaisesRegex(ValueError, "questions 1–40"):
+            export.validate_exam_export(data, "ielts-reading")
+
     def test_no_minio_retains_media_even_when_keep_local_flag_is_false(self):
         import httpx
         from PIL import Image

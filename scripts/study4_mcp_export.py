@@ -549,7 +549,9 @@ def save_bundle(data, args):
         "runId": run_id,
         "assetRoot": "../..",
         "status": "downloading",
-        "objectKeyPattern": "exams/toeic/{sha256}",
+        "objectKeyPattern": (
+            None if getattr(args, "exam_type", "toeic") == "ielts-reading" else "exams/toeic/{sha256}"
+        ),
         "minioBucket": minio_bucket,
         "assets": [],
     }
@@ -666,7 +668,7 @@ async def export_single_test(session, target_url, args, tab_index=None):
         data = decode_export(result)
         data["exported_at"] = datetime.now(timezone.utc).isoformat()
         run_root = await asyncio.to_thread(save_bundle, data, args)
-        validate_exam_export(data)
+        validate_exam_export(data, getattr(args, "exam_type", "toeic"))
     finally:
         if tab_index is None:
             # Following a results link can select a different tab. Close the
@@ -684,9 +686,31 @@ async def export_single_test(session, target_url, args, tab_index=None):
     }
 
 
-def validate_exam_export(data):
+def validate_exam_export(data, exam_type="toeic"):
     """An archived DOM is not a successful full-test crawl until coverage is checked."""
-    from study4_content import exam_items
+    from study4_content import exam_items, nodes, question_number
+
+    if exam_type == "ielts-reading":
+        if data.get("page_kind") != "exam":
+            raise ValueError("Open the IELTS Reading review page with all questions visible to your account")
+        sections = [
+            part
+            for root in data.get("content", [])
+            for part in nodes(root, "test-questions-wrapper")
+        ]
+        if len(sections) != 3:
+            raise ValueError(f"Expected three IELTS Reading sections, found {len(sections)}")
+        questions_by_section = [nodes(section, "question-wrapper") for section in sections]
+        if not all(questions_by_section):
+            raise ValueError("Every IELTS Reading section must contain questions")
+        numbers = [
+            question_number(question)
+            for questions in questions_by_section
+            for question in questions
+        ]
+        if numbers != list(range(1, 41)):
+            raise ValueError("Expected IELTS Reading questions 1–40 in order and exactly once")
+        return
 
     exam_items(data)
     if len([asset for asset in data.get("assets", []) if asset.get("kind") == "audio"]) != 1:
@@ -899,6 +923,10 @@ def main():
     )
     parser.add_argument("--tab-index", type=int, help="Select an existing Study4 tab by its MCP tab index")
     parser.add_argument(
+        "--exam-type", choices=("toeic", "ielts-reading"), default="toeic",
+        help="Question coverage to validate (default: toeic)",
+    )
+    parser.add_argument(
         "--selector",
         default=None,
         help="CSS content scope; auto-detect .test-content or .practice-test-wrapper",
@@ -929,8 +957,8 @@ def main():
     parser.add_argument(
         "--minio",
         action=argparse.BooleanOptionalAction,
-        default=True,
-        help="Upload media directly to MinIO (default: True, use --no-minio for local-only media)",
+        default=None,
+        help="Upload TOEIC media to MinIO (on by default for TOEIC, off for IELTS Reading)",
     )
     parser.add_argument(
         "--keep-local-media",
@@ -947,6 +975,10 @@ def main():
         help="MinIO bucket name (default: from MINIO_BUCKET or lesson-audio)",
     )
     args = parser.parse_args()
+    if args.exam_type == "ielts-reading" and args.minio:
+        parser.error("IELTS Reading media is local-only")
+    if args.minio is None:
+        args.minio = args.exam_type == "toeic"
     if args.mcp_url and (args.server_arg or args.browser_executable):
         parser.error("--server-arg and --browser-executable apply only to stdio, not --mcp-url")
     if args.timeout <= 0:
@@ -957,7 +989,7 @@ def main():
         if args.from_json:
             data = json.loads(args.from_json.read_text(encoding="utf-8"))
             save_bundle(data, args)
-            validate_exam_export(data)
+            validate_exam_export(data, args.exam_type)
             return 0
         target_urls = resolve_target_urls(args)
         if not target_urls and args.tab_index is None and not (args.list_tools or args.diagnose):

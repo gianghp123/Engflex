@@ -408,7 +408,7 @@ export const GT_IELTS_TEST_1: IeltsExamTest = {
 							type: "fill_blank",
 							prompt:
 								"Checking meeting time: Use scheduling tool to spot any (24)_______ with key attendees.",
-							correctAnswer: ["clash", "schedule conflict"],
+							correctAnswer: "clash",
 							explanation:
 								"Passage: 'Check the meeting time. Have you used the scheduling tool to spot any clash with key attendees?'",
 						},
@@ -418,7 +418,7 @@ export const GT_IELTS_TEST_1: IeltsExamTest = {
 							type: "fill_blank",
 							prompt:
 								"Two-step approach: Send a meeting (25)_______ early to secure date and time for core stakeholders.",
-							correctAnswer: ["placeholder", "meeting placeholder"],
+							correctAnswer: "placeholder",
 							explanation:
 								"Passage: 'Send a meeting placeholder early to secure the date and time for core stakeholders.'",
 						},
@@ -428,7 +428,7 @@ export const GT_IELTS_TEST_1: IeltsExamTest = {
 							type: "fill_blank",
 							prompt:
 								"Before updating invite: Agree a firm (26)_______ at the outset for the full details.",
-							correctAnswer: ["deadline", "firm deadline"],
+							correctAnswer: "deadline",
 							explanation:
 								"Passage: 'Agree a firm deadline at the outset for the full details.'",
 						},
