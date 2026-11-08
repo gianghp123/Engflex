@@ -24,6 +24,7 @@ import {
 	EmptyHeader,
 	EmptyTitle,
 } from "#/components/ui/empty";
+import { BookmarkButton } from "#/features/bookmarks/bookmark-button";
 import { DictationPanel } from "#/features/videos/components/dictation/dictation-panel";
 import { DictationSummaryDialog } from "#/features/videos/components/dictation/dictation-summary-dialog";
 import type { WordSlotState } from "#/features/videos/components/dictation/dictation-word-input";
@@ -581,6 +582,7 @@ function DictationWorkspace({
 	return (
 		<PageLayout>
 			<div className="flex flex-wrap items-center justify-end gap-2">
+				<BookmarkButton type="video" id={video.id} />
 				<Button
 					type="button"
 					variant="outline"

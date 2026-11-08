@@ -158,6 +158,18 @@ export async function api<T>(
 }
 
 /** Paginated list request. Throws if the response has no pagination meta. */
+export async function apiPaginated<T>(
+	path: string,
+	init?: RequestInit,
+	opts?: ApiOptions,
+): Promise<{ data: T; pagination: Pagination }> {
+	const { data, pagination } = await request<T>(path, init, opts);
+	if (!pagination) {
+		throw new ApiError(500, "Expected a paginated response");
+	}
+	return { data, pagination };
+}
+
 export async function apiPage<T>(
 	path: string,
 	init?: RequestInit,

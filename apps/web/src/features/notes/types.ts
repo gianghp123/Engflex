@@ -1,21 +1,5 @@
-export type NoteKind = "vocab" | "lesson" | "video" | "story";
+import { CONTENT_TYPE_VALUES } from "@engflex/contracts";
 
-export interface NoteItem {
-	id: string;
-	kind: NoteKind;
-	title: string;
-	subtitle?: string;
-	summary?: string;
-	personalNote?: string;
-	tags: string[];
-	createdAt: string;
-	linkTo: string;
-	thumbnail?: string;
-	extraInfo?: {
-		level?: string;
-		duration?: string;
-		badge?: string;
-	};
-}
-
+export const NOTE_KINDS = ["vocab", ...CONTENT_TYPE_VALUES] as const;
+export type NoteKind = (typeof NOTE_KINDS)[number];
 export type NoteTabFilter = "all" | NoteKind;

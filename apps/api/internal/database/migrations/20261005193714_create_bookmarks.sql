@@ -4,6 +4,7 @@ CREATE TABLE bookmarks (
     content_type text NOT NULL CONSTRAINT chk_bookmarks_content_type
         CHECK (content_type IN ('lesson', 'video', 'story')),
     content_id   uuid NOT NULL,
+    note         text,
     created_at   timestamptz NOT NULL DEFAULT now(),
     updated_at   timestamptz NOT NULL DEFAULT now(),
     PRIMARY KEY (user_id, content_type, content_id)

@@ -8,6 +8,7 @@ import { PageLayout } from "#/components/common/page-layout";
 import { Button } from "#/components/ui/button";
 import { Toggle } from "#/components/ui/toggle";
 import { ToggleGroup, ToggleGroupItem } from "#/components/ui/toggle-group";
+import { BookmarkButton } from "#/features/bookmarks/bookmark-button";
 import { PracticeToolsDialogs } from "#/features/videos/components/practice-tools-dialogs";
 import { ShadowingPanel } from "#/features/videos/components/shadowing/shadowing-panel";
 import { TranscriptPanel } from "#/features/videos/components/transcript-panel";
@@ -177,6 +178,7 @@ function ShadowingPage() {
 				onReset={shadowingPreferences.reset}
 			/>
 			<div className="flex flex-wrap items-center justify-end gap-3">
+				<BookmarkButton type="video" id={video.id} />
 				<span className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
 					<Clock3 aria-hidden="true" className="size-4" />
 					<span aria-hidden="true">{time}</span>

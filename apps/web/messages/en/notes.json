@@ -21,38 +21,34 @@
       "vocabCount": "Saved Words"
     },
     "actions": {
-      "newNote": "New Note",
       "flipNote": "Flip Note",
       "flipBack": "Flip Front",
       "editNote": "Edit Note",
       "save": "Save Changes",
       "cancel": "Cancel",
       "unsave": "Unsave",
-      "openContent": "Open Content"
+      "openContent": "Open Content",
+      "bookmark": "Save content",
+      "retry": "Try again",
+      "clearNote": "Clear note",
+      "confirmUnsaveWord": "Remove this saved word and its study progress?"
     },
     "card": {
       "personalNoteLabel": "Study Note",
       "emptyNote": "No personal note yet. Click the edit button below to write one!",
-      "savedDatePrefix": "Saved on:"
-    },
-    "dialog": {
-      "newTitle": "Add New Study Note",
-      "titleLabel": "Title or Word",
-      "titlePlaceholder": "E.g. Flexible, -ed pronunciation rule...",
-      "kindLabel": "Content Kind",
-      "noteLabel": "Personal Study Note",
-      "notePlaceholder": "Enter memory tips, common mistakes, or learning notes...",
-      "tagsLabel": "Tags (comma-separated)",
-      "tagsPlaceholder": "toeic, listening, vocabulary..."
+      "savedDatePrefix": "Saved on:",
+      "unavailable": "Content unavailable"
     },
     "empty": {
       "title": "No notes found",
-      "description": "Try changing your search query or switching to another category tab."
+      "description": "Try changing your search query or switching to another category tab.",
+      "libraryTitle": "Nothing saved yet",
+      "libraryDescription": "Save a word, lesson, video, or story to find it here."
     },
     "toast": {
       "saved": "Note updated successfully",
-      "created": "New note created",
-      "removed": "Removed from saved items"
+      "removed": "Removed from saved items",
+      "error": "Something went wrong. Please try again."
     }
   }
 }

@@ -1,408 +1,232 @@
+import { NoteMaxLength, type SavedItem } from "@engflex/contracts";
 import { Link } from "@tanstack/react-router";
 import { cn } from "cn";
-import {
-	BookMarked,
-	BookmarkCheck,
-	BookOpen,
-	Calendar,
-	Check,
-	Clapperboard,
-	ExternalLink,
-	Pencil,
-	RotateCw,
-	StickyNote,
-	Trash2,
-	X,
-} from "lucide-react";
-import { type MouseEvent, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
+import { APP_ROUTES } from "#/app/app-route";
+import { CardShell } from "#/components/common/card-shell";
+import { SubmitButton } from "#/components/common/submit-button";
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
 import { Textarea } from "#/components/ui/textarea";
+import {
+	useRemoveSavedItem,
+	useUpdateSavedNote,
+} from "#/features/bookmarks/queries";
 import { m } from "#/paraglide/messages";
-import { notesActions } from "../store";
-import type { NoteItem, NoteKind } from "../types";
+import { getLocale } from "#/paraglide/runtime";
+import type { NoteKind } from "../types";
 
-const KIND_CONFIG: Record<
-	NoteKind,
-	{
-		label: () => string;
-		icon: typeof BookmarkCheck;
-		badgeClass: string;
-		accentBorder: string;
-		glowColor: string;
-	}
-> = {
-	vocab: {
-		label: () => m["notes.tabs.vocab"](),
-		icon: BookmarkCheck,
-		badgeClass:
-			"bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/25",
-		accentBorder: "group-hover:border-emerald-500/40",
-		glowColor: "rgba(16, 185, 129, 0.12)",
-	},
-	lesson: {
-		label: () => m["notes.tabs.lesson"](),
-		icon: BookOpen,
-		badgeClass:
-			"bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/25",
-		accentBorder: "group-hover:border-blue-500/40",
-		glowColor: "rgba(59, 130, 246, 0.12)",
-	},
-	video: {
-		label: () => m["notes.tabs.video"](),
-		icon: Clapperboard,
-		badgeClass:
-			"bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/25",
-		accentBorder: "group-hover:border-rose-500/40",
-		glowColor: "rgba(244, 63, 94, 0.12)",
-	},
-	story: {
-		label: () => m["notes.tabs.story"](),
-		icon: BookMarked,
-		badgeClass:
-			"bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/25",
-		accentBorder: "group-hover:border-amber-500/40",
-		glowColor: "rgba(245, 158, 11, 0.12)",
-	},
+const kindLabels: Record<NoteKind, () => string> = {
+	vocab: () => m["notes.tabs.vocab"](),
+	lesson: () => m["notes.tabs.lesson"](),
+	video: () => m["notes.tabs.video"](),
+	story: () => m["notes.tabs.story"](),
 };
 
-export function NoteCard3D({ item }: { item: NoteItem }) {
-	const [isFlipped, setIsFlipped] = useState(false);
-	const [isEditing, setIsEditing] = useState(false);
-	const [draftNote, setDraftNote] = useState(item.personalNote ?? "");
+function contentLink(item: SavedItem) {
+	if (item.lesson)
+		return {
+			to: APP_ROUTES.LESSONS.DETAIL,
+			params: { slug: item.lesson.slug },
+		};
+	if (item.story)
+		return { to: APP_ROUTES.STORIES.DETAIL, params: { slug: item.story.slug } };
+	if (item.videoExercise)
+		return {
+			to: APP_ROUTES.VIDEOS.DICTATION,
+			params: { videoId: item.contentId },
+		};
+	if (item.vocabularyItem)
+		return {
+			to: APP_ROUTES.VOCABULARY.DETAIL,
+			params: { itemId: item.contentId },
+		};
+}
 
-	const [tilt, setTilt] = useState({
-		rotateX: 0,
-		rotateY: 0,
-		glareX: 50,
-		glareY: 50,
-		opacity: 0,
-	});
+export function NoteCard3D({
+	item,
+	kind,
+	onRemoved,
+}: {
+	item: SavedItem;
+	kind: NoteKind;
+	onRemoved: () => void;
+}) {
+	const [showNote, setShowNote] = useState(false);
+	const [editing, setEditing] = useState(false);
+	const [draft, setDraft] = useState("");
+	const update = useUpdateSavedNote();
+	const remove = useRemoveSavedItem();
+	const link = contentLink(item);
+	const title =
+		item.lesson?.title ??
+		item.videoExercise?.title ??
+		item.story?.title ??
+		item.vocabularyItem?.term ??
+		m["notes.card.unavailable"]();
+	const summary =
+		item.lesson?.description ??
+		item.videoExercise?.description ??
+		item.vocabularyItem?.definition;
+	const date = new Intl.DateTimeFormat(getLocale(), {
+		dateStyle: "medium",
+	}).format(new Date(item.createdAt));
+	const onError = () => toast.error(m["notes.toast.error"]());
 
-	const config = KIND_CONFIG[item.kind];
-	const Icon = config.icon;
+	function save(note: string) {
+		update.mutate(
+			{ type: kind, id: item.contentId, note },
+			{
+				onSuccess: () => {
+					setEditing(false);
+					toast.success(m["notes.toast.saved"]());
+				},
+				onError,
+			},
+		);
+	}
 
-	const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
-		if (isFlipped) return; // Giữ phẳng khi đang lật mặt sau để người dùng đọc/sửa note thoải mái
-		const rect = e.currentTarget.getBoundingClientRect();
-		const x = e.clientX - rect.left;
-		const y = e.clientY - rect.top;
-		const centerX = rect.width / 2;
-		const centerY = rect.height / 2;
-
-		const rotateX = -((y - centerY) / centerY) * 8; // tối đa 8 độ
-		const rotateY = ((x - centerX) / centerX) * 8;
-
-		setTilt({
-			rotateX,
-			rotateY,
-			glareX: (x / rect.width) * 100,
-			glareY: (y / rect.height) * 100,
-			opacity: 1,
-		});
-	};
-
-	const handleMouseLeave = () => {
-		setTilt({
-			rotateX: 0,
-			rotateY: 0,
-			glareX: 50,
-			glareY: 50,
-			opacity: 0,
-		});
-	};
-
-	const handleSaveNote = () => {
-		notesActions.updatePersonalNote(item.id, draftNote);
-		setIsEditing(false);
-		toast.success(m["notes.toast.saved"]());
-	};
-
-	const handleCancelEdit = () => {
-		setDraftNote(item.personalNote ?? "");
-		setIsEditing(false);
-	};
-
-	const handleRemove = () => {
-		notesActions.removeItem(item.id);
-		toast.success(m["notes.toast.removed"]());
-	};
+	async function removeItem() {
+		if (
+			kind === "vocab" &&
+			!window.confirm(m["notes.actions.confirmUnsaveWord"]())
+		) {
+			return;
+		}
+		try {
+			await remove.mutateAsync({ type: kind, id: item.contentId });
+			toast.success(m["notes.toast.removed"]());
+			onRemoved();
+		} catch {
+			onError();
+		}
+	}
 
 	return (
-		// biome-ignore lint/a11y/noStaticElementInteractions: visual-only 3D mouse tracking tilt
-		<div
-			className="group relative h-[380px] w-full [perspective:1200px]"
-			onMouseMove={handleMouseMove}
-			onMouseLeave={handleMouseLeave}
-		>
-			<div
-				className={cn(
-					"relative h-full w-full rounded-2xl transition-all duration-500 [transform-style:preserve-3d]",
-				)}
-				style={{
-					transform: isFlipped
-						? "rotateY(180deg)"
-						: `rotateX(${tilt.rotateX}deg) rotateY(${tilt.rotateY}deg)`,
-					boxShadow: isFlipped
-						? "0 12px 30px -10px rgba(0, 0, 0, 0.2)"
-						: `0 14px 32px -8px ${config.glowColor}, 0 6px 16px -4px rgba(0, 0, 0, 0.08)`,
-				}}
-			>
-				{/* ---------------- MẶT TRƯỚC (FRONT FACE) ---------------- */}
+		<CardShell className="flex min-h-64 flex-col gap-3 rounded-2xl border p-5">
+			<div className="flex flex-wrap items-center justify-between gap-2">
+				<Badge variant="outline">{kindLabels[kind]()}</Badge>
+				<span className="text-xs text-muted-foreground">
+					{m["notes.card.savedDatePrefix"]()} {date}
+				</span>
+			</div>
+			<h2 className="text-base font-bold">{title}</h2>
+			<div className="[perspective:1200px]">
 				<div
 					className={cn(
-						"surface-card absolute inset-0 flex flex-col justify-between overflow-hidden rounded-2xl border p-5 transition-colors [backface-visibility:hidden]",
-						config.accentBorder,
+						"grid [transform-style:preserve-3d] motion-safe:transition-transform motion-safe:duration-500",
+						showNote && "[transform:rotateY(180deg)]",
 					)}
 				>
-					{/* Hiệu ứng specular glare (bóng kính 3D) */}
 					<div
-						className="pointer-events-none absolute inset-0 rounded-2xl opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-						style={{
-							background: `radial-gradient(circle at ${tilt.glareX}% ${tilt.glareY}%, rgba(255, 255, 255, 0.18) 0%, transparent 65%)`,
-							opacity: tilt.opacity,
-						}}
-					/>
-
-					{/* Top bar: Badge loại & Quick actions */}
-					<div>
-						<div className="flex items-center justify-between gap-2">
-							<Badge
-								variant="outline"
-								className={cn(
-									"flex items-center gap-1.5 px-2.5 py-1 font-semibold",
-									config.badgeClass,
-								)}
-							>
-								<Icon className="size-3.5" />
-								<span>{config.label()}</span>
-							</Badge>
-
-							<div className="flex items-center gap-1">
-								{item.extraInfo?.level && (
-									<Badge
-										variant="secondary"
-										className="font-mono text-xs font-bold"
+						inert={!showNote}
+						className="col-start-1 row-start-1 space-y-2 [backface-visibility:hidden] [transform:rotateY(180deg)]"
+					>
+						<p className="text-xs font-semibold">
+							{m["notes.card.personalNoteLabel"]()}
+						</p>
+						{editing ? (
+							<>
+								<Textarea
+									aria-label={m["notes.card.personalNoteLabel"]()}
+									value={draft}
+									maxLength={NoteMaxLength}
+									onChange={(event) => setDraft(event.target.value)}
+								/>
+								<div className="flex justify-end gap-2">
+									<Button
+										size="sm"
+										variant="ghost"
+										disabled={update.isPending}
+										onClick={() => setEditing(false)}
 									>
-										{item.extraInfo.level}
-									</Badge>
-								)}
-								{item.extraInfo?.duration && (
-									<Badge variant="secondary" className="text-xs">
-										{item.extraInfo.duration}
-									</Badge>
-								)}
-								{item.extraInfo?.badge && !item.extraInfo.level && (
-									<Badge variant="outline" className="text-xs">
-										{item.extraInfo.badge}
-									</Badge>
-								)}
-
-								<Button
-									variant="ghost"
-									size="icon"
-									className="size-8 text-muted-foreground hover:text-destructive"
-									onClick={handleRemove}
-									aria-label={m["notes.actions.unsave"]()}
-								>
-									<Trash2 className="size-4" />
-								</Button>
-							</div>
-						</div>
-
-						{/* Tiêu đề & phụ đề */}
-						<div className="mt-3">
-							<h3 className="line-clamp-2 text-lg font-bold text-foreground">
-								{item.title}
-							</h3>
-							{item.subtitle && (
-								<p className="mt-0.5 text-xs font-medium text-muted-foreground">
-									{item.subtitle}
+										{m["notes.actions.cancel"]()}
+									</Button>
+									<SubmitButton
+										size="sm"
+										pending={update.isPending}
+										onClick={() => save(draft)}
+									>
+										{m["notes.actions.save"]()}
+									</SubmitButton>
+								</div>
+							</>
+						) : (
+							<>
+								<p className="whitespace-pre-wrap break-words text-sm">
+									{item.note || m["notes.card.emptyNote"]()}
 								</p>
-							)}
-						</div>
-
-						{/* Tóm tắt / Nghĩa */}
-						{item.summary && (
-							<p className="mt-2.5 line-clamp-2 text-xs leading-relaxed text-muted-foreground">
-								{item.summary}
+								<div className="flex flex-wrap gap-2">
+									<Button
+										size="sm"
+										variant="outline"
+										disabled={update.isPending}
+										onClick={() => {
+											setDraft(item.note ?? "");
+											setEditing(true);
+										}}
+									>
+										{m["notes.actions.editNote"]()}
+									</Button>
+									{item.note && (
+										<SubmitButton
+											size="sm"
+											variant="ghost"
+											pending={update.isPending}
+											onClick={() => save("")}
+										>
+											{m["notes.actions.clearNote"]()}
+										</SubmitButton>
+									)}
+								</div>
+							</>
+						)}
+					</div>
+					<div
+						inert={showNote}
+						className="col-start-1 row-start-1 space-y-2 [backface-visibility:hidden]"
+					>
+						{summary && (
+							<p className="line-clamp-2 text-sm text-muted-foreground">
+								{summary}
 							</p>
 						)}
-
-						{/* Khối xem nhanh ghi chú (Quick Note Preview) */}
-						<button
-							type="button"
-							onClick={() => setIsFlipped(true)}
-							className="mt-3 w-full text-left cursor-pointer rounded-xl border border-primary/20 bg-primary/5 p-2.5 transition-colors hover:bg-primary/10"
-						>
-							<div className="flex items-center justify-between text-xs font-semibold text-primary">
-								<span className="flex items-center gap-1.5">
-									<StickyNote className="size-3.5" />
-									{m["notes.card.personalNoteLabel"]()}
-								</span>
-								<span className="flex items-center gap-1 text-[11px] font-normal text-muted-foreground">
-									<RotateCw className="size-3" />
-									{m["notes.actions.flipNote"]()}
-								</span>
-							</div>
-							<p className="mt-1 line-clamp-2 text-xs text-foreground/90 italic">
-								{item.personalNote || m["notes.card.emptyNote"]()}
-							</p>
-						</button>
-					</div>
-
-					{/* Bottom section: Tags & Nav buttons */}
-					<div className="mt-3 pt-3 border-t">
-						<div className="flex flex-wrap gap-1 mb-3">
-							{item.tags.slice(0, 3).map((tag) => (
-								<span
-									key={tag}
-									className="rounded-md bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground"
-								>
-									#{tag}
-								</span>
-							))}
-						</div>
-
-						<div className="flex items-center gap-2">
-							<Button
-								variant="outline"
-								size="sm"
-								className="flex-1 gap-1.5 text-xs font-medium"
-								onClick={() => setIsFlipped(true)}
-							>
-								<RotateCw className="size-3.5" />
-								{m["notes.actions.flipNote"]()}
-							</Button>
-
-							<Button asChild size="sm" className="gap-1.5 text-xs font-medium">
-								<Link to={item.linkTo}>
-									{m["notes.actions.openContent"]()}
-									<ExternalLink className="size-3.5" />
-								</Link>
-							</Button>
-						</div>
-					</div>
-				</div>
-
-				{/* ---------------- MẶT SAU (BACK FACE — 3D FLIPPED) ---------------- */}
-				<div
-					className={cn(
-						"surface-card absolute inset-0 flex flex-col justify-between overflow-hidden rounded-2xl border p-5 [backface-visibility:hidden] [transform:rotateY(180deg)]",
-						config.accentBorder,
-					)}
-				>
-					{/* Header mặt sau */}
-					<div>
-						<div className="flex items-center justify-between border-b pb-2.5">
-							<div className="flex items-center gap-2">
-								<StickyNote className="size-4 text-primary" />
-								<span className="text-sm font-bold text-foreground">
-									{m["notes.card.personalNoteLabel"]()}
-								</span>
-							</div>
-
-							<Button
-								variant="ghost"
-								size="sm"
-								className="h-7 gap-1 px-2 text-xs text-muted-foreground hover:text-foreground"
-								onClick={() => {
-									setIsFlipped(false);
-									setIsEditing(false);
-								}}
-							>
-								<RotateCw className="size-3" />
-								{m["notes.actions.flipBack"]()}
-							</Button>
-						</div>
-
-						<div className="mt-2.5">
-							<p className="line-clamp-1 text-xs font-semibold text-foreground/80">
-								{item.title}
-							</p>
-							<div className="mt-1 flex items-center gap-1.5 text-[11px] text-muted-foreground">
-								<Calendar className="size-3" />
-								<span>
-									{m["notes.card.savedDatePrefix"]()} {item.createdAt}
-								</span>
-							</div>
-						</div>
-
-						{/* Vùng chỉnh sửa / Xem ghi chú */}
-						<div className="mt-3">
-							{isEditing ? (
-								<div className="space-y-2">
-									<Textarea
-										value={draftNote}
-										onChange={(e) => setDraftNote(e.target.value)}
-										placeholder={m["notes.dialog.notePlaceholder"]()}
-										className="min-h-[140px] resize-none text-xs"
-									/>
-									<div className="flex justify-end gap-1.5">
-										<Button
-											variant="ghost"
-											size="sm"
-											className="h-7 text-xs"
-											onClick={handleCancelEdit}
-										>
-											<X className="mr-1 size-3" />
-											{m["notes.actions.cancel"]()}
-										</Button>
-										<Button
-											size="sm"
-											className="h-7 text-xs"
-											onClick={handleSaveNote}
-										>
-											<Check className="mr-1 size-3" />
-											{m["notes.actions.save"]()}
-										</Button>
-									</div>
-								</div>
-							) : (
-								<div className="relative min-h-[140px] rounded-xl border bg-muted/40 p-3">
-									<p className="whitespace-pre-wrap text-xs leading-relaxed text-foreground">
-										{item.personalNote || (
-											<span className="text-muted-foreground italic">
-												{m["notes.card.emptyNote"]()}
-											</span>
-										)}
-									</p>
-									<Button
-										variant="ghost"
-										size="icon"
-										className="absolute right-2 top-2 size-7 text-muted-foreground hover:text-foreground"
-										onClick={() => setIsEditing(true)}
-										aria-label={m["notes.actions.editNote"]()}
-									>
-										<Pencil className="size-3.5" />
-									</Button>
-								</div>
-							)}
-						</div>
-					</div>
-
-					{/* Footer mặt sau */}
-					<div className="mt-3 flex items-center justify-between border-t pt-3">
-						<Button
-							variant="outline"
-							size="sm"
-							className="h-8 gap-1.5 text-xs text-destructive hover:bg-destructive/10"
-							onClick={handleRemove}
-						>
-							<Trash2 className="size-3.5" />
-							{m["notes.actions.unsave"]()}
-						</Button>
-
-						<Button asChild size="sm" className="h-8 gap-1.5 text-xs">
-							<Link to={item.linkTo}>
-								{m["notes.actions.openContent"]()}
-								<ExternalLink className="size-3.5" />
-							</Link>
-						</Button>
+						<p className="line-clamp-2 text-sm italic">
+							{item.note || m["notes.card.emptyNote"]()}
+						</p>
 					</div>
 				</div>
 			</div>
-		</div>
+			<div className="mt-auto flex flex-wrap items-center gap-2">
+				<Button
+					size="sm"
+					variant="outline"
+					disabled={update.isPending}
+					onClick={() => {
+						setShowNote(!showNote);
+						setEditing(false);
+					}}
+				>
+					{showNote
+						? m["notes.actions.flipBack"]()
+						: m["notes.actions.flipNote"]()}
+				</Button>
+				{link && (
+					<Button asChild size="sm">
+						<Link {...link}>{m["notes.actions.openContent"]()}</Link>
+					</Button>
+				)}
+				<SubmitButton
+					size="sm"
+					variant="ghost"
+					pending={remove.isPending}
+					disabled={update.isPending}
+					onClick={() => void removeItem()}
+				>
+					{m["notes.actions.unsave"]()}
+				</SubmitButton>
+			</div>
+		</CardShell>
 	);
 }

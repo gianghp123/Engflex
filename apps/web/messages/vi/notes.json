@@ -21,38 +21,34 @@
       "vocabCount": "Từ vựng lưu trữ"
     },
     "actions": {
-      "newNote": "Tạo ghi chú mới",
       "flipNote": "Lật xem ghi chú",
       "flipBack": "Lật mặt trước",
       "editNote": "Sửa ghi chú",
       "save": "Lưu thay đổi",
       "cancel": "Hủy bỏ",
       "unsave": "Bỏ lưu",
-      "openContent": "Mở nội dung"
+      "openContent": "Mở nội dung",
+      "bookmark": "Lưu nội dung",
+      "retry": "Thử lại",
+      "clearNote": "Xóa ghi chú",
+      "confirmUnsaveWord": "Bỏ lưu từ này và xóa tiến độ học của từ?"
     },
     "card": {
       "personalNoteLabel": "Ghi chú học tập",
       "emptyNote": "Chưa có ghi chú riêng. Bấm vào nút sửa bên dưới để ghi chép!",
-      "savedDatePrefix": "Đã lưu:"
-    },
-    "dialog": {
-      "newTitle": "Thêm ghi chú học tập mới",
-      "titleLabel": "Tiêu đề hoặc từ vựng",
-      "titlePlaceholder": "Ví dụ: Flexible, Cách phát âm đuôi -ed...",
-      "kindLabel": "Phân loại nội dung",
-      "noteLabel": "Nội dung ghi chú cá nhân",
-      "notePlaceholder": "Nhập mẹo nhớ, lỗi sai thường gặp, hoặc ghi chú học tập của bạn...",
-      "tagsLabel": "Thẻ phân loại (ngăn cách bằng dấu phẩy)",
-      "tagsPlaceholder": "toeic, listening, vocabulary..."
+      "savedDatePrefix": "Đã lưu:",
+      "unavailable": "Nội dung không còn khả dụng"
     },
     "empty": {
       "title": "Không tìm thấy ghi chú nào",
-      "description": "Thử đổi từ khóa tìm kiếm hoặc chuyển sang tab phân loại khác."
+      "description": "Thử đổi từ khóa tìm kiếm hoặc chuyển sang tab phân loại khác.",
+      "libraryTitle": "Chưa có nội dung đã lưu",
+      "libraryDescription": "Hãy lưu từ vựng, bài học, video hoặc truyện để xem lại ở đây."
     },
     "toast": {
       "saved": "Đã cập nhật ghi chú thành công",
-      "created": "Đã thêm mục ghi chú mới",
-      "removed": "Đã xóa mục khỏi danh sách lưu"
+      "removed": "Đã xóa mục khỏi danh sách lưu",
+      "error": "Đã xảy ra lỗi. Vui lòng thử lại."
     }
   }
 }

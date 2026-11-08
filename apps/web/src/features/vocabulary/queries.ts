@@ -5,6 +5,7 @@ import type {
 	VocabularyItem,
 } from "@engflex/contracts";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { savedLibraryKey } from "#/features/bookmarks/service";
 import {
 	createVocabularyItem,
 	getVocabularyItem,
@@ -98,6 +99,7 @@ export function useVocabularyItemDetail(id: string | undefined) {
 function useInvalidateVocabulary() {
 	const queryClient = useQueryClient();
 	return () => {
+		void queryClient.invalidateQueries({ queryKey: savedLibraryKey });
 		void queryClient.invalidateQueries({ queryKey: vocabularyKeys.catalog });
 		void queryClient.invalidateQueries({
 			queryKey: vocabularyKeys.userVocabulary,

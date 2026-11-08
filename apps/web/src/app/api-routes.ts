@@ -34,6 +34,7 @@ export const API_ROUTES = {
 	USER_VOCABULARY: {
 		LIST: "/user-vocabulary",
 		BY_ITEM_ID: (itemId: ApiId) => `/user-vocabulary/${itemId}`,
+		NOTE: (itemId: ApiId) => `/user-vocabulary/${itemId}/note`,
 	},
 	VIDEO_EXERCISES: {
 		LIST: "/video-exercises",
@@ -128,9 +129,12 @@ export const API_ROUTES = {
 	},
 	BOOKMARKS: {
 		LIST: "/bookmarks",
+		LIBRARY: "/bookmarks/library",
 		CREATE: "/bookmarks",
 		DELETE: (contentType: string, contentId: ApiId) =>
 			`/bookmarks/${contentType}/${contentId}`,
+		NOTE: (contentType: string, contentId: ApiId) =>
+			`/bookmarks/${contentType}/${contentId}/note`,
 	},
 	EXAMS: {
 		CATEGORIES: {

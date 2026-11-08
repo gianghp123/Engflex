@@ -10,3 +10,7 @@ export interface SaveBookmark {
   contentType: ContentType;
   contentId: string;
 }
+export interface ListSavedLibrary {
+  ContentType: string;
+  Search: string;
+}
