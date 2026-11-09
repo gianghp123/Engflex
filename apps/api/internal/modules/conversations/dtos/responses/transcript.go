@@ -46,6 +46,7 @@ type MispronouncedWord struct {
 	Heard      string        `json:"heard"`
 	Confidence float64       `json:"confidence"`
 	Phones     []PhoneDetail `json:"phones"`
+	Tip        string        `json:"tip"`
 }
 
 // Prosody carries the learner's pitch and energy contours, downsampled by

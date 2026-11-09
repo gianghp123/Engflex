@@ -6,6 +6,9 @@ export const API_ROUTES = {
 		ME: "/profiles/me",
 		BY_ID: (id: ApiId) => `/profiles/${id}`,
 	},
+	PRONUNCIATION: {
+		RESPEAK: "/pronunciation/respeak",
+	},
 	VOCABULARY: {
 		LIST: "/vocabulary",
 		BY_ID: (id: ApiId) => `/vocabulary/${id}`,

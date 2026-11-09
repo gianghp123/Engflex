@@ -76,6 +76,12 @@ func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB, voiceCfg config.VoiceConfi
 	la.POST("/:id/score", append(strict, middleware.RequireAuth(), activityCtl.ScoreWriting)...)
 	la.DELETE("/attempts/:attemptId/writing", middleware.RequireAuth(), activityCtl.RedactWriting)
 
+	// Targeted re-speak (minimal pairs) is practice only: no attempt row is
+	// written, so it mounts under its own top-level group. A static path under
+	// /lesson-activities would collide with the /:id param tree.
+	pr := rg.Group("/pronunciation")
+	pr.POST("/respeak", append(strict, middleware.RequireAuth(), activityCtl.Respeak)...)
+
 	// Admin-only: full (unstripped) activity config, needed to prefill the
 	// edit form — the learner-shaped GET /lesson-activities/:id strips
 	// answer keys and voice ids.

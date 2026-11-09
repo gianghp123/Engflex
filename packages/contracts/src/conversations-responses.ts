@@ -243,6 +243,7 @@ export interface MispronouncedWord {
   heard: string;
   confidence: number /* float64 */;
   phones: PhoneDetail[];
+  tip: string;
 }
 /**
  * Prosody carries the learner's pitch and energy contours, downsampled by

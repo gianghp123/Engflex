@@ -7,6 +7,7 @@ import {
 	listLessonProgress,
 	listSections,
 	pronounceAttempt,
+	respeak,
 	scoreWriting,
 	startLessonAttempt,
 } from "#/features/lessons/service";
@@ -105,6 +106,13 @@ export function usePronounceAttempt() {
 				input.audio,
 				input.mime,
 			),
+	});
+}
+
+export function useRespeak() {
+	return useMutation({
+		mutationFn: (input: { expectedText: string; audio: Blob; mime: string }) =>
+			respeak(input.expectedText, input.audio, input.mime),
 	});
 }
 

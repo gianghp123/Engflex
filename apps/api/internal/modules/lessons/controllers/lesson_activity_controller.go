@@ -250,6 +250,54 @@ func (h *LessonActivityController) Pronounce(c *gin.Context) {
 	common.OK(c, "pronunciation scored", res)
 }
 
+// Respeak godoc
+// @Summary      Score one targeted repeat (minimal pairs)
+// @Tags         pronunciation
+// @Security     BearerAuth
+// @Accept       multipart/form-data
+// @Produce      json
+// @Param        expectedText formData string true "reference word or phrase"
+// @Param        audio formData file true "recorded audio"
+// @Success      200 {object} common.ApiResponse{data=responses.RespeakResponse}
+// @Router       /pronunciation/respeak [post]
+func (h *LessonActivityController) Respeak(c *gin.Context) {
+	file, err := c.FormFile("audio")
+	if err != nil {
+		common.Fail(c, common.BadRequest("audio is required"))
+		return
+	}
+	if file.Size > int64(pronunciation.MaxAudioBytes) {
+		common.Fail(c, common.New(http.StatusRequestEntityTooLarge, "audio too large"))
+		return
+	}
+	expected := strings.TrimSpace(c.PostForm("expectedText"))
+	if expected == "" {
+		common.Fail(c, common.BadRequest("expectedText is required"))
+		return
+	}
+	f, err := file.Open()
+	if err != nil {
+		common.Fail(c, common.BadRequest("audio is required"))
+		return
+	}
+	defer f.Close()
+	audio, err := io.ReadAll(io.LimitReader(f, int64(pronunciation.MaxAudioBytes)+1))
+	if err != nil {
+		common.Fail(c, common.BadRequest("audio is required"))
+		return
+	}
+	if len(audio) > pronunciation.MaxAudioBytes {
+		common.Fail(c, common.New(http.StatusRequestEntityTooLarge, "audio too large"))
+		return
+	}
+	res, err := h.activities.Respeak(c.Request.Context(), expected, audio, file.Header.Get("Content-Type"))
+	if err != nil {
+		common.Fail(c, err)
+		return
+	}
+	common.OK(c, "respeak scored", res)
+}
+
 // StartAttempt godoc
 // @Summary      Open one lesson attempt
 // @Tags         lesson-attempts

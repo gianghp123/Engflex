@@ -20,14 +20,15 @@ export interface Attempt {
   createdAt: string /* RFC3339 */;
 }
 /**
- * Progress is the measurable-only dashboard rollup. Fluency, pronunciation,
- * WPM and due-vocabulary are deliberately absent: no scoring source exists,
- * and due-vocabulary waits on the vocabulary feature. They return when their
- * sources do — never as fabricated numbers.
+ * Progress is the measurable-only dashboard rollup. Fluency, WPM and
+ * due-vocabulary are deliberately absent: no scoring source exists, and
+ * due-vocabulary waits on the vocabulary feature. PronunciationTrend is the
+ * newest 10 speaking-part scores, oldest first.
  */
 export interface Progress {
   streakDays: number /* int */;
   voiceMinutesToday: number /* int */;
   dailyGoalMinutes: number /* int */;
   lessonsCompleted: number /* int */;
+  pronunciationTrend: number /* float64 */[];
 }

@@ -21,13 +21,14 @@ type Attempt struct {
 	CreatedAt   time.Time           `json:"createdAt"`
 }
 
-// Progress is the measurable-only dashboard rollup. Fluency, pronunciation,
-// WPM and due-vocabulary are deliberately absent: no scoring source exists,
-// and due-vocabulary waits on the vocabulary feature. They return when their
-// sources do — never as fabricated numbers.
+// Progress is the measurable-only dashboard rollup. Fluency, WPM and
+// due-vocabulary are deliberately absent: no scoring source exists, and
+// due-vocabulary waits on the vocabulary feature. PronunciationTrend is the
+// newest 10 speaking-part scores, oldest first.
 type Progress struct {
-	StreakDays        int `json:"streakDays"`
-	VoiceMinutesToday int `json:"voiceMinutesToday"`
-	DailyGoalMinutes  int `json:"dailyGoalMinutes"`
-	LessonsCompleted  int `json:"lessonsCompleted"`
+	StreakDays         int       `json:"streakDays"`
+	VoiceMinutesToday  int       `json:"voiceMinutesToday"`
+	DailyGoalMinutes   int       `json:"dailyGoalMinutes"`
+	LessonsCompleted   int       `json:"lessonsCompleted"`
+	PronunciationTrend []float64 `json:"pronunciationTrend"`
 }

@@ -201,7 +201,8 @@ func TestPronounceAttach(t *testing.T) {
 				require.Contains(t, parts, activity.ID)
 				assert.Equal(t, enums.AttemptTypeSpeaking, parts[activity.ID].Type)
 				assert.Equal(t, 70.0, parts[activity.ID].Score)
-				assert.Equal(t, map[string]float64{"0": 80, "1": 60}, parts[activity.ID].Detail.Items)
+				assert.Equal(t, 80.0, parts[activity.ID].Detail.Items["0"].Score)
+				assert.Equal(t, 60.0, parts[activity.ID].Detail.Items["1"].Score)
 				assert.Equal(t, enums.AttemptStatusInProgress, saved[1].Status)
 
 				got, err = svc.Pronounce(context.Background(), attachUserID, activity.ID, attachOpenID, 0, audio, audioMime)
@@ -213,7 +214,8 @@ func TestPronounceAttach(t *testing.T) {
 				require.NoError(t, json.Unmarshal(saved[2].Result, &parts))
 				require.Contains(t, parts, activity.ID)
 				assert.Equal(t, 77.5, parts[activity.ID].Score)
-				assert.Equal(t, map[string]float64{"0": 95, "1": 60}, parts[activity.ID].Detail.Items)
+				assert.Equal(t, 95.0, parts[activity.ID].Detail.Items["0"].Score)
+				assert.Equal(t, 60.0, parts[activity.ID].Detail.Items["1"].Score)
 			},
 		},
 		{
@@ -262,4 +264,51 @@ func TestPronounceAttach(t *testing.T) {
 			tt.run(t)
 		})
 	}
+}
+
+// One read-aloud score persists the gated list plus the honest pre-gate
+// total, so the panel can say "showing 1 of 2" after a reload.
+func TestPronouncePersistsGatedDetail(t *testing.T) {
+	const audioMime = "audio/webm"
+	audio := []byte("fake-webm")
+	activity := attachSpeakingFixture()
+	repo := mocks.NewMockLessonActivityRepository(t)
+	attempts := mocks.NewMockAttemptRepository(t)
+	voice := voicemocks.NewMockPronounceEngine(t)
+	voice.On("Pronounce", mock.Anything, "Please call me back.", "en", audio, audioMime).
+		Return(&conversationsresponses.PronounceResult{
+			Score:         72,
+			Transcription: "please call me back",
+			Errors: []conversationsresponses.MispronouncedWord{
+				{Word: "please", Expected: "pliːz", Heard: "pliːs", Confidence: 0.91},
+				{Word: "call", Expected: "kɔːl", Heard: "kɑːl", Confidence: 0.40},
+			},
+		}, nil).Once()
+	repo.EXPECT().GetByID(mock.Anything, activity.ID).Return(activity, nil).Once()
+	open := attachOpenAttempt()
+	attempts.EXPECT().GetByID(mock.Anything, attachOpenID).Return(open, nil).Twice()
+	repo.EXPECT().ListByLesson(mock.Anything, attachLessonID).Return(attachTwoActivities(activity.ID), nil).Once()
+	var saved *models.Attempt
+	attempts.EXPECT().Update(mock.Anything, mock.Anything).
+		Run(func(ctx context.Context, m *models.Attempt) { saved = m }).
+		Return(nil).Once()
+	svc := services.NewLessonActivityService(repo, pronunciation.NewScorer(voice), llmmocks.NewMockLLMClient(t), attempts)
+
+	got, err := svc.Pronounce(context.Background(), attachUserID, activity.ID, attachOpenID, 0, audio, audioMime)
+	require.NoError(t, err)
+	require.NotNil(t, got)
+	require.Len(t, got.Errors, 1)
+	assert.Equal(t, 2, got.TotalErrors)
+
+	require.NotNil(t, saved)
+	var parts map[string]struct {
+		Detail services.PronouncePartDetail `json:"detail"`
+	}
+	require.NoError(t, json.Unmarshal(saved.Result, &parts))
+	item := parts[activity.ID].Detail.Items["0"]
+	assert.Equal(t, 2, item.TotalErrors)
+	require.Len(t, item.Errors, 1)
+	assert.Equal(t, "please", item.Errors[0].Word)
+	assert.NotEmpty(t, item.ReferenceHash)
+	assert.Equal(t, "openpronounce-v0.3.0", item.EngineVersion)
 }

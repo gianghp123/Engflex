@@ -119,7 +119,6 @@
       "next": "Tiếp theo →",
       "scoreLabel": "Điểm phát âm",
       "scoreEmpty": "Ghi âm câu đọc — điểm và nhận xét từng từ sẽ hiện tại đây.",
-      "coachPrefix": "Sửa cách bạn phát âm",
       "coachCorrect": "Làm tốt lắm — không có gì cần sửa.",
       "coachNone": "Không có từ nào bị gắn cờ — hãy luyện nhịp điệu câu.",
       "heardShort": "nghe được:",
@@ -131,7 +130,9 @@
       "wordsLabel": "Từ",
       "listenSelf": "Nghe lại bạn đọc",
       "micDenied": "Không dùng được micro. Hãy cấp quyền micro rồi thử lại.",
-      "uploadFailed": "Tải lên thất bại. Hãy ghi âm lại."
+      "uploadFailed": "Tải lên thất bại. Hãy ghi âm lại.",
+      "coachFlagged": "Sửa các từ được đánh dấu bên dưới.",
+      "showingErrors": "Đang hiển thị {shown}/{total} lỗi — độ tin cậy cao nhất"
     },
     "listening": {
       "title": "Luyện nghe",
@@ -154,6 +155,25 @@
       "noRunTitle": "Chưa có lượt làm bài",
       "noRunBody": "Hãy mở một lượt làm bài để bắt đầu luyện tập bài học này.",
       "noRunAction": "Bắt đầu làm bài"
+    },
+    "minimalPairs": {
+      "title": "Cặp âm tối thiểu",
+      "instruction": "Nghe phân biệt hai từ, sau đó đọc lại một từ để được chấm điểm.",
+      "contrast": "Cặp âm",
+      "pair": "Cặp từ",
+      "listen": "Nghe",
+      "play": "Phát một từ",
+      "playPrompt": "Phát một từ rồi chọn từ bạn nghe được.",
+      "quizPrompt": "Bạn nghe được từ nào?",
+      "correct": "Chính xác!",
+      "incorrect": "Chưa đúng — nghe lại nhé.",
+      "repeatPrompt": "Chọn từ để đọc lại:",
+      "say": "Đọc “{word}”",
+      "record": "Ghi âm",
+      "stop": "Dừng",
+      "retry": "Thử lại",
+      "scoreEmpty": "Ghi âm từ bạn chọn — điểm và nhận xét sẽ hiện tại đây.",
+      "error": "Không chấm được bản ghi. Hãy thử lại."
     }
   }
 }

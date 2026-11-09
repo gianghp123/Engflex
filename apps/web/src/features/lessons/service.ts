@@ -5,6 +5,7 @@ import type {
 	LessonDetail,
 	LessonProgressSummary,
 	PronunciationResult,
+	RespeakResponse,
 	UnitSection,
 	WritingScoreResponse,
 } from "@engflex/contracts";
@@ -68,6 +69,24 @@ export function pronounceAttempt(
 	});
 }
 
+export function respeak(
+	expectedText: string,
+	audio: Blob,
+	mime: string,
+): Promise<RespeakResponse> {
+	const form = new FormData();
+	form.append("expectedText", expectedText);
+	form.append(
+		"audio",
+		audio,
+		mime.includes("wav") ? "attempt.wav" : "attempt.webm",
+	);
+	return api<RespeakResponse>(API_ROUTES.PRONUNCIATION.RESPEAK, {
+		method: "POST",
+		body: form,
+	});
+}
+
 export function startLessonAttempt(lessonId: string): Promise<Attempt> {
 	return api<Attempt>(API_ROUTES.LESSONS.START_ATTEMPT(lessonId), {
 		method: "POST",
@@ -101,6 +120,7 @@ export type {
 	LessonDetail,
 	LessonProgressSummary,
 	PronunciationResult,
+	RespeakResponse,
 	UnitSection,
 	WritingScoreResponse,
 };

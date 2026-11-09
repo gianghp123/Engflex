@@ -38,6 +38,7 @@ type LessonActivityService interface {
 	GetByID(ctx context.Context, id string) (*models.LessonActivity, error)
 	CheckAnswer(ctx context.Context, userID, id, attemptID string, questionIndex int, key string) (*responses.CheckResult, error)
 	Pronounce(ctx context.Context, userID, id, attemptID string, itemIndex int, audio []byte, mime string) (*responses.PronunciationResult, error)
+	Respeak(ctx context.Context, expectedText string, audio []byte, mime string) (*responses.RespeakResponse, error)
 	StartAttempt(ctx context.Context, userID, lessonID string) (*models.Attempt, error)
 	GetOpenProgress(ctx context.Context, userID, lessonID string) (*responses.AttemptProgress, error)
 	AttachPartResult(ctx context.Context, userID, attemptID, activityID string, entry PartEntry) (*models.Attempt, error)
@@ -337,35 +338,36 @@ func (s *lessonActivityService) AttachCheckOutcome(ctx context.Context, userID, 
 	return s.attachWithMap(ctx, m, parts)
 }
 
-// AttachPronounceItem merges one item score (latest wins) into the part entry.
-func (s *lessonActivityService) AttachPronounceItem(ctx context.Context, userID, attemptID, activityID string, itemIndex int, score float64) (*models.Attempt, error) {
+// AttachPronounceItem merges one scored item (latest wins) into the part entry.
+func (s *lessonActivityService) AttachPronounceItem(ctx context.Context, userID, attemptID, activityID string, itemIndex int, detail PronounceItemDetail) (*models.Attempt, error) {
 	m, err := s.loadOwnedAttempt(ctx, userID, attemptID)
 	if err != nil {
 		return nil, err
 	}
 	parts := decodePartMap(m)
 	entry := parts[activityID]
-	var detail PronouncePartDetail
+	var part PronouncePartDetail
 	if entry.Detail != nil {
 		if raw, merr := json.Marshal(entry.Detail); merr == nil {
-			_ = json.Unmarshal(raw, &detail)
+			part = ParsePronounceDetail(raw)
 		}
 	}
-	if detail.Items == nil {
-		detail.Items = map[string]float64{}
+	if part.Items == nil {
+		part.Items = map[string]PronounceItemDetail{}
 	}
-	detail.Items[strconv.Itoa(itemIndex)] = score
+	part.Items[strconv.Itoa(itemIndex)] = detail
 	sum := 0.0
-	for _, v := range detail.Items {
-		sum += v
+	for _, v := range part.Items {
+		sum += v.Score
 	}
-	mean := sum / float64(len(detail.Items))
-	parts[activityID] = PartEntry{Type: enums.AttemptTypeSpeaking, Score: mean, Detail: detail}
+	mean := sum / float64(len(part.Items))
+	parts[activityID] = PartEntry{Type: enums.AttemptTypeSpeaking, Score: mean, Detail: part}
 	return s.attachWithMap(ctx, m, parts)
 }
 
 // Pronounce scores one read-aloud attempt. It resolves the reference text
-// from the speaking config and delegates scoring to the shared scorer.
+// from the speaking config and delegates scoring to the shared scorer. Errors
+// are gated once here, before both the response and the persisted detail.
 func (s *lessonActivityService) Pronounce(ctx context.Context, userID, id, attemptID string, itemIndex int, audio []byte, mime string) (*responses.PronunciationResult, error) {
 	m, err := s.loadActivity(ctx, id)
 	if err != nil {
@@ -385,19 +387,53 @@ func (s *lessonActivityService) Pronounce(ctx context.Context, userID, id, attem
 	if _, err := s.loadOwnedAttempt(ctx, userID, attemptID); err != nil {
 		return nil, err
 	}
-	out, err := s.scorer.Score(ctx, cfg.Items[itemIndex].Text, audio, mime)
+	reference := cfg.Items[itemIndex].Text
+	out, err := s.scorer.Score(ctx, reference, audio, mime)
 	if err != nil {
 		return nil, err
 	}
+	total := len(out.Errors)
+	out.Errors = pronunciation.GateErrors(out.Errors)
 	var dto responses.PronunciationResult
 	if utils.Map(&dto, out) != nil {
 		logger.Report(ctx, "pronounce map failed", common.Internal(), "id", id)
 		return nil, common.Internal()
 	}
-	if _, err := s.AttachPronounceItem(ctx, userID, attemptID, id, itemIndex, dto.Score); err != nil {
+	dto.TotalErrors = total
+	detail := newPronounceItemDetail(out, reference, total)
+	if _, err := s.AttachPronounceItem(ctx, userID, attemptID, id, itemIndex, detail); err != nil {
 		return nil, err
 	}
-	slog.InfoContext(ctx, "pronunciation scored", "activityID", id, "score", dto.Score)
+	slog.InfoContext(ctx, "pronunciation scored", "activityID", id, "score", dto.Score, "errors", len(dto.Errors), "totalErrors", total)
+	return &dto, nil
+}
+
+// Respeak scores one targeted repeat against a caller-supplied reference.
+// Practice only: nothing is persisted and no attempt row is created.
+func (s *lessonActivityService) Respeak(ctx context.Context, expectedText string, audio []byte, mime string) (*responses.RespeakResponse, error) {
+	trimmed := strings.TrimSpace(expectedText)
+	if trimmed == "" {
+		return nil, common.BadRequest("expectedText is required")
+	}
+	if len([]rune(trimmed)) > 120 {
+		return nil, common.BadRequest("expectedText is too long")
+	}
+	out, err := s.scorer.Score(ctx, trimmed, audio, mime)
+	if err != nil {
+		return nil, err
+	}
+	total := len(out.Errors)
+	out.Errors = pronunciation.GateErrors(out.Errors)
+	var dto responses.RespeakResponse
+	if utils.Map(&dto, out) != nil {
+		logger.Report(ctx, "respeak map failed", common.Internal())
+		return nil, common.Internal()
+	}
+	dto.TotalErrors = total
+	if len(out.Errors) > 0 {
+		dto.Tip = pronunciation.CoachingTip(out.Errors[0].Expected, out.Errors[0].Heard)
+	}
+	slog.InfoContext(ctx, "respeak scored", "score", dto.Score, "errors", len(dto.Errors), "totalErrors", total)
 	return &dto, nil
 }
 

@@ -21,6 +21,7 @@ import { CheckQuestionPanel } from "#/features/lessons/components/check-question
 import { ListeningBriefCard } from "#/features/lessons/components/listening/listening-brief-card";
 import { PartShell } from "#/features/lessons/components/part-shell";
 import { PassagePanel } from "#/features/lessons/components/reading/passage-panel";
+import { MinimalPairsCard } from "#/features/lessons/components/speaking/minimal-pairs-card";
 import { SpeakingActivity } from "#/features/lessons/components/speaking/read-aloud-card";
 import { ModelAnswerCard } from "#/features/lessons/components/writing/model-answer-card";
 import { ScoreCard } from "#/features/lessons/components/writing/score-card";
@@ -641,10 +642,13 @@ function SpeakingBranch({
 	}
 
 	return (
-		<SpeakingActivity
-			activity={activity}
-			attemptId={attemptId}
-			onComplete={handleComplete}
-		/>
+		<div className="flex flex-col gap-4">
+			<SpeakingActivity
+				activity={activity}
+				attemptId={attemptId}
+				onComplete={handleComplete}
+			/>
+			<MinimalPairsCard />
+		</div>
 	);
 }

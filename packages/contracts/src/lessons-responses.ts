@@ -96,6 +96,7 @@ export interface MispronouncedWord {
   heard: string;
   confidence: number /* float64 */;
   phones: PhoneDetail[];
+  tip: string;
 }
 /**
  * Prosody carries the learner's pitch and energy contours, downsampled by
@@ -115,6 +116,7 @@ export interface PronunciationResult {
   wordErrorRate: number /* float64 */;
   acousticDistance: number /* float64 */;
   errors: MispronouncedWord[];
+  totalErrors: number /* int */;
   prosody: Prosody;
   modelCurve: number /* float64 */[];
   learnerCurve: number /* float64 */[];
@@ -309,4 +311,20 @@ export interface LessonProgressSummary {
   lessonId: string;
   status: AttemptStatus;
   completedActivityIds: string[];
+}
+
+//////////
+// source: respeak.go
+
+/**
+ * RespeakResponse is one targeted re-speak score. Nothing is persisted: the
+ * panel shows the gated list plus the pre-gate count, and the top error's
+ * coaching tip travels at the response level because the card does not render
+ * a full word-by-word panel.
+ */
+export interface RespeakResponse {
+  score: number /* float64 */;
+  errors: MispronouncedWord[];
+  totalErrors: number /* int */;
+  tip: string;
 }

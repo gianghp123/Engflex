@@ -119,7 +119,6 @@
       "next": "Next →",
       "scoreLabel": "Pronunciation score",
       "scoreEmpty": "Record the sentence — the score and per-word feedback will appear here.",
-      "coachPrefix": "Fix how you pronounce",
       "coachCorrect": "Nice work — nothing to fix.",
       "coachNone": "No flagged words — work on your rhythm.",
       "heardShort": "heard:",
@@ -131,7 +130,9 @@
       "wordsLabel": "Words",
       "listenSelf": "Listen to yourself",
       "micDenied": "Microphone unavailable. Please allow microphone access and try again.",
-      "uploadFailed": "Upload failed. Please try recording again."
+      "uploadFailed": "Upload failed. Please try recording again.",
+      "coachFlagged": "Fix the highlighted words below.",
+      "showingErrors": "Showing {shown} of {total} — highest confidence"
     },
     "listening": {
       "title": "Listening",
@@ -154,6 +155,25 @@
       "noRunTitle": "No open run yet",
       "noRunBody": "Start a run to begin practicing this lesson.",
       "noRunAction": "Start practicing"
+    },
+    "minimalPairs": {
+      "title": "Minimal pairs",
+      "instruction": "Hear the difference, then repeat one word for a targeted score.",
+      "contrast": "Sound contrast",
+      "pair": "Word pair",
+      "listen": "Listen",
+      "play": "Play a word",
+      "playPrompt": "Play one word, then choose what you heard.",
+      "quizPrompt": "Which word did you hear?",
+      "correct": "Correct!",
+      "incorrect": "Not quite — listen again.",
+      "repeatPrompt": "Choose the word to repeat:",
+      "say": "Say “{word}”",
+      "record": "Record",
+      "stop": "Stop",
+      "retry": "Try again",
+      "scoreEmpty": "Record the word you chose — the score and feedback will appear here.",
+      "error": "Could not score that recording. Try again."
     }
   }
 }
