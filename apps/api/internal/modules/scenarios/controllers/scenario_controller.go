@@ -8,6 +8,7 @@ import (
 
 	"engflex-api/internal/common"
 	"engflex-api/internal/common/enums"
+	"engflex-api/internal/database/models"
 	"engflex-api/internal/modules/scenarios/dtos/requests"
 	"engflex-api/internal/modules/scenarios/dtos/responses"
 	"engflex-api/internal/modules/scenarios/services"
@@ -50,6 +51,11 @@ func (h *ScenarioController) List(c *gin.Context) {
 	}
 	dtos := make([]responses.Scenario, 0, len(items))
 	_ = utils.MapSlice(&dtos, items)
+	for i := range dtos {
+		if i < len(items) {
+			decodeScenarioObjectives(&dtos[i], items[i])
+		}
+	}
 	common.Paginated(c, "scenarios", dtos, page, pageSize, total)
 }
 
@@ -88,6 +94,16 @@ func (h *ScenarioController) TopicsWithPreview(c *gin.Context) {
 	}
 	dtos := make([]responses.ScenarioTopic, 0, len(topics))
 	_ = utils.MapSlice(&dtos, topics)
+	for i := range dtos {
+		if i >= len(topics) {
+			continue
+		}
+		for j := range dtos[i].Scenarios {
+			if j < len(topics[i].Scenarios) {
+				decodeScenarioObjectives(&dtos[i].Scenarios[j], topics[i].Scenarios[j])
+			}
+		}
+	}
 	// Plain array, NOT Paginated: the web reads it with api<T>. Each banner
 	// carries its own scenarios, so the browser renders what it got.
 	common.OK(c, "scenario topics", dtos)
@@ -109,6 +125,7 @@ func (h *ScenarioController) GetByID(c *gin.Context) {
 	}
 	var dto responses.Scenario
 	_ = utils.Map(&dto, m)
+	decodeScenarioObjectives(&dto, m)
 	common.OK(c, "scenario", dto)
 }
 
@@ -134,6 +151,7 @@ func (h *ScenarioController) Create(c *gin.Context) {
 	}
 	var dto responses.Scenario
 	_ = utils.Map(&dto, m)
+	decodeScenarioObjectives(&dto, m)
 	common.Created(c, "scenario created", dto)
 }
 
@@ -160,6 +178,7 @@ func (h *ScenarioController) Update(c *gin.Context) {
 	}
 	var dto responses.Scenario
 	_ = utils.Map(&dto, m)
+	decodeScenarioObjectives(&dto, m)
 	common.OK(c, "scenario updated", dto)
 }
 
@@ -244,4 +263,14 @@ func (h *ScenarioController) DeleteTopic(c *gin.Context) {
 		return
 	}
 	common.OK(c, "scenario topic deleted", nil)
+}
+
+// decodeScenarioObjectives fills the wire list from the model's jsonb blob.
+// Every scenario path calls it after the blanket Map because copier cannot
+// turn datatypes.JSON into a slice.
+func decodeScenarioObjectives(dto *responses.Scenario, m *models.Scenario) {
+	if dto == nil || m == nil {
+		return
+	}
+	dto.DecodeObjectives(m.Objectives)
 }

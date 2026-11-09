@@ -1,5 +1,5 @@
 import type { Scenario, ScenarioDifficulty } from "@engflex/contracts";
-import { Plus } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Badge } from "#/components/ui/badge";
@@ -34,11 +34,25 @@ import { m } from "#/paraglide/messages";
 
 const CEFR_OPTIONS: ScenarioDifficulty[] = ["B1+", "B2", "C1"];
 
+interface ObjectiveFormRow {
+	key: string;
+	label: string;
+	hint: string;
+}
+
+let nextObjectiveKey = 0;
+
+function objectiveRow(label = "", hint = ""): ObjectiveFormRow {
+	nextObjectiveKey += 1;
+	return { key: `objective-${nextObjectiveKey}`, label, hint };
+}
+
 interface ScenarioFormState {
 	topicId: string;
 	personaId: string;
 	title: string;
 	objective: string;
+	objectives: ObjectiveFormRow[];
 	cefrLevel: ScenarioDifficulty;
 	maxDuration: string;
 	role: string;
@@ -57,6 +71,7 @@ const EMPTY_FORM: ScenarioFormState = {
 	personaId: "",
 	title: "",
 	objective: "",
+	objectives: [],
 	cefrLevel: "B1+",
 	maxDuration: "15",
 	role: "",
@@ -109,6 +124,9 @@ export function ScenariosPanel() {
 			personaId: scenario.persona?.id ?? "",
 			title: scenario.title,
 			objective: scenario.objective,
+			objectives: (scenario.objectives ?? []).map(({ label, hint }) =>
+				objectiveRow(label, hint),
+			),
 			cefrLevel: scenario.cefrLevel,
 			maxDuration: String(scenario.maxDuration),
 			role: scenario.details.role ?? "",
@@ -123,6 +141,35 @@ export function ScenariosPanel() {
 		});
 		setError(null);
 		setDialogOpen(true);
+	}
+
+	function addObjective() {
+		setForm((current) =>
+			current.objectives.length >= 3
+				? current
+				: {
+						...current,
+						objectives: [...current.objectives, objectiveRow()],
+					},
+		);
+	}
+
+	function updateObjective(index: number, patch: Partial<ObjectiveFormRow>) {
+		setForm((current) => ({
+			...current,
+			objectives: current.objectives.map((objective, position) =>
+				position === index ? { ...objective, ...patch } : objective,
+			),
+		}));
+	}
+
+	function removeObjective(index: number) {
+		setForm((current) => ({
+			...current,
+			objectives: current.objectives.filter(
+				(_, position) => position !== index,
+			),
+		}));
 	}
 
 	function submit() {
@@ -143,7 +190,12 @@ export function ScenariosPanel() {
 			personaId: form.personaId || undefined,
 			title: form.title.trim(),
 			objective: form.objective,
-			objectives: [],
+			objectives: form.objectives
+				.map((objective) => ({
+					label: objective.label.trim(),
+					hint: objective.hint.trim(),
+				}))
+				.filter((objective) => objective.label.length > 0),
 			cefrLevel: form.cefrLevel,
 			maxDuration: Number(form.maxDuration) || 1,
 			isPremium: form.isPremium,
@@ -176,7 +228,16 @@ export function ScenariosPanel() {
 	function togglePublish(scenario: Scenario) {
 		const nextStatus = scenario.status === "published" ? "draft" : "published";
 		updateMutation.mutate(
-			{ id: scenario.id, payload: { status: nextStatus, objectives: [] } },
+			{
+				id: scenario.id,
+				payload: {
+					status: nextStatus,
+					objectives: (scenario.objectives ?? []).map(({ label, hint }) => ({
+						label,
+						hint,
+					})),
+				},
+			},
 			{
 				onSuccess: () =>
 					toast.success(
@@ -392,6 +453,64 @@ export function ScenariosPanel() {
 							}
 						/>
 					</Field>
+				</div>
+				<div className="flex flex-col gap-2">
+					<div className="flex items-center justify-between gap-2">
+						<div>
+							<FieldLabel>{m["admin.scenarios.objectives.title"]()}</FieldLabel>
+							<p className="text-xs text-muted-foreground">
+								{m["admin.scenarios.objectives.help"]()}
+							</p>
+						</div>
+						<Button
+							type="button"
+							variant="outline"
+							size="sm"
+							disabled={form.objectives.length >= 3}
+							onClick={addObjective}
+						>
+							<Plus data-icon="inline-start" />
+							{m["admin.scenarios.objectives.add"]()}
+						</Button>
+					</div>
+					{form.objectives.map((objective, index) => (
+						<div
+							key={objective.key}
+							className="grid gap-2 sm:grid-cols-[1fr_1fr_auto]"
+						>
+							<Input
+								aria-label={m["admin.scenarios.objectives.labelPlaceholder"]()}
+								placeholder={m["admin.scenarios.objectives.labelPlaceholder"]()}
+								value={objective.label}
+								onChange={(event) =>
+									updateObjective(index, {
+										...objective,
+										label: event.target.value,
+									})
+								}
+							/>
+							<Input
+								aria-label={m["admin.scenarios.objectives.hintPlaceholder"]()}
+								placeholder={m["admin.scenarios.objectives.hintPlaceholder"]()}
+								value={objective.hint}
+								onChange={(event) =>
+									updateObjective(index, {
+										...objective,
+										hint: event.target.value,
+									})
+								}
+							/>
+							<Button
+								type="button"
+								variant="ghost"
+								size="sm"
+								aria-label={m["admin.scenarios.objectives.remove"]()}
+								onClick={() => removeObjective(index)}
+							>
+								<Trash2 />
+							</Button>
+						</div>
+					))}
 				</div>
 				<div className="grid gap-3 sm:grid-cols-2">
 					<Field>

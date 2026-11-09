@@ -2,6 +2,7 @@ package tests
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 	"testing"
 
@@ -421,4 +422,52 @@ func TestScenarioUpdate_PublishesOnExplicitStatus(t *testing.T) {
 	_, err := svc.Update(context.Background(), scenarioID, requests.UpdateScenario{Status: &published})
 
 	require.NoError(t, err)
+}
+
+// Objectives are a full replace when present, server-assigning 1-based ids,
+// and untouched when the request omits them (publish/unpublish sends only
+// status).
+func TestScenarioUpdate_Objectives(t *testing.T) {
+	scenarioID := "3a8b3191-c8a3-5855-8e05-0a268cedac3e"
+	existing := `[{"id":1,"label":"Keep me","hint":""}]`
+
+	t.Run("replace assigns ids", func(t *testing.T) {
+		repo := repomocks.NewMockScenarioRepository(t)
+		repo.On("GetByID", mock.Anything, scenarioID).
+			Return(&models.Scenario{ID: scenarioID, Objectives: []byte(existing)}, nil).Once()
+		repo.On("Update", mock.Anything, mock.MatchedBy(func(m *models.Scenario) bool {
+			var objs []models.ScenarioObjective
+			if err := json.Unmarshal(m.Objectives, &objs); err != nil {
+				return false
+			}
+			return len(objs) == 2 &&
+				objs[0].ID == 1 && objs[0].Label == "Greet" &&
+				objs[1].ID == 2 && objs[1].Label == "Order" && objs[1].Hint == "Ask for one drink"
+		})).Return(nil).Once()
+		svc := services.NewScenarioService(repo, repomocks.NewMockScenarioTopicRepository(t), fakePremiumChecker{})
+
+		_, err := svc.Update(context.Background(), scenarioID, requests.UpdateScenario{
+			Objectives: []requests.ScenarioObjectiveInput{
+				{Label: "Greet"},
+				{Label: "Order", Hint: "Ask for one drink"},
+			},
+		})
+
+		require.NoError(t, err)
+	})
+
+	t.Run("omitted objectives keep the stored value", func(t *testing.T) {
+		repo := repomocks.NewMockScenarioRepository(t)
+		repo.On("GetByID", mock.Anything, scenarioID).
+			Return(&models.Scenario{ID: scenarioID, Objectives: []byte(existing)}, nil).Once()
+		repo.On("Update", mock.Anything, mock.MatchedBy(func(m *models.Scenario) bool {
+			return string(m.Objectives) == existing
+		})).Return(nil).Once()
+		svc := services.NewScenarioService(repo, repomocks.NewMockScenarioTopicRepository(t), fakePremiumChecker{})
+
+		published := enums.PublishStatusPublished
+		_, err := svc.Update(context.Background(), scenarioID, requests.UpdateScenario{Status: &published})
+
+		require.NoError(t, err)
+	})
 }

@@ -96,6 +96,16 @@
         "allStatuses": "Tất cả trạng thái",
         "allPlans": "Tất cả gói"
       }
+    },
+    "scenarios": {
+      "objectives": {
+        "title": "Mục tiêu (tối đa 3)",
+        "help": "Mỗi mục tiêu trở thành một mục trong danh sách kiểm tra của phòng nhập vai.",
+        "add": "Thêm mục tiêu",
+        "labelPlaceholder": "Tên mục tiêu",
+        "hintPlaceholder": "Gợi ý (không bắt buộc)",
+        "remove": "Xóa mục tiêu"
+      }
     }
   }
 }

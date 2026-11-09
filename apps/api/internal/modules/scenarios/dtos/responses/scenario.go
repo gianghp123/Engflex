@@ -1,6 +1,10 @@
 package responses
 
-import "engflex-api/internal/common/enums"
+import (
+	"encoding/json"
+
+	"engflex-api/internal/common/enums"
+)
 
 // Scenario is one roleplay practice card. Field names mirror the model so
 // utils.Map copies everything automatically — including the nested Details
@@ -26,6 +30,21 @@ type ScenarioObjective struct {
 	ID    int    `json:"id"`
 	Label string `json:"label"`
 	Hint  string `json:"hint"`
+}
+
+// DecodeObjectives fills the wire list from the model's jsonb column. copier
+// cannot turn datatypes.JSON (a []byte) into a slice, so every scenario read
+// path calls this after the blanket Map. Empty or malformed blobs yield an
+// empty non-nil list, never a null the web has to null-guard.
+func (s *Scenario) DecodeObjectives(raw []byte) {
+	s.Objectives = []ScenarioObjective{}
+	if len(raw) == 0 {
+		return
+	}
+	var objs []ScenarioObjective
+	if err := json.Unmarshal(raw, &objs); err == nil && objs != nil {
+		s.Objectives = objs
+	}
 }
 
 // ScenarioDetail mirrors models.ScenarioDetail field for field so copier
