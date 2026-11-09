@@ -25,8 +25,8 @@ type AttemptRepository interface {
 	ListLessonAttempts(ctx context.Context, userID string) ([]*models.Attempt, error)
 	ListCompletedVideo(ctx context.Context, userID string, videoExerciseIDs []string) ([]*models.Attempt, error)
 	GetVideoAttempt(ctx context.Context, userID, videoExerciseID string, attemptType enums.AttemptType) (*models.Attempt, error)
-	ListExamAttempts(ctx context.Context, userID string, limit, offset int) ([]*models.Attempt, error)
-	CountExamAttempts(ctx context.Context, userID string) (int64, error)
+	ListExamAttempts(ctx context.Context, userID string, examType enums.ExamType, limit, offset int) ([]*models.Attempt, error)
+	CountExamAttempts(ctx context.Context, userID string, examType enums.ExamType) (int64, error)
 	GetExamAttempt(ctx context.Context, userID, attemptID string) (*models.Attempt, error)
 	WithTx(tx *gorm.DB) AttemptRepository
 }
@@ -44,16 +44,24 @@ func (r *attemptRepository) GetExamStatistics(ctx context.Context, userID string
 	return &stats, err
 }
 
-func (r *attemptRepository) ListExamAttempts(ctx context.Context, userID string, limit, offset int) ([]*models.Attempt, error) {
+func (r *attemptRepository) ListExamAttempts(ctx context.Context, userID string, examType enums.ExamType, limit, offset int) ([]*models.Attempt, error) {
 	var attempts []*models.Attempt
-	err := r.db.WithContext(ctx).Joins("ExamTest.Category", r.db.Omit("Content")).Where("attempts.user_id = ? AND attempts.type = ?", userID, enums.AttemptTypeExam).
+	query := r.db.WithContext(ctx).Joins("ExamTest.Category", r.db.Omit("Content")).Where("attempts.user_id = ? AND attempts.type = ?", userID, enums.AttemptTypeExam)
+	if examType != "" {
+		query = query.Where(`"ExamTest__Category".type = ?`, examType)
+	}
+	err := query.
 		Order("attempts.created_at DESC").Order("attempts.id DESC").Limit(limit).Offset(offset).Find(&attempts).Error
 	return attempts, err
 }
 
-func (r *attemptRepository) CountExamAttempts(ctx context.Context, userID string) (int64, error) {
+func (r *attemptRepository) CountExamAttempts(ctx context.Context, userID string, examType enums.ExamType) (int64, error) {
 	var total int64
-	err := r.db.WithContext(ctx).Model(&models.Attempt{}).Where("user_id = ? AND type = ?", userID, enums.AttemptTypeExam).Count(&total).Error
+	query := r.db.WithContext(ctx).Model(&models.Attempt{}).Where("attempts.user_id = ? AND attempts.type = ?", userID, enums.AttemptTypeExam)
+	if examType != "" {
+		query = query.Joins("ExamTest.Category").Where(`"ExamTest__Category".type = ?`, examType)
+	}
+	err := query.Count(&total).Error
 	return total, err
 }
 

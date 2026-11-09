@@ -13,6 +13,7 @@ type BookmarkRepository interface {
 	ListByUser(ctx context.Context, userID, contentType string) ([]*models.Bookmark, error)
 	Get(ctx context.Context, userID, contentType, contentID string) (*models.Bookmark, error)
 	Create(ctx context.Context, b *models.Bookmark) error
+	UpdateNote(ctx context.Context, userID, contentType, contentID string, note *string) error
 	Delete(ctx context.Context, userID, contentType, contentID string) error
 	WithTx(tx *gorm.DB) BookmarkRepository
 }
@@ -64,6 +65,22 @@ func (r *bookmarkRepository) Delete(ctx context.Context, userID, contentType, co
 		return err
 	}
 	result := r.db.WithContext(ctx).Delete(&models.Bookmark{}, "user_id = ? AND content_type = ? AND content_id = ?", userID, contentType, contentID)
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return gorm.ErrRecordNotFound
+	}
+	return nil
+}
+
+func (r *bookmarkRepository) UpdateNote(ctx context.Context, userID, contentType, contentID string, note *string) error {
+	if _, err := parseID(contentID, "contentId"); err != nil {
+		return err
+	}
+	result := r.db.WithContext(ctx).Model(&models.Bookmark{}).
+		Where("user_id = ? AND content_type = ? AND content_id = ?", userID, contentType, contentID).
+		Update("note", note)
 	if result.Error != nil {
 		return result.Error
 	}

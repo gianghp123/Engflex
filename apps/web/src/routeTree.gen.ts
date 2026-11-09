@@ -29,6 +29,7 @@ import { Route as AdminVocabularyRouteImport } from './routes/admin/vocabulary'
 import { Route as SignInSplatRouteImport } from './routes/sign-in.$'
 import { Route as SignUpSplatRouteImport } from './routes/sign-up.$'
 import { Route as AppLessonsIndexRouteImport } from './routes/_app/lessons/index'
+import { Route as AppNotesIndexRouteImport } from './routes/_app/notes/index'
 import { Route as AppPaymentsPricingRouteImport } from './routes/_app/payments/pricing'
 import { Route as AppStoriesIndexRouteImport } from './routes/_app/stories/index'
 import { Route as AppStoriesSlugRouteImport } from './routes/_app/stories/$slug'
@@ -39,6 +40,7 @@ import { Route as AppVoiceIndexRouteImport } from './routes/_app/voice/index'
 import { Route as AppVoicePreviewRouteImport } from './routes/_app/voice/preview'
 import { Route as ApiMediaSplatRouteImport } from './routes/api/media/$'
 import { Route as AppExamsIeltsIndexRouteImport } from './routes/_app/exams/ielts/index'
+import { Route as AppExamsIeltsHistoryRouteImport } from './routes/_app/exams/ielts/history'
 import { Route as AppExamsToeicIndexRouteImport } from './routes/_app/exams/toeic/index'
 import { Route as AppExamsToeicHistoryRouteImport } from './routes/_app/exams/toeic/history'
 import { Route as AppLessonsSlugIndexRouteImport } from './routes/_app/lessons/$slug/index'
@@ -54,7 +56,11 @@ import { Route as AppVoiceScenariosIndexRouteImport } from './routes/_app/voice/
 import { Route as AppVoiceScenariosScenarioIdRouteImport } from './routes/_app/voice/scenarios/$scenarioId'
 import { Route as ApiVoiceConversationIdOfferRouteImport } from './routes/api/voice/$conversationId/offer'
 import { Route as ApiVoiceConversationIdStartRouteImport } from './routes/api/voice/$conversationId/start'
+import { Route as AppExamsIeltsCategoryIdIndexRouteImport } from './routes/_app/exams/ielts/$categoryId/index'
 import { Route as AppExamsToeicCategoryIdIndexRouteImport } from './routes/_app/exams/toeic/$categoryId/index'
+import { Route as AppExamsIeltsCategoryIdTestIdIndexRouteImport } from './routes/_app/exams/ielts/$categoryId/$testId/index'
+import { Route as AppExamsIeltsSessionIdIndexRouteImport } from './routes/_app/exams/ielts/session/$id/index'
+import { Route as AppExamsIeltsSessionIdResultRouteImport } from './routes/_app/exams/ielts/session/$id/result'
 import { Route as AppExamsToeicCategoryIdTestIdIndexRouteImport } from './routes/_app/exams/toeic/$categoryId/$testId/index'
 import { Route as AppExamsToeicSessionIdIndexRouteImport } from './routes/_app/exams/toeic/session/$id/index'
 import { Route as AppExamsToeicSessionIdResultRouteImport } from './routes/_app/exams/toeic/session/$id/result'
@@ -158,6 +164,11 @@ const AppLessonsIndexRoute = AppLessonsIndexRouteImport.update({
   path: '/lessons/',
   getParentRoute: () => AppRouteRoute,
 } as any)
+const AppNotesIndexRoute = AppNotesIndexRouteImport.update({
+  id: '/notes/',
+  path: '/notes/',
+  getParentRoute: () => AppRouteRoute,
+} as any)
 const AppPaymentsPricingRoute = AppPaymentsPricingRouteImport.update({
   id: '/payments/pricing',
   path: '/payments/pricing',
@@ -206,6 +217,11 @@ const ApiMediaSplatRoute = ApiMediaSplatRouteImport.update({
 const AppExamsIeltsIndexRoute = AppExamsIeltsIndexRouteImport.update({
   id: '/exams/ielts/',
   path: '/exams/ielts/',
+  getParentRoute: () => AppRouteRoute,
+} as any)
+const AppExamsIeltsHistoryRoute = AppExamsIeltsHistoryRouteImport.update({
+  id: '/exams/ielts/history',
+  path: '/exams/ielts/history',
   getParentRoute: () => AppRouteRoute,
 } as any)
 const AppExamsToeicIndexRoute = AppExamsToeicIndexRouteImport.update({
@@ -291,10 +307,34 @@ const ApiVoiceConversationIdStartRoute =
     path: '/api/voice/$conversationId/start',
     getParentRoute: () => rootRouteImport,
   } as any)
+const AppExamsIeltsCategoryIdIndexRoute =
+  AppExamsIeltsCategoryIdIndexRouteImport.update({
+    id: '/exams/ielts/$categoryId/',
+    path: '/exams/ielts/$categoryId/',
+    getParentRoute: () => AppRouteRoute,
+  } as any)
 const AppExamsToeicCategoryIdIndexRoute =
   AppExamsToeicCategoryIdIndexRouteImport.update({
     id: '/exams/toeic/$categoryId/',
     path: '/exams/toeic/$categoryId/',
+    getParentRoute: () => AppRouteRoute,
+  } as any)
+const AppExamsIeltsCategoryIdTestIdIndexRoute =
+  AppExamsIeltsCategoryIdTestIdIndexRouteImport.update({
+    id: '/exams/ielts/$categoryId/$testId/',
+    path: '/exams/ielts/$categoryId/$testId/',
+    getParentRoute: () => AppRouteRoute,
+  } as any)
+const AppExamsIeltsSessionIdIndexRoute =
+  AppExamsIeltsSessionIdIndexRouteImport.update({
+    id: '/exams/ielts/session/$id/',
+    path: '/exams/ielts/session/$id/',
+    getParentRoute: () => AppRouteRoute,
+  } as any)
+const AppExamsIeltsSessionIdResultRoute =
+  AppExamsIeltsSessionIdResultRouteImport.update({
+    id: '/exams/ielts/session/$id/result',
+    path: '/exams/ielts/session/$id/result',
     getParentRoute: () => AppRouteRoute,
   } as any)
 const AppExamsToeicCategoryIdTestIdIndexRoute =
@@ -341,10 +381,12 @@ export interface FileRoutesByFullPath {
   '/voice/preview': typeof AppVoicePreviewRoute
   '/api/media/$': typeof ApiMediaSplatRoute
   '/lessons/': typeof AppLessonsIndexRoute
+  '/notes/': typeof AppNotesIndexRoute
   '/stories/': typeof AppStoriesIndexRoute
   '/videos/': typeof AppVideosIndexRoute
   '/vocabulary/': typeof AppVocabularyIndexRoute
   '/voice/': typeof AppVoiceIndexRoute
+  '/exams/ielts/history': typeof AppExamsIeltsHistoryRoute
   '/exams/toeic/history': typeof AppExamsToeicHistoryRoute
   '/lessons/$slug/practice': typeof AppLessonsSlugPracticeRoute
   '/payments/vnpay/return': typeof AppPaymentsVnpayReturnRoute
@@ -361,8 +403,12 @@ export interface FileRoutesByFullPath {
   '/lessons/$slug/': typeof AppLessonsSlugIndexRoute
   '/voice/history/': typeof AppVoiceHistoryIndexRoute
   '/voice/scenarios/': typeof AppVoiceScenariosIndexRoute
+  '/exams/ielts/$categoryId/': typeof AppExamsIeltsCategoryIdIndexRoute
   '/exams/toeic/$categoryId/': typeof AppExamsToeicCategoryIdIndexRoute
+  '/exams/ielts/session/$id/result': typeof AppExamsIeltsSessionIdResultRoute
   '/exams/toeic/session/$id/result': typeof AppExamsToeicSessionIdResultRoute
+  '/exams/ielts/$categoryId/$testId/': typeof AppExamsIeltsCategoryIdTestIdIndexRoute
+  '/exams/ielts/session/$id/': typeof AppExamsIeltsSessionIdIndexRoute
   '/exams/toeic/$categoryId/$testId/': typeof AppExamsToeicCategoryIdTestIdIndexRoute
   '/exams/toeic/session/$id/': typeof AppExamsToeicSessionIdIndexRoute
 }
@@ -390,10 +436,12 @@ export interface FileRoutesByTo {
   '/voice/preview': typeof AppVoicePreviewRoute
   '/api/media/$': typeof ApiMediaSplatRoute
   '/lessons': typeof AppLessonsIndexRoute
+  '/notes': typeof AppNotesIndexRoute
   '/stories': typeof AppStoriesIndexRoute
   '/videos': typeof AppVideosIndexRoute
   '/vocabulary': typeof AppVocabularyIndexRoute
   '/voice': typeof AppVoiceIndexRoute
+  '/exams/ielts/history': typeof AppExamsIeltsHistoryRoute
   '/exams/toeic/history': typeof AppExamsToeicHistoryRoute
   '/lessons/$slug/practice': typeof AppLessonsSlugPracticeRoute
   '/payments/vnpay/return': typeof AppPaymentsVnpayReturnRoute
@@ -410,8 +458,12 @@ export interface FileRoutesByTo {
   '/lessons/$slug': typeof AppLessonsSlugIndexRoute
   '/voice/history': typeof AppVoiceHistoryIndexRoute
   '/voice/scenarios': typeof AppVoiceScenariosIndexRoute
+  '/exams/ielts/$categoryId': typeof AppExamsIeltsCategoryIdIndexRoute
   '/exams/toeic/$categoryId': typeof AppExamsToeicCategoryIdIndexRoute
+  '/exams/ielts/session/$id/result': typeof AppExamsIeltsSessionIdResultRoute
   '/exams/toeic/session/$id/result': typeof AppExamsToeicSessionIdResultRoute
+  '/exams/ielts/$categoryId/$testId': typeof AppExamsIeltsCategoryIdTestIdIndexRoute
+  '/exams/ielts/session/$id': typeof AppExamsIeltsSessionIdIndexRoute
   '/exams/toeic/$categoryId/$testId': typeof AppExamsToeicCategoryIdTestIdIndexRoute
   '/exams/toeic/session/$id': typeof AppExamsToeicSessionIdIndexRoute
 }
@@ -442,10 +494,12 @@ export interface FileRoutesById {
   '/_app/voice/preview': typeof AppVoicePreviewRoute
   '/api/media/$': typeof ApiMediaSplatRoute
   '/_app/lessons/': typeof AppLessonsIndexRoute
+  '/_app/notes/': typeof AppNotesIndexRoute
   '/_app/stories/': typeof AppStoriesIndexRoute
   '/_app/videos/': typeof AppVideosIndexRoute
   '/_app/vocabulary/': typeof AppVocabularyIndexRoute
   '/_app/voice/': typeof AppVoiceIndexRoute
+  '/_app/exams/ielts/history': typeof AppExamsIeltsHistoryRoute
   '/_app/exams/toeic/history': typeof AppExamsToeicHistoryRoute
   '/_app/lessons/$slug/practice': typeof AppLessonsSlugPracticeRoute
   '/_app/payments/vnpay/return': typeof AppPaymentsVnpayReturnRoute
@@ -462,8 +516,12 @@ export interface FileRoutesById {
   '/_app/lessons/$slug/': typeof AppLessonsSlugIndexRoute
   '/_app/voice/history/': typeof AppVoiceHistoryIndexRoute
   '/_app/voice/scenarios/': typeof AppVoiceScenariosIndexRoute
+  '/_app/exams/ielts/$categoryId/': typeof AppExamsIeltsCategoryIdIndexRoute
   '/_app/exams/toeic/$categoryId/': typeof AppExamsToeicCategoryIdIndexRoute
+  '/_app/exams/ielts/session/$id/result': typeof AppExamsIeltsSessionIdResultRoute
   '/_app/exams/toeic/session/$id/result': typeof AppExamsToeicSessionIdResultRoute
+  '/_app/exams/ielts/$categoryId/$testId/': typeof AppExamsIeltsCategoryIdTestIdIndexRoute
+  '/_app/exams/ielts/session/$id/': typeof AppExamsIeltsSessionIdIndexRoute
   '/_app/exams/toeic/$categoryId/$testId/': typeof AppExamsToeicCategoryIdTestIdIndexRoute
   '/_app/exams/toeic/session/$id/': typeof AppExamsToeicSessionIdIndexRoute
 }
@@ -494,10 +552,12 @@ export interface FileRouteTypes {
     | '/voice/preview'
     | '/api/media/$'
     | '/lessons/'
+    | '/notes/'
     | '/stories/'
     | '/videos/'
     | '/vocabulary/'
     | '/voice/'
+    | '/exams/ielts/history'
     | '/exams/toeic/history'
     | '/lessons/$slug/practice'
     | '/payments/vnpay/return'
@@ -514,8 +574,12 @@ export interface FileRouteTypes {
     | '/lessons/$slug/'
     | '/voice/history/'
     | '/voice/scenarios/'
+    | '/exams/ielts/$categoryId/'
     | '/exams/toeic/$categoryId/'
+    | '/exams/ielts/session/$id/result'
     | '/exams/toeic/session/$id/result'
+    | '/exams/ielts/$categoryId/$testId/'
+    | '/exams/ielts/session/$id/'
     | '/exams/toeic/$categoryId/$testId/'
     | '/exams/toeic/session/$id/'
   fileRoutesByTo: FileRoutesByTo
@@ -543,10 +607,12 @@ export interface FileRouteTypes {
     | '/voice/preview'
     | '/api/media/$'
     | '/lessons'
+    | '/notes'
     | '/stories'
     | '/videos'
     | '/vocabulary'
     | '/voice'
+    | '/exams/ielts/history'
     | '/exams/toeic/history'
     | '/lessons/$slug/practice'
     | '/payments/vnpay/return'
@@ -563,8 +629,12 @@ export interface FileRouteTypes {
     | '/lessons/$slug'
     | '/voice/history'
     | '/voice/scenarios'
+    | '/exams/ielts/$categoryId'
     | '/exams/toeic/$categoryId'
+    | '/exams/ielts/session/$id/result'
     | '/exams/toeic/session/$id/result'
+    | '/exams/ielts/$categoryId/$testId'
+    | '/exams/ielts/session/$id'
     | '/exams/toeic/$categoryId/$testId'
     | '/exams/toeic/session/$id'
   id:
@@ -594,10 +664,12 @@ export interface FileRouteTypes {
     | '/_app/voice/preview'
     | '/api/media/$'
     | '/_app/lessons/'
+    | '/_app/notes/'
     | '/_app/stories/'
     | '/_app/videos/'
     | '/_app/vocabulary/'
     | '/_app/voice/'
+    | '/_app/exams/ielts/history'
     | '/_app/exams/toeic/history'
     | '/_app/lessons/$slug/practice'
     | '/_app/payments/vnpay/return'
@@ -614,8 +686,12 @@ export interface FileRouteTypes {
     | '/_app/lessons/$slug/'
     | '/_app/voice/history/'
     | '/_app/voice/scenarios/'
+    | '/_app/exams/ielts/$categoryId/'
     | '/_app/exams/toeic/$categoryId/'
+    | '/_app/exams/ielts/session/$id/result'
     | '/_app/exams/toeic/session/$id/result'
+    | '/_app/exams/ielts/$categoryId/$testId/'
+    | '/_app/exams/ielts/session/$id/'
     | '/_app/exams/toeic/$categoryId/$testId/'
     | '/_app/exams/toeic/session/$id/'
   fileRoutesById: FileRoutesById
@@ -778,6 +854,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppLessonsIndexRouteImport
       parentRoute: typeof AppRouteRoute
     }
+    '/_app/notes/': {
+      id: '/_app/notes/'
+      path: '/notes'
+      fullPath: '/notes/'
+      preLoaderRoute: typeof AppNotesIndexRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
     '/_app/payments/pricing': {
       id: '/_app/payments/pricing'
       path: '/payments/pricing'
@@ -846,6 +929,13 @@ declare module '@tanstack/react-router' {
       path: '/exams/ielts'
       fullPath: '/exams/ielts/'
       preLoaderRoute: typeof AppExamsIeltsIndexRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/_app/exams/ielts/history': {
+      id: '/_app/exams/ielts/history'
+      path: '/exams/ielts/history'
+      fullPath: '/exams/ielts/history'
+      preLoaderRoute: typeof AppExamsIeltsHistoryRouteImport
       parentRoute: typeof AppRouteRoute
     }
     '/_app/exams/toeic/': {
@@ -953,11 +1043,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiVoiceConversationIdStartRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_app/exams/ielts/$categoryId/': {
+      id: '/_app/exams/ielts/$categoryId/'
+      path: '/exams/ielts/$categoryId'
+      fullPath: '/exams/ielts/$categoryId/'
+      preLoaderRoute: typeof AppExamsIeltsCategoryIdIndexRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
     '/_app/exams/toeic/$categoryId/': {
       id: '/_app/exams/toeic/$categoryId/'
       path: '/exams/toeic/$categoryId'
       fullPath: '/exams/toeic/$categoryId/'
       preLoaderRoute: typeof AppExamsToeicCategoryIdIndexRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/_app/exams/ielts/$categoryId/$testId/': {
+      id: '/_app/exams/ielts/$categoryId/$testId/'
+      path: '/exams/ielts/$categoryId/$testId'
+      fullPath: '/exams/ielts/$categoryId/$testId/'
+      preLoaderRoute: typeof AppExamsIeltsCategoryIdTestIdIndexRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/_app/exams/ielts/session/$id/': {
+      id: '/_app/exams/ielts/session/$id/'
+      path: '/exams/ielts/session/$id'
+      fullPath: '/exams/ielts/session/$id/'
+      preLoaderRoute: typeof AppExamsIeltsSessionIdIndexRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/_app/exams/ielts/session/$id/result': {
+      id: '/_app/exams/ielts/session/$id/result'
+      path: '/exams/ielts/session/$id/result'
+      fullPath: '/exams/ielts/session/$id/result'
+      preLoaderRoute: typeof AppExamsIeltsSessionIdResultRouteImport
       parentRoute: typeof AppRouteRoute
     }
     '/_app/exams/toeic/$categoryId/$testId/': {
@@ -991,10 +1109,12 @@ interface AppRouteRouteChildren {
   AppVocabularyItemIdRoute: typeof AppVocabularyItemIdRoute
   AppVoicePreviewRoute: typeof AppVoicePreviewRoute
   AppLessonsIndexRoute: typeof AppLessonsIndexRoute
+  AppNotesIndexRoute: typeof AppNotesIndexRoute
   AppStoriesIndexRoute: typeof AppStoriesIndexRoute
   AppVideosIndexRoute: typeof AppVideosIndexRoute
   AppVocabularyIndexRoute: typeof AppVocabularyIndexRoute
   AppVoiceIndexRoute: typeof AppVoiceIndexRoute
+  AppExamsIeltsHistoryRoute: typeof AppExamsIeltsHistoryRoute
   AppExamsToeicHistoryRoute: typeof AppExamsToeicHistoryRoute
   AppLessonsSlugPracticeRoute: typeof AppLessonsSlugPracticeRoute
   AppPaymentsVnpayReturnRoute: typeof AppPaymentsVnpayReturnRoute
@@ -1009,8 +1129,12 @@ interface AppRouteRouteChildren {
   AppLessonsSlugIndexRoute: typeof AppLessonsSlugIndexRoute
   AppVoiceHistoryIndexRoute: typeof AppVoiceHistoryIndexRoute
   AppVoiceScenariosIndexRoute: typeof AppVoiceScenariosIndexRoute
+  AppExamsIeltsCategoryIdIndexRoute: typeof AppExamsIeltsCategoryIdIndexRoute
   AppExamsToeicCategoryIdIndexRoute: typeof AppExamsToeicCategoryIdIndexRoute
+  AppExamsIeltsSessionIdResultRoute: typeof AppExamsIeltsSessionIdResultRoute
   AppExamsToeicSessionIdResultRoute: typeof AppExamsToeicSessionIdResultRoute
+  AppExamsIeltsCategoryIdTestIdIndexRoute: typeof AppExamsIeltsCategoryIdTestIdIndexRoute
+  AppExamsIeltsSessionIdIndexRoute: typeof AppExamsIeltsSessionIdIndexRoute
   AppExamsToeicCategoryIdTestIdIndexRoute: typeof AppExamsToeicCategoryIdTestIdIndexRoute
   AppExamsToeicSessionIdIndexRoute: typeof AppExamsToeicSessionIdIndexRoute
 }
@@ -1022,10 +1146,12 @@ const AppRouteRouteChildren: AppRouteRouteChildren = {
   AppVocabularyItemIdRoute: AppVocabularyItemIdRoute,
   AppVoicePreviewRoute: AppVoicePreviewRoute,
   AppLessonsIndexRoute: AppLessonsIndexRoute,
+  AppNotesIndexRoute: AppNotesIndexRoute,
   AppStoriesIndexRoute: AppStoriesIndexRoute,
   AppVideosIndexRoute: AppVideosIndexRoute,
   AppVocabularyIndexRoute: AppVocabularyIndexRoute,
   AppVoiceIndexRoute: AppVoiceIndexRoute,
+  AppExamsIeltsHistoryRoute: AppExamsIeltsHistoryRoute,
   AppExamsToeicHistoryRoute: AppExamsToeicHistoryRoute,
   AppLessonsSlugPracticeRoute: AppLessonsSlugPracticeRoute,
   AppPaymentsVnpayReturnRoute: AppPaymentsVnpayReturnRoute,
@@ -1040,8 +1166,13 @@ const AppRouteRouteChildren: AppRouteRouteChildren = {
   AppLessonsSlugIndexRoute: AppLessonsSlugIndexRoute,
   AppVoiceHistoryIndexRoute: AppVoiceHistoryIndexRoute,
   AppVoiceScenariosIndexRoute: AppVoiceScenariosIndexRoute,
+  AppExamsIeltsCategoryIdIndexRoute: AppExamsIeltsCategoryIdIndexRoute,
   AppExamsToeicCategoryIdIndexRoute: AppExamsToeicCategoryIdIndexRoute,
+  AppExamsIeltsSessionIdResultRoute: AppExamsIeltsSessionIdResultRoute,
   AppExamsToeicSessionIdResultRoute: AppExamsToeicSessionIdResultRoute,
+  AppExamsIeltsCategoryIdTestIdIndexRoute:
+    AppExamsIeltsCategoryIdTestIdIndexRoute,
+  AppExamsIeltsSessionIdIndexRoute: AppExamsIeltsSessionIdIndexRoute,
   AppExamsToeicCategoryIdTestIdIndexRoute:
     AppExamsToeicCategoryIdTestIdIndexRoute,
   AppExamsToeicSessionIdIndexRoute: AppExamsToeicSessionIdIndexRoute,

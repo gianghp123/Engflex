@@ -6,6 +6,9 @@ export const APP_ROUTES = {
 	ABOUT: "/about",
 	PRICING: "/pricing",
 	ONBOARDING: "/onboarding",
+	NOTES: {
+		LIST: "/notes",
+	},
 	LESSONS: {
 		LIST: "/lessons",
 		DETAIL: "/lessons/$slug",
@@ -52,6 +55,11 @@ export const APP_ROUTES = {
 		},
 		IELTS: {
 			LIST: "/exams/ielts",
+			CATEGORY: "/exams/ielts/$categoryId",
+			TEST: "/exams/ielts/$categoryId/$testId",
+			SESSION: "/exams/ielts/session/$id",
+			RESULT: "/exams/ielts/session/$id/result",
+			HISTORY: "/exams/ielts/history",
 		},
 	},
 	/**

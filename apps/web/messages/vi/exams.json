@@ -191,6 +191,62 @@
       }
     },
     "ielts": {
+      "hub": {
+        "title": "Luyện thi IELTS",
+        "description": "Luyện thi IELTS Academic & General Training online với các bộ đề thi thử bám sát đề thi thật. Hỗ trợ đầy đủ kỹ năng Reading và Listening, chấm điểm tự động ra Band Score (0–9), kèm giải thích đáp án chi tiết từng câu.",
+        "historyButton": "Lịch sử làm bài",
+        "filterAll": "Tất cả",
+        "filterAcademic": "Academic",
+        "filterGeneral": "General Training",
+        "filterReading": "Reading",
+        "filterListening": "Listening",
+        "testsCount": "{count} đề thi",
+        "startPractice": "Luyện ngay",
+        "emptyTitle": "Chưa có bộ đề thi nào",
+        "emptyDesc": "Hệ thống đang cập nhật các bộ đề thi IELTS mới nhất. Vui lòng quay lại sau!",
+        "loadFailed": "Không tải được danh mục đề thi IELTS. Vui lòng thử lại.",
+        "retry": "Thử lại"
+      },
+      "category": {
+        "back": "Danh sách bộ đề",
+        "testsListTitle": "DANH SÁCH ĐỀ THI",
+        "questionsCount": "{count} câu hỏi",
+        "durationMinutes": "{count} phút",
+        "viewDetail": "XEM CHI TIẾT",
+        "emptyTitle": "Chưa có đề thi",
+        "emptyDesc": "Bộ đề này hiện chưa có đề thi nào."
+      },
+      "test": {
+        "back": "Quay lại danh sách đề",
+        "skill": "Kỹ năng: {skill}",
+        "subType": "Phân loại: {subType}",
+        "duration": "{count} phút",
+        "questionsCount": "{count} câu hỏi",
+        "sectionsCount": "{count} section",
+        "modePracticeTitle": "Luyện tập từng phần (Practice Mode)",
+        "modePracticeDesc": "Tùy chọn section muốn luyện tập, không tính thời gian làm bài.",
+        "modeExamTitle": "Thi thử tính giờ (Exam Mode)",
+        "modeExamDesc": "Làm đủ tất cả các phần trong thời gian quy định theo chuẩn IELTS.",
+        "selectSections": "Chọn section luyện tập:",
+        "sectionItem": "Section {number}",
+        "startPractice": "BẮT ĐẦU LUYỆN TẬP",
+        "startExam": "BẮT ĐẦU THI THỬ"
+      },
+      "history": {
+        "title": "Lịch sử luyện thi IELTS",
+        "backToHub": "Về trang luyện thi IELTS",
+        "emptyTitle": "Chưa có lượt thi nào",
+        "emptyDesc": "Bạn chưa có bài thi IELTS nào trong lịch sử. Hãy bắt đầu làm bài ngay để đo lường Band Score của bạn!",
+        "emptyAction": "Khám phá đề thi IELTS",
+        "statusInProgress": "Đang làm",
+        "statusCompleted": "Đã hoàn thành",
+        "statusAbandoned": "Đã hủy",
+        "bandScore": "Band {score}",
+        "scoreCount": "{correct}/{total} câu đúng",
+        "viewResult": "Xem kết quả",
+        "continue": "Tiếp tục làm bài",
+        "cancel": "Hủy"
+      },
       "take": {
         "section": "Section {number}",
         "submitButton": "NỘP BÀI",
@@ -221,7 +277,8 @@
         "confirmResetDesc": "Toàn bộ câu trả lời, highlight và thời gian sẽ được thiết lập lại từ đầu.",
         "confirmResetCancel": "Hủy",
         "confirmResetAction": "Xác nhận làm lại",
-        "saved": "Đã tự động lưu bài làm"
+        "saved": "Đã tự động lưu bài làm",
+        "saveFailed": "Chưa xác nhận được thay đổi. Hãy thử lại trước khi rời trang."
       },
       "result": {
         "title": "Kết quả bài thi IELTS Reading",

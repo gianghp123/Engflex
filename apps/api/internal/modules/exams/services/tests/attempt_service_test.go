@@ -30,7 +30,7 @@ func TestStartRejectsInvalidChoices(t *testing.T) {
 		{"empty selection", requests.StartAttempt{Mode: enums.ExamModePractice}},
 		{"duplicate selection", requests.StartAttempt{Mode: enums.ExamModePractice, SelectedParts: []int{1, 1}}},
 		{"out of range", requests.StartAttempt{Mode: enums.ExamModePractice, SelectedParts: []int{8}}},
-		{"incomplete full exam", requests.StartAttempt{Mode: enums.ExamModeExam, SelectedParts: []int{1, 2}}},
+		{"incomplete full exam", requests.StartAttempt{Mode: enums.ExamModeExam, SelectedParts: []int{1}}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -90,6 +90,7 @@ func TestHistoryResultParsing(t *testing.T) {
 		status int
 	}{
 		{"valid summary", `{"revision":2,"answers":[{"questionId":"q1","selectedKey":"A","flagged":false}],"correctCount":1,"accuracyPct":100,"scaledScore":null}`, http.StatusOK},
+		{"legacy summary", `{"revision":2,"answers":[{"questionId":"q1","selectedKey":"A","flagged":false}],"correctCount":1,"accuracyPct":100,"scaledScore":null,"sections":null,"scoringVersion":null}`, http.StatusOK},
 		{"invalid result", `{}`, http.StatusInternalServerError},
 	}
 	for _, tt := range tests {
@@ -97,11 +98,11 @@ func TestHistoryResultParsing(t *testing.T) {
 			repo := repomocks.NewMockAttemptRepository(t)
 			tests := repomocks.NewMockExamTestRepository(t)
 			tx := repomocks.NewMockTransactionManager(t)
-			repo.On("ListExamAttempts", mock.Anything, "owner", 10, 0).Return([]*models.Attempt{{ID: "attempt", Result: datatypes.JSON(tt.raw)}}, nil)
+			repo.On("ListExamAttempts", mock.Anything, "owner", enums.ExamType(""), 10, 0).Return([]*models.Attempt{{ID: "attempt", Result: datatypes.JSON(tt.raw)}}, nil)
 			if tt.status == http.StatusOK {
-				repo.On("CountExamAttempts", mock.Anything, "owner").Return(int64(1), nil)
+				repo.On("CountExamAttempts", mock.Anything, "owner", enums.ExamType("")).Return(int64(1), nil)
 			}
-			got, _, err := services.NewAttemptService(repo, tests, tx).List(context.Background(), "owner", 1, 10)
+			got, _, err := services.NewAttemptService(repo, tests, tx).List(context.Background(), "owner", 1, 10, "")
 			if tt.status != http.StatusOK {
 				var app *common.AppError
 				require.ErrorAs(t, err, &app)
@@ -181,6 +182,130 @@ func TestCancelAttempt(t *testing.T) {
 			} else {
 				repo.AssertNotCalled(t, "SaveExamAttempt", mock.Anything, mock.Anything, mock.Anything)
 			}
+		})
+	}
+}
+
+func TestStartIeltsAttempt(t *testing.T) {
+	ieltsJSON := `{
+		"schemaVersion": "1.0.0",
+		"testId": "ielts-test-1",
+		"title": "IELTS Academic Reading 1",
+		"skill": "reading",
+		"subType": "academic",
+		"sections": [
+			{"sectionNumber": 1, "title": "Passage 1", "passages": [], "questionGroups": [{"id": "g1", "type": "multiple_choice", "questions": [{"id": "q1", "questionNumber": 1, "correctKey": "A"}]}]},
+			{"sectionNumber": 2, "title": "Passage 2", "passages": [], "questionGroups": [{"id": "g2", "type": "multiple_choice", "questions": [{"id": "q2", "questionNumber": 2, "correctKey": "B"}]}]},
+			{"sectionNumber": 3, "title": "Passage 3", "passages": [], "questionGroups": [{"id": "g3", "type": "multiple_choice", "questions": [{"id": "q3", "questionNumber": 3, "correctKey": "C"}]}]}
+		]
+	}`
+
+	skillReading := enums.ExamSkillReading
+	subTypeAcademic := enums.ExamSubTypeAcademic
+	ieltsTest := &models.ExamTest{
+		ID:       "ielts-1",
+		Skill:    &skillReading,
+		SubType:  &subTypeAcademic,
+		Content:  datatypes.JSON(ieltsJSON),
+		Category: &models.ExamCategory{Type: enums.ExamTypeIELTS},
+	}
+
+	tests := []struct {
+		name       string
+		req        requests.StartAttempt
+		wantStatus int
+	}{
+		{
+			name:       "practice mode section 1",
+			req:        requests.StartAttempt{Mode: enums.ExamModePractice, SelectedParts: []int{1}},
+			wantStatus: http.StatusOK,
+		},
+		{
+			name:       "exam mode requires all 3 sections for reading",
+			req:        requests.StartAttempt{Mode: enums.ExamModeExam, SelectedParts: []int{1, 2}},
+			wantStatus: http.StatusBadRequest,
+		},
+		{
+			name:       "exam mode all 3 sections succeeds",
+			req:        requests.StartAttempt{Mode: enums.ExamModeExam, SelectedParts: []int{1, 2, 3}},
+			wantStatus: http.StatusOK,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			attempts := repomocks.NewMockAttemptRepository(t)
+			repo := repomocks.NewMockExamTestRepository(t)
+			transactions := repomocks.NewMockTransactionManager(t)
+			transaction := &gorm.DB{}
+			transactions.On("Run", mock.Anything, mock.Anything).Return(func(_ context.Context, fn func(*gorm.DB) error) error { return fn(transaction) })
+			repo.On("WithTx", transaction).Return(repo)
+			repo.On("GetForUpdate", mock.Anything, "ielts-1").Return(ieltsTest, nil)
+			if tt.wantStatus == http.StatusOK {
+				attempts.On("WithTx", transaction).Return(attempts)
+				attempts.On("Create", mock.Anything, mock.Anything).Return(nil)
+			}
+
+			svc := services.NewAttemptService(attempts, repo, transactions)
+			attempt, err := svc.Start(context.Background(), "user", "ielts-1", tt.req)
+			if tt.wantStatus != http.StatusOK {
+				var appErr *common.AppError
+				require.ErrorAs(t, err, &appErr)
+				require.Equal(t, tt.wantStatus, appErr.Status)
+				return
+			}
+
+			require.NoError(t, err)
+			require.NotNil(t, attempt)
+			require.NotNil(t, attempt.ParsedIeltsResult)
+			require.NotNil(t, attempt.ExamTest.ParsedIeltsContent)
+		})
+	}
+}
+
+func TestIeltsHistoryResultParsing(t *testing.T) {
+	ieltsJSON := `{"revision":2,"answers":[{"questionId":"q1","textValue":"kitchen","flagged":false}],"correctCount":1,"bandScore":6.5}`
+	tests := []struct {
+		name   string
+		raw    string
+		status int
+	}{
+		{"valid ielts summary", ieltsJSON, http.StatusOK},
+		{"corrupt ielts summary", `{}`, http.StatusInternalServerError},
+	}
+
+	skill := enums.ExamSkillReading
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			repo := repomocks.NewMockAttemptRepository(t)
+			tests := repomocks.NewMockExamTestRepository(t)
+			tx := repomocks.NewMockTransactionManager(t)
+			repo.On("ListExamAttempts", mock.Anything, "owner", enums.ExamType(""), 10, 0).Return([]*models.Attempt{
+				{
+					ID:     "attempt-ielts",
+					Result: datatypes.JSON(tt.raw),
+					ExamTest: &models.ExamTest{
+						Skill: &skill,
+						Category: &models.ExamCategory{
+							Type: enums.ExamTypeIELTS,
+						},
+					},
+				},
+			}, nil)
+			if tt.status == http.StatusOK {
+				repo.On("CountExamAttempts", mock.Anything, "owner", enums.ExamType("")).Return(int64(1), nil)
+			}
+			got, _, err := services.NewAttemptService(repo, tests, tx).List(context.Background(), "owner", 1, 10, "")
+			if tt.status != http.StatusOK {
+				var app *common.AppError
+				require.ErrorAs(t, err, &app)
+				require.Equal(t, tt.status, app.Status)
+				return
+			}
+			require.NoError(t, err)
+			require.NotNil(t, got[0].ParsedIeltsResult)
+			require.Equal(t, 1, *got[0].ParsedIeltsResult.CorrectCount)
+			require.Equal(t, 6.5, got[0].ParsedIeltsResult.BandScore)
 		})
 	}
 }

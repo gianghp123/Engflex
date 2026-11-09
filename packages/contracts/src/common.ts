@@ -54,6 +54,14 @@ export interface ListParams {
 }
 
 //////////
+// source: note.go
+
+export const NoteMaxLength = 2000;
+export interface UpdateSavedNote {
+  note?: string;
+}
+
+//////////
 // source: premium.go
 
 /**

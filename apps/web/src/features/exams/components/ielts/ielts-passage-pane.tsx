@@ -30,14 +30,11 @@ export function IeltsPassagePane({
 				"bg-amber-200/90 text-amber-950 dark:bg-amber-400/40 dark:text-amber-100 rounded px-1 py-0.5 transition-colors";
 			range.surroundContents(span);
 			selection.removeAllRanges();
-		} catch {
-			// surroundContents fails if range crosses tag boundaries; safe no-op
-		}
+		} catch {}
 	};
 
 	return (
 		<div className="flex h-full flex-col overflow-hidden border-r border-border/80 bg-background">
-			{/* Header */}
 			<div className="flex h-10 shrink-0 items-center justify-between border-b border-border/70 px-4 bg-muted/30">
 				<div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
 					<Highlighter className="size-3.5 text-amber-500" />
@@ -63,7 +60,6 @@ export function IeltsPassagePane({
 				)}
 			</div>
 
-			{/* Passage Content */}
 			<section
 				ref={containerRef}
 				aria-label={m["exams.ielts.take.passageTitle"]()}

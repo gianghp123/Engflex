@@ -114,10 +114,22 @@ type Answer struct {
 // ParseResult only handles exam attempt JSONB and does not alter the lesson or video parser.
 func ParseResult(raw []byte) (*Result, error) {
 	var result Result
+	// Older TOEIC attempts stored these unused scoring placeholders. Accept
+	// their null values without weakening validation of the result document.
+	document := struct {
+		*Result
+		Sections       json.RawMessage `json:"sections"`
+		ScoringVersion json.RawMessage `json:"scoringVersion"`
+	}{Result: &result}
 	d := json.NewDecoder(bytes.NewReader(raw))
 	d.DisallowUnknownFields()
-	if err := d.Decode(&result); err != nil {
+	if err := d.Decode(&document); err != nil {
 		return nil, fmt.Errorf("decode TOEIC result: %w", err)
+	}
+	for _, legacy := range []json.RawMessage{document.Sections, document.ScoringVersion} {
+		if len(legacy) != 0 && !bytes.Equal(bytes.TrimSpace(legacy), []byte("null")) {
+			return nil, fmt.Errorf("unsupported legacy TOEIC scoring metadata")
+		}
 	}
 	if err := d.Decode(new(any)); err != io.EOF {
 		return nil, fmt.Errorf("invalid trailing result")

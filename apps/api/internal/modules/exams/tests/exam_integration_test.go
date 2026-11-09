@@ -74,7 +74,7 @@ func TestExamPhase2HTTP(t *testing.T) {
 		check                          func(*testing.T, map[string]any, string)
 	}{
 		{"categories", "GET", "/exam-categories?type=toeic", "", "user-a", http.StatusOK, func(t *testing.T, v map[string]any, body string) { require.NotEmpty(t, v["data"]) }},
-		{"bad category type", "GET", "/exam-categories?type=ielts", "", "user-a", http.StatusBadRequest, nil},
+		{"bad category type", "GET", "/exam-categories?type=unknown", "", "user-a", http.StatusBadRequest, nil},
 		{"invalid test id", "GET", "/exam-tests/bad", "", "user-a", http.StatusBadRequest, nil},
 		{"unknown test", "GET", "/exam-tests/" + uuid.NewString(), "", "user-a", http.StatusNotFound, nil},
 		{"test detail metadata", "GET", "/exam-tests/" + test.ID, "", "user-a", http.StatusOK, func(t *testing.T, v map[string]any, body string) {
@@ -264,6 +264,50 @@ func TestExamPhase2HTTP(t *testing.T) {
 				require.NotContains(t, w.Body.String(), "q131")
 			}
 		}
+	})
+	t.Run("IELTS start save submit review and scoped history", func(t *testing.T) {
+		subType := enums.ExamSubTypeAcademic
+		skill := enums.ExamSkillReading
+		category := &models.ExamCategory{Slug: uuid.NewString(), Title: "IELTS fixture", Type: enums.ExamTypeIELTS, SubType: &subType}
+		require.NoError(t, tx.Create(category).Error)
+		exam := &models.ExamTest{
+			CategoryID: category.ID, SourceKey: uuid.NewString(), Slug: uuid.NewString(), Title: "Reading fixture",
+			Skill: &skill, SubType: &subType,
+			Content: datatypes.JSON(`{"schemaVersion":"1","testId":"fixture","title":"Reading fixture","skill":"reading","subType":"academic","sections":[
+				{"sectionNumber":1,"questionGroups":[{"id":"g1","type":"choice","questions":[{"id":"q1","questionNumber":1,"options":[{"key":"YES","text":"Yes"}],"correctKey":"YES"}]}]},
+				{"sectionNumber":2},{"sectionNumber":3}]}`),
+		}
+		require.NoError(t, tx.Create(exam).Error)
+
+		call := func(method, path, payload string, status int) (map[string]any, string) {
+			t.Helper()
+			w := httptest.NewRecorder()
+			req := httptest.NewRequest(method, path, strings.NewReader(payload))
+			req.Header.Set("X-Test-User", "user-a")
+			req.Header.Set("Content-Type", "application/json")
+			r.ServeHTTP(w, req)
+			require.Equal(t, status, w.Code, w.Body.String())
+			var envelope map[string]any
+			require.NoError(t, json.Unmarshal(w.Body.Bytes(), &envelope))
+			return envelope, w.Body.String()
+		}
+		start, body := call(http.MethodPost, "/exam-tests/"+exam.ID+"/attempts", `{"mode":"exam","selectedParts":[1,2,3]}`, http.StatusCreated)
+		require.NotContains(t, body, "correctKey")
+		attempt := start["data"].(map[string]any)
+		path := "/exam-attempts/" + attempt["id"].(string)
+		saved, body := call(http.MethodPatch, path, `{"revision":1,"answers":[{"questionId":"q1","selectedKey":"YES","flagged":true}]}`, http.StatusOK)
+		require.NotContains(t, body, "correctKey")
+		require.EqualValues(t, 2, saved["data"].(map[string]any)["ieltsResult"].(map[string]any)["revision"])
+		finished, _ := call(http.MethodPatch, path, `{"revision":2,"submit":true}`, http.StatusOK)
+		result := finished["data"].(map[string]any)
+		require.Equal(t, "completed", result["status"])
+		require.EqualValues(t, 1, result["ieltsResult"].(map[string]any)["correctCount"])
+		_, body = call(http.MethodGet, path, "", http.StatusOK)
+		require.Contains(t, body, "correctKey")
+		history, _ := call(http.MethodGet, "/exam-attempts?type=ielts", "", http.StatusOK)
+		items := history["data"].([]any)
+		require.Len(t, items, 1)
+		require.Equal(t, attempt["id"], items[0].(map[string]any)["id"])
 	})
 	t.Run("routes require authentication", func(t *testing.T) {
 		real := gin.New()

@@ -60,10 +60,12 @@ export function startExamAttempt(
 export function listExamAttempts(params?: {
 	page?: number;
 	pageSize?: number;
+	type?: ExamType;
 }): Promise<{ items: ExamAttemptSummary[]; pagination: Pagination }> {
 	const query: Record<string, string | number> = {};
 	if (params?.page) query.page = params.page;
 	if (params?.pageSize) query.pageSize = params.pageSize;
+	if (params?.type) query.type = params.type;
 	return apiPage<ExamAttemptSummary>(
 		API_ROUTES.EXAMS.ATTEMPTS.LIST,
 		undefined,

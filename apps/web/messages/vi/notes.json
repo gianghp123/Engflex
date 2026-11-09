@@ -1,0 +1,54 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "notes": {
+    "hub": {
+      "title": "Sổ tay của tôi",
+      "description": "Xem lại các từ vựng, bài học, video và câu chuyện bạn đã bookmark kèm ghi chú cá nhân."
+    },
+    "tabs": {
+      "all": "Tất cả",
+      "vocab": "Từ vựng",
+      "lesson": "Bài học",
+      "video": "Video",
+      "story": "Truyện ngắn"
+    },
+    "search": {
+      "placeholder": "Tìm kiếm theo tiêu đề, từ vựng hoặc ghi chú..."
+    },
+    "stats": {
+      "total": "Mục đã lưu",
+      "withNotes": "Có ghi chú riêng",
+      "vocabCount": "Từ vựng lưu trữ"
+    },
+    "actions": {
+      "flipNote": "Lật xem ghi chú",
+      "flipBack": "Lật mặt trước",
+      "editNote": "Sửa ghi chú",
+      "save": "Lưu thay đổi",
+      "cancel": "Hủy bỏ",
+      "unsave": "Bỏ lưu",
+      "openContent": "Mở nội dung",
+      "bookmark": "Lưu nội dung",
+      "retry": "Thử lại",
+      "clearNote": "Xóa ghi chú",
+      "confirmUnsaveWord": "Bỏ lưu từ này và xóa tiến độ học của từ?"
+    },
+    "card": {
+      "personalNoteLabel": "Ghi chú học tập",
+      "emptyNote": "Chưa có ghi chú riêng. Bấm vào nút sửa bên dưới để ghi chép!",
+      "savedDatePrefix": "Đã lưu:",
+      "unavailable": "Nội dung không còn khả dụng"
+    },
+    "empty": {
+      "title": "Không tìm thấy ghi chú nào",
+      "description": "Thử đổi từ khóa tìm kiếm hoặc chuyển sang tab phân loại khác.",
+      "libraryTitle": "Chưa có nội dung đã lưu",
+      "libraryDescription": "Hãy lưu từ vựng, bài học, video hoặc truyện để xem lại ở đây."
+    },
+    "toast": {
+      "saved": "Đã cập nhật ghi chú thành công",
+      "removed": "Đã xóa mục khỏi danh sách lưu",
+      "error": "Đã xảy ra lỗi. Vui lòng thử lại."
+    }
+  }
+}

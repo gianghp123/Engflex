@@ -5,6 +5,7 @@ import { APP_ROUTES } from "#/app/app-route";
 import { useBreadcrumbs } from "#/app/breadcrumbs";
 import { PageLayout } from "#/components/common/page-layout";
 import { Button } from "#/components/ui/button";
+import { useUpdateSavedNote } from "#/features/bookmarks/queries";
 import { AcousticBreakdownCard } from "#/features/vocabulary/components/acoustic-breakdown-card";
 import { CollocationsGrid } from "#/features/vocabulary/components/collocations-grid";
 import { ContextsSection } from "#/features/vocabulary/components/contexts-section";
@@ -32,6 +33,7 @@ function WordDetailPage() {
 	const { itemId } = Route.useParams();
 	const itemQuery = useVocabularyItemDetail(itemId);
 	const saveState = useSaveUserVocabulary();
+	const updateNote = useUpdateSavedNote();
 
 	if (itemQuery.isError) throw itemQuery.error;
 	const item = itemQuery.data;
@@ -57,20 +59,6 @@ function WordDetailPage() {
 				sourceId: userState.sourceId,
 				note: userState.note,
 				mastered: !userState.mastered,
-			},
-			{ onError: () => toast.error(m["common.toast.error"]()) },
-		);
-	}
-
-	function saveNote(note: string) {
-		if (!userState) return;
-		saveState.mutate(
-			{
-				itemId,
-				sourceType: userState.sourceType,
-				sourceId: userState.sourceId,
-				mastered: userState.mastered,
-				note,
 			},
 			{ onError: () => toast.error(m["common.toast.error"]()) },
 		);
@@ -121,7 +109,10 @@ function WordDetailPage() {
 				<PersonalNoteCard
 					note={item.userState.note}
 					createdAt={item.userState.createdAt}
-					onSave={saveNote}
+					pending={updateNote.isPending}
+					onSave={(note) =>
+						updateNote.mutateAsync({ type: "vocab", id: itemId, note })
+					}
 				/>
 			) : null}
 		</PageLayout>

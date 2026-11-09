@@ -33,7 +33,6 @@ export function IeltsQuestionPalette({
 
 	return (
 		<div className="relative flex h-full">
-			{/* Collapse / Expand Toggle Button on left edge */}
 			<button
 				type="button"
 				onClick={onToggleCollapse}
@@ -51,13 +50,11 @@ export function IeltsQuestionPalette({
 				)}
 			</button>
 
-			{/* Palette Content Panel */}
 			<div
 				className={`flex h-full flex-col border-l border-border/80 bg-card transition-all duration-200 ${
 					isCollapsed ? "w-0 overflow-hidden border-none" : "w-64 md:w-72"
 				}`}
 			>
-				{/* Progress Header */}
 				<div className="flex flex-col gap-2 border-b border-border/70 p-4">
 					<div className="flex items-center justify-between text-xs font-bold text-foreground">
 						<span>{m["exams.ielts.take.progress"]()}</span>
@@ -74,7 +71,6 @@ export function IeltsQuestionPalette({
 					</div>
 				</div>
 
-				{/* Scrollable Questions Groups */}
 				<div className="flex-1 overflow-y-auto p-4 space-y-5 select-none">
 					{groups.map((group) => (
 						<div key={group.sectionNumber} className="flex flex-col gap-2">

@@ -8,3 +8,39 @@ export interface Bookmark {
   contentId: string;
   createdAt: string /* RFC3339 */;
 }
+export interface SavedLibrary {
+  items: SavedItem[];
+  total: number /* int64 */;
+  withNotes: number /* int64 */;
+  vocab: number /* int64 */;
+  lesson: number /* int64 */;
+  video: number /* int64 */;
+  story: number /* int64 */;
+}
+export interface SavedItem {
+  contentType: string;
+  contentId: string;
+  note?: string;
+  createdAt: string /* RFC3339 */;
+  lesson?: SavedLesson;
+  videoExercise?: SavedVideo;
+  story?: SavedStory;
+  vocabularyItem?: SavedVocabularyItem;
+}
+export interface SavedLesson {
+  title: string;
+  slug: string;
+  description: string;
+}
+export interface SavedVideo {
+  title: string;
+  description: string;
+}
+export interface SavedStory {
+  title: string;
+  slug: string;
+}
+export interface SavedVocabularyItem {
+  term: string;
+  definition: string;
+}

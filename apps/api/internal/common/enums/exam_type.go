@@ -5,4 +5,5 @@ type ExamType string
 
 const (
 	ExamTypeTOEIC ExamType = "toeic"
+	ExamTypeIELTS ExamType = "ielts"
 )

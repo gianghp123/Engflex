@@ -17,6 +17,7 @@ type UserVocabularyRepository interface {
 	ListByUser(ctx context.Context, userID string, limit, offset int) ([]*models.UserVocabulary, error)
 	Get(ctx context.Context, userID, itemID string) (*models.UserVocabulary, error)
 	Upsert(ctx context.Context, u *models.UserVocabulary) error
+	UpdateNote(ctx context.Context, userID, itemID string, note *string) error
 	Delete(ctx context.Context, userID, itemID string) error
 	WithTx(tx *gorm.DB) UserVocabularyRepository
 }
@@ -71,6 +72,22 @@ func (r *userVocabularyRepository) Delete(ctx context.Context, userID, itemID st
 		return err
 	}
 	result := r.db.WithContext(ctx).Delete(&models.UserVocabulary{}, "user_id = ? AND item_id = ?", userID, itemID)
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return gorm.ErrRecordNotFound
+	}
+	return nil
+}
+
+func (r *userVocabularyRepository) UpdateNote(ctx context.Context, userID, itemID string, note *string) error {
+	if _, err := parseID(itemID, "itemId"); err != nil {
+		return err
+	}
+	result := r.db.WithContext(ctx).Model(&models.UserVocabulary{}).
+		Where("user_id = ? AND item_id = ?", userID, itemID).
+		Update("note", note)
 	if result.Error != nil {
 		return result.Error
 	}

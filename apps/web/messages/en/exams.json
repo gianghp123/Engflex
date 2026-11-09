@@ -191,6 +191,62 @@
       }
     },
     "ielts": {
+      "hub": {
+        "title": "IELTS Practice",
+        "description": "Practice IELTS Academic & General Training online with realistic exam sets. Supports Reading and Listening skills with automated Band Score grading (0–9) and detailed explanations.",
+        "historyButton": "Exam History",
+        "filterAll": "All",
+        "filterAcademic": "Academic",
+        "filterGeneral": "General Training",
+        "filterReading": "Reading",
+        "filterListening": "Listening",
+        "testsCount": "{count} tests",
+        "startPractice": "Practice now",
+        "emptyTitle": "No exam sets available",
+        "emptyDesc": "The system is updating the latest IELTS test collections. Please check back later!",
+        "loadFailed": "Failed to load IELTS exam collections. Please try again.",
+        "retry": "Retry"
+      },
+      "category": {
+        "back": "All Collections",
+        "testsListTitle": "EXAM TESTS LIST",
+        "questionsCount": "{count} questions",
+        "durationMinutes": "{count} minutes",
+        "viewDetail": "VIEW DETAIL",
+        "emptyTitle": "No tests available",
+        "emptyDesc": "This collection currently has no tests."
+      },
+      "test": {
+        "back": "Back to test list",
+        "skill": "Skill: {skill}",
+        "subType": "Format: {subType}",
+        "duration": "{count} minutes",
+        "questionsCount": "{count} questions",
+        "sectionsCount": "{count} sections",
+        "modePracticeTitle": "Practice Mode",
+        "modePracticeDesc": "Select specific sections to practice without a time limit.",
+        "modeExamTitle": "Full Exam Mode",
+        "modeExamDesc": "Complete all sections within standard IELTS time limits.",
+        "selectSections": "Select sections to practice:",
+        "sectionItem": "Section {number}",
+        "startPractice": "START PRACTICE",
+        "startExam": "START EXAM"
+      },
+      "history": {
+        "title": "IELTS Exam History",
+        "backToHub": "Back to IELTS Hub",
+        "emptyTitle": "No exam attempts yet",
+        "emptyDesc": "You don't have any IELTS attempts in your history. Start a test to measure your Band Score!",
+        "emptyAction": "Explore IELTS tests",
+        "statusInProgress": "In progress",
+        "statusCompleted": "Completed",
+        "statusAbandoned": "Abandoned",
+        "bandScore": "Band {score}",
+        "scoreCount": "{correct}/{total} correct",
+        "viewResult": "View Result",
+        "continue": "Continue Test",
+        "cancel": "Cancel"
+      },
       "take": {
         "section": "Section {number}",
         "submitButton": "SUBMIT",
@@ -221,7 +277,8 @@
         "confirmResetDesc": "All answers, highlights, and the timer will be reset from the beginning.",
         "confirmResetCancel": "Cancel",
         "confirmResetAction": "Reset now",
-        "saved": "Autosaved test progress"
+        "saved": "Autosaved test progress",
+        "saveFailed": "Changes could not be confirmed. Please retry before leaving."
       },
       "result": {
         "title": "IELTS Reading Test Result",

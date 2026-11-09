@@ -9,6 +9,7 @@ export interface IeltsQuestion {
 	type: IeltsQuestionType;
 	prompt?: string;
 	options?: string[];
+	optionKeys?: string[];
 	correctAnswer: string | string[];
 	explanation: string;
 }
