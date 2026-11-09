@@ -140,13 +140,6 @@ packages:
     output_path: "../../packages/contracts/src/exams-responses.ts"
     fallback_type: "unknown"
     optional_type: "null"
-    
-  - path: "engflex-api/internal/modules/videos/dtos/requests"
-    output_path: "../../packages/contracts/src/videos-requests.ts"
-    fallback_type: "unknown"
-  - path: "engflex-api/internal/modules/videos/dtos/responses"
-    output_path: "../../packages/contracts/src/videos-responses.ts"
-    fallback_type: "unknown"
 
   - path: "engflex-api/internal/modules/bookmarks/dtos/requests"
     output_path: "../../packages/contracts/src/bookmarks-requests.ts"
