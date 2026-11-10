@@ -1,26 +1,27 @@
 import type { CEFR } from "@engflex/contracts";
 import { CEFR_VALUES } from "@engflex/contracts";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useEffect, useMemo, useRef } from "react";
 import { APP_ROUTES } from "#/app/app-route";
 import { useBreadcrumbs } from "#/app/breadcrumbs";
 import { CardShell } from "#/components/common/card-shell";
 import { EmptyList } from "#/components/common/empty-list";
 import { MoMascot } from "#/components/common/mo-mascot";
 import { PageLayout } from "#/components/common/page-layout";
-import { Pager } from "#/components/common/pager";
 import { SubmitButton } from "#/components/common/submit-button";
+import { useStoryBookmarks } from "#/features/bookmarks/queries";
 import { SavedStories } from "#/features/stories/components/saved-stories";
 import {
 	StoryCard,
 	StoryCardSkeleton,
 } from "#/features/stories/components/story-card";
 import { StoryFilterBar } from "#/features/stories/components/story-filter-bar";
-import { useStories, useStoryTopics } from "#/features/stories/queries";
+import { useInfiniteStories, useStoryTopics } from "#/features/stories/queries";
 import {
 	STORIES_PAGE_SIZE,
 	type StoriesSearch,
 } from "#/features/stories/types";
-import { parseFilterParam, parsePage } from "#/lib/router/search-params";
+import { parseFilterParam } from "#/lib/router/search-params";
 import { m } from "#/paraglide/messages";
 
 const SKELETON_KEYS = Array.from(
@@ -28,10 +29,14 @@ const SKELETON_KEYS = Array.from(
 	(_, i) => `story-skeleton-${i + 1}`,
 );
 
+const NEXT_PAGE_SKELETON_KEYS = Array.from(
+	{ length: 6 },
+	(_, i) => `story-next-skeleton-${i + 1}`,
+);
+
 export const Route = createFileRoute("/_app/stories/")({
 	validateSearch: (search: Record<string, unknown>): StoriesSearch => ({
 		tab: search.tab === "saved" ? "saved" : undefined,
-		page: parsePage(search.page),
 		cefr: parseFilterParam(CEFR_VALUES, search.cefr),
 		topic:
 			typeof search.topic === "string" && search.topic.trim() !== ""
@@ -50,7 +55,6 @@ function StoriesListPage() {
 	const navigate = useNavigate();
 	const searchParams = Route.useSearch();
 
-	const page = searchParams.page ?? 1;
 	const cefr = searchParams.cefr ?? "all";
 	const selectedCategory = searchParams.topic ?? "all";
 	const search = searchParams.search ?? "";
@@ -58,9 +62,14 @@ function StoriesListPage() {
 	const topicsQuery = useStoryTopics();
 	const categories = topicsQuery.data ?? [];
 
-	const storiesQuery = useStories(
+	const bookmarksQuery = useStoryBookmarks();
+	const savedIds = useMemo(
+		() => new Set((bookmarksQuery.data ?? []).map((b) => b.contentId)),
+		[bookmarksQuery.data],
+	);
+
+	const storiesQuery = useInfiniteStories(
 		{
-			page,
 			pageSize: STORIES_PAGE_SIZE,
 			cefr: cefr === "all" ? undefined : cefr,
 			topic: selectedCategory === "all" ? undefined : selectedCategory,
@@ -69,13 +78,28 @@ function StoriesListPage() {
 		searchParams.tab !== "saved",
 	);
 
-	const items = storiesQuery.data?.items ?? [];
-	const pagination = storiesQuery.data?.pagination;
-	const total = pagination?.total ?? 0;
-	const totalPages = pagination?.totalPages ?? 1;
+	const items = useMemo(
+		() => storiesQuery.data?.pages.flatMap((page) => page.items) ?? [],
+		[storiesQuery.data],
+	);
 
-	const from = total === 0 ? 0 : (page - 1) * STORIES_PAGE_SIZE + 1;
-	const to = Math.min(page * STORIES_PAGE_SIZE, total);
+	const sentinelRef = useRef<HTMLDivElement | null>(null);
+	const { hasNextPage, isFetchingNextPage, fetchNextPage } = storiesQuery;
+
+	useEffect(() => {
+		const node = sentinelRef.current;
+		if (!node || !hasNextPage || isFetchingNextPage) return;
+		const observer = new IntersectionObserver(
+			(entries) => {
+				if (entries[0]?.isIntersecting) {
+					void fetchNextPage();
+				}
+			},
+			{ rootMargin: "200px" },
+		);
+		observer.observe(node);
+		return () => observer.disconnect();
+	}, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
 	function updateSearch(next: Partial<StoriesSearch>) {
 		void navigate({
@@ -83,12 +107,12 @@ function StoriesListPage() {
 			search: {
 				...searchParams,
 				...next,
-				page:
-					next.page !== undefined
-						? next.page <= 1
+				tab:
+					next.tab !== undefined
+						? next.tab === "all"
 							? undefined
-							: next.page
-						: undefined,
+							: next.tab
+						: searchParams.tab,
 			},
 		});
 	}
@@ -96,7 +120,7 @@ function StoriesListPage() {
 	function handleReset() {
 		void navigate({
 			to: APP_ROUTES.STORIES.LIST,
-			search: {},
+			search: searchParams.tab === "saved" ? { tab: "saved" } : {},
 		});
 	}
 
@@ -110,7 +134,7 @@ function StoriesListPage() {
 		>
 			<StoryFilterBar
 				tab={searchParams.tab ?? "all"}
-				onTabChange={(tab) => updateSearch({ tab, page: 1 })}
+				onTabChange={(tab) => updateSearch({ tab })}
 				level={cefr}
 				onLevelChange={(lvl) =>
 					updateSearch({ cefr: lvl === "all" ? undefined : (lvl as CEFR) })
@@ -126,8 +150,8 @@ function StoriesListPage() {
 
 			{searchParams.tab === "saved" ? (
 				<SavedStories
+					key={`${cefr}:${selectedCategory}:${search}`}
 					filters={searchParams}
-					onPageChange={(page) => updateSearch({ page })}
 					onReset={handleReset}
 				/>
 			) : storiesQuery.isError ? (
@@ -146,33 +170,26 @@ function StoriesListPage() {
 						<StoryCardSkeleton key={key} />
 					))}
 				</div>
-			) : total === 0 ? (
+			) : items.length === 0 ? (
 				<EmptyList title={m["stories.empty"]()} onReset={handleReset} />
 			) : (
 				<>
 					<div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
 						{items.map((story) => (
-							<StoryCard key={story.id} story={story} />
+							<StoryCard
+								key={story.id}
+								story={{ ...story, saved: savedIds.has(story.id) }}
+							/>
 						))}
+						{storiesQuery.isFetchingNextPage
+							? NEXT_PAGE_SKELETON_KEYS.map((key) => (
+									<StoryCardSkeleton key={key} />
+								))
+							: null}
 					</div>
-					<Pager
-						page={page}
-						totalPages={totalPages}
-						summary={
-							totalPages > 1
-								? m["stories.showingRange"]({ from, to, total })
-								: m["stories.showingAll"]({ total })
-						}
-						onPageChange={(next) =>
-							void navigate({
-								to: APP_ROUTES.STORIES.LIST,
-								search: {
-									...searchParams,
-									page: next <= 1 ? undefined : next,
-								},
-							})
-						}
-					/>
+					{storiesQuery.hasNextPage ? (
+						<div ref={sentinelRef} className="h-4 w-full" aria-hidden="true" />
+					) : null}
 				</>
 			)}
 		</PageLayout>

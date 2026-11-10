@@ -83,6 +83,7 @@ apps/voice/models/
 !/docs/superpowers/rules/
 !/docs/superpowers/rules/*.md
 /docs/**/*.mjs
+/docs/crawl/study4/
 
 # --- Terraform ---
 .terraform/
