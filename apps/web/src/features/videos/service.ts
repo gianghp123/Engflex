@@ -1,6 +1,4 @@
 import type {
-	AttemptType,
-	CompleteVideoAttempt,
 	ListVideoExercises,
 	SaveVideoProgress,
 	StartVideoAttempt,
@@ -9,7 +7,7 @@ import type {
 	VideoExerciseResponse,
 } from "@engflex/contracts";
 import { API_ROUTES } from "#/app/api-routes";
-import { api, apiPage } from "#/lib/api/api";
+import { ApiError, api, apiPage } from "#/lib/api/api";
 
 export function listCategoryPreviews(
 	previewK: number,
@@ -37,51 +35,49 @@ export function getVideo(id: string): Promise<VideoExerciseResponse> {
 	return api<VideoExerciseResponse>(API_ROUTES.VIDEOS.BY_ID(id));
 }
 
-export function startVideoAttempt(
-	videoId: string,
-	type: AttemptType,
-): Promise<VideoAttemptResponse> {
+export async function getOpenDictationAttempt(videoId: string) {
+	try {
+		return await api<VideoAttemptResponse>(
+			API_ROUTES.VIDEOS.ATTEMPTS.OPEN(videoId),
+			undefined,
+			{ query: { type: "dictation" } },
+		);
+	} catch (error) {
+		if (error instanceof ApiError && error.status === 404) return null;
+		throw error;
+	}
+}
+
+export function startDictationAttempt(videoId: string, level: string) {
 	return api<VideoAttemptResponse>(API_ROUTES.VIDEOS.ATTEMPTS.START(videoId), {
 		method: "POST",
-		body: JSON.stringify({ type } satisfies StartVideoAttempt),
+		body: JSON.stringify({
+			type: "dictation",
+			level,
+		} satisfies StartVideoAttempt),
 	});
 }
 
-export function getOpenVideoAttempt(
-	videoId: string,
-	type: AttemptType,
-): Promise<VideoAttemptResponse> {
-	return api<VideoAttemptResponse>(
-		API_ROUTES.VIDEOS.ATTEMPTS.OPEN(videoId),
-		undefined,
-		{ query: { type } },
-	);
-}
-
-export function saveVideoProgress(
+export function saveDictationProgress(
 	videoId: string,
 	attemptId: string,
-	req: SaveVideoProgress,
-): Promise<VideoAttemptResponse> {
+	progress: SaveVideoProgress,
+) {
 	return api<VideoAttemptResponse>(
 		API_ROUTES.VIDEOS.ATTEMPTS.SAVE_PROGRESS(videoId, attemptId),
 		{
 			method: "PUT",
-			body: JSON.stringify(req),
+			body: JSON.stringify(progress),
 		},
 	);
 }
 
-export function completeVideoAttempt(
-	videoId: string,
-	attemptId: string,
-	req: CompleteVideoAttempt,
-): Promise<VideoAttemptResponse> {
+export function completeDictationAttempt(videoId: string, attemptId: string) {
 	return api<VideoAttemptResponse>(
 		API_ROUTES.VIDEOS.ATTEMPTS.COMPLETE(videoId, attemptId),
 		{
 			method: "POST",
-			body: JSON.stringify(req),
+			body: JSON.stringify({}),
 		},
 	);
 }

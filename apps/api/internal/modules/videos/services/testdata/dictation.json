@@ -1,0 +1,9 @@
+[
+  {"name":"easy spread","content":"One two three four five six seven","level":"easy","draft":"","answers":[" ONE! ","three","five"],"positions":[0,2,4],"complete":true},
+  {"name":"normal repeated","content":"go go go go go","level":"normal","draft":"","answers":["go","no","go"],"positions":[0,1,3],"complete":false},
+  {"name":"single word","content":"Ready?","level":"normal","draft":"","answers":["READY"],"positions":[0],"complete":true},
+  {"name":"hard normalized","content":"Café — don't stop!","level":"hard","draft":" CAFE\u0301  DONT\nstop  ","answers":[],"positions":[0,1,2],"complete":true},
+  {"name":"hard extra","content":"go now","level":"hard","draft":"go now please","answers":[],"positions":[0,1],"complete":false},
+  {"name":"missing word","content":"go now","level":"easy","draft":"","answers":[],"positions":[0],"complete":false},
+  {"name":"punctuation only","content":"… —","level":"hard","draft":"","answers":[],"positions":[],"complete":false}
+]

@@ -19,6 +19,7 @@ export function ToolbarButton({
 			aria-label={label}
 			title={label}
 			onClick={onClick}
+			disabled={!onClick}
 		>
 			<Icon />
 		</Button>
@@ -29,28 +30,47 @@ export function ToolbarButton({
 export function PlayerTools({
 	speed,
 	onSpeed,
+	rates,
+	onSelectSpeed,
 	onSettings,
 	onShortcuts,
 }: {
 	speed: number;
-	onSpeed: () => void;
+	onSpeed?: () => void;
+	rates?: number[];
+	onSelectSpeed?: (speed: number) => void;
 	onSettings: () => void;
 	onShortcuts: () => void;
 }) {
 	return (
 		<div className="flex items-center gap-1">
-			<Button
-				type="button"
-				variant="ghost"
-				size="sm"
-				onClick={onSpeed}
-				aria-label={m["videos.practice.player.speed"]({ speed })}
-				title={m["videos.practice.player.speed"]({ speed })}
-				className="font-bold"
-			>
-				<Zap data-icon="inline-start" />
-				{`${speed}x`}
-			</Button>
+			{rates ? (
+				<select
+					className="field h-8 w-auto"
+					value={speed}
+					aria-label={m["videos.practice.player.speed"]({ speed })}
+					onChange={(event) => onSelectSpeed?.(Number(event.target.value))}
+				>
+					{rates.map((rate) => (
+						<option key={rate} value={rate}>
+							{rate}×
+						</option>
+					))}
+				</select>
+			) : (
+				<Button
+					type="button"
+					variant="ghost"
+					size="sm"
+					onClick={onSpeed}
+					aria-label={m["videos.practice.player.speed"]({ speed })}
+					title={m["videos.practice.player.speed"]({ speed })}
+					className="font-bold"
+				>
+					<Zap data-icon="inline-start" />
+					{`${speed}x`}
+				</Button>
+			)}
 			<ToolbarButton
 				icon={Settings}
 				label={m["videos.practice.player.settings"]()}

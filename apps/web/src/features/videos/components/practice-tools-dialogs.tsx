@@ -18,6 +18,7 @@ export function PracticeToolsDialogs({
 	settings,
 	onChange,
 	onReset,
+	rates = VIDEO_SPEEDS,
 }: {
 	mode: "dictation" | "shadowing";
 	open: "settings" | "shortcuts" | null;
@@ -25,6 +26,7 @@ export function PracticeToolsDialogs({
 	settings: VideoPreferences;
 	onChange: (update: Partial<VideoPreferences>) => void;
 	onReset: () => void;
+	rates?: number[];
 }) {
 	const toggles =
 		mode === "dictation"
@@ -36,6 +38,22 @@ export function PracticeToolsDialogs({
 					{
 						key: "showMedia" as const,
 						label: m["videos.practice.preferences.video"](),
+					},
+					{
+						key: "showTranslation" as const,
+						label: m["videos.dictation.preferences.translation"](),
+					},
+					{
+						key: "showPhonetic" as const,
+						label: m["videos.dictation.preferences.phonetic"](),
+					},
+					{
+						key: "showCorrect" as const,
+						label: m["videos.dictation.preferences.correct"](),
+					},
+					{
+						key: "soundFeedback" as const,
+						label: m["videos.dictation.preferences.sound"](),
 					},
 				]
 			: [
@@ -92,7 +110,7 @@ export function PracticeToolsDialogs({
 								value={settings.speed}
 								onChange={(e) => onChange({ speed: Number(e.target.value) })}
 							>
-								{VIDEO_SPEEDS.map((speed) => (
+								{rates.map((speed) => (
 									<option key={speed} value={speed}>
 										{speed}x
 									</option>
@@ -127,18 +145,6 @@ export function PracticeToolsDialogs({
 							<kbd>Enter / Space</kbd>
 						</dt>
 						<dd>{m["videos.practice.shortcuts.activate"]()}</dd>
-						{mode === "dictation" && (
-							<>
-								<dt>
-									<kbd>Space / Enter</kbd>
-								</dt>
-								<dd>{m["videos.practice.shortcuts.submit"]()}</dd>
-								<dt>
-									<kbd>Backspace</kbd>
-								</dt>
-								<dd>{m["videos.practice.shortcuts.backspace"]()}</dd>
-							</>
-						)}
 						<dt>
 							<kbd>Esc</kbd>
 						</dt>

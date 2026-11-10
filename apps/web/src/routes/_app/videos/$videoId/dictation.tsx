@@ -1,15 +1,8 @@
-import { useAuth } from "@clerk/tanstack-react-start";
 import type {
 	VideoAttemptResponse,
 	VideoExerciseResponse,
 } from "@engflex/contracts";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-	createFileRoute,
-	Link,
-	notFound,
-	useNavigate,
-} from "@tanstack/react-router";
+import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { cn } from "cn";
 import { ArrowLeft, Eye, EyeOff } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -17,7 +10,14 @@ import { APP_ROUTES } from "#/app/app-route";
 import { type CrumbItem, useBreadcrumbs } from "#/app/breadcrumbs";
 import { MoMascot } from "#/components/common/mo-mascot";
 import { PageLayout } from "#/components/common/page-layout";
+import { SubmitButton } from "#/components/common/submit-button";
 import { Button } from "#/components/ui/button";
+import {
+	Dialog,
+	DialogContent,
+	DialogHeader,
+	DialogTitle,
+} from "#/components/ui/dialog";
 import {
 	Empty,
 	EmptyDescription,
@@ -26,28 +26,29 @@ import {
 } from "#/components/ui/empty";
 import { BookmarkButton } from "#/features/bookmarks/bookmark-button";
 import { DictationPanel } from "#/features/videos/components/dictation/dictation-panel";
-import { DictationSummaryDialog } from "#/features/videos/components/dictation/dictation-summary-dialog";
-import type { WordSlotState } from "#/features/videos/components/dictation/dictation-word-input";
+import {
+	DictationNotes,
+	DictationWordResults,
+} from "#/features/videos/components/dictation/dictation-review";
 import { VideoPanel } from "#/features/videos/components/dictation/video-panel";
 import { PracticeToolsDialogs } from "#/features/videos/components/practice-tools-dialogs";
 import { TranscriptPanel } from "#/features/videos/components/transcript-panel";
 import { VideoHubSkeleton } from "#/features/videos/components/video-hub-skeleton";
 import type { YouTubePlayerRef } from "#/features/videos/components/youtube-player";
+import { checkDictation, extractYouTubeId } from "#/features/videos/dictation";
+import { playDictationFeedback } from "#/features/videos/dictation-sound";
 import {
-	cleanWordForComparison,
-	type DictationLevel,
-	extractYouTubeId,
-	splitWords,
-} from "#/features/videos/dictation";
-import {
-	openVideoAttemptQueryOptions,
-	useCompleteVideoAttempt,
-	useSaveVideoProgress,
-	useStartVideoAttempt,
+	useOpenDictationAttempt,
 	videoDetailQueryOptions,
-	videoKeys,
 } from "#/features/videos/queries";
-import { dictationPreferences } from "#/features/videos/store";
+import {
+	DICTATION_SPEEDS,
+	dictationPreferences,
+} from "#/features/videos/store";
+import {
+	type LinePractice,
+	useDictationAttempt,
+} from "#/features/videos/use-dictation-attempt";
 import { m } from "#/paraglide/messages";
 
 export const Route = createFileRoute("/_app/videos/$videoId/dictation")({
@@ -77,54 +78,43 @@ const GRID = {
 	none: "mx-auto w-full max-w-3xl",
 } as const;
 
-const SPEEDS = [0.75, 1, 1.25, 1.5];
-
-interface SentenceProgressState {
-	completed: boolean;
-	wordStates: WordSlotState[];
-}
-
-function parseInitialSentenceStates(
-	transcripts: { id: string }[],
-	result?: VideoAttemptResponse["result"],
-): Record<number, SentenceProgressState> {
-	if (!result?.transcripts) return {};
-	const map: Record<number, SentenceProgressState> = {};
-	transcripts.forEach((t, idx) => {
-		const raw = result.transcripts?.[t.id] as
-			| { completed?: boolean; wordStates?: WordSlotState[] }
-			| undefined;
-		if (raw) {
-			map[idx] = {
-				completed: raw.completed ?? false,
-				wordStates: raw.wordStates ?? [],
-			};
-		}
-	});
-	return map;
-}
+const EMPTY_PRACTICE: LinePractice = {
+	draft: "",
+	revealed: [],
+	completed: false,
+};
 
 function DictationPage() {
 	const video = Route.useLoaderData();
-	const { isLoaded } = useAuth();
+	return <DictationSession key={video.id} video={video} />;
+}
 
-	const openQuery = useQuery({
-		...openVideoAttemptQueryOptions(video?.id ?? "", "dictation"),
-		enabled: isLoaded && !!video?.id,
-	});
-
-	if (!video) return null;
-
-	if (!isLoaded || openQuery.isPending) {
+function DictationSession({ video }: { video: VideoExerciseResponse }) {
+	const hasLines = Boolean(video.transcripts?.length);
+	const attempt = useOpenDictationAttempt(video.id, hasLines);
+	if (
+		hasLines &&
+		(attempt.isPending || (!attempt.isFetchedAfterMount && attempt.isFetching))
+	) {
 		return <DictationPending />;
 	}
-
+	if (hasLines && attempt.isError) {
+		return (
+			<PageLayout>
+				<Empty className="surface-card">
+					<EmptyTitle>{m["videos.dictation.attempt.loadFailed"]()}</EmptyTitle>
+					<SubmitButton
+						pending={attempt.isFetching}
+						onClick={() => void attempt.refetch()}
+					>
+						{m["common.actions.retry"]()}
+					</SubmitButton>
+				</Empty>
+			</PageLayout>
+		);
+	}
 	return (
-		<DictationWorkspace
-			key={video.id}
-			video={video}
-			initialAttempt={openQuery.data ?? null}
-		/>
+		<DictationWorkspace video={video} initialAttempt={attempt.data ?? null} />
 	);
 }
 
@@ -135,17 +125,15 @@ function DictationWorkspace({
 	video: VideoExerciseResponse;
 	initialAttempt: VideoAttemptResponse | null;
 }) {
-	const navigate = useNavigate();
-	const queryClient = useQueryClient();
-	const transcripts = video.transcripts ?? [];
-
 	const playerRef = useRef<YouTubePlayerRef>(null);
+	const submittedSounds = useRef(new Set<string>());
+	const [playing, setPlaying] = useState(false);
+	const [rates, setRates] = useState(DICTATION_SPEEDS);
+	const [detailId, setDetailId] = useState<string | null>(null);
 
-	const [currentAttemptId, setCurrentAttemptId] = useState<string | null>(
-		initialAttempt?.id ?? null,
-	);
 	const [settings, setSettings] = dictationPreferences.usePreferences();
 	const { showMedia, showTranscript, speed } = settings;
+	const isPlaying = showMedia && playing;
 	const setShowMedia = (update: (value: boolean) => boolean) =>
 		setSettings({ showMedia: update(showMedia) });
 	const setShowTranscript = (update: (value: boolean) => boolean) =>
@@ -153,146 +141,27 @@ function DictationWorkspace({
 	const [toolsOpen, setToolsOpen] = useState<"settings" | "shortcuts" | null>(
 		null,
 	);
-	const [level, setLevel] = useState<DictationLevel>(() => {
-		const lvl = initialAttempt?.result?.level;
-		return lvl === "easy" || lvl === "hard" ? lvl : "normal";
-	});
 	useEffect(() => {
 		playerRef.current?.setSpeed(speed);
 	}, [speed]);
 
-	const [activeIndex, setActiveIndex] = useState(() => {
-		const seq = initialAttempt?.result?.activeSequence ?? 0;
-		return seq >= 0 && seq < transcripts.length ? seq : 0;
-	});
-
-	const [sentenceStates, setSentenceStates] = useState<
-		Record<number, SentenceProgressState>
-	>(() => parseInitialSentenceStates(transcripts, initialAttempt?.result));
-
-	const [activeWordIndex, setActiveWordIndex] = useState(() => {
-		const targetWords = splitWords(transcripts[activeIndex]?.content ?? "");
-		const targetState = sentenceStates[activeIndex];
-		if (targetState?.completed) {
-			return targetWords.length;
-		}
-		return targetState?.wordStates?.length ?? 0;
-	});
-
-	const [currentInput, setCurrentInput] = useState("");
-	const [revealed, setRevealed] = useState<number[]>([]);
-	const [showSummary, setShowSummary] = useState(false);
-
-	const startAttempt = useStartVideoAttempt();
-	const saveProgress = useSaveVideoProgress();
-	const completeAttempt = useCompleteVideoAttempt();
-
-	const persistProgress = async (
-		targetIndex: number,
-		statesToSave: Record<number, SentenceProgressState>,
-		currentLevel = level,
-	) => {
-		let attemptId = currentAttemptId;
-		if (!attemptId) {
-			try {
-				const res = await startAttempt.mutateAsync({
-					videoId: video.id,
-					type: "dictation",
-				});
-				attemptId = res.id;
-				setCurrentAttemptId(res.id);
-			} catch {
-				return;
-			}
-		}
-
-		const transcriptsPayload: Record<string, unknown> = {};
-		const completedIds: string[] = [];
-		transcripts.forEach((t, idx) => {
-			const st = statesToSave[idx];
-			if (st) {
-				transcriptsPayload[t.id] = {
-					completed: st.completed,
-					wordStates: st.wordStates,
-				};
-				if (st.completed) completedIds.push(t.id);
-			}
-		});
-
-		try {
-			await saveProgress.mutateAsync({
-				videoId: video.id,
-				attemptId,
-				req: {
-					activeSequence: targetIndex,
-					activeTranscriptId: transcripts[targetIndex]?.id,
-					level: currentLevel,
-					completedTranscriptIds: completedIds,
-					transcripts: transcriptsPayload,
-				},
-			});
-		} catch {}
-	};
-
-	const completedCount = Object.values(sentenceStates).filter(
-		(s) => s.completed,
-	).length;
-	const overallProgress =
-		transcripts.length > 0 ? (completedCount / transcripts.length) * 100 : 0;
-
-	let totalWordsInLesson = 0;
-	let totalCorrectWords = 0;
-	for (let i = 0; i < transcripts.length; i++) {
-		const sentenceWords = splitWords(transcripts[i]?.content ?? "");
-		totalWordsInLesson += sentenceWords.length;
-		const st = sentenceStates[i];
-		if (st) {
-			totalCorrectWords += st.wordStates.filter(
-				(ws) => ws.status === "correct",
-			).length;
-		}
-	}
-	const totalIncorrectWords = Math.max(
-		0,
-		totalWordsInLesson - totalCorrectWords,
-	);
-	const overallAccuracy =
-		totalWordsInLesson > 0 ? (totalCorrectWords / totalWordsInLesson) * 100 : 0;
-
-	const handleFinish = async () => {
-		setShowSummary(true);
-		let attemptId = currentAttemptId;
-		if (!attemptId) {
-			try {
-				const res = await startAttempt.mutateAsync({
-					videoId: video.id,
-					type: "dictation",
-				});
-				attemptId = res.id;
-				setCurrentAttemptId(res.id);
-			} catch {
-				return;
-			}
-		}
-
-		await persistProgress(activeIndex, sentenceStates);
-
-		try {
-			await completeAttempt.mutateAsync({
-				videoId: video.id,
-				attemptId,
-				req: {
-					score: Math.round(overallAccuracy),
-				},
-			});
-			void queryClient.invalidateQueries({
-				queryKey: videoKeys.detail(video.id),
-			});
-			void queryClient.invalidateQueries({
-				queryKey: videoKeys.all,
-			});
-		} catch {}
-	};
+	const {
+		activeIndex,
+		lines: transcripts,
+		level,
+		levelLocked,
+		setLevel,
+		finished,
+		score,
+		restart,
+		setActiveIndex,
+		practice,
+		setPractice,
+		completedCount,
+		isSaving,
+		saveFailed,
+		retrySave,
+	} = useDictationAttempt(video, initialAttempt);
 
 	const crumbs: CrumbItem[] = [
 		{ label: m["nav.item.videos"](), to: APP_ROUTES.VIDEOS.LIST },
@@ -331,37 +200,72 @@ function DictationWorkspace({
 		);
 	}
 
-	const currentLine = transcripts[activeIndex];
-	const words = splitWords(currentLine?.content ?? "");
-	const currentSentenceState = sentenceStates[activeIndex] ?? {
-		completed: false,
-		wordStates: [],
+	const currentLine = transcripts[activeIndex] ?? transcripts[0];
+	const currentPractice = practice[currentLine.id] ?? EMPTY_PRACTICE;
+	const currentCheck = checkDictation(
+		currentLine.content,
+		currentPractice.draft,
+		level,
+		currentPractice.answers,
+	);
+	const detailsIndex = transcripts.findIndex((line) => line.id === detailId);
+	const detailLine = transcripts[detailsIndex];
+	const detailPractice = detailLine ? practice[detailLine.id] : undefined;
+	const progress = (completedCount / transcripts.length) * 100;
+	const updatePractice = (next: LinePractice) => {
+		if (currentPractice.completed) return;
+		setPractice((previous) => ({
+			...previous,
+			[currentLine.id]: next,
+		}));
+		if (
+			next.completed &&
+			settings.soundFeedback &&
+			!submittedSounds.current.has(currentLine.id)
+		) {
+			submittedSounds.current.add(currentLine.id);
+			playDictationFeedback(Boolean(next.revealAll || next.revealed.length));
+		}
 	};
-	const isSentenceCompleted = currentSentenceState.completed;
-
+	const updateAnswer = (answer: Pick<LinePractice, "draft" | "answers">) => {
+		const completed = checkDictation(
+			currentLine.content,
+			answer.draft,
+			level,
+			answer.answers,
+		).complete;
+		updatePractice({ ...currentPractice, ...answer, completed });
+	};
+	const revealAll = () => {
+		const remaining = currentCheck.slots.filter(
+			(slot) => slot.blankIndex !== undefined && slot.status !== "correct",
+		);
+		updatePractice({
+			...currentPractice,
+			revealed: [
+				...new Set([
+					...currentPractice.revealed,
+					...remaining.map((slot) => slot.position),
+				]),
+			],
+			revealAll: true,
+			completed: true,
+		});
+	};
 	const youtubeId = extractYouTubeId(video.videoUrl);
 
 	const handlePlayerReady = () => {
-		playerRef.current?.setSpeed(speed);
-		if (activeIndex > 0 && currentLine) {
-			playerRef.current?.seekTo(currentLine.startTimestamp);
-		}
+		const supported = playerRef.current?.getAvailableRates() ?? [];
+		const available = DICTATION_SPEEDS.filter((rate) =>
+			supported.includes(rate),
+		);
+		setRates(available.length ? available : [1]);
+		playerRef.current?.setSpeed(available.includes(speed) ? speed : 1);
+		playerRef.current?.seekTo(currentLine.startTimestamp);
 	};
 
 	const selectLine = (newIndex: number) => {
 		setActiveIndex(newIndex);
-		const targetState = sentenceStates[newIndex];
-		const targetWords = splitWords(transcripts[newIndex]?.content ?? "");
-		if (targetState?.completed) {
-			setActiveWordIndex(targetWords.length);
-			setCurrentInput("");
-		} else {
-			const existing = targetState?.wordStates ?? [];
-			setActiveWordIndex(existing.length);
-			setCurrentInput("");
-		}
-		setRevealed([]);
-
 		const targetLine = transcripts[newIndex];
 		if (targetLine) {
 			playerRef.current?.playSegment(
@@ -369,14 +273,11 @@ function DictationWorkspace({
 				targetLine.endTimestamp,
 			);
 		}
-		void persistProgress(newIndex, sentenceStates);
 	};
 
 	const handleNextSentence = () => {
 		if (activeIndex < transcripts.length - 1) {
 			selectLine(activeIndex + 1);
-		} else {
-			void handleFinish();
 		}
 	};
 
@@ -387,13 +288,15 @@ function DictationWorkspace({
 	};
 
 	const handlePlaySentence = () => {
-		if (!currentLine) return;
-		const current = playerRef.current?.getCurrentTime() ?? 0;
-		if (current >= currentLine.endTimestamp - 0.3) {
-			handleNextSentence();
+		if (isPlaying) {
+			playerRef.current?.pause();
 			return;
 		}
-		if (current < currentLine.startTimestamp - 0.5) {
+		const current = playerRef.current?.getCurrentTime() ?? 0;
+		if (
+			current >= currentLine.endTimestamp - 0.1 ||
+			current < currentLine.startTimestamp
+		) {
 			playerRef.current?.playSegment(
 				currentLine.startTimestamp,
 				currentLine.endTimestamp,
@@ -411,164 +314,7 @@ function DictationWorkspace({
 		);
 	};
 
-	const handleSpeedCycle = () => {
-		const nextIndex = (SPEEDS.indexOf(speed) + 1) % SPEEDS.length;
-		const nextSpeed = SPEEDS[nextIndex];
-		setSettings({ speed: nextSpeed });
-		playerRef.current?.setSpeed(nextSpeed);
-	};
-
-	const handleWordSubmit = (wordText: string) => {
-		if (isSentenceCompleted || activeWordIndex >= words.length) return;
-		const targetWord = words[activeWordIndex];
-		const isCorrect =
-			cleanWordForComparison(wordText) === cleanWordForComparison(targetWord);
-
-		const updatedWordStates = [...currentSentenceState.wordStates];
-		updatedWordStates[activeWordIndex] = {
-			status: isCorrect ? "correct" : "incorrect",
-			input: wordText,
-		};
-
-		const nextWordIdx = activeWordIndex + 1;
-		const done = nextWordIdx >= words.length;
-
-		const nextStates = {
-			...sentenceStates,
-			[activeIndex]: {
-				completed: done,
-				wordStates: updatedWordStates,
-			},
-		};
-
-		setSentenceStates(nextStates);
-		setActiveWordIndex(nextWordIdx);
-		setCurrentInput("");
-
-		if (done) {
-			void persistProgress(activeIndex, nextStates);
-		}
-	};
-
-	const handleWordBackspace = () => {
-		if (isSentenceCompleted || activeWordIndex <= 0) return;
-		const prevIdx = activeWordIndex - 1;
-		const prevInput = currentSentenceState.wordStates[prevIdx]?.input ?? "";
-
-		const updatedWordStates = [...currentSentenceState.wordStates];
-		updatedWordStates[prevIdx] = { status: "pending", input: "" };
-
-		setSentenceStates((prev) => ({
-			...prev,
-			[activeIndex]: {
-				completed: false,
-				wordStates: updatedWordStates,
-			},
-		}));
-
-		setActiveWordIndex(prevIdx);
-		setCurrentInput(prevInput);
-	};
-
-	const handleResetSentence = () => {
-		const nextStates = {
-			...sentenceStates,
-			[activeIndex]: { completed: false, wordStates: [] },
-		};
-		setSentenceStates(nextStates);
-		setActiveWordIndex(0);
-		setCurrentInput("");
-		setRevealed([]);
-		handlePlaySentence();
-		void persistProgress(activeIndex, nextStates);
-	};
-
-	const handleReveal = (index: number) => {
-		if (isSentenceCompleted) return;
-		setRevealed((curr) =>
-			curr.includes(index) ? curr.filter((i) => i !== index) : [...curr, index],
-		);
-
-		const targetWord = words[index];
-		const updatedWordStates = [...currentSentenceState.wordStates];
-		updatedWordStates[index] = {
-			status: "incorrect",
-			input: targetWord,
-		};
-
-		let nextIdx = activeWordIndex;
-		if (index === activeWordIndex) {
-			nextIdx = activeWordIndex + 1;
-		}
-
-		const done = nextIdx >= words.length;
-
-		const nextStates = {
-			...sentenceStates,
-			[activeIndex]: {
-				completed: done,
-				wordStates: updatedWordStates,
-			},
-		};
-
-		setSentenceStates(nextStates);
-		setActiveWordIndex(nextIdx);
-		setCurrentInput("");
-
-		if (done) {
-			void persistProgress(activeIndex, nextStates);
-		}
-	};
-
-	const handleRevealAll = () => {
-		if (isSentenceCompleted) return;
-		setRevealed(words.map((_, i) => i));
-
-		const updatedWordStates = words.map((w, i) => {
-			const existing = currentSentenceState.wordStates[i];
-			if (existing && existing.status === "correct") return existing;
-			return { status: "incorrect" as const, input: w };
-		});
-
-		const nextStates = {
-			...sentenceStates,
-			[activeIndex]: {
-				completed: true,
-				wordStates: updatedWordStates,
-			},
-		};
-
-		setSentenceStates(nextStates);
-		setActiveWordIndex(words.length);
-		setCurrentInput("");
-		void persistProgress(activeIndex, nextStates);
-	};
-
-	const handleRestart = async () => {
-		setSentenceStates({});
-		setActiveIndex(0);
-		setActiveWordIndex(0);
-		setCurrentInput("");
-		setRevealed([]);
-		setShowSummary(false);
-		setCurrentAttemptId(null);
-		const firstLine = transcripts[0];
-		if (firstLine) {
-			playerRef.current?.seekTo(firstLine.startTimestamp);
-		}
-		try {
-			const res = await startAttempt.mutateAsync({
-				videoId: video.id,
-				type: "dictation",
-			});
-			setCurrentAttemptId(res.id);
-		} catch {}
-	};
-
-	const handleLevelChange = (newLevel: DictationLevel) => {
-		setLevel(newLevel);
-		void persistProgress(activeIndex, sentenceStates, newLevel);
-	};
+	const effectiveSpeed = rates.includes(speed) ? speed : 1;
 
 	const layout =
 		showMedia && showTranscript
@@ -581,13 +327,57 @@ function DictationWorkspace({
 
 	return (
 		<PageLayout>
+			{finished ? (
+				<div className="surface-card flex flex-wrap items-center gap-3 p-3">
+					<output>
+						{score == null
+							? m["videos.dictation.review.noScore"]()
+							: m["videos.dictation.review.finalScore"]({ score })}
+					</output>
+					<span>
+						{m["videos.dictation.review.hintCount"]({
+							count: Object.values(practice).reduce(
+								(total, state) => total + state.revealed.length,
+								0,
+							),
+						})}
+					</span>
+					<Button
+						type="button"
+						variant="outline"
+						onClick={() => {
+							restart();
+							submittedSounds.current.clear();
+							setDetailId(null);
+							playerRef.current?.pause();
+							playerRef.current?.seekTo(transcripts[0].startTimestamp);
+						}}
+					>
+						{m["videos.dictation.review.restart"]()}
+					</Button>
+				</div>
+			) : null}
+			{saveFailed ? (
+				<div className="flex flex-wrap items-center justify-end gap-2">
+					<span role="alert">{m["videos.dictation.attempt.saveFailed"]()}</span>
+					<SubmitButton pending={isSaving} onClick={retrySave}>
+						{m["common.actions.retry"]()}
+					</SubmitButton>
+				</div>
+			) : null}
 			<div className="flex flex-wrap items-center justify-end gap-2">
+				<output className="text-sm text-muted-foreground">
+					{isSaving ? m["videos.dictation.attempt.saving"]() : null}
+				</output>
 				<BookmarkButton type="video" id={video.id} />
 				<Button
 					type="button"
 					variant="outline"
 					aria-pressed={!showMedia}
-					onClick={() => setShowMedia((value) => !value)}
+					onClick={() => {
+						setPlaying(false);
+						setShowMedia((value) => !value);
+					}}
 					className="btn btn-outline"
 				>
 					{showMedia ? (
@@ -634,55 +424,111 @@ function DictationWorkspace({
 						onPlayerReady={handlePlayerReady}
 						onStart={handlePlaySentence}
 						onReplay={handleReplaySentence}
-						onPlayPastEnd={handleNextSentence}
+						onPlayingChange={setPlaying}
+						onRateChange={(rate) => {
+							if (DICTATION_SPEEDS.includes(rate)) setSettings({ speed: rate });
+						}}
+						isPlaying={isPlaying}
 					/>
 				) : null}
 
 				<DictationPanel
+					key={`${currentLine.id}:${level}`}
+					slots={currentCheck.slots}
+					{...currentPractice}
 					level={level}
-					onLevelChange={handleLevelChange}
-					speed={speed}
-					words={words}
-					revealed={revealed}
-					wordStates={currentSentenceState.wordStates}
-					activeWordIndex={activeWordIndex}
-					currentInput={currentInput}
-					isCompleted={isSentenceCompleted}
-					onInputChange={setCurrentInput}
-					onWordSubmit={handleWordSubmit}
-					onWordBackspace={handleWordBackspace}
-					onEnterPress={handleNextSentence}
-					onResetSentence={handleResetSentence}
-					onReveal={handleReveal}
-					onRevealAll={handleRevealAll}
-					onPrev={handlePrevSentence}
-					onNextSentence={handleNextSentence}
-					onNext={handleNextSentence}
+					levelLocked={levelLocked}
+					onLevel={setLevel}
+					showCorrect={settings.showCorrect}
+					isPlaying={isPlaying}
+					onDraftChange={(draft) => updateAnswer({ draft })}
+					onAnswers={(answers) => updateAnswer({ draft: "", answers })}
+					onRevealAll={revealAll}
+					onReveal={(positions) =>
+						updatePractice({
+							...currentPractice,
+							revealed: [
+								...new Set([...currentPractice.revealed, ...positions]),
+							],
+						})
+					}
+					speed={effectiveSpeed}
+					rates={rates}
+					onPrev={activeIndex > 0 ? handlePrevSentence : undefined}
+					onNextSentence={
+						activeIndex < transcripts.length - 1
+							? handleNextSentence
+							: undefined
+					}
 					onPlaySentence={handlePlaySentence}
 					onReplaySentence={handleReplaySentence}
-					onSpeed={handleSpeedCycle}
+					onSpeed={(rate) => setSettings({ speed: rate })}
 					onSettings={() => setToolsOpen("settings")}
 					onShortcuts={() => setToolsOpen("shortcuts")}
-				/>
+				>
+					{currentPractice.completed ? (
+						<DictationNotes
+							line={currentLine}
+							translation={settings.showTranslation}
+							phonetic={settings.showPhonetic}
+						/>
+					) : null}
+				</DictationPanel>
 
 				{showTranscript ? (
 					<TranscriptPanel
 						transcripts={transcripts}
 						activeIndex={activeIndex}
-						progress={overallProgress}
+						progress={progress}
 						onSelect={selectLine}
+						dictationStatus={(id) => ({
+							submitted: practice[id]?.completed ?? false,
+							hinted: Boolean(practice[id]?.revealed.length),
+							earned: practice[id]?.earned,
+							total: practice[id]?.total,
+						})}
+						onDetails={(index) => setDetailId(transcripts[index].id)}
 					/>
 				) : null}
 			</div>
 
-			<DictationSummaryDialog
-				open={showSummary}
-				accuracy={overallAccuracy}
-				correctWords={totalCorrectWords}
-				incorrectWords={totalIncorrectWords}
-				onRestart={handleRestart}
-				onBackToHub={() => navigate({ to: APP_ROUTES.VIDEOS.LIST })}
-			/>
+			<Dialog
+				open={Boolean(detailLine && detailPractice?.completed)}
+				onOpenChange={(open) => {
+					if (!open) setDetailId(null);
+				}}
+			>
+				<DialogContent>
+					<DialogHeader>
+						<DialogTitle>{m["videos.dictation.review.details"]()}</DialogTitle>
+					</DialogHeader>
+					{detailLine && detailPractice ? (
+						<>
+							<DictationWordResults
+								slots={checkDictation(detailLine.content, "", level).slots}
+								revealed={detailPractice.revealed}
+								scored={detailPractice.total !== undefined}
+							/>
+							<DictationNotes
+								line={detailLine}
+								translation={settings.showTranslation}
+								phonetic={settings.showPhonetic}
+							/>
+							<Button
+								type="button"
+								disabled={!showMedia || !youtubeId}
+								onClick={() => {
+									setDetailId(null);
+									selectLine(detailsIndex);
+								}}
+							>
+								{m["videos.practice.player.replay"]()}
+							</Button>
+						</>
+					) : null}
+				</DialogContent>
+			</Dialog>
+
 			<PracticeToolsDialogs
 				mode="dictation"
 				open={toolsOpen}
@@ -690,6 +536,7 @@ function DictationWorkspace({
 				settings={settings}
 				onChange={setSettings}
 				onReset={dictationPreferences.reset}
+				rates={rates}
 			/>
 		</PageLayout>
 	);

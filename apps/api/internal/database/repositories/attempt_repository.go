@@ -25,6 +25,7 @@ type AttemptRepository interface {
 	ListLessonAttempts(ctx context.Context, userID string) ([]*models.Attempt, error)
 	ListCompletedVideo(ctx context.Context, userID string, videoExerciseIDs []string) ([]*models.Attempt, error)
 	GetVideoAttempt(ctx context.Context, userID, videoExerciseID string, attemptType enums.AttemptType) (*models.Attempt, error)
+	GetVideoAttemptForUpdate(ctx context.Context, userID, videoExerciseID, attemptID string) (*models.Attempt, error)
 	ListExamAttempts(ctx context.Context, userID string, examType enums.ExamType, limit, offset int) ([]*models.Attempt, error)
 	CountExamAttempts(ctx context.Context, userID string, examType enums.ExamType) (int64, error)
 	GetExamAttempt(ctx context.Context, userID, attemptID string) (*models.Attempt, error)
@@ -165,6 +166,18 @@ func (r *attemptRepository) GetVideoAttempt(ctx context.Context, userID, videoEx
 		return nil, err
 	}
 	return &m, nil
+}
+
+func (r *attemptRepository) GetVideoAttemptForUpdate(ctx context.Context, userID, videoExerciseID, attemptID string) (*models.Attempt, error) {
+	var attempt models.Attempt
+	err := r.db.WithContext(ctx).Clauses(clause.Locking{Strength: "UPDATE"}).
+		Where("id = ? AND user_id = ? AND video_exercise_id = ? AND type IN ?", attemptID, userID, videoExerciseID,
+			[]enums.AttemptType{enums.AttemptTypeDictation, enums.AttemptTypeShadowing}).
+		First(&attempt).Error
+	if err != nil {
+		return nil, err
+	}
+	return &attempt, nil
 }
 
 func (r *attemptRepository) GetExamAttemptForUpdate(ctx context.Context, userID, attemptID string) (*models.Attempt, error) {
