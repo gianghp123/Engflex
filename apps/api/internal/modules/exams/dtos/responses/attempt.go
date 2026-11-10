@@ -77,15 +77,15 @@ type ExamAttempt struct {
 	ParsedIeltsResult *Result             `json:"ieltsResult,omitempty"`
 }
 type TakingTest struct {
-	ID                 string                `json:"id"`
-	CategoryID         string                `json:"categoryId"`
-	Slug               string                `json:"slug"`
-	Title              string                `json:"title"`
-	Skill              *enums.ExamSkill      `json:"skill,omitempty"`
-	SubType            *enums.ExamSubType    `json:"subType,omitempty"`
-	Category           *CategoryReference    `json:"category"`
-	ParsedContent      *TakingContent        `json:"content,omitempty"`
-	ParsedIeltsContent *IeltsTakingContent   `json:"ieltsContent,omitempty"`
+	ID                 string              `json:"id"`
+	CategoryID         string              `json:"categoryId"`
+	Slug               string              `json:"slug"`
+	Title              string              `json:"title"`
+	Skill              *enums.ExamSkill    `json:"skill,omitempty"`
+	SubType            *enums.ExamSubType  `json:"subType,omitempty"`
+	Category           *CategoryReference  `json:"category"`
+	ParsedContent      *TakingContent      `json:"content,omitempty"`
+	ParsedIeltsContent *IeltsTakingContent `json:"ieltsContent,omitempty"`
 }
 
 type ReviewAttempt struct {
@@ -104,13 +104,13 @@ type ReviewAttempt struct {
 	ParsedIeltsResult *Result             `json:"ieltsResult,omitempty"`
 }
 type ReviewTest struct {
-	ID                 string                `json:"id"`
-	CategoryID         string                `json:"categoryId"`
-	Slug               string                `json:"slug"`
-	Title              string                `json:"title"`
-	Skill              *enums.ExamSkill      `json:"skill,omitempty"`
-	SubType            *enums.ExamSubType    `json:"subType,omitempty"`
-	Category           *CategoryReference    `json:"category"`
-	ParsedContent      *ReviewContent        `json:"content,omitempty"`
-	ParsedIeltsContent *IeltsReviewContent   `json:"ieltsContent,omitempty"`
+	ID                 string              `json:"id"`
+	CategoryID         string              `json:"categoryId"`
+	Slug               string              `json:"slug"`
+	Title              string              `json:"title"`
+	Skill              *enums.ExamSkill    `json:"skill,omitempty"`
+	SubType            *enums.ExamSubType  `json:"subType,omitempty"`
+	Category           *CategoryReference  `json:"category"`
+	ParsedContent      *ReviewContent      `json:"content,omitempty"`
+	ParsedIeltsContent *IeltsReviewContent `json:"ieltsContent,omitempty"`
 }

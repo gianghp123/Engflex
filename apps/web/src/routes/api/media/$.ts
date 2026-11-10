@@ -8,7 +8,7 @@ const MEDIA_BUCKET = process.env.MEDIA_BUCKET?.trim() || "lesson-audio";
 /**
  * Same-origin media forward for every lesson-media object (audio today,
  * any content-type tomorrow — nothing here is audio-specific). Lesson media
- * uses MEDIA_BUCKET. The fixed toeic bucket exposes only its image/audio
+ * uses MEDIA_BUCKET. Story objects use the stories bucket. The fixed toeic bucket exposes only its image/audio
  * folders; full exam JSON stays private. Range requests
  * are forwarded and 206s passed through verbatim (`<audio>`/`<video>`
  * seeking breaks otherwise). No auth: posture identical to today's
@@ -26,8 +26,9 @@ export const Route = createFileRoute("/api/media/$")({
 				if (toeic && !isToeicMediaKey(key)) {
 					return Response.json({ message: "bad media key" }, { status: 404 });
 				}
-				const bucket = toeic ? "toeic" : MEDIA_BUCKET;
-				const objectKey = toeic ? key.slice("toeic/".length) : key;
+				const stories = key.startsWith("stories/");
+				const bucket = toeic ? "toeic" : stories ? "stories" : MEDIA_BUCKET;
+				const objectKey = toeic || stories ? key.slice(bucket.length + 1) : key;
 				const object = objectKey.split("/").map(encodeURIComponent).join("/");
 				const range = request.headers.get("range");
 				let upstream: Response;

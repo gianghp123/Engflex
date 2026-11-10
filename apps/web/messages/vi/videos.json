@@ -54,7 +54,8 @@
         "label": "Độ khó",
         "easy": "Dễ",
         "normal": "Vừa",
-        "hard": "Khó"
+        "hard": "Khó",
+        "locked": "Bạn có thể chọn mức khác khi bắt đầu lượt mới."
       },
       "hints": {
         "reveal": "Hiện từ {index}",

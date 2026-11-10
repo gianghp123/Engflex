@@ -43,6 +43,9 @@ import {
 } from "#/features/videos/dictation";
 import { m } from "#/paraglide/messages";
 
+const levelItemClass =
+	"h-6 rounded-sm! px-2 text-xs font-semibold data-[state=on]:bg-primary data-[state=on]:text-primary-foreground disabled:data-[state=on]:opacity-100";
+
 export function DictationPanel({
 	slots,
 	draft,
@@ -95,6 +98,7 @@ export function DictationPanel({
 	children?: ReactNode;
 }) {
 	const inputId = useId();
+	const levelHintId = useId();
 	const [composition, setComposition] = useState<string | null>(null);
 	const inputs = useRef<Array<HTMLInputElement | null>>([]);
 	const blankCount = slots.filter(
@@ -120,6 +124,7 @@ export function DictationPanel({
 				type="single"
 				value={level}
 				disabled={levelLocked}
+				aria-describedby={levelLocked ? levelHintId : undefined}
 				onValueChange={(value) => {
 					if (value === "easy" || value === "normal" || value === "hard")
 						onLevel(value);
@@ -127,25 +132,24 @@ export function DictationPanel({
 				aria-label={m["videos.dictation.level.label"]()}
 				className="mx-auto rounded-md border border-border bg-muted p-0.5"
 			>
-				<ToggleGroupItem
-					value="easy"
-					className="h-6 rounded-sm! px-2 text-xs font-semibold"
-				>
+				<ToggleGroupItem value="easy" className={levelItemClass}>
 					{m["videos.dictation.level.easy"]()}
 				</ToggleGroupItem>
-				<ToggleGroupItem
-					value="normal"
-					className="h-6 rounded-sm! px-2 text-xs font-semibold"
-				>
+				<ToggleGroupItem value="normal" className={levelItemClass}>
 					{m["videos.dictation.level.normal"]()}
 				</ToggleGroupItem>
-				<ToggleGroupItem
-					value="hard"
-					className="h-6 rounded-sm! px-2 text-xs font-semibold"
-				>
+				<ToggleGroupItem value="hard" className={levelItemClass}>
 					{m["videos.dictation.level.hard"]()}
 				</ToggleGroupItem>
 			</ToggleGroup>
+			{levelLocked ? (
+				<p
+					id={levelHintId}
+					className="text-center text-xs text-muted-foreground"
+				>
+					{m["videos.dictation.level.locked"]()}
+				</p>
+			) : null}
 			<div className="flex flex-wrap items-center rounded-xl border border-border bg-muted/40 p-1">
 				<ToolbarButton
 					icon={ChevronLeft}

@@ -9,7 +9,7 @@ import { APP_ROUTES } from "#/app/app-route";
 import { useBreadcrumbs } from "#/app/breadcrumbs";
 import { CardShell } from "#/components/common/card-shell";
 import { MoMascot } from "#/components/common/mo-mascot";
-import { PageHero } from "#/components/common/page-layout";
+import { PageLayout } from "#/components/common/page-layout";
 import { SubmitButton } from "#/components/common/submit-button";
 import {
 	AlertDialog,
@@ -20,6 +20,7 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from "#/components/ui/alert-dialog";
+import { Button } from "#/components/ui/button";
 import {
 	Dialog,
 	DialogContent,
@@ -242,31 +243,24 @@ function ToeicHubPage() {
 	);
 
 	return (
-		<div className="mx-auto flex w-full max-w-6xl flex-col gap-8 pb-12">
-			<div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-				<PageHero
-					icon={<MoMascot variant="nice" size={84} />}
-					title={m["exams.toeic.hub.title"]()}
-					description={m["exams.toeic.hub.description"]()}
-				/>
-
-				<div className="flex flex-wrap items-center gap-2.5 shrink-0 pt-2 md:pt-4">
-					<Link
-						to={APP_ROUTES.EXAMS.TOEIC.HISTORY}
-						className="inline-flex items-center gap-2 rounded-xl bg-sky-600 px-4 py-2 text-xs font-bold text-white shadow-sm transition-colors hover:bg-sky-700"
-					>
-						<History className="size-4" aria-hidden="true" />
-						<span>{m["exams.toeic.hub.historyButton"]()}</span>
+		<PageLayout
+			hero={{
+				icon: <MoMascot variant="nice" size={84} />,
+				title: m["exams.toeic.hub.title"](),
+				description: m["exams.toeic.hub.description"](),
+			}}
+		>
+			<div className="flex flex-wrap items-center gap-2 sm:justify-end">
+				<Button asChild variant="outline">
+					<Link to={APP_ROUTES.EXAMS.TOEIC.HISTORY}>
+						<History data-icon="inline-start" aria-hidden="true" />
+						{m["exams.toeic.hub.historyButton"]()}
 					</Link>
-					<button
-						onClick={() => setStatisticsOpen(true)}
-						type="button"
-						className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-xs font-bold text-white shadow-sm transition-colors hover:bg-emerald-700"
-					>
-						<TrendingUp className="size-4" aria-hidden="true" />
-						<span>{m["exams.toeic.hub.analyticsButton"]()}</span>
-					</button>
-				</div>
+				</Button>
+				<Button type="button" onClick={() => setStatisticsOpen(true)}>
+					<TrendingUp data-icon="inline-start" aria-hidden="true" />
+					{m["exams.toeic.hub.analyticsButton"]()}
+				</Button>
 			</div>
 
 			<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -393,6 +387,6 @@ function ToeicHubPage() {
 					</AlertDialogFooter>
 				</AlertDialogContent>
 			</AlertDialog>
-		</div>
+		</PageLayout>
 	);
 }

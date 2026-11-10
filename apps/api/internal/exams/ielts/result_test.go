@@ -57,8 +57,8 @@ func TestGradeIeltsAttempt(t *testing.T) {
 		},
 	}
 
-	ans1 := "a" // lowercase matching "A"
-	ans2 := []string{"d", "B"} // reverse order, different case
+	ans1 := "a"                       // lowercase matching "A"
+	ans2 := []string{"d", "B"}        // reverse order, different case
 	ans3 := "  The   Kitchen Area.  " // dirty whitespace + punctuation + casing
 	wrongAns := "wrong"
 

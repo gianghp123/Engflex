@@ -30,11 +30,11 @@ type Attempt struct {
 	ParsedResult      *toeic.Result       `gorm:"-" json:"-"`
 	ParsedIeltsResult *ielts.Result       `gorm:"-" json:"-"`
 	DurationSec       *int                `json:"durationSec"`
-	StartedAt       *time.Time          `json:"startedAt"`
-	SubmittedAt     *time.Time          `json:"submittedAt"`
-	DeadlineAt      *time.Time          `json:"deadlineAt"`
-	CreatedAt       time.Time           `gorm:"autoCreateTime" json:"createdAt"`
-	UpdatedAt       time.Time           `gorm:"autoUpdateTime" json:"updatedAt"`
+	StartedAt         *time.Time          `json:"startedAt"`
+	SubmittedAt       *time.Time          `json:"submittedAt"`
+	DeadlineAt        *time.Time          `json:"deadlineAt"`
+	CreatedAt         time.Time           `gorm:"autoCreateTime" json:"createdAt"`
+	UpdatedAt         time.Time           `gorm:"autoUpdateTime" json:"updatedAt"`
 
 	VideoExercise *VideoExercise `gorm:"->;foreignKey:VideoExerciseID;references:ID" json:"videoExercise,omitempty"`
 	ExamTest      *ExamTest      `gorm:"->;foreignKey:ExamTestID;references:ID" json:"examTest,omitempty"`

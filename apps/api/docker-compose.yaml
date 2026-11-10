@@ -49,6 +49,8 @@ services:
       until mc alias set local http://minio:9000 $$MINIO_ROOT_USER $$MINIO_ROOT_PASSWORD; do sleep 1; done;
       mc mb -p local/lesson-audio;
       mc anonymous set download local/lesson-audio;
+      mc mb -p local/stories;
+      mc anonymous set download local/stories;
       "
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}

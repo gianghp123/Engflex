@@ -5,7 +5,7 @@ import { useState } from "react";
 import { APP_ROUTES } from "#/app/app-route";
 import { useBreadcrumbs } from "#/app/breadcrumbs";
 import { MoMascot } from "#/components/common/mo-mascot";
-import { PageHero } from "#/components/common/page-layout";
+import { PageLayout } from "#/components/common/page-layout";
 import { Button } from "#/components/ui/button";
 import { Skeleton } from "#/components/ui/skeleton";
 import {
@@ -64,22 +64,20 @@ function IeltsHubPage() {
 	});
 
 	return (
-		<div className="flex flex-col gap-8 pb-12">
-			<div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-				<PageHero
-					icon={<MoMascot variant="nice" size={84} />}
-					title={m["exams.ielts.hub.title"]()}
-					description={m["exams.ielts.hub.description"]()}
-				/>
-				<div className="flex shrink-0 items-center gap-3">
-					<Link
-						to={APP_ROUTES.EXAMS.IELTS.HISTORY}
-						className="inline-flex items-center gap-2 rounded-xl border border-border/80 bg-background/80 px-4 py-2.5 text-sm font-semibold text-foreground shadow-sm backdrop-blur transition-colors hover:bg-muted"
-					>
-						<History className="size-4" aria-hidden="true" />
-						<span>{m["exams.ielts.hub.historyButton"]()}</span>
+		<PageLayout
+			hero={{
+				icon: <MoMascot variant="nice" size={84} />,
+				title: m["exams.ielts.hub.title"](),
+				description: m["exams.ielts.hub.description"](),
+			}}
+		>
+			<div className="flex flex-wrap items-center gap-2 sm:justify-end">
+				<Button asChild variant="outline">
+					<Link to={APP_ROUTES.EXAMS.IELTS.HISTORY}>
+						<History data-icon="inline-start" aria-hidden="true" />
+						{m["exams.ielts.hub.historyButton"]()}
 					</Link>
-				</div>
+				</Button>
 			</div>
 
 			<div className="flex flex-wrap items-center gap-2 border-b border-border/60 pb-4">
@@ -177,6 +175,6 @@ function IeltsHubPage() {
 					})}
 				</div>
 			)}
-		</div>
+		</PageLayout>
 	);
 }

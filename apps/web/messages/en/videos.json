@@ -54,7 +54,8 @@
         "label": "Difficulty",
         "easy": "Easy",
         "normal": "Normal",
-        "hard": "Hard"
+        "hard": "Hard",
+        "locked": "You can choose a different difficulty in your next attempt."
       },
       "hints": {
         "reveal": "Reveal word {index}",

@@ -1,4 +1,4 @@
-import { createFileRoute, notFound } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { cn } from "cn";
 import { Clock3, Eye, EyeOff, Mic, MonitorPlay } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -17,16 +17,14 @@ import { extractYouTubeId, pairWords } from "#/features/videos/dictation";
 import { formatDuration } from "#/features/videos/format";
 import { videoDetailQueryOptions } from "#/features/videos/queries";
 import { shadowingPreferences } from "#/features/videos/store";
+import { loadOr404 } from "#/lib/router/route-loader";
 import { m } from "#/paraglide/messages";
 
 export const Route = createFileRoute("/_app/videos/$videoId/shadowing")({
-	loader: async ({ context: { queryClient }, params: { videoId } }) => {
-		try {
-			return await queryClient.query(videoDetailQueryOptions(videoId));
-		} catch {
-			throw notFound();
-		}
-	},
+	validateSearch: (search: Record<string, unknown>): { view?: View } =>
+		search.view === "watch" ? { view: "watch" } : {},
+	loader: ({ context: { queryClient }, params: { videoId } }) =>
+		loadOr404(queryClient, videoDetailQueryOptions(videoId)),
 	component: ShadowingPage,
 });
 
@@ -49,7 +47,8 @@ function ShadowingPage() {
 	const playerRef = useRef<YouTubePlayerRef>(null);
 	const youtubeId = extractYouTubeId(video?.videoUrl ?? "");
 
-	const [view, setView] = useState<View>("practice");
+	const { view = "practice" } = Route.useSearch();
+	const navigate = Route.useNavigate();
 	const [settings, setSettings] = shadowingPreferences.usePreferences();
 	const {
 		showTranscript,
@@ -138,7 +137,10 @@ function ShadowingPage() {
 	};
 
 	const handlePlaySentence = () => {
-		if (!line) return;
+		if (!line) {
+			playerRef.current?.play();
+			return;
+		}
 		const current = playerRef.current?.getCurrentTime() ?? 0;
 		if (autoPause && current >= line.endTimestamp - 0.3) {
 			handleNextSentence();
@@ -206,7 +208,12 @@ function ShadowingPage() {
 					type="single"
 					value={view}
 					onValueChange={(value) => {
-						if (value) setView(value as View);
+						if (value) {
+							void navigate({
+								search: value === "watch" ? { view: "watch" } : {},
+								replace: true,
+							});
+						}
 					}}
 					aria-label={m["videos.shadowing.toolbar.view"]()}
 					className="rounded-full border-2 border-border bg-card p-1 shadow-[0_3px_0_var(--border)]"

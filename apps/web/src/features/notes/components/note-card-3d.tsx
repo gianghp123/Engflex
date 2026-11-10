@@ -34,8 +34,9 @@ function contentLink(item: SavedItem) {
 		return { to: APP_ROUTES.STORIES.DETAIL, params: { slug: item.story.slug } };
 	if (item.videoExercise)
 		return {
-			to: APP_ROUTES.VIDEOS.DICTATION,
+			to: APP_ROUTES.VIDEOS.SHADOWING,
 			params: { videoId: item.contentId },
+			search: { view: "watch" as const },
 		};
 	if (item.vocabularyItem)
 		return {
@@ -101,7 +102,21 @@ export function NoteCard3D({
 	}
 
 	return (
-		<CardShell className="flex min-h-64 flex-col gap-3 rounded-2xl border p-5">
+		<CardShell className="relative flex min-h-64 flex-col gap-3 rounded-2xl border p-5">
+			<button
+				type="button"
+				aria-label={
+					showNote
+						? m["notes.actions.flipBack"]()
+						: m["notes.actions.flipNote"]()
+				}
+				className="absolute inset-0 z-10 cursor-pointer rounded-2xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+				disabled={update.isPending}
+				onClick={() => {
+					setShowNote(!showNote);
+					setEditing(false);
+				}}
+			/>
 			<div className="flex flex-wrap items-center justify-between gap-2">
 				<Badge variant="outline">{kindLabels[kind]()}</Badge>
 				<span className="text-xs text-muted-foreground">
@@ -109,7 +124,7 @@ export function NoteCard3D({
 				</span>
 			</div>
 			<h2 className="text-base font-bold">{title}</h2>
-			<div className="[perspective:1200px]">
+			<div className="pointer-events-none relative z-20 [perspective:1200px]">
 				<div
 					className={cn(
 						"grid [transform-style:preserve-3d] motion-safe:transition-transform motion-safe:duration-500",
@@ -126,12 +141,13 @@ export function NoteCard3D({
 						{editing ? (
 							<>
 								<Textarea
+									className="pointer-events-auto"
 									aria-label={m["notes.card.personalNoteLabel"]()}
 									value={draft}
 									maxLength={NoteMaxLength}
 									onChange={(event) => setDraft(event.target.value)}
 								/>
-								<div className="flex justify-end gap-2">
+								<div className="flex justify-end gap-2 *:pointer-events-auto">
 									<Button
 										size="sm"
 										variant="ghost"
@@ -154,7 +170,7 @@ export function NoteCard3D({
 								<p className="whitespace-pre-wrap break-words text-sm">
 									{item.note || m["notes.card.emptyNote"]()}
 								</p>
-								<div className="flex flex-wrap gap-2">
+								<div className="flex flex-wrap gap-2 *:pointer-events-auto">
 									<Button
 										size="sm"
 										variant="outline"
@@ -195,20 +211,7 @@ export function NoteCard3D({
 					</div>
 				</div>
 			</div>
-			<div className="mt-auto flex flex-wrap items-center gap-2">
-				<Button
-					size="sm"
-					variant="outline"
-					disabled={update.isPending}
-					onClick={() => {
-						setShowNote(!showNote);
-						setEditing(false);
-					}}
-				>
-					{showNote
-						? m["notes.actions.flipBack"]()
-						: m["notes.actions.flipNote"]()}
-				</Button>
+			<div className="pointer-events-none relative z-20 mt-auto flex flex-wrap items-center gap-2 *:pointer-events-auto">
 				{link && (
 					<Button asChild size="sm">
 						<Link {...link}>{m["notes.actions.openContent"]()}</Link>

@@ -10,13 +10,13 @@ import (
 )
 
 type Content struct {
-	SchemaVersion string             `json:"schemaVersion"`
-	TestID        string             `json:"testId"`
-	Title         string             `json:"title"`
-	Skill         enums.ExamSkill    `json:"skill"`
-	SubType       enums.ExamSubType  `json:"subType"`
-	Sections      []Section          `json:"sections"`
-	Assets        []Asset            `json:"assets,omitempty"`
+	SchemaVersion string            `json:"schemaVersion"`
+	TestID        string            `json:"testId"`
+	Title         string            `json:"title"`
+	Skill         enums.ExamSkill   `json:"skill"`
+	SubType       enums.ExamSubType `json:"subType"`
+	Sections      []Section         `json:"sections"`
+	Assets        []Asset           `json:"assets,omitempty"`
 }
 
 type Asset struct {
