@@ -5,8 +5,7 @@
     "description": "Read and listen to English stories daily to expand your vocabulary and natural comprehension!",
     "tabs": {
       "all": "All stories",
-      "saved": "Saved",
-      "comingSoon": "Coming soon"
+      "saved": "Saved"
     },
     "filter": {
       "allLevels": "All levels",
@@ -19,8 +18,6 @@
       "minutes": "{count} min"
     },
     "empty": "No stories found",
-    "showingRange": "Showing {from}-{to} of {total} stories",
-    "showingAll": "Showing {total} stories",
     "reader": {
       "listenAndRead": "LISTEN & READ",
       "readOnly": "READ ONLY",

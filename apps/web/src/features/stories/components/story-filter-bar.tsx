@@ -167,14 +167,16 @@ export function StoryFilterBar({
 				</button>
 				<button
 					type="button"
-					disabled
-					className="flex cursor-not-allowed items-center gap-2 border-b-2 border-transparent px-1 pb-3 text-sm font-bold text-muted-foreground/50 opacity-60"
+					onClick={() => onTabChange("saved")}
+					className={cn(
+						"flex items-center gap-2 border-b-2 px-1 pb-3 text-sm font-bold transition-colors",
+						tab === "saved"
+							? "border-primary text-foreground"
+							: "border-transparent text-muted-foreground hover:text-foreground",
+					)}
 				>
 					<Bookmark className="size-4" />
 					<span>{m["stories.tabs.saved"]()}</span>
-					<span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
-						{m["stories.tabs.comingSoon"]()}
-					</span>
 				</button>
 			</div>
 

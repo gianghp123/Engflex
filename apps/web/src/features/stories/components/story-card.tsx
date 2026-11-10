@@ -79,7 +79,7 @@ export function StoryCard({ story }: { story: StoryCardItem }) {
 							<span>{story.views.toLocaleString()}</span>
 						</span>
 					) : null}
-					{story.bookmarks != null ? (
+					{story.bookmarks != null || story.saved ? (
 						<span className="flex items-center gap-1">
 							<Bookmark
 								className={cn(
@@ -89,7 +89,7 @@ export function StoryCard({ story }: { story: StoryCardItem }) {
 										: "text-muted-foreground/70",
 								)}
 							/>
-							<span>{story.bookmarks}</span>
+							{story.bookmarks != null ? <span>{story.bookmarks}</span> : null}
 						</span>
 					) : null}
 				</div>
