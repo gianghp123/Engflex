@@ -1,0 +1,101 @@
+{
+  "schemaVersion": "1.0.0",
+  "source": {
+    "url": "https://study4.com/tests/6854/toeic-lr-collection-1-test-3/solutions/",
+    "title": "Đáp án/transcript: TOEIC LR Collection 1 Test 3 - STUDY4"
+  },
+  "sourceTestId": "6854",
+  "runId": "20261105T172252.175526Z",
+  "assetRoot": "../..",
+  "status": "complete",
+  "objectKeyPattern": "exams/toeic/{sha256}",
+  "minioBucket": null,
+  "assets": [
+    {
+      "id": "asset-1",
+      "kind": "image",
+      "url": "https://s4-media1.study4.com/media/new_toeic_tests/new_toeic_updated/toeic-lr-collection-1-test-3/images/1_updated_resized.jpg",
+      "status": "downloaded",
+      "sourceId": "media/images/a488d731769d13cad179a5bb6fca7a4b9cd7a09bf24033872385645b0d00af82.jpg",
+      "localPath": "media/images/a488d731769d13cad179a5bb6fca7a4b9cd7a09bf24033872385645b0d00af82.jpg",
+      "filename": "q01.jpg",
+      "sha256": "a488d731769d13cad179a5bb6fca7a4b9cd7a09bf24033872385645b0d00af82",
+      "bytes": 27861,
+      "contentType": "image/jpeg",
+      "minioKey": "exams/toeic/a488d731769d13cad179a5bb6fca7a4b9cd7a09bf24033872385645b0d00af82",
+      "minioBucket": null
+    },
+    {
+      "id": "asset-2",
+      "kind": "image",
+      "url": "https://s4-media1.study4.com/media/new_toeic_tests/new_toeic_updated/toeic-lr-collection-1-test-3/images/2_updated_resized.jpg",
+      "status": "downloaded",
+      "sourceId": "media/images/037ddbf4e1e7c89bdd034b9254230a140574a2a77416c7db4da4d53acee1ecf7.jpg",
+      "localPath": "media/images/037ddbf4e1e7c89bdd034b9254230a140574a2a77416c7db4da4d53acee1ecf7.jpg",
+      "filename": "q02.jpg",
+      "sha256": "037ddbf4e1e7c89bdd034b9254230a140574a2a77416c7db4da4d53acee1ecf7",
+      "bytes": 27984,
+      "contentType": "image/jpeg",
+      "minioKey": "exams/toeic/037ddbf4e1e7c89bdd034b9254230a140574a2a77416c7db4da4d53acee1ecf7",
+      "minioBucket": null
+    },
+    {
+      "id": "asset-3",
+      "kind": "image",
+      "url": "https://study4.com/media/new_toeic_tests/new_toeic_updated/toeic-lr-collection-1-test-3/images/3_updated_resized.jpg",
+      "status": "downloaded",
+      "sourceId": "media/images/2cbd726e97238c88a0751a712a01e6b3e039d5d94c49bf2b6385ead4c713b682.jpg",
+      "localPath": "media/images/2cbd726e97238c88a0751a712a01e6b3e039d5d94c49bf2b6385ead4c713b682.jpg",
+      "filename": "q03.jpg",
+      "sha256": "2cbd726e97238c88a0751a712a01e6b3e039d5d94c49bf2b6385ead4c713b682",
+      "bytes": 25571,
+      "contentType": "image/jpeg",
+      "minioKey": "exams/toeic/2cbd726e97238c88a0751a712a01e6b3e039d5d94c49bf2b6385ead4c713b682",
+      "minioBucket": null
+    },
+    {
+      "id": "asset-4",
+      "kind": "image",
+      "url": "https://study4.com/media/new_toeic_tests/new_toeic_updated/toeic-lr-collection-1-test-3/images/4_updated_resized.jpg",
+      "status": "downloaded",
+      "sourceId": "media/images/7a073ee3e405b28bce39126c3c69945ee9c3a42246c48a1ffdd7ddfe726dd997.jpg",
+      "localPath": "media/images/7a073ee3e405b28bce39126c3c69945ee9c3a42246c48a1ffdd7ddfe726dd997.jpg",
+      "filename": "q04.jpg",
+      "sha256": "7a073ee3e405b28bce39126c3c69945ee9c3a42246c48a1ffdd7ddfe726dd997",
+      "bytes": 26391,
+      "contentType": "image/jpeg",
+      "minioKey": "exams/toeic/7a073ee3e405b28bce39126c3c69945ee9c3a42246c48a1ffdd7ddfe726dd997",
+      "minioBucket": null
+    },
+    {
+      "id": "asset-5",
+      "kind": "image",
+      "url": "https://study4.com/media/new_toeic_tests/new_toeic_updated/toeic-lr-collection-1-test-3/images/5_updated_resized.jpg",
+      "status": "downloaded",
+      "sourceId": "media/images/aa79588b8b5b6125c917ed9fcc10b3ddd8e498769986905d9c63b77384a6f51a.jpg",
+      "localPath": "media/images/aa79588b8b5b6125c917ed9fcc10b3ddd8e498769986905d9c63b77384a6f51a.jpg",
+      "filename": "q05.jpg",
+      "sha256": "aa79588b8b5b6125c917ed9fcc10b3ddd8e498769986905d9c63b77384a6f51a",
+      "bytes": 35272,
+      "contentType": "image/jpeg",
+      "minioKey": "exams/toeic/aa79588b8b5b6125c917ed9fcc10b3ddd8e498769986905d9c63b77384a6f51a",
+      "minioBucket": null
+    },
+    {
+      "id": "asset-6",
+      "kind": "image",
+      "url": "https://study4.com/media/new_toeic_tests/new_toeic_updated/toeic-lr-collection-1-test-3/images/6_updated_resized.jpg",
+      "status": "downloaded",
+      "sourceId": "media/images/4ddd457c12f3d898a5c06a35b21feab7559a3e95cb1a544a18a67c0661d5dc6c.jpg",
+      "localPath": "media/images/4ddd457c12f3d898a5c06a35b21feab7559a3e95cb1a544a18a67c0661d5dc6c.jpg",
+      "filename": "q06.jpg",
+      "sha256": "4ddd457c12f3d898a5c06a35b21feab7559a3e95cb1a544a18a67c0661d5dc6c",
+      "bytes": 40065,
+      "contentType": "image/jpeg",
+      "minioKey": "exams/toeic/4ddd457c12f3d898a5c06a35b21feab7559a3e95cb1a544a18a67c0661d5dc6c",
+      "minioBucket": null
+    }
+  ],
+  "downloadedCount": 6,
+  "failedCount": 0
+}

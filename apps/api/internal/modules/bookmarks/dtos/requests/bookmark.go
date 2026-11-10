@@ -10,3 +10,8 @@ type SaveBookmark struct {
 	ContentType enums.ContentType `json:"contentType" binding:"required,oneof=lesson video story"`
 	ContentID   string            `json:"contentId" binding:"required,uuid"`
 }
+
+type ListSavedLibrary struct {
+	ContentType string `form:"type" binding:"omitempty,oneof=vocab lesson video story"`
+	Search      string `form:"q" binding:"omitempty,max=255"`
+}

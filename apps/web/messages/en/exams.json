@@ -16,7 +16,8 @@
           "completedTests": "COMPLETED TESTS",
           "highestScore": "HIGHEST SCORE",
           "averageScore": "AVERAGE SCORE",
-          "latestScore": "LATEST ATTEMPT"
+          "latestScore": "LATEST ATTEMPT",
+          "scoreDescription": "Scores show answer accuracy (%). Only completed tests are included."
         },
         "history": {
           "title": "Exam History",
@@ -38,13 +39,13 @@
         "load": {
           "categoriesFailed": "Could not load exam sets. Please try again.",
           "attemptsFailed": "Could not load exam history. Please try again.",
-          "retry": "Retry"
+          "retry": "Retry",
+          "statisticsFailed": "Could not load exam statistics. Please try again."
         }
       },
       "category": {
         "back": "Exam Sets",
         "testsListTitle": "TEST LIST",
-        "freeBadge": "FREE",
         "questionsCount": "{count} questions",
         "durationMinutes": "{count} mins",
         "viewDetail": "VIEW DETAILS",
@@ -187,6 +188,113 @@
           "range": "Showing {from}–{to} of {total} attempts",
           "all": "{count} attempts"
         }
+      }
+    },
+    "ielts": {
+      "hub": {
+        "title": "IELTS Practice",
+        "description": "Practice IELTS Academic & General Training online with realistic exam sets. Supports Reading and Listening skills with automated Band Score grading (0–9) and detailed explanations.",
+        "historyButton": "Exam History",
+        "filterAll": "All",
+        "filterAcademic": "Academic",
+        "filterGeneral": "General Training",
+        "filterReading": "Reading",
+        "filterListening": "Listening",
+        "testsCount": "{count} tests",
+        "startPractice": "Practice now",
+        "emptyTitle": "No exam sets available",
+        "emptyDesc": "The system is updating the latest IELTS test collections. Please check back later!",
+        "loadFailed": "Failed to load IELTS exam collections. Please try again.",
+        "retry": "Retry"
+      },
+      "category": {
+        "back": "All Collections",
+        "testsListTitle": "EXAM TESTS LIST",
+        "questionsCount": "{count} questions",
+        "durationMinutes": "{count} minutes",
+        "viewDetail": "VIEW DETAIL",
+        "emptyTitle": "No tests available",
+        "emptyDesc": "This collection currently has no tests."
+      },
+      "test": {
+        "back": "Back to test list",
+        "skill": "Skill: {skill}",
+        "subType": "Format: {subType}",
+        "duration": "{count} minutes",
+        "questionsCount": "{count} questions",
+        "sectionsCount": "{count} sections",
+        "modePracticeTitle": "Practice Mode",
+        "modePracticeDesc": "Select specific sections to practice without a time limit.",
+        "modeExamTitle": "Full Exam Mode",
+        "modeExamDesc": "Complete all sections within standard IELTS time limits.",
+        "selectSections": "Select sections to practice:",
+        "sectionItem": "Section {number}",
+        "startPractice": "START PRACTICE",
+        "startExam": "START EXAM"
+      },
+      "history": {
+        "title": "IELTS Exam History",
+        "backToHub": "Back to IELTS Hub",
+        "emptyTitle": "No exam attempts yet",
+        "emptyDesc": "You don't have any IELTS attempts in your history. Start a test to measure your Band Score!",
+        "emptyAction": "Explore IELTS tests",
+        "statusInProgress": "In progress",
+        "statusCompleted": "Completed",
+        "statusAbandoned": "Abandoned",
+        "bandScore": "Band {score}",
+        "scoreCount": "{correct}/{total} correct",
+        "viewResult": "View Result",
+        "continue": "Continue Test",
+        "cancel": "Cancel"
+      },
+      "take": {
+        "section": "Section {number}",
+        "submitButton": "SUBMIT",
+        "exitButton": "EXIT",
+        "resetButton": "RESET",
+        "highlightToggle": "Highlight content",
+        "highlightHint": "Select text in the passage to highlight or remove highlight.",
+        "clearHighlight": "Clear highlight",
+        "progress": "Progress",
+        "remaining": "Time remaining:",
+        "bookmark": "Bookmark",
+        "bookmarked": "Bookmarked",
+        "question": "Question {number}",
+        "passageTitle": "Reading Passage",
+        "questionsTitle": "Questions",
+        "inputPlaceholder": "Type your answer...",
+        "collapsePalette": "Collapse question palette",
+        "expandPalette": "Expand question palette",
+        "confirmSubmitTitle": "Confirm Submission",
+        "confirmSubmitDesc": "You completed {answered}/{total} questions. Are you sure you want to submit your test?",
+        "confirmSubmitCancel": "Continue test",
+        "confirmSubmitAction": "Submit now",
+        "confirmExitTitle": "Exit test?",
+        "confirmExitDesc": "Are you sure you want to exit this test?",
+        "confirmExitCancel": "Stay and continue",
+        "confirmExitAction": "Exit test",
+        "confirmResetTitle": "Reset test?",
+        "confirmResetDesc": "All answers, highlights, and the timer will be reset from the beginning.",
+        "confirmResetCancel": "Cancel",
+        "confirmResetAction": "Reset now",
+        "saved": "Autosaved test progress",
+        "saveFailed": "Changes could not be confirmed. Please retry before leaving."
+      },
+      "result": {
+        "title": "IELTS Reading Test Result",
+        "bandScore": "Band Score",
+        "correctCount": "Correct: {correct}/{total}",
+        "accuracy": "Accuracy: {percent}%",
+        "timeSpent": "Time spent: {duration}",
+        "reviewTitle": "Detailed Answer Review",
+        "yourAnswer": "Your answer: {answer}",
+        "correctAnswer": "Correct answer: {answer}",
+        "explanation": "Explanation:",
+        "filterAll": "All",
+        "filterCorrect": "Correct",
+        "filterIncorrect": "Incorrect",
+        "retakeButton": "Retake test",
+        "closeButton": "Close"
       }
     },
     "attempt": {

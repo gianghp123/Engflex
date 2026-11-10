@@ -80,3 +80,26 @@ func (h *UserVocabularyController) Unsave(c *gin.Context) {
 	}
 	common.OK(c, "word removed", nil)
 }
+
+// UpdateNote godoc
+// @Summary      Update the note on a saved word
+// @Tags         user-vocabulary
+// @Security     BearerAuth
+// @Accept       json
+// @Produce      json
+// @Param        itemId path string true "item id"
+// @Param        request body common.UpdateSavedNote true "note payload"
+// @Success      200 {object} common.ApiResponse
+// @Router       /user-vocabulary/{itemId}/note [patch]
+func (h *UserVocabularyController) UpdateNote(c *gin.Context) {
+	var req common.UpdateSavedNote
+	if err := c.ShouldBindJSON(&req); err != nil {
+		common.Fail(c, common.BadRequest(err.Error()))
+		return
+	}
+	if err := h.state.UpdateNote(c.Request.Context(), middleware.UserID(c), c.Param("itemId"), req.Normalized()); err != nil {
+		common.Fail(c, err)
+		return
+	}
+	common.OK(c, "vocabulary note updated", nil)
+}

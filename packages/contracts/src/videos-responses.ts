@@ -4,11 +4,20 @@
 // source: video_attempt.go
 
 export interface VideoProgressPayload {
+  dictationVersion?: number /* int */;
   activeSequence: number /* int */;
   activeTranscriptId?: string;
   level?: string;
   completedTranscriptIds: string[];
   transcripts: { [key: string]: unknown};
+}
+export interface DictationLineResult {
+  draft: string;
+  answers?: string[];
+  revealed: number /* int */[];
+  completed: boolean;
+  earned?: number /* int */;
+  total?: number /* int */;
 }
 export interface VideoAttemptResponse {
   id: string;

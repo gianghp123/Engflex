@@ -8,11 +8,20 @@
       "scenarios": "Tình huống",
       "lessons": "Bài học",
       "users": "Người dùng",
-      "premium": "Premium"
+      "premium": "Premium",
+      "exams": "Đề thi"
     },
     "overview": {
       "title": "Bảng quản trị",
-      "description": "Quản lý nội dung và người dùng của Engflex."
+      "description": "Quản lý nội dung và người dùng của Engflex.",
+      "metrics": {
+        "subscriptions": "Lượt đăng ký",
+        "retry": "Thử lại",
+        "manage": "Quản lý"
+      },
+      "quickActions": {
+        "title": "Truy cập nhanh"
+      }
     },
     "actions": {
       "create": "Tạo mới",
@@ -95,6 +104,85 @@
         "created": "Ngày tạo",
         "allStatuses": "Tất cả trạng thái",
         "allPlans": "Tất cả gói"
+      }
+    },
+    "videos": {
+      "transcripts": {
+        "title": "Bản chép lời",
+        "sequence": "Thứ tự",
+        "start": "Bắt đầu (giây)",
+        "end": "Kết thúc (giây)",
+        "content": "Nội dung tiếng Anh",
+        "phonetic": "Phiên âm",
+        "vietnamese": "Bản dịch tiếng Việt",
+        "retry": "Thử lại",
+        "invalid": "Không thể lưu. Kiểm tra nội dung, thứ tự nguyên dương và khoảng thời gian (0 ≤ bắt đầu < kết thúc ≤ thời lượng video), rồi thử lại."
+      }
+    },
+    "exams": {
+      "page": {
+        "title": "Đề thi TOEIC",
+        "catalog": "Danh mục đề thi",
+        "authoring": "Soạn đề",
+        "categories": "Bộ đề",
+        "tests": "Đề thi",
+        "reset": "Đặt lại không gian soạn đề",
+        "open": "Mở",
+        "select": "Chọn một bộ đề để xem các đề thi.",
+        "invalidCategory": "Cần có tiêu đề và slug; slug không được trùng."
+      },
+      "editor": {
+        "title": "Soạn đề thi",
+        "assets": "Tài nguyên",
+        "addAsset": "Thêm tham chiếu tài nguyên",
+        "parts": "Các phần thi",
+        "part": "Phần {number}",
+        "item": "Nhóm {number}",
+        "question": "Câu {number}",
+        "addPart": "Thêm phần thi",
+        "addItem": "Thêm nhóm",
+        "addQuestion": "Thêm câu hỏi",
+        "passages": "Bài đọc",
+        "addPassage": "Thêm bài đọc",
+        "media": "Khối nội dung",
+        "transcript": "Bản chép lời",
+        "addTranscript": "Thêm dòng chép lời",
+        "addOption": "Thêm lựa chọn",
+        "addInline": "Thêm thành phần trong dòng",
+        "addBlock": "Thêm khối",
+        "invalid": "Kiểm tra các trường bắt buộc, ID và số thứ tự không trùng, đáp án, mã băm tài nguyên, khoảng audio và tham chiếu nội dung."
+      },
+      "fields": {
+        "title": "Tiêu đề",
+        "slug": "Slug",
+        "sourceKey": "Mã nguồn",
+        "collection": "Mã bộ đề",
+        "testNumber": "Số đề",
+        "audioAsset": "Mã audio chính",
+        "assetId": "Mã tài nguyên",
+        "hash": "SHA-256",
+        "partNumber": "Số phần thi",
+        "id": "ID",
+        "itemType": "Loại nhóm",
+        "itemAudio": "Audio nhóm",
+        "stimulusAudio": "Audio ngữ liệu",
+        "start": "Bắt đầu (giây)",
+        "end": "Kết thúc (giây)",
+        "format": "Định dạng",
+        "role": "Vai trò",
+        "speaker": "Người nói",
+        "text": "Nội dung",
+        "translation": "Bản dịch tiếng Việt",
+        "questionNumber": "Số câu hỏi",
+        "stem": "Câu hỏi",
+        "optionKey": "Mã lựa chọn",
+        "correctKey": "Mã đáp án đúng",
+        "explanation": "Giải thích",
+        "targetIds": "ID đích (phân cách bằng dấu phẩy)",
+        "blockType": "Loại khối",
+        "rows": "Các dòng bảng (ô cách nhau bằng tab)",
+        "inlineType": "Loại thành phần trong dòng",
+        "questionId": "Mã câu hỏi"
       }
     }
   }

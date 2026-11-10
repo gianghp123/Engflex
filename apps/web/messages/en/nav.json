@@ -12,7 +12,9 @@
       "videos": "Videos",
       "stories": "Stories",
       "vocabulary": "Vocabulary",
-      "exams": "TOEIC Exams"
+      "notes": "My Notes",
+      "exams": "TOEIC Exams",
+      "ielts": "IELTS Exams"
     },
     "user": {
       "learner": "Learner",

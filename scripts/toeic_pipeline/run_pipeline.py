@@ -8,7 +8,7 @@ import sys
 from pathlib import Path
 
 from extractors import answer_key, digital, inventory, ocr, select_sources
-from pipeline_io import BASE, digest, read, test_dir, write
+from pipeline_io import BASE, ROOT, digest, read, test_dir, write
 from schemas import Ref, Test
 from structure import build, rc_answers
 from validation import validate
@@ -308,6 +308,14 @@ def main():
         help="Second full-page OCR and source repair for unresolved layout/blanks",
     )
     parser.add_argument("--env-file", type=Path)
+    parser.add_argument("--category-slug", default="ets-2024", help="MinIO category folder")
+    parser.add_argument("--test-slug", help="MinIO test folder (default: <category>-test-NN)")
+    parser.add_argument(
+        "--output-root",
+        type=Path,
+        default=BASE / "output",
+        help="Root of the final toeic/<category>/<test> package",
+    )
     parser.add_argument(
         "--page-previews",
         action="store_true",
@@ -357,9 +365,18 @@ def main():
         if not report["releaseReady"]:
             print(f"Release blocked: see {out / 'validation.json'}")
             return 2
-        from content_export import export_content
+        from content_export import export_content, package_content
 
-        export_content(test, out / "release", release=True)
+        content = export_content(test, out / "release", release=True)
+        package = package_content(
+            content,
+            args.output_root,
+            args.category_slug,
+            args.test_slug or f"{args.category_slug}-test-{args.test:02d}",
+            ROOT / "Topic Test" / "Toeic 2024",
+            out,
+        )
+        print(f"MinIO-ready package: {package}")
     return 0 if report["releaseReady"] else 2
 
 

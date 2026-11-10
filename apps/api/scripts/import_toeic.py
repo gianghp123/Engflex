@@ -25,12 +25,16 @@ def validate_content(content):
     subprocess.run(["go", "run", "./cmd/validate-toeic"], input=json.dumps(content, ensure_ascii=False).encode(), check=True)
 
 
-def prepare(content, provenance, report, media):
+def verify_release(content, provenance, report):
     if provenance.get("status") != "release" or provenance.get("exportSchemaVersion") != "0.1.0" or provenance.get("contentHash") != digest(content):
         raise ValueError("Release provenance missing, stale, or not reviewed")
     if not provenance.get("draftHash") or report.get("payloadHash") != provenance["draftHash"] or report.get("releaseReady") is not True or report.get("issueCounts") or report.get("stageErrors") or not isinstance(report.get("issues"), list) or any(issue.get("status") != "verified" for issue in report["issues"]):
         raise ValueError("Release review report missing, stale, or incomplete")
     validate_content(content)
+
+
+def prepare(content, provenance, report, media):
+    verify_release(content, provenance, report)
     assets = {asset["sourceId"]: asset["sha256"].lower() for asset in content["assets"]}
     if set(media) != set(assets) or len(set(media.values())) != len(media):
         raise ValueError("Media manifest must map each asset to a distinct URL")
@@ -78,19 +82,42 @@ def prepare(content, provenance, report, media):
     return result
 
 
+def prepare_package(original, provenance, report, packaged):
+    verify_release(original, provenance, report)
+    from toeic_storage import relocate_content
+    by_hash = {asset["sha256"].lower(): asset["sourceId"] for asset in packaged["assets"]}
+    try:
+        mapping = {asset["sourceId"]: by_hash[asset["sha256"].lower()] for asset in original["assets"]}
+    except KeyError as error:
+        raise ValueError("Package is missing a release asset") from error
+    if relocate_content(original, mapping) != packaged:
+        raise ValueError("Package differs from the reviewed release")
+    validate_content(packaged)
+    return packaged
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--release", type=Path, required=True, help="Directory containing content.json and provenance.json")
-    parser.add_argument("--media", type=Path, required=True, help="JSON sourceId to ready URL map")
+    inputs = parser.add_mutually_exclusive_group(required=True)
+    inputs.add_argument("--media", type=Path, help="JSON sourceId to ready URL map")
+    inputs.add_argument("--package-root", type=Path, help="Local output root containing toeic/<category>/<test>/")
     parser.add_argument("--category-slug", required=True)
     parser.add_argument("--category-title", required=True)
     parser.add_argument("--test-slug", required=True)
     args = parser.parse_args()
     read = lambda p: json.loads(p.read_text(encoding="utf-8"))
     original = read(args.release / "content.json")
-    content = prepare(original, read(args.release / "provenance.json"), read(args.release.parent / "validation.json"), read(args.media))
+    provenance = read(args.release / "provenance.json")
+    report = read(args.release.parent / "validation.json")
+    if args.media:
+        content = prepare(original, provenance, report, read(args.media))
+    else:
+        from toeic_storage import test_prefix
+        packaged = read(args.package_root / "toeic" / test_prefix(args.category_slug, args.test_slug) / "content.json")
+        content = prepare_package(original, provenance, report, packaged)
     from publish_toeic_media import publish_content
-    publish_content(content)
+    content, _ = publish_content(content, source_root=args.package_root, category_slug=args.category_slug, test_slug=args.test_slug)
     import psycopg
     from psycopg.types.json import Jsonb
     from psycopg.errors import UniqueViolation

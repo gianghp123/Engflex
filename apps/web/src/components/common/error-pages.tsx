@@ -26,13 +26,7 @@ export function RouteNotFound() {
  *  from the API is never a crash — it's a learner hitting premium-gated
  *  content — so it gets its own upgrade-prompt copy instead of the generic
  *  retry page, and is never reported to Sentry as an exception. */
-export function RouteErrorFallback({
-	error,
-	reset,
-}: {
-	error: unknown;
-	reset: () => void;
-}) {
+export function RouteErrorFallback({ error }: { error: unknown }) {
 	const isPremiumRequired = error instanceof ApiError && error.status === 403;
 
 	useEffect(() => {
@@ -68,7 +62,7 @@ export function RouteErrorFallback({
 			title={m["errors.server.title"]()}
 			body={m["errors.server.body"]()}
 			primaryLabel={m["common.actions.backHome"]()}
-			extraAction={<RetryButton reset={reset} />}
+			extraAction={<RetryButton />}
 		/>
 	);
 }

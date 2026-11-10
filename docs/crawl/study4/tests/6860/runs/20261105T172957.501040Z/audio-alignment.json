@@ -1,0 +1,710 @@
+{
+  "testId": "6860",
+  "runId": "20261105T172957.501040Z",
+  "audioKey": "media/audio/8695aec6a74aa32ff03650c5658b2b5c3dfa81a8e9f84009e6eff674ae71b7bf.mp3",
+  "audioSha256": "8695aec6a74aa32ff03650c5658b2b5c3dfa81a8e9f84009e6eff674ae71b7bf",
+  "audioDuration": 2646.0473469387757,
+  "exportHash": "e33df8df4c5171222e91d3213463fd3f2efb01903c3e390fa723731447de8df5",
+  "asrHash": "2d83d15ad839793cc438803e10e6c04cfc8da9999794a4da9a4515f685d1c686",
+  "model": "base.en",
+  "itemCount": 54,
+  "alignedCount": 54,
+  "items": [
+    {
+      "id": "item_q01",
+      "questions": [
+        1
+      ],
+      "transcript": "(A) They're walking along a path. (B) They're cutting the grass. (C) They're swimming in a lake. (D) They're fishing from a dock.",
+      "audioRange": {
+        "assetId": "media/audio/8695aec6a74aa32ff03650c5658b2b5c3dfa81a8e9f84009e6eff674ae71b7bf.mp3",
+        "startTime": 54.59,
+        "endTime": 72.15
+      }
+    },
+    {
+      "id": "item_q02",
+      "questions": [
+        2
+      ],
+      "transcript": "(A) Some monitors have been mounted on a wall. (B) Some binders have been left open. (C) Some boxes have been loaded onto a cart. (D) Some chairs have been lined up against a wall.",
+      "audioRange": {
+        "assetId": "media/audio/8695aec6a74aa32ff03650c5658b2b5c3dfa81a8e9f84009e6eff674ae71b7bf.mp3",
+        "startTime": 76.64,
+        "endTime": 98.1
+      }
+    },
+    {
+      "id": "item_q03",
+      "questions": [
+        3
+      ],
+      "transcript": "(A) Some cars are lined up along a curb. (B) Some bicycles are parked in a rack. (C) Some bicycles are leaning against a wall. (D) Some crates are stacked near a doorway.",
+      "audioRange": {
+        "assetId": "media/audio/8695aec6a74aa32ff03650c5658b2b5c3dfa81a8e9f84009e6eff674ae71b7bf.mp3",
+        "startTime": 102.07,
+        "endTime": 122.35
+      }
+    },
+    {
+      "id": "item_q04",
+      "questions": [
+        4
+      ],
+      "transcript": "(A) A customer is carrying a tray of drinks. (B) A customer is reaching for a pastry. (C) A server is leaning over a counter. (D) A server is placing money in a register.",
+      "audioRange": {
+        "assetId": "media/audio/8695aec6a74aa32ff03650c5658b2b5c3dfa81a8e9f84009e6eff674ae71b7bf.mp3",
+        "startTime": 122.35,
+        "endTime": 148.82
+      }
+    },
+    {
+      "id": "item_q05",
+      "questions": [
+        5
+      ],
+      "transcript": "(A) Some chairs have been stacked against a wall. (B) Some boxes are being sorted. (C) A ladder has been laid on the floor. (D) A table is being folded.",
+      "audioRange": {
+        "assetId": "media/audio/8695aec6a74aa32ff03650c5658b2b5c3dfa81a8e9f84009e6eff674ae71b7bf.mp3",
+        "startTime": 153.66,
+        "endTime": 173.62
+      }
+    },
+    {
+      "id": "item_q06",
+      "questions": [
+        6
+      ],
+      "transcript": "(A) They're climbing a staircase. (B) They're sitting on a bench. (C) They're crossing a square. (D) They're painting a railing.",
+      "audioRange": {
+        "assetId": "media/audio/8695aec6a74aa32ff03650c5658b2b5c3dfa81a8e9f84009e6eff674ae71b7bf.mp3",
+        "startTime": 179.38,
+        "endTime": 196.6
+      }
+    },
+    {
+      "id": "item_q07",
+      "questions": [
+        7
+      ],
+      "transcript": "Who's covering the front desk during the lunch break today? (A) No, nothing's broken right now. (B) Trevor said he'd take care of it. (C) Over by the pharmacy counter.",
+      "audioRange": {
+        "assetId": "media/audio/8695aec6a74aa32ff03650c5658b2b5c3dfa81a8e9f84009e6eff674ae71b7bf.mp3",
+        "startTime": 228.28,
+        "endTime": 244.36
+      }
+    },
+    {
+      "id": "item_q08",
+      "questions": [
+        8
+      ],
+      "transcript": "We ought to start setting up the banquet tables now. (A) The delivery hasn't arrived yet. (B) It's a lovely room for events. (C) Those tables seat eight people each.",
+      "audioRange": {
+        "assetId": "media/audio/8695aec6a74aa32ff03650c5658b2b5c3dfa81a8e9f84009e6eff674ae71b7bf.mp3",
+        "startTime": 249.0,
+        "endTime": 266.52
+      }
+    },
+    {
+      "id": "item_q09",
+      "questions": [
+        9
+      ],
+      "transcript": "Which platform does the Bayford train leave from? (A) The next one's in about ten minutes. (B) Our training sessions are held upstairs. (C) It goes out from number five.",
+      "audioRange": {
+        "assetId": "media/audio/8695aec6a74aa32ff03650c5658b2b5c3dfa81a8e9f84009e6eff674ae71b7bf.mp3",
+        "startTime": 270.78,
+        "endTime": 288.02
+      }
+    },
+    {
+      "id": "item_q10",
+      "questions": [
+        10
+      ],
+      "transcript": "I think you should hold off on that article. (A) Twice a month, usually. (B) It's already gone to print. (C) Did she hold the door?",
+      "audioRange": {
+        "assetId": "media/audio/8695aec6a74aa32ff03650c5658b2b5c3dfa81a8e9f84009e6eff674ae71b7bf.mp3",
+        "startTime": 292.31,
+        "endTime": 306.07
+      }
+    },
+    {
+      "id": "item_q11",
+      "questions": [
+        11
+      ],
+      "transcript": "Do you want your finished photos delivered as digital files, or would you prefer to have them printed? (A) Yes, they turned out really well. (B) Sometime early next week, I hope. (C) The paper ones would be perfect.",
+      "audioRange": {
+        "assetId": "media/audio/8695aec6a74aa32ff03650c5658b2b5c3dfa81a8e9f84009e6eff674ae71b7bf.mp3",
+        "startTime": 310.47,
+        "endTime": 329.81
+      }
+    },
+    {
+      "id": "item_q12",
+      "questions": [
+        12
+      ],
+      "transcript": "Where's the staff awards ceremony being held this year? (A) No, she hasn't won an award yet. (B) Sometime in the second week of March. (C) In the main banquet hall downstairs.",
+      "audioRange": {
+        "assetId": "media/audio/8695aec6a74aa32ff03650c5658b2b5c3dfa81a8e9f84009e6eff674ae71b7bf.mp3",
+        "startTime": 334.28,
+        "endTime": 352.98
+      }
+    },
+    {
+      "id": "item_q13",
+      "questions": [
+        13
+      ],
+      "transcript": "How did you manage to clear the whole shipping backlog? (A) By staying a couple hours late each day. (B) They're already loaded onto the delivery trucks. (C) My back's been a bit sore lately.",
+      "audioRange": {
+        "assetId": "media/audio/8695aec6a74aa32ff03650c5658b2b5c3dfa81a8e9f84009e6eff674ae71b7bf.mp3",
+        "startTime": 357.58,
+        "endTime": 374.8
+      }
+    },
+    {
+      "id": "item_q14",
+      "questions": [
+        14
+      ],
+      "transcript": "When do you need your boots resoled by? (A) Sure, they've all been sold out. (B) By Friday, if you can manage it. (C) The dark brown leather pair.",
+      "audioRange": {
+        "assetId": "media/audio/8695aec6a74aa32ff03650c5658b2b5c3dfa81a8e9f84009e6eff674ae71b7bf.mp3",
+        "startTime": 379.32,
+        "endTime": 395.54
+      }
+    },
+    {
+      "id": "item_q15",
+      "questions": [
+        15
+      ],
+      "transcript": "Where can I watch the penguins being fed? (A) They're fed a mix of small fish. (B) Down by the rocky pool near the entrance. (C) At half past eleven every morning.",
+      "audioRange": {
+        "assetId": "media/audio/8695aec6a74aa32ff03650c5658b2b5c3dfa81a8e9f84009e6eff674ae71b7bf.mp3",
+        "startTime": 399.9,
+        "endTime": 417.12
+      }
+    },
+    {
+      "id": "item_q16",
+      "questions": [
+        16
+      ],
+      "transcript": "I'd like to reserve a couple of lanes for tomorrow evening. (A) That reservoir looks quite low today. (B) The middle lane was blocked earlier. (C) How many players will there be?",
+      "audioRange": {
+        "assetId": "media/audio/8695aec6a74aa32ff03650c5658b2b5c3dfa81a8e9f84009e6eff674ae71b7bf.mp3",
+        "startTime": 417.12,
+        "endTime": 438.51
+      }
+    },
+    {
+      "id": "item_q17",
+      "questions": [
+        17
+      ],
+      "transcript": "Which washer should we service first? (A) Yes, it's been giving us trouble. (B) The one over by the loading dock. (C) A wash cycle costs three dollars.",
+      "audioRange": {
+        "assetId": "media/audio/8695aec6a74aa32ff03650c5658b2b5c3dfa81a8e9f84009e6eff674ae71b7bf.mp3",
+        "startTime": 442.5,
+        "endTime": 459.22
+      }
+    },
+    {
+      "id": "item_q18",
+      "questions": [
+        18
+      ],
+      "transcript": "I really need to find a dependable house painter. (A) Mine did a great job. (B) A soft gray, I think. (C) No, he's a decorator.",
+      "audioRange": {
+        "assetId": "media/audio/8695aec6a74aa32ff03650c5658b2b5c3dfa81a8e9f84009e6eff674ae71b7bf.mp3",
+        "startTime": 463.41,
+        "endTime": 479.45
+      }
+    },
+    {
+      "id": "item_q19",
+      "questions": [
+        19
+      ],
+      "transcript": "You've already got this week's training schedule, don't you? (A) No, I haven't trained anyone yet. (B) Yes, it's up on the board over there. (C) Thanks, that's really thoughtful of you.",
+      "audioRange": {
+        "assetId": "media/audio/8695aec6a74aa32ff03650c5658b2b5c3dfa81a8e9f84009e6eff674ae71b7bf.mp3",
+        "startTime": 483.74,
+        "endTime": 501.06
+      }
+    },
+    {
+      "id": "item_q20",
+      "questions": [
+        20
+      ],
+      "transcript": "What comes with the premium spa package? (A) It's packed almost every afternoon. (B) Over by the changing rooms. (C) You'll get a facial and use of the pool.",
+      "audioRange": {
+        "assetId": "media/audio/8695aec6a74aa32ff03650c5658b2b5c3dfa81a8e9f84009e6eff674ae71b7bf.mp3",
+        "startTime": 505.22,
+        "endTime": 522.04
+      }
+    },
+    {
+      "id": "item_q21",
+      "questions": [
+        21
+      ],
+      "transcript": "How do you usually turn in your monthly report? (A) Please report to the front desk. (B) I upload it to the shared drive. (C) By the last day of the month.",
+      "audioRange": {
+        "assetId": "media/audio/8695aec6a74aa32ff03650c5658b2b5c3dfa81a8e9f84009e6eff674ae71b7bf.mp3",
+        "startTime": 526.39,
+        "endTime": 543.41
+      }
+    },
+    {
+      "id": "item_q22",
+      "questions": [
+        22
+      ],
+      "transcript": "How do I go about reserving one of the private meeting rooms? (A) There's a meeting at noon. (B) The one near the window. (C) Just log in and pick a time.",
+      "audioRange": {
+        "assetId": "media/audio/8695aec6a74aa32ff03650c5658b2b5c3dfa81a8e9f84009e6eff674ae71b7bf.mp3",
+        "startTime": 547.81,
+        "endTime": 565.01
+      }
+    },
+    {
+      "id": "item_q23",
+      "questions": [
+        23
+      ],
+      "transcript": "Is next week's first-aid class going to be run in person, or online? (A) No, I haven't signed up for it yet. (B) Right after the lunch break, I think. (C) In person, at least this time.",
+      "audioRange": {
+        "assetId": "media/audio/8695aec6a74aa32ff03650c5658b2b5c3dfa81a8e9f84009e6eff674ae71b7bf.mp3",
+        "startTime": 569.16,
+        "endTime": 588.84
+      }
+    },
+    {
+      "id": "item_q24",
+      "questions": [
+        24
+      ],
+      "transcript": "Which printer can I use for these wedding invitations? (A) The one that takes thick paper. (B) Yes, they're all invited. (C) About two hundred copies.",
+      "audioRange": {
+        "assetId": "media/audio/8695aec6a74aa32ff03650c5658b2b5c3dfa81a8e9f84009e6eff674ae71b7bf.mp3",
+        "startTime": 592.96,
+        "endTime": 608.66
+      }
+    },
+    {
+      "id": "item_q25",
+      "questions": [
+        25
+      ],
+      "transcript": "I'm surprised the new exercise machines still haven't arrived. (A) Didn't you hear they were delayed? (B) You're welcome to use the treadmill. (C) The tag on the crate.",
+      "audioRange": {
+        "assetId": "media/audio/8695aec6a74aa32ff03650c5658b2b5c3dfa81a8e9f84009e6eff674ae71b7bf.mp3",
+        "startTime": 613.22,
+        "endTime": 629.58
+      }
+    },
+    {
+      "id": "item_q26",
+      "questions": [
+        26
+      ],
+      "transcript": "Who still hasn't signed the equipment logbook? (A) The mower's working fine now, thanks. (B) I still have to sign mine. (C) Just a couple of extra rakes.",
+      "audioRange": {
+        "assetId": "media/audio/8695aec6a74aa32ff03650c5658b2b5c3dfa81a8e9f84009e6eff674ae71b7bf.mp3",
+        "startTime": 633.92,
+        "endTime": 650.16
+      }
+    },
+    {
+      "id": "item_q27",
+      "questions": [
+        27
+      ],
+      "transcript": "Should we give the new front display to the travel guides or the cookbooks? (A) The cookbooks always sell better up front. (B) Have a great trip, and send us a postcard. (C) They're on the second shelf near the entrance.",
+      "audioRange": {
+        "assetId": "media/audio/8695aec6a74aa32ff03650c5658b2b5c3dfa81a8e9f84009e6eff674ae71b7bf.mp3",
+        "startTime": 654.38,
+        "endTime": 673.55
+      }
+    },
+    {
+      "id": "item_q28",
+      "questions": [
+        28
+      ],
+      "transcript": "Would you mind sweeping up around the styling chairs? (A) Those scissors are in the top drawer. (B) The new mirrors look great. (C) Sorry, I'm with a client right now.",
+      "audioRange": {
+        "assetId": "media/audio/8695aec6a74aa32ff03650c5658b2b5c3dfa81a8e9f84009e6eff674ae71b7bf.mp3",
+        "startTime": 677.78,
+        "endTime": 694.54
+      }
+    },
+    {
+      "id": "item_q29",
+      "questions": [
+        29
+      ],
+      "transcript": "Who's going to lead the new guided brewery tours? (A) That hasn't been settled yet. (B) Sure, put my name down for one. (C) They pour pretty generous samples.",
+      "audioRange": {
+        "assetId": "media/audio/8695aec6a74aa32ff03650c5658b2b5c3dfa81a8e9f84009e6eff674ae71b7bf.mp3",
+        "startTime": 698.71,
+        "endTime": 714.79
+      }
+    },
+    {
+      "id": "item_q30",
+      "questions": [
+        30
+      ],
+      "transcript": "Why is my prescription taking so long to fill today? (A) Because our supplier's delivery was late today. (B) Not until later this afternoon. (C) You can set up automatic refills anytime.",
+      "audioRange": {
+        "assetId": "media/audio/8695aec6a74aa32ff03650c5658b2b5c3dfa81a8e9f84009e6eff674ae71b7bf.mp3",
+        "startTime": 719.12,
+        "endTime": 737.4
+      }
+    },
+    {
+      "id": "item_q31",
+      "questions": [
+        31
+      ],
+      "transcript": "Where do you think we should hang this new painting? (A) Sometime next week. (B) I really like the frame on it. (C) Above the reception desk.",
+      "audioRange": {
+        "assetId": "media/audio/8695aec6a74aa32ff03650c5658b2b5c3dfa81a8e9f84009e6eff674ae71b7bf.mp3",
+        "startTime": 741.89,
+        "endTime": 756.89
+      }
+    },
+    {
+      "id": "item_q32_34",
+      "questions": [
+        32,
+        33,
+        34
+      ],
+      "transcript": "M1: Good morning, welcome to Brightbrew Café. Can I get an order started for you? W1: Oh, no thanks, I'm not ordering today. I actually came down to let someone know that the coffee machine on the fourth floor is out of order. It's been making a loud noise all week, and now it won't turn on at all. M1: Thanks for telling me. You're the third person to mention it this morning, so it's clearly a real problem. I can't fix it from here, but I'll speak to the building's facilities manager right away. She usually sends someone to look at things like that by the end of the day.",
+      "audioRange": {
+        "assetId": "media/audio/8695aec6a74aa32ff03650c5658b2b5c3dfa81a8e9f84009e6eff674ae71b7bf.mp3",
+        "startTime": 790.32,
+        "endTime": 856.28
+      }
+    },
+    {
+      "id": "item_q35_37",
+      "questions": [
+        35,
+        36,
+        37
+      ],
+      "transcript": "M1: Hi, I'm hoping to skate during one of the open public sessions you run today. When does the next one begin? W1: The next one starts at two o'clock and lasts about ninety minutes. We rent skates right here at the desk, too, so before I grab you a pair, I'll need to know how big your feet are. M1: I take a size nine, and yes, I'll definitely need to borrow some — I didn't bring my own. W1: Perfect. Here's a nine. The bench over there is the spot to check they fit snugly before you head out onto the ice.",
+      "audioRange": {
+        "assetId": "media/audio/8695aec6a74aa32ff03650c5658b2b5c3dfa81a8e9f84009e6eff674ae71b7bf.mp3",
+        "startTime": 863.72,
+        "endTime": 931.28
+      }
+    },
+    {
+      "id": "item_q38_40",
+      "questions": [
+        38,
+        39,
+        40
+      ],
+      "transcript": "M1: Hi there, welcome to the workshop. I'm Victor — what can I build for you today? W1: Hi. I'm opening a small clinic next month, and I need a piece for the front, where patients will check in and sign forms. It should have space for two staff members behind it. I was thinking light oak. How soon could it be ready? M1: A reception desk like that usually takes about two weeks once you've approved the design. It'll go right in the waiting area, so durability matters — oak's a good call. Before we get into measurements, come look at these wood samples so you can compare the finishes and settle on a material.",
+      "audioRange": {
+        "assetId": "media/audio/8695aec6a74aa32ff03650c5658b2b5c3dfa81a8e9f84009e6eff674ae71b7bf.mp3",
+        "startTime": 938.64,
+        "endTime": 1004.44
+      }
+    },
+    {
+      "id": "item_q41_43",
+      "questions": [
+        41,
+        42,
+        43
+      ],
+      "transcript": "M1: Good morning, this is Douglas Reid, one of your regular customers. My water order was supposed to come today, but it never showed up, and I'm nearly out. W1: I'm sorry, Mr. Reid. It looks like our driver's route changed this week. Before I check, could you read me the number printed at the top of your account statement? M1: Sure, it's four-seven-two-nine. I don't need a refund — I just need the water soon. W1: I have your record now. Rather than having you reschedule online, I'll send a fresh delivery out first thing tomorrow. The driver should reach you by nine.",
+      "audioRange": {
+        "assetId": "media/audio/8695aec6a74aa32ff03650c5658b2b5c3dfa81a8e9f84009e6eff674ae71b7bf.mp3",
+        "startTime": 1011.7,
+        "endTime": 1080.0
+      }
+    },
+    {
+      "id": "item_q44_46",
+      "questions": [
+        44,
+        45,
+        46
+      ],
+      "transcript": "M1: Hi there. I'm shopping for a new suitcase for my frequent business trips, and I'd really like one I can wheel through the airport without any effort. What would you recommend? W1: Of course. I'm Delia — I'm actually just finishing arranging our new-arrivals display right now, and one of these models would suit you perfectly. This one, the Voyager Lite, is a spinner-wheel case that rolls smoothly in every direction and is designed to be carry-on approved. M1: That does look nice. My only worry is whether it'll actually meet the airline size and weight limits, since I always carry my bag onto the plane instead of checking it.",
+      "audioRange": {
+        "assetId": "media/audio/8695aec6a74aa32ff03650c5658b2b5c3dfa81a8e9f84009e6eff674ae71b7bf.mp3",
+        "startTime": 1087.4,
+        "endTime": 1157.24
+      }
+    },
+    {
+      "id": "item_q47_49",
+      "questions": [
+        47,
+        48,
+        49
+      ],
+      "transcript": "W1: Good morning! Thanks for stopping in. What can we take care of for you today? M1: Hi. I've got a finished manuscript here, about three hundred pages, and I'd like it made into a proper hardcover volume, with a dark green cloth cover. Could it be ready before the twentieth? W1: The twentieth is no trouble at all. But before we begin production, I'll print out a proof of the cover, and you'll need to look it over and approve it first.",
+      "audioRange": {
+        "assetId": "media/audio/8695aec6a74aa32ff03650c5658b2b5c3dfa81a8e9f84009e6eff674ae71b7bf.mp3",
+        "startTime": 1164.51,
+        "endTime": 1225.18
+      }
+    },
+    {
+      "id": "item_q50_52",
+      "questions": [
+        50,
+        51,
+        52
+      ],
+      "transcript": "W1: Hi, I'd like to join the Wildmoor Brewery tour if there's still room. I read about it online last night. M1: Of course! Another tour is starting in about ten minutes. It runs for forty-five minutes and finishes with a tasting of four of our seasonal beers. W1: That sounds great. I'm also buying gifts for my whole team back at the office. M1: In that case, our shop sells bottled gift packs. Each pack holds six of our most popular beers, and they're easy to carry. W1: Oh, perfect. How much is one pack? M1: They're eighteen dollars each. The shop is just past the tasting room, on your right. You can pay there after the tour.",
+      "audioRange": {
+        "assetId": "media/audio/8695aec6a74aa32ff03650c5658b2b5c3dfa81a8e9f84009e6eff674ae71b7bf.mp3",
+        "startTime": 1232.8,
+        "endTime": 1313.55
+      }
+    },
+    {
+      "id": "item_q53_55",
+      "questions": [
+        53,
+        54,
+        55
+      ],
+      "transcript": "W1: Hi, I'm here to pick up the order I placed last week at Fernwood Pharmacy. I'm leaving on a trip early tomorrow morning, so I wanted to collect everything today. M1: Of course. Could I have your last name so I can find your order? Let me check the shelf for you. M1: Hmm, I see the problem. Two of your three items are ready, but one of them is currently out of stock. W1: Oh no. I really need all of it before I travel. Is there any way to get it in time? M1: A new shipment isn't arriving until Thursday, so I can't hand it over today. But we can send it directly to you. M1: If you fill out this delivery form with your address, we'll mail it as soon as it arrives. W1: That works. I'll do that right now. Thanks, Neil.",
+      "audioRange": {
+        "assetId": "media/audio/8695aec6a74aa32ff03650c5658b2b5c3dfa81a8e9f84009e6eff674ae71b7bf.mp3",
+        "startTime": 1321.02,
+        "endTime": 1405.48
+      }
+    },
+    {
+      "id": "item_q56_58",
+      "questions": [
+        56,
+        57,
+        58
+      ],
+      "transcript": "M1: The paintings for the new exhibit just arrived. Where do you want us to put them all? M2: Maybe we could group them by color — the bright ones near the front window. W1: Actually, this show is organized by year, so we'll hang them from the earliest to the most recent. M1: Got it. Should we adjust the lighting first, or wait until the labels are printed? W1: Leave the lighting and labels for now. The main thing is to rearrange these canvases in the right order before the opening tonight. M2: Sure. Do we start on the left wall as visitors walk in? W1: Exactly. Line them up along that wall, oldest first.",
+      "audioRange": {
+        "assetId": "media/audio/8695aec6a74aa32ff03650c5658b2b5c3dfa81a8e9f84009e6eff674ae71b7bf.mp3",
+        "startTime": 1412.45,
+        "endTime": 1479.02
+      }
+    },
+    {
+      "id": "item_q59_61",
+      "questions": [
+        59,
+        60,
+        61
+      ],
+      "transcript": "W1: Good afternoon. How can I help you? M1: Hi. I'm on this evening's flight to Denver, but I need to get in sooner. Can I move to something this afternoon? W1: Let me check. There's one seat on the two o'clock, arriving at four. A same-day change is forty dollars, though on a corporate fare like yours it's waived once I confirm the code from your travel office. M1: My assistant sent that approval this morning, so it should be on file. I have a client presentation downtown at five, and getting in tonight would be far too late. W1: You're right, it's here. I'll update your booking first, then print your new boarding pass.",
+      "audioRange": {
+        "assetId": "media/audio/8695aec6a74aa32ff03650c5658b2b5c3dfa81a8e9f84009e6eff674ae71b7bf.mp3",
+        "startTime": 1486.05,
+        "endTime": 1562.36
+      }
+    },
+    {
+      "id": "item_q62_64",
+      "questions": [
+        62,
+        63,
+        64
+      ],
+      "transcript": "M1: Hi, I'm here to pick up a ticket I ordered online, under the name Preston Vale. W1: Here you are, Mr. Vale. I should mention that the doors are opening earlier than what's printed on your ticket — now at seven o'clock. The organizers added an opening performance to the program tonight. M1: Oh, earlier? I was planning to grab something to eat first. Will I still have time? W1: You should be fine, but to make it easy, here's a complimentary voucher for our lobby café. It's good right up until the concert begins.",
+      "audioRange": {
+        "assetId": "media/audio/8695aec6a74aa32ff03650c5658b2b5c3dfa81a8e9f84009e6eff674ae71b7bf.mp3",
+        "startTime": 1569.76,
+        "endTime": 1639.51
+      }
+    },
+    {
+      "id": "item_q65_67",
+      "questions": [
+        65,
+        66,
+        67
+      ],
+      "transcript": "W1: Good morning, and welcome to the Westhaven Convention Center. How can I help you today? M1: Hi there. I'm here to meet with companies that are hiring, since I'm looking for a new job. Could you tell me where that's being held? W1: Of course. Several events are running today, but the one you want is easy to find. Just walk straight past the food court in the center, and it's in the hall at the back on the left side. Watch for the signs above the entrance. M1: Great, thank you. Do I need to check in anywhere before I go in? W1: No, you can walk right in. But I should mention, the elevator in that section is out of service today, so please take the stairs instead. M1: Good to know. Thanks so much for your help.",
+      "audioRange": {
+        "assetId": "media/audio/8695aec6a74aa32ff03650c5658b2b5c3dfa81a8e9f84009e6eff674ae71b7bf.mp3",
+        "startTime": 1646.81,
+        "endTime": 1725.04
+      }
+    },
+    {
+      "id": "item_q68_70",
+      "questions": [
+        68,
+        69,
+        70
+      ],
+      "transcript": "M1: Hi, I come to Oakridge Zoo almost every weekend, and I'm tired of paying for a single ticket each time. I'd like to become a member — what levels do you offer? W1: Good choice, Mr. Hale. Here's our rate chart. Whichever level you pick, every membership lets you bring a companion in at no extra charge. How much were you hoping to spend? M1: I'd rather not go over a hundred and seventy dollars, but I want the best level I can get for that. That one looks right.",
+      "audioRange": {
+        "assetId": "media/audio/8695aec6a74aa32ff03650c5658b2b5c3dfa81a8e9f84009e6eff674ae71b7bf.mp3",
+        "startTime": 1732.33,
+        "endTime": 1796.46
+      }
+    },
+    {
+      "id": "item_q71_73",
+      "questions": [
+        71,
+        72,
+        73
+      ],
+      "transcript": "M: Good afternoon, passengers, and welcome to the terminal. I'm pleased to announce that starting Monday, Coastway Transit will introduce a brand-new mobile ticketing service for all travelers. With this service, you can purchase and store your tickets right on your phone, which means you'll no longer need to stand in long queues at the ticket counter, so your waiting times will be much shorter. At launch, the service will cover every route departing from this terminal, including our express lines to the coast. To begin using it, simply download the Coastway app from your usual app store before you board. If you need any help getting set up, our staff at the information desk will be glad to assist you. Safe travels, everyone.",
+      "audioRange": {
+        "assetId": "media/audio/8695aec6a74aa32ff03650c5658b2b5c3dfa81a8e9f84009e6eff674ae71b7bf.mp3",
+        "startTime": 1836.35,
+        "endTime": 1920.68
+      }
+    },
+    {
+      "id": "item_q74_76",
+      "questions": [
+        74,
+        75,
+        76
+      ],
+      "transcript": "W: Good morning, everyone. Before we open, could I have all of our sales associates gather near the counter for a moment? I've got some exciting news. Our shipment of the new season's products arrived overnight, and I'd like to point out one item in particular. We now have the latest running shoes in stock. They're lightweight, comfortable, and come in several fresh colors. Honestly, we've had customers asking about them for weeks, so I expect they'll sell quickly. That's why I want to feature them right at the front of the store. Diego, before we open the doors, could you please set up a display for the running shoes near the entrance? Thanks, everyone.",
+      "audioRange": {
+        "assetId": "media/audio/8695aec6a74aa32ff03650c5658b2b5c3dfa81a8e9f84009e6eff674ae71b7bf.mp3",
+        "startTime": 1920.68,
+        "endTime": 1999.1
+      }
+    },
+    {
+      "id": "item_q77_79",
+      "questions": [
+        77,
+        78,
+        79
+      ],
+      "transcript": "M: Good morning, everyone, and thanks for getting here so early. I know today is going to be busy, so I'll keep this brief. First, a quick reminder: every ride operator and ticket-booth staff member must carry a two-way radio at all times while on shift. That rule stays in place no matter where you're stationed. Now, one other thing. This week, our visitor numbers have been much higher than we expected for this time of year. So, when we unlock the front gate, I'd like all of you to open the extra ticket booths right away, rather than waiting for the lines to build up. Thanks again.",
+      "audioRange": {
+        "assetId": "media/audio/8695aec6a74aa32ff03650c5658b2b5c3dfa81a8e9f84009e6eff674ae71b7bf.mp3",
+        "startTime": 2006.38,
+        "endTime": 2075.14
+      }
+    },
+    {
+      "id": "item_q80_82",
+      "questions": [
+        80,
+        81,
+        82
+      ],
+      "transcript": "W: Hi, this is Ingrid from Cedar Grove Party Rentals, returning your call about your order for this weekend. The whole order is packed, and our loading area is open Friday any time after two. One note: the rectangular tables you asked for are out of stock, so I pulled round ones from inventory instead. They seat twelve guests each, the same as the ones you ordered. When you arrive, please count everything against your order form before our staff loads your van. Could you give me a call back to confirm your pickup slot? Thanks so much.",
+      "audioRange": {
+        "assetId": "media/audio/8695aec6a74aa32ff03650c5658b2b5c3dfa81a8e9f84009e6eff674ae71b7bf.mp3",
+        "startTime": 2082.38,
+        "endTime": 2150.44
+      }
+    },
+    {
+      "id": "item_q83_85",
+      "questions": [
+        83,
+        84,
+        85
+      ],
+      "transcript": "M: Good morning, listeners, and welcome to this week's community bulletin. This Saturday, the Hartsdale Neighborhood Association, together with the city Parks Department, is hosting a tree-planting volunteer day at Rowan Meadow Park. After last month's storms delayed our first attempt, we're determined to plant three hundred saplings along the park's restored east lawn. Volunteers should bring a sturdy pair of work gloves, though all the tools, young trees, and refreshments will be supplied on site. To reserve one of our limited spots, please visit our website and register before Thursday evening rather than calling the park office. We'd love to see you there.",
+      "audioRange": {
+        "assetId": "media/audio/8695aec6a74aa32ff03650c5658b2b5c3dfa81a8e9f84009e6eff674ae71b7bf.mp3",
+        "startTime": 2157.73,
+        "endTime": 2226.37
+      }
+    },
+    {
+      "id": "item_q86_88",
+      "questions": [
+        86,
+        87,
+        88
+      ],
+      "transcript": "M: Good morning, everyone, and welcome. I'm pleased to say that at Ashline Bank our new rewards program, Bright Circle, launches at the end of this month. Working with Denise from our regional office, I've been pulling together the reference guides you'll each need to walk customers through it. The idea is to give our loyal account holders a genuine reason to stay with us rather than switch banks. As the team agreed at last month's staff meeting, anyone who enrolls will pay less each month in account charges, now built into the rollout. Before then, I'll gather everyone to work through whatever still feels unclear, so please come with your questions.",
+      "audioRange": {
+        "assetId": "media/audio/8695aec6a74aa32ff03650c5658b2b5c3dfa81a8e9f84009e6eff674ae71b7bf.mp3",
+        "startTime": 2233.53,
+        "endTime": 2309.16
+      }
+    },
+    {
+      "id": "item_q89_91",
+      "questions": [
+        89,
+        90,
+        91
+      ],
+      "transcript": "M: Good morning, everyone, and thanks for coming in before the store opens. Starting this week, the way we handle refunds at the service desk will look a little different from what you're used to. We kept getting complaints that the line moved far too slowly, and this should finally fix that. When a customer brings something back, scan their receipt into the register before touching the item. Do it the other way and the system won't pull up the sale. And please don't key the product code in by hand; that's exactly what was slowing everyone down before. I've left printed instructions on the counter, so grab a copy and keep it in your apron.",
+      "audioRange": {
+        "assetId": "media/audio/8695aec6a74aa32ff03650c5658b2b5c3dfa81a8e9f84009e6eff674ae71b7bf.mp3",
+        "startTime": 2316.54,
+        "endTime": 2387.41
+      }
+    },
+    {
+      "id": "item_q92_94",
+      "questions": [
+        92,
+        93,
+        94
+      ],
+      "transcript": "W: Hi, it's Camille from the receiving area here at Meadowgate Plant Nursery. I'm calling because the shipment of young seedlings we booked for Thursday actually turned up this morning, two days early. Remember, we'd arranged for the extra weekend crew to come in on Thursday to handle it. So right now the trays are just sitting out on the loading dock, and these plants really need to go into the cool storage room within the hour. If we leave them in the sun much longer, the roots will dry out and we could lose the whole batch. Could you check who's on shift and send a couple of people down? And please call me back here at the nursery when you get this. Thanks.",
+      "audioRange": {
+        "assetId": "media/audio/8695aec6a74aa32ff03650c5658b2b5c3dfa81a8e9f84009e6eff674ae71b7bf.mp3",
+        "startTime": 2394.76,
+        "endTime": 2474.46
+      }
+    },
+    {
+      "id": "item_q95_97",
+      "questions": [
+        95,
+        96,
+        97
+      ],
+      "transcript": "M: Hi, this is Colin Reeves from Brightpage Printworks. Thanks for sending the specs for the brochures your team needs for next month's sales conference. I'd go with the tier just below Premium — it gives you the full-color finish and the page count you asked for, so it's the best value. I did consider Premium, but your print run is small, so you won't need the extra options it adds. I've attached our price sheet so you can compare the tiers. And rather than wait for the proofs to arrive by mail, stop by tomorrow morning to see a printed sample. Just let me know. Thanks.",
+      "audioRange": {
+        "assetId": "media/audio/8695aec6a74aa32ff03650c5658b2b5c3dfa81a8e9f84009e6eff674ae71b7bf.mp3",
+        "startTime": 2480.95,
+        "endTime": 2553.74
+      }
+    },
+    {
+      "id": "item_q98_100",
+      "questions": [
+        98,
+        99,
+        100
+      ],
+      "transcript": "M: Good morning, everyone. As you know, Silverleaf Tea Company has spent months perfecting several new recipes, and next month we'll finally bring our Garden Blends collection to market. Before approving the packaging, we asked a group of regular customers to taste the blends and tell us which label they preferred. Based on their feedback, we've chosen a design with the leaf illustration across the top and the brand name printed in large letters underneath. Now that the printer has confirmed the final artwork, I'd like the whole team to update our online store listings using the new product photos and descriptions this week, so everything is ready before the launch. Thanks for all your hard work.",
+      "audioRange": {
+        "assetId": "media/audio/8695aec6a74aa32ff03650c5658b2b5c3dfa81a8e9f84009e6eff674ae71b7bf.mp3",
+        "startTime": 2561.19,
+        "endTime": 2638.53
+      }
+    }
+  ],
+  "issues": [],
+  "status": "complete"
+}

@@ -19,6 +19,26 @@ type ExamController struct {
 	attempts *services.AttemptService
 }
 
+// Statistics godoc
+// @Summary Get my completed full TOEIC exam statistics
+// @Description Practice and unfinished attempts are excluded. Missing scores are null.
+// @Tags exams
+// @Security BearerAuth
+// @Produce json
+// @Success 200 {object} common.ApiResponse{data=responses.ExamStatistics}
+// @Router /exam-attempts/statistics [get]
+func (h *ExamController) Statistics(c *gin.Context) {
+	c.Header("Cache-Control", "private, no-store")
+	stats, err := h.attempts.Statistics(c.Request.Context(), middleware.UserID(c))
+	if err != nil {
+		common.Fail(c, err)
+		return
+	}
+	var dto responses.ExamStatistics
+	_ = utils.Map(&dto, stats)
+	common.OK(c, "exam statistics", dto)
+}
+
 func NewExamController(catalog *services.CatalogService, attempts *services.AttemptService) *ExamController {
 	return &ExamController{catalog: catalog, attempts: attempts}
 }
@@ -28,7 +48,7 @@ func NewExamController(catalog *services.CatalogService, attempts *services.Atte
 // @Tags exams
 // @Security BearerAuth
 // @Produce json
-// @Param type query string false "exam type"
+// @Param type query string false "exam type (toeic, ielts)"
 // @Success 200 {object} common.ApiResponse{data=[]responses.Category}
 // @Router /exam-categories [get]
 func (h *ExamController) ListCategories(c *gin.Context) {
@@ -72,7 +92,7 @@ func (h *ExamController) ListTests(c *gin.Context) {
 
 // GetTest godoc
 // @Summary Get exam test metadata
-// @Description Returns category and part counts only, without questions or answer-bearing content.
+// @Description Returns category and part or section counts only, without questions or answer-bearing content.
 // @Tags exams
 // @Security BearerAuth
 // @Produce json
@@ -98,7 +118,7 @@ func (h *ExamController) GetTest(c *gin.Context) {
 
 // Start godoc
 // @Summary Start an exam attempt
-// @Description Each POST creates a new UUID. Exam requires parts 1-7 and has a 120-minute deadline. Practice selects a non-empty subset and has no deadline. Do not retry POST automatically; recover the attempt ID from history.
+// @Description Each POST creates a new UUID. For TOEIC, Exam mode requires parts 1-7 (120-minute deadline). For IELTS, Exam mode requires all sections for the skill (Reading 60 min, Listening 40 min, Writing 60 min). Practice mode selects a non-empty subset and has no deadline. Do not retry POST automatically; recover the attempt ID from history.
 // @Tags exams
 // @Security BearerAuth
 // @Accept json
@@ -134,12 +154,13 @@ func (h *ExamController) Start(c *gin.Context) {
 // @Produce json
 // @Param page query int false "page"
 // @Param pageSize query int false "page size"
+// @Param type query string false "exam type (toeic, ielts)"
 // @Success 200 {object} common.ApiResponse{data=[]responses.ExamAttemptSummary}
 // @Router /exam-attempts [get]
 func (h *ExamController) ListAttempts(c *gin.Context) {
 	c.Header("Cache-Control", "private, no-store")
 	page, pageSize := utils.ParsePagination(c)
-	items, total, err := h.attempts.List(c.Request.Context(), middleware.UserID(c), page, pageSize)
+	items, total, err := h.attempts.List(c.Request.Context(), middleware.UserID(c), page, pageSize, enums.ExamType(c.Query("type")))
 	if err != nil {
 		common.Fail(c, err)
 		return
@@ -216,7 +237,7 @@ func (h *ExamController) GetAttempt(c *gin.Context) {
 
 // PatchAttempt godoc
 // @Summary Save answers or submit and grade my attempt
-// @Description revision is required. Each answer replaces selectedKey and flagged. Use selectedKey:null to clear. submit:true applies the final batch and grades atomically. Completed submit retries return the previous snapshot. Stale revisions return 409; GET again. Late saves return 409 after finalization; late submit grades saved answers only. score/scaledScore remain null.
+// @Description revision is required. Each answer replaces selectedKey, selectedKeys, textValue and flagged. Use selectedKey:null to clear. submit:true applies the final batch and grades atomically. Completed submit retries return the previous snapshot. Stale revisions return 409; GET again. Late saves return 409 after finalization; late submit grades saved answers only.
 // @Tags exams
 // @Security BearerAuth
 // @Accept json

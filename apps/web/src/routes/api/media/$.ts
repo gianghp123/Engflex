@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { isToeicMediaKey } from "#/features/exams/media-key";
 
 const MINIO_INTERNAL =
 	process.env.MEDIA_INTERNAL_ENDPOINT?.trim() || "http://localhost:9000";
@@ -6,12 +7,12 @@ const MEDIA_BUCKET = process.env.MEDIA_BUCKET?.trim() || "lesson-audio";
 
 /**
  * Same-origin media forward for every lesson-media object (audio today,
- * any content-type tomorrow — nothing here is audio-specific). The bucket
- * is public-read and fixed server-side: only the object key travels in the
- * URL, so callers can never steer this at another bucket. Range requests
+ * any content-type tomorrow — nothing here is audio-specific). Lesson media
+ * uses MEDIA_BUCKET. Story objects use the stories bucket. The fixed toeic bucket exposes only its image/audio
+ * folders; full exam JSON stays private. Range requests
  * are forwarded and 206s passed through verbatim (`<audio>`/`<video>`
  * seeking breaks otherwise). No auth: posture identical to today's
- * anonymous bucket reads, keys are unguessable UUIDs, pages stay gated.
+ * anonymous media reads; pages stay gated.
  */
 export const Route = createFileRoute("/api/media/$")({
 	server: {
@@ -21,16 +22,20 @@ export const Route = createFileRoute("/api/media/$")({
 				if (!key || key.includes("..")) {
 					return Response.json({ message: "bad media key" }, { status: 404 });
 				}
-				const object = key.split("/").map(encodeURIComponent).join("/");
+				const toeic = key.startsWith("toeic/");
+				if (toeic && !isToeicMediaKey(key)) {
+					return Response.json({ message: "bad media key" }, { status: 404 });
+				}
+				const stories = key.startsWith("stories/");
+				const bucket = toeic ? "toeic" : stories ? "stories" : MEDIA_BUCKET;
+				const objectKey = toeic || stories ? key.slice(bucket.length + 1) : key;
+				const object = objectKey.split("/").map(encodeURIComponent).join("/");
 				const range = request.headers.get("range");
 				let upstream: Response;
 				try {
-					upstream = await fetch(
-						`${MINIO_INTERNAL}/${MEDIA_BUCKET}/${object}`,
-						{
-							headers: range ? { range } : {},
-						},
-					);
+					upstream = await fetch(`${MINIO_INTERNAL}/${bucket}/${object}`, {
+						headers: range ? { range } : {},
+					});
 				} catch {
 					return Response.json(
 						{ message: "media unavailable" },

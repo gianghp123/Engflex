@@ -9,7 +9,7 @@ import { APP_ROUTES } from "#/app/app-route";
 import { useBreadcrumbs } from "#/app/breadcrumbs";
 import { CardShell } from "#/components/common/card-shell";
 import { MoMascot } from "#/components/common/mo-mascot";
-import { PageHero } from "#/components/common/page-layout";
+import { PageLayout } from "#/components/common/page-layout";
 import { SubmitButton } from "#/components/common/submit-button";
 import {
 	AlertDialog,
@@ -20,6 +20,14 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from "#/components/ui/alert-dialog";
+import { Button } from "#/components/ui/button";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogHeader,
+	DialogTitle,
+} from "#/components/ui/dialog";
 import { Skeleton } from "#/components/ui/skeleton";
 import {
 	ToeicCategoryCard,
@@ -29,14 +37,12 @@ import {
 	type ToeicAttemptItem,
 	ToeicHistoryPanel,
 } from "#/features/exams/components/toeic-history-panel";
-import {
-	type ToeicStats,
-	ToeicStatsPanel,
-} from "#/features/exams/components/toeic-stats-panel";
+import { ToeicStatsPanel } from "#/features/exams/components/toeic-stats-panel";
 import {
 	examAttemptsQueryOptions,
 	examCategoriesQueryOptions,
 	examKeys,
+	examStatisticsQueryOptions,
 	useCancelExamAttempt,
 } from "#/features/exams/queries";
 import { ApiError } from "#/lib/api/api";
@@ -49,13 +55,6 @@ const CATEGORY_COLORS = [
 	"bg-[#9333ea]",
 	"bg-[#2563eb]",
 ];
-
-const MOCK_STATS: ToeicStats = {
-	completedTests: 1,
-	highestScore: 0,
-	averageScore: 0,
-	latestScore: 0,
-};
 
 function formatAttemptDate(iso: string | null | undefined): string {
 	if (!iso) return "";
@@ -143,6 +142,7 @@ function HubQueryError({
 }
 
 function ToeicHubPage() {
+	const [statisticsOpen, setStatisticsOpen] = useState(false);
 	useBreadcrumbs([{ label: m["exams.toeic.hub.title"]() }]);
 	const { isLoaded } = useAuth();
 	const queryClient = useQueryClient();
@@ -157,7 +157,13 @@ function ToeicHubPage() {
 		retry: retryHubRead,
 	});
 	const attemptsQuery = useQuery({
-		...examAttemptsQueryOptions({ page: 1, pageSize: 5 }),
+		...examAttemptsQueryOptions({ page: 1, pageSize: 5, type: "toeic" }),
+		enabled: isLoaded,
+		retry: retryHubRead,
+	});
+
+	const statsQuery = useQuery({
+		...examStatisticsQueryOptions(),
 		enabled: isLoaded,
 		retry: retryHubRead,
 	});
@@ -215,9 +221,9 @@ function ToeicHubPage() {
 		(cat, idx) => ({
 			id: cat.id,
 			title: cat.title,
-			tags: ["TOEIC", "Practice"],
-			testsCount: 10,
-			attemptsCount: 25000,
+			tags: [cat.type.toUpperCase()],
+			testsCount: cat.testsCount,
+			attemptsCount: cat.attemptsCount,
 			iconBgColor: CATEGORY_COLORS[idx % CATEGORY_COLORS.length],
 		}),
 	);
@@ -225,39 +231,36 @@ function ToeicHubPage() {
 	const attempts: ToeicAttemptItem[] = (attemptsQuery.data?.items ?? []).map(
 		(att) => ({
 			id: att.id,
-			title: att.examTest?.title ?? "TOEIC Test",
+			title: att.examTest?.title ?? m["exams.toeic.history.missingTest"](),
 			mode: (att.mode ?? "exam") as "exam" | "practice",
 			status: att.status,
 			date: formatAttemptDate(att.startedAt ?? att.createdAt),
-			scorePct: att.score != null ? Math.round(att.score) : undefined,
+			scorePct:
+				att.result?.accuracyPct != null
+					? Math.round(att.result.accuracyPct)
+					: undefined,
 		}),
 	);
 
 	return (
-		<div className="mx-auto flex w-full max-w-6xl flex-col gap-8 pb-12">
-			<div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-				<PageHero
-					icon={<MoMascot variant="nice" size={84} />}
-					title={m["exams.toeic.hub.title"]()}
-					description={m["exams.toeic.hub.description"]()}
-				/>
-
-				<div className="flex flex-wrap items-center gap-2.5 shrink-0 pt-2 md:pt-4">
-					<Link
-						to={APP_ROUTES.EXAMS.TOEIC.HISTORY}
-						className="inline-flex items-center gap-2 rounded-xl bg-sky-600 px-4 py-2 text-xs font-bold text-white shadow-sm transition-colors hover:bg-sky-700"
-					>
-						<History className="size-4" aria-hidden="true" />
-						<span>{m["exams.toeic.hub.historyButton"]()}</span>
+		<PageLayout
+			hero={{
+				icon: <MoMascot variant="nice" size={84} />,
+				title: m["exams.toeic.hub.title"](),
+				description: m["exams.toeic.hub.description"](),
+			}}
+		>
+			<div className="flex flex-wrap items-center gap-2 sm:justify-end">
+				<Button asChild variant="outline">
+					<Link to={APP_ROUTES.EXAMS.TOEIC.HISTORY}>
+						<History data-icon="inline-start" aria-hidden="true" />
+						{m["exams.toeic.hub.historyButton"]()}
 					</Link>
-					<button
-						type="button"
-						className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-xs font-bold text-white shadow-sm transition-colors hover:bg-emerald-700"
-					>
-						<TrendingUp className="size-4" aria-hidden="true" />
-						<span>{m["exams.toeic.hub.analyticsButton"]()}</span>
-					</button>
-				</div>
+				</Button>
+				<Button type="button" onClick={() => setStatisticsOpen(true)}>
+					<TrendingUp data-icon="inline-start" aria-hidden="true" />
+					{m["exams.toeic.hub.analyticsButton"]()}
+				</Button>
 			</div>
 
 			<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -284,7 +287,21 @@ function ToeicHubPage() {
 			</div>
 
 			<div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-				<ToeicStatsPanel stats={MOCK_STATS} />
+				{statsQuery.isError ? (
+					<HubQueryError
+						message={m["exams.toeic.hub.load.statisticsFailed"]()}
+						pending={statsQuery.isFetching}
+						onRetry={() => {
+							void statsQuery.refetch();
+						}}
+					/>
+				) : (
+					<ToeicStatsPanel
+						onViewAll={() => setStatisticsOpen(true)}
+						stats={statsQuery.data}
+						pending={statsQuery.isPending}
+					/>
+				)}
 				{attemptsQuery.isError ? (
 					<HubQueryError
 						message={m["exams.toeic.hub.load.attemptsFailed"]()}
@@ -308,6 +325,32 @@ function ToeicHubPage() {
 					/>
 				)}
 			</div>
+			<Dialog open={statisticsOpen} onOpenChange={setStatisticsOpen}>
+				<DialogContent className="sm:max-w-2xl">
+					<DialogHeader>
+						<DialogTitle>{m["exams.toeic.hub.analyticsButton"]()}</DialogTitle>
+						<DialogDescription>
+							{m["exams.toeic.hub.analytics.scoreDescription"]()}
+						</DialogDescription>
+					</DialogHeader>
+					{statsQuery.isError ? (
+						<HubQueryError
+							message={m["exams.toeic.hub.load.statisticsFailed"]()}
+							pending={statsQuery.isFetching}
+							onRetry={() => void statsQuery.refetch()}
+						/>
+					) : (
+						<ToeicStatsPanel
+							stats={statsQuery.data}
+							pending={statsQuery.isPending}
+							showAction={false}
+						/>
+					)}
+					<Link to={APP_ROUTES.EXAMS.TOEIC.HISTORY}>
+						{m["exams.toeic.hub.history.viewAll"]()}
+					</Link>
+				</DialogContent>
+			</Dialog>
 			<AlertDialog
 				open={attemptToCancel !== null}
 				onOpenChange={(open) => {
@@ -344,6 +387,6 @@ function ToeicHubPage() {
 					</AlertDialogFooter>
 				</AlertDialogContent>
 			</AlertDialog>
-		</div>
+		</PageLayout>
 	);
 }

@@ -73,6 +73,7 @@ func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB) {
 	u := rg.Group("/user-vocabulary")
 	u.GET("", middleware.RequireAuth(), stateCtl.List)
 	u.POST("", middleware.RequireAuth(), stateCtl.Save)
+	u.PATCH("/:itemId/note", middleware.RequireAuth(), stateCtl.UpdateNote)
 	u.DELETE("/:itemId", middleware.RequireAuth(), stateCtl.Unsave)
 
 	admin := rg.Group("/admin")

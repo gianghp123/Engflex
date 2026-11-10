@@ -3,10 +3,13 @@ import { CEFR_VALUES } from "@engflex/contracts";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { APP_ROUTES } from "#/app/app-route";
 import { useBreadcrumbs } from "#/app/breadcrumbs";
+import { CardShell } from "#/components/common/card-shell";
 import { EmptyList } from "#/components/common/empty-list";
 import { MoMascot } from "#/components/common/mo-mascot";
 import { PageLayout } from "#/components/common/page-layout";
 import { Pager } from "#/components/common/pager";
+import { SubmitButton } from "#/components/common/submit-button";
+import { SavedStories } from "#/features/stories/components/saved-stories";
 import {
 	StoryCard,
 	StoryCardSkeleton,
@@ -27,6 +30,7 @@ const SKELETON_KEYS = Array.from(
 
 export const Route = createFileRoute("/_app/stories/")({
 	validateSearch: (search: Record<string, unknown>): StoriesSearch => ({
+		tab: search.tab === "saved" ? "saved" : undefined,
 		page: parsePage(search.page),
 		cefr: parseFilterParam(CEFR_VALUES, search.cefr),
 		topic:
@@ -54,13 +58,16 @@ function StoriesListPage() {
 	const topicsQuery = useStoryTopics();
 	const categories = topicsQuery.data ?? [];
 
-	const storiesQuery = useStories({
-		page,
-		pageSize: STORIES_PAGE_SIZE,
-		cefr: cefr === "all" ? undefined : cefr,
-		topic: selectedCategory === "all" ? undefined : selectedCategory,
-		search: search.trim() || undefined,
-	});
+	const storiesQuery = useStories(
+		{
+			page,
+			pageSize: STORIES_PAGE_SIZE,
+			cefr: cefr === "all" ? undefined : cefr,
+			topic: selectedCategory === "all" ? undefined : selectedCategory,
+			search: search.trim() || undefined,
+		},
+		searchParams.tab !== "saved",
+	);
 
 	const items = storiesQuery.data?.items ?? [];
 	const pagination = storiesQuery.data?.pagination;
@@ -102,8 +109,8 @@ function StoriesListPage() {
 			}}
 		>
 			<StoryFilterBar
-				tab="all"
-				onTabChange={() => {}}
+				tab={searchParams.tab ?? "all"}
+				onTabChange={(tab) => updateSearch({ tab, page: 1 })}
 				level={cefr}
 				onLevelChange={(lvl) =>
 					updateSearch({ cefr: lvl === "all" ? undefined : (lvl as CEFR) })
@@ -117,7 +124,23 @@ function StoriesListPage() {
 				onSearchChange={(q) => updateSearch({ search: q ? q : undefined })}
 			/>
 
-			{storiesQuery.isPending ? (
+			{searchParams.tab === "saved" ? (
+				<SavedStories
+					filters={searchParams}
+					onPageChange={(page) => updateSearch({ page })}
+					onReset={handleReset}
+				/>
+			) : storiesQuery.isError ? (
+				<CardShell className="p-4">
+					<p role="alert">{m["stories.bookmarks.error"]()}</p>
+					<SubmitButton
+						pending={storiesQuery.isFetching}
+						onClick={() => void storiesQuery.refetch()}
+					>
+						{m["stories.bookmarks.retry"]()}
+					</SubmitButton>
+				</CardShell>
+			) : storiesQuery.isPending ? (
 				<div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
 					{SKELETON_KEYS.map((key) => (
 						<StoryCardSkeleton key={key} />

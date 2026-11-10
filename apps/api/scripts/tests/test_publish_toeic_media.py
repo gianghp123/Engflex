@@ -6,6 +6,9 @@ from unittest.mock import patch
 from pathlib import Path
 import tempfile
 import unittest
+import sys
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 
 spec = importlib.util.spec_from_file_location("publish_toeic_media", Path(__file__).resolve().parents[1] / "publish_toeic_media.py")

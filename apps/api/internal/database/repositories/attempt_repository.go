@@ -13,6 +13,7 @@ import (
 )
 
 type AttemptRepository interface {
+	GetExamStatistics(ctx context.Context, userID string) (*models.ExamStatistics, error)
 	GetExamAttemptForUpdate(context.Context, string, string) (*models.Attempt, error)
 	SaveExamAttempt(context.Context, *models.Attempt, int) error
 	Create(ctx context.Context, m *models.Attempt) error
@@ -24,22 +25,44 @@ type AttemptRepository interface {
 	ListLessonAttempts(ctx context.Context, userID string) ([]*models.Attempt, error)
 	ListCompletedVideo(ctx context.Context, userID string, videoExerciseIDs []string) ([]*models.Attempt, error)
 	GetVideoAttempt(ctx context.Context, userID, videoExerciseID string, attemptType enums.AttemptType) (*models.Attempt, error)
-	ListExamAttempts(ctx context.Context, userID string, limit, offset int) ([]*models.Attempt, error)
-	CountExamAttempts(ctx context.Context, userID string) (int64, error)
+	GetVideoAttemptForUpdate(ctx context.Context, userID, videoExerciseID, attemptID string) (*models.Attempt, error)
+	ListExamAttempts(ctx context.Context, userID string, examType enums.ExamType, limit, offset int) ([]*models.Attempt, error)
+	CountExamAttempts(ctx context.Context, userID string, examType enums.ExamType) (int64, error)
 	GetExamAttempt(ctx context.Context, userID, attemptID string) (*models.Attempt, error)
 	WithTx(tx *gorm.DB) AttemptRepository
 }
 
-func (r *attemptRepository) ListExamAttempts(ctx context.Context, userID string, limit, offset int) ([]*models.Attempt, error) {
+func (r *attemptRepository) GetExamStatistics(ctx context.Context, userID string) (*models.ExamStatistics, error) {
+	var stats models.ExamStatistics
+	err := r.db.WithContext(ctx).Raw(`SELECT count(*) AS completed_tests,
+		max(a.score) AS highest_score, avg(a.score) AS average_score,
+		(array_agg(a.score ORDER BY a.submitted_at DESC NULLS LAST, a.created_at DESC, a.id DESC))[1] AS latest_score
+		FROM attempts a
+		JOIN exam_tests t ON t.id = a.exam_test_id
+		JOIN exam_categories c ON c.id = t.category_id
+		WHERE a.user_id = ? AND a.type = ? AND a.status = ? AND a.mode = ? AND c.type = ?`,
+		userID, enums.AttemptTypeExam, enums.AttemptStatusCompleted, enums.ExamModeExam, enums.ExamTypeTOEIC).Scan(&stats).Error
+	return &stats, err
+}
+
+func (r *attemptRepository) ListExamAttempts(ctx context.Context, userID string, examType enums.ExamType, limit, offset int) ([]*models.Attempt, error) {
 	var attempts []*models.Attempt
-	err := r.db.WithContext(ctx).Joins("ExamTest.Category", r.db.Omit("Content")).Where("attempts.user_id = ? AND attempts.type = ?", userID, enums.AttemptTypeExam).
+	query := r.db.WithContext(ctx).Joins("ExamTest.Category", r.db.Omit("Content")).Where("attempts.user_id = ? AND attempts.type = ?", userID, enums.AttemptTypeExam)
+	if examType != "" {
+		query = query.Where(`"ExamTest__Category".type = ?`, examType)
+	}
+	err := query.
 		Order("attempts.created_at DESC").Order("attempts.id DESC").Limit(limit).Offset(offset).Find(&attempts).Error
 	return attempts, err
 }
 
-func (r *attemptRepository) CountExamAttempts(ctx context.Context, userID string) (int64, error) {
+func (r *attemptRepository) CountExamAttempts(ctx context.Context, userID string, examType enums.ExamType) (int64, error) {
 	var total int64
-	err := r.db.WithContext(ctx).Model(&models.Attempt{}).Where("user_id = ? AND type = ?", userID, enums.AttemptTypeExam).Count(&total).Error
+	query := r.db.WithContext(ctx).Model(&models.Attempt{}).Where("attempts.user_id = ? AND attempts.type = ?", userID, enums.AttemptTypeExam)
+	if examType != "" {
+		query = query.Joins("ExamTest.Category").Where(`"ExamTest__Category".type = ?`, examType)
+	}
+	err := query.Count(&total).Error
 	return total, err
 }
 
@@ -143,6 +166,18 @@ func (r *attemptRepository) GetVideoAttempt(ctx context.Context, userID, videoEx
 		return nil, err
 	}
 	return &m, nil
+}
+
+func (r *attemptRepository) GetVideoAttemptForUpdate(ctx context.Context, userID, videoExerciseID, attemptID string) (*models.Attempt, error) {
+	var attempt models.Attempt
+	err := r.db.WithContext(ctx).Clauses(clause.Locking{Strength: "UPDATE"}).
+		Where("id = ? AND user_id = ? AND video_exercise_id = ? AND type IN ?", attemptID, userID, videoExerciseID,
+			[]enums.AttemptType{enums.AttemptTypeDictation, enums.AttemptTypeShadowing}).
+		First(&attempt).Error
+	if err != nil {
+		return nil, err
+	}
+	return &attempt, nil
 }
 
 func (r *attemptRepository) GetExamAttemptForUpdate(ctx context.Context, userID, attemptID string) (*models.Attempt, error) {

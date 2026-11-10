@@ -18,6 +18,7 @@ type UserVocabularyService interface {
 	ListByUser(ctx context.Context, userID string, limit, offset int) ([]*models.UserVocabulary, error)
 	Save(ctx context.Context, userID string, req requests.SaveUserVocabulary) (*models.UserVocabulary, error)
 	Unsave(ctx context.Context, userID, itemID string) error
+	UpdateNote(ctx context.Context, userID, itemID string, note *string) error
 }
 
 type userVocabularyService struct {
@@ -86,5 +87,15 @@ func (s *userVocabularyService) Unsave(ctx context.Context, userID, itemID strin
 		return appErr
 	}
 	slog.InfoContext(ctx, "user vocabulary unsaved", "itemID", itemID)
+	return nil
+}
+
+func (s *userVocabularyService) UpdateNote(ctx context.Context, userID, itemID string, note *string) error {
+	if err := s.repo.UpdateNote(ctx, userID, itemID, note); err != nil {
+		appErr := common.FromDBError(err, "user vocabulary")
+		logger.Report(ctx, "vocabulary note update failed", appErr, "itemID", itemID)
+		return appErr
+	}
+	slog.InfoContext(ctx, "vocabulary note updated", "itemID", itemID)
 	return nil
 }

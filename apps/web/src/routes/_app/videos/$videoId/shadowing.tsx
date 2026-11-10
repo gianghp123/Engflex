@@ -1,29 +1,30 @@
-import { createFileRoute, notFound } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { cn } from "cn";
 import { Clock3, Eye, EyeOff, Mic, MonitorPlay } from "lucide-react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { APP_ROUTES } from "#/app/app-route";
 import { type CrumbItem, useBreadcrumbs } from "#/app/breadcrumbs";
 import { PageLayout } from "#/components/common/page-layout";
 import { Button } from "#/components/ui/button";
 import { Toggle } from "#/components/ui/toggle";
 import { ToggleGroup, ToggleGroupItem } from "#/components/ui/toggle-group";
+import { BookmarkButton } from "#/features/bookmarks/bookmark-button";
+import { PracticeToolsDialogs } from "#/features/videos/components/practice-tools-dialogs";
 import { ShadowingPanel } from "#/features/videos/components/shadowing/shadowing-panel";
 import { TranscriptPanel } from "#/features/videos/components/transcript-panel";
 import type { YouTubePlayerRef } from "#/features/videos/components/youtube-player";
 import { extractYouTubeId, pairWords } from "#/features/videos/dictation";
 import { formatDuration } from "#/features/videos/format";
 import { videoDetailQueryOptions } from "#/features/videos/queries";
+import { shadowingPreferences } from "#/features/videos/store";
+import { loadOr404 } from "#/lib/router/route-loader";
 import { m } from "#/paraglide/messages";
 
 export const Route = createFileRoute("/_app/videos/$videoId/shadowing")({
-	loader: async ({ context: { queryClient }, params: { videoId } }) => {
-		try {
-			return await queryClient.query(videoDetailQueryOptions(videoId));
-		} catch {
-			throw notFound();
-		}
-	},
+	validateSearch: (search: Record<string, unknown>): { view?: View } =>
+		search.view === "watch" ? { view: "watch" } : {},
+	loader: ({ context: { queryClient }, params: { videoId } }) =>
+		loadOr404(queryClient, videoDetailQueryOptions(videoId)),
 	component: ShadowingPage,
 });
 
@@ -46,14 +47,32 @@ function ShadowingPage() {
 	const playerRef = useRef<YouTubePlayerRef>(null);
 	const youtubeId = extractYouTubeId(video?.videoUrl ?? "");
 
-	const [view, setView] = useState<View>("practice");
-	const [showTranscript, setShowTranscript] = useState(true);
-	const [showPhonetic, setShowPhonetic] = useState(false);
-	const [showTranslation, setShowTranslation] = useState(true);
-	const [autoPause, setAutoPause] = useState(true);
-	const [largeVideo, setLargeVideo] = useState(false);
+	const { view = "practice" } = Route.useSearch();
+	const navigate = Route.useNavigate();
+	const [settings, setSettings] = shadowingPreferences.usePreferences();
+	const {
+		showTranscript,
+		showPhonetic,
+		showTranslation,
+		autoPause,
+		largeVideo,
+		speed,
+	} = settings;
+	const setShowTranscript = (update: (value: boolean) => boolean) =>
+		setSettings({ showTranscript: update(showTranscript) });
+	const setShowPhonetic = (value: boolean) =>
+		setSettings({ showPhonetic: value });
+	const setShowTranslation = (value: boolean) =>
+		setSettings({ showTranslation: value });
+	const setAutoPause = (value: boolean) => setSettings({ autoPause: value });
+	const setLargeVideo = (value: boolean) => setSettings({ largeVideo: value });
+	const [toolsOpen, setToolsOpen] = useState<"settings" | "shortcuts" | null>(
+		null,
+	);
 	const [activeIndex, setActiveIndex] = useState(0);
-	const [speed, setSpeed] = useState(1);
+	useEffect(() => {
+		playerRef.current?.setSpeed(speed);
+	}, [speed]);
 	const [currentTime, setCurrentTime] = useState(0);
 	const lastTimeUpdateRef = useRef(0);
 
@@ -89,6 +108,7 @@ function ShadowingPage() {
 	const twoColumns = showTranscript && !largeVideo;
 
 	const handlePlayerReady = () => {
+		playerRef.current?.setSpeed(speed);
 		if (activeIndex > 0 && line) {
 			playerRef.current?.seekTo(line.startTimestamp);
 		}
@@ -117,7 +137,10 @@ function ShadowingPage() {
 	};
 
 	const handlePlaySentence = () => {
-		if (!line) return;
+		if (!line) {
+			playerRef.current?.play();
+			return;
+		}
 		const current = playerRef.current?.getCurrentTime() ?? 0;
 		if (autoPause && current >= line.endTimestamp - 0.3) {
 			handleNextSentence();
@@ -142,13 +165,22 @@ function ShadowingPage() {
 	const handleSpeedCycle = () => {
 		const nextIndex = (SPEEDS.indexOf(speed) + 1) % SPEEDS.length;
 		const nextSpeed = SPEEDS[nextIndex];
-		setSpeed(nextSpeed);
+		setSettings({ speed: nextSpeed });
 		playerRef.current?.setSpeed(nextSpeed);
 	};
 
 	return (
 		<PageLayout>
+			<PracticeToolsDialogs
+				mode="shadowing"
+				open={toolsOpen}
+				onOpenChange={setToolsOpen}
+				settings={settings}
+				onChange={setSettings}
+				onReset={shadowingPreferences.reset}
+			/>
 			<div className="flex flex-wrap items-center justify-end gap-3">
+				<BookmarkButton type="video" id={video.id} />
 				<span className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
 					<Clock3 aria-hidden="true" className="size-4" />
 					<span aria-hidden="true">{time}</span>
@@ -176,7 +208,12 @@ function ShadowingPage() {
 					type="single"
 					value={view}
 					onValueChange={(value) => {
-						if (value) setView(value as View);
+						if (value) {
+							void navigate({
+								search: value === "watch" ? { view: "watch" } : {},
+								replace: true,
+							});
+						}
 					}}
 					aria-label={m["videos.shadowing.toolbar.view"]()}
 					className="rounded-full border-2 border-border bg-card p-1 shadow-[0_3px_0_var(--border)]"
@@ -221,6 +258,8 @@ function ShadowingPage() {
 					onLargeVideoChange={setLargeVideo}
 					speed={speed}
 					onSpeed={handleSpeedCycle}
+					onSettings={() => setToolsOpen("settings")}
+					onShortcuts={() => setToolsOpen("shortcuts")}
 					onStart={handlePlaySentence}
 					recording={false}
 					hasRecording={false}

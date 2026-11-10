@@ -7,12 +7,13 @@ import {
 	BookOpen,
 	Headphones,
 	Languages,
-	Settings,
 } from "lucide-react";
 import { APP_ROUTES } from "#/app/app-route";
 import { CefrBadge } from "#/components/common/cefr-badge";
+import { SubmitButton } from "#/components/common/submit-button";
 import { Button } from "#/components/ui/button";
 import { m } from "#/paraglide/messages";
+import { StoryReaderSettings } from "./story-reader-settings";
 
 export interface StoryReaderHeaderItem extends StoryDetail {
 	bookmarks?: number;
@@ -28,6 +29,8 @@ export function StoryReaderHeader({
 	saved = false,
 	bookmarkCount = 0,
 	onToggleSave,
+	bookmarkPending = false,
+	bookmarkDisabled = false,
 }: {
 	story: StoryReaderHeaderItem;
 	mode: "listen" | "read";
@@ -37,6 +40,8 @@ export function StoryReaderHeader({
 	saved?: boolean;
 	bookmarkCount?: number;
 	onToggleSave?: () => void;
+	bookmarkPending?: boolean;
+	bookmarkDisabled?: boolean;
 }) {
 	return (
 		<header className="flex flex-wrap items-center justify-between gap-4 border-b border-border bg-card px-4 py-3">
@@ -44,7 +49,7 @@ export function StoryReaderHeader({
 				<Link
 					to={APP_ROUTES.STORIES.LIST}
 					className="flex size-9 items-center justify-center rounded-xl border border-border bg-background text-foreground transition-colors hover:bg-muted"
-					aria-label="Back"
+					aria-label={m["stories.reader.settings.back"]()}
 				>
 					<ArrowLeft className="size-4" />
 				</Link>
@@ -114,17 +119,13 @@ export function StoryReaderHeader({
 					</span>
 				</Button>
 
-				<Button
-					variant="outline"
-					size="icon"
-					className="size-9 rounded-xl border-border text-muted-foreground hover:text-foreground"
-					aria-label="Settings"
-				>
-					<Settings className="size-4" />
-				</Button>
+				<StoryReaderSettings />
 
 				{onToggleSave ? (
-					<Button
+					<SubmitButton
+						pending={bookmarkPending}
+						disabled={bookmarkDisabled}
+						aria-pressed={saved}
 						variant="outline"
 						size="sm"
 						onClick={onToggleSave}
@@ -147,7 +148,7 @@ export function StoryReaderHeader({
 						{bookmarkCount > 0 ? (
 							<span className="font-semibold">{bookmarkCount}</span>
 						) : null}
-					</Button>
+					</SubmitButton>
 				) : null}
 			</div>
 		</header>

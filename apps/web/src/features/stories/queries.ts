@@ -1,5 +1,7 @@
+import { useAuth } from "@clerk/tanstack-react-start";
 import type { ListStories } from "@engflex/contracts";
 import { useQuery } from "@tanstack/react-query";
+import { ApiError } from "#/lib/api";
 import {
 	getStoryById,
 	getStoryBySlug,
@@ -47,17 +49,35 @@ export function storyTopicsQueryOptions() {
 	};
 }
 
-export function useStories(params?: Partial<ListStories>) {
-	return useQuery(storiesListQueryOptions(params));
+function retryStoryRead(count: number, error: unknown) {
+	return (
+		!(error instanceof ApiError && [401, 403, 404].includes(error.status)) &&
+		count < 3
+	);
+}
+export function useStories(params?: Partial<ListStories>, enabled = true) {
+	const { isLoaded } = useAuth();
+	return useQuery({
+		...storiesListQueryOptions(params),
+		enabled: isLoaded && enabled,
+		retry: retryStoryRead,
+	});
 }
 
 export function useStoryDetail(slug: string | undefined) {
+	const { isLoaded } = useAuth();
 	return useQuery({
 		...storyDetailBySlugQueryOptions(slug ?? "none"),
-		enabled: !!slug,
+		enabled: isLoaded && !!slug,
+		retry: retryStoryRead,
 	});
 }
 
 export function useStoryTopics() {
-	return useQuery(storyTopicsQueryOptions());
+	const { isLoaded } = useAuth();
+	return useQuery({
+		...storyTopicsQueryOptions(),
+		enabled: isLoaded,
+		retry: retryStoryRead,
+	});
 }

@@ -28,7 +28,24 @@
       "showTranslation": "SHOW TRANSLATION",
       "save": "SAVE",
       "saved": "SAVED",
-      "disclaimer": "Lesson content was compiled by team Parroto and intellectual property of Parroto. Please do not copy or redistribute in any form."
+      "disclaimer": "Lesson content was compiled by team Parroto and intellectual property of Parroto. Please do not copy or redistribute in any form.",
+      "settings": {
+        "title": "Reading settings",
+        "fontSize": "Font size",
+        "fontFamily": "Font family",
+        "lineHeight": "Line height",
+        "sans": "Sans serif",
+        "serif": "Serif",
+        "reset": "Restore defaults",
+        "back": "Back to stories"
+      }
+    },
+    "bookmarks": {
+      "error": "Could not load or update your stories. Please try again.",
+      "retry": "Retry",
+      "unavailable": "This saved story is no longer available.",
+      "remove": "Remove bookmark",
+      "empty": "No saved stories match your filters."
     }
   }
 }

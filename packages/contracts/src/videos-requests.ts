@@ -5,13 +5,22 @@
 
 export interface StartVideoAttempt {
   type: AttemptType;
+  level?: string;
 }
 export interface SaveVideoProgress {
+  dictationVersion?: number /* int */;
   activeSequence: number /* int */;
   activeTranscriptId?: string;
   level?: string;
   completedTranscriptIds: string[];
   transcripts: { [key: string]: unknown};
+}
+export interface DictationLineInput {
+  draft: string;
+  answers?: string[];
+  revealed: number /* int */[];
+  completed: boolean;
+  revealAll?: boolean;
 }
 export interface CompleteVideoAttempt {
   score?: number /* float64 */;

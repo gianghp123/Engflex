@@ -3,6 +3,7 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import { cn } from "cn";
 import {
 	AudioWaveform,
+	Award,
 	BookMarked,
 	BookmarkCheck,
 	BookOpen,
@@ -11,6 +12,7 @@ import {
 	GraduationCap,
 	House,
 	Info,
+	NotebookPen,
 	ShieldCheck,
 	Sparkles,
 } from "lucide-react";
@@ -85,6 +87,12 @@ const NAV_GROUPS = [
 				tile: "bg-[#059669]",
 			},
 			{
+				title: () => m["nav.item.ielts"](),
+				to: APP_ROUTES.EXAMS.IELTS.LIST,
+				icon: Award,
+				tile: "bg-[#dc2626]",
+			},
+			{
 				title: () => m["nav.item.voice"](),
 				to: APP_ROUTES.VOICE.LIST,
 				icon: AudioWaveform,
@@ -117,6 +125,12 @@ const NAV_GROUPS = [
 				to: APP_ROUTES.VOCABULARY.LIST,
 				icon: BookmarkCheck,
 				tile: "bg-nav-vocab",
+			},
+			{
+				title: () => m["nav.item.notes"](),
+				to: APP_ROUTES.NOTES.LIST,
+				icon: NotebookPen,
+				tile: "bg-[#7c3aed]",
 			},
 		],
 	},

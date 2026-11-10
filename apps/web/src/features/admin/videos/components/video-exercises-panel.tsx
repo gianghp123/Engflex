@@ -30,6 +30,7 @@ import {
 	useUpdateVideoExercise,
 } from "#/features/admin/videos/queries";
 import { m } from "#/paraglide/messages";
+import { VideoTranscriptsDialog } from "./video-transcripts-dialog";
 
 const CEFR_OPTIONS: CEFR[] = ["A1", "A2", "B1", "B2", "C1", "C2"];
 
@@ -60,6 +61,9 @@ const EMPTY_FORM: ExerciseFormState = {
 };
 
 export function VideoExercisesPanel() {
+	const [transcriptVideoId, setTranscriptVideoId] = useState<string | null>(
+		null,
+	);
 	const [page, setPage] = useState(1);
 	const pageSize = 20;
 	const query = useAdminVideoExercises(page, pageSize);
@@ -212,6 +216,14 @@ export function VideoExercisesPanel() {
 						type="button"
 						variant="outline"
 						size="sm"
+						onClick={() => setTranscriptVideoId(row.id)}
+					>
+						{m["admin.videos.transcripts.title"]()}
+					</Button>
+					<Button
+						type="button"
+						variant="outline"
+						size="sm"
 						onClick={() => openEdit(row)}
 					>
 						{m["admin.actions.edit"]()}
@@ -239,8 +251,20 @@ export function VideoExercisesPanel() {
 		},
 	];
 
+	const transcriptVideo = query.data?.items.find(
+		(row) => row.id === transcriptVideoId,
+	);
 	return (
 		<div className="flex flex-col gap-4">
+			{transcriptVideo && (
+				<VideoTranscriptsDialog
+					key={transcriptVideoId}
+					video={transcriptVideo}
+					onOpenChange={(open) => {
+						if (!open) setTranscriptVideoId(null);
+					}}
+				/>
+			)}
 			<div className="flex justify-end">
 				<Button type="button" onClick={openCreate}>
 					<Plus data-icon="inline-start" />

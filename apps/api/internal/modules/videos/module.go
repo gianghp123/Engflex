@@ -21,7 +21,12 @@ func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB) {
 	exerciseSvc := services.NewVideoExerciseService(repositories.NewVideoExerciseRepository(db), premiumSvc)
 	exerciseCtl := controllers.NewVideoExerciseController(exerciseSvc)
 
-	attemptSvc := services.NewVideoAttemptService(repositories.NewAttemptRepository(db), repositories.NewVideoExerciseRepository(db))
+	attemptSvc := services.NewVideoAttemptService(
+		repositories.NewAttemptRepository(db),
+		repositories.NewVideoExerciseRepository(db),
+		repositories.NewVideoTranscriptRepository(db),
+		repositories.NewTransactionManager(db),
+	)
 	attemptCtl := controllers.NewVideoAttemptController(attemptSvc)
 
 	transcriptSvc := services.NewVideoTranscriptService(repositories.NewVideoTranscriptRepository(db))

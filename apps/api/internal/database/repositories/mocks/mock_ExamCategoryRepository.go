@@ -117,23 +117,23 @@ func (_c *MockExamCategoryRepository_GetByID_Call) RunAndReturn(run func(ctx con
 }
 
 // List provides a mock function for the type MockExamCategoryRepository
-func (_mock *MockExamCategoryRepository) List(ctx context.Context, examType enums.ExamType) ([]*models.ExamCategory, error) {
+func (_mock *MockExamCategoryRepository) List(ctx context.Context, examType enums.ExamType) ([]*models.ExamCategoryCatalog, error) {
 	ret := _mock.Called(ctx, examType)
 
 	if len(ret) == 0 {
 		panic("no return value specified for List")
 	}
 
-	var r0 []*models.ExamCategory
+	var r0 []*models.ExamCategoryCatalog
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, enums.ExamType) ([]*models.ExamCategory, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, enums.ExamType) ([]*models.ExamCategoryCatalog, error)); ok {
 		return returnFunc(ctx, examType)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, enums.ExamType) []*models.ExamCategory); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, enums.ExamType) []*models.ExamCategoryCatalog); ok {
 		r0 = returnFunc(ctx, examType)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*models.ExamCategory)
+			r0 = ret.Get(0).([]*models.ExamCategoryCatalog)
 		}
 	}
 	if returnFunc, ok := ret.Get(1).(func(context.Context, enums.ExamType) error); ok {
@@ -174,12 +174,12 @@ func (_c *MockExamCategoryRepository_List_Call) Run(run func(ctx context.Context
 	return _c
 }
 
-func (_c *MockExamCategoryRepository_List_Call) Return(examCategorys []*models.ExamCategory, err error) *MockExamCategoryRepository_List_Call {
-	_c.Call.Return(examCategorys, err)
+func (_c *MockExamCategoryRepository_List_Call) Return(examCategoryCatalogs []*models.ExamCategoryCatalog, err error) *MockExamCategoryRepository_List_Call {
+	_c.Call.Return(examCategoryCatalogs, err)
 	return _c
 }
 
-func (_c *MockExamCategoryRepository_List_Call) RunAndReturn(run func(ctx context.Context, examType enums.ExamType) ([]*models.ExamCategory, error)) *MockExamCategoryRepository_List_Call {
+func (_c *MockExamCategoryRepository_List_Call) RunAndReturn(run func(ctx context.Context, examType enums.ExamType) ([]*models.ExamCategoryCatalog, error)) *MockExamCategoryRepository_List_Call {
 	_c.Call.Return(run)
 	return _c
 }

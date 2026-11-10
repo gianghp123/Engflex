@@ -16,11 +16,6 @@ import { Skeleton } from "#/components/ui/skeleton";
 import { ToeicCategoryHero } from "#/features/exams/components/toeic-category-hero";
 import { ToeicTestCard } from "#/features/exams/components/toeic-test-card";
 import {
-	MOCK_CATEGORY_DECORATION,
-	MOCK_TEST_ATTEMPT_COUNTS,
-	MOCK_TEST_IS_FREE,
-} from "#/features/exams/fixtures";
-import {
 	examCategoriesQueryOptions,
 	examTestsQueryOptions,
 } from "#/features/exams/queries";
@@ -112,9 +107,9 @@ function ToeicCategoryDetailPage() {
 		>
 			<ToeicCategoryHero
 				title={category.title}
-				tags={MOCK_CATEGORY_DECORATION.tags}
-				testsCount={pagination.total}
-				attemptsCount={MOCK_CATEGORY_DECORATION.attemptsCount}
+				tags={[category.type.toUpperCase()]}
+				testsCount={category.testsCount}
+				attemptsCount={category.attemptsCount}
 			/>
 			<div className="flex flex-col gap-4">
 				<h2 className="text-xs font-bold tracking-wider text-muted-foreground uppercase md:text-sm">
@@ -132,24 +127,19 @@ function ToeicCategoryDetailPage() {
 				) : (
 					<>
 						<div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
-							{items.map((test, index) => (
+							{items.map((test) => (
 								<ToeicTestCard
 									key={test.id}
 									item={{
 										id: test.id,
 										categoryId: test.categoryId,
 										title: test.title,
-										isFree: MOCK_TEST_IS_FREE,
 										questionsCount: (test.content?.parts ?? []).reduce(
 											(total, part) => total + part.questionCount,
 											0,
 										),
-										attemptsCount:
-											MOCK_TEST_ATTEMPT_COUNTS[
-												((pagination.page - 1) * PAGE_SIZE + index) %
-													MOCK_TEST_ATTEMPT_COUNTS.length
-											],
-										durationMinutes: 120,
+										attemptsCount: test.attemptsCount,
+										durationMinutes: test.durationMinutes,
 									}}
 								/>
 							))}

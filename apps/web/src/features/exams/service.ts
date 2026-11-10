@@ -5,6 +5,7 @@ import type {
 	ExamCategory,
 	ExamReviewAttempt,
 	ExamReviewContent,
+	ExamStatistics,
 	ExamTakingContent,
 	ExamTestDetail,
 	ExamTestMetadata,
@@ -15,6 +16,10 @@ import type {
 } from "@engflex/contracts";
 import { API_ROUTES } from "#/app/api-routes";
 import { api, apiPage } from "#/lib/api/api";
+
+export function getExamStatistics(): Promise<ExamStatistics> {
+	return api<ExamStatistics>(API_ROUTES.EXAMS.ATTEMPTS.STATISTICS);
+}
 
 export function listExamCategories(params?: {
 	type?: ExamType;
@@ -55,10 +60,12 @@ export function startExamAttempt(
 export function listExamAttempts(params?: {
 	page?: number;
 	pageSize?: number;
+	type?: ExamType;
 }): Promise<{ items: ExamAttemptSummary[]; pagination: Pagination }> {
 	const query: Record<string, string | number> = {};
 	if (params?.page) query.page = params.page;
 	if (params?.pageSize) query.pageSize = params.pageSize;
+	if (params?.type) query.type = params.type;
 	return apiPage<ExamAttemptSummary>(
 		API_ROUTES.EXAMS.ATTEMPTS.LIST,
 		undefined,
@@ -111,6 +118,7 @@ export type {
 	ExamTakingContent,
 	ExamTestMetadata,
 	ExamType,
+	ExamStatistics,
 	PatchExamAttempt,
 	StartExamAttempt,
 };

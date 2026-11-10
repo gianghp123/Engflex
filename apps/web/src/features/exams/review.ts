@@ -1,5 +1,6 @@
 import type { ExamReviewAttempt, ExamReviewContent } from "@engflex/contracts";
 import { APP_ROUTES } from "#/app/app-route";
+import { isToeicMediaKey } from "./media-key";
 import { toeicPartLabel } from "./parts";
 
 export type ReviewPart = ExamReviewContent["parts"][number];
@@ -46,6 +47,10 @@ export function mediaSource(
 ): string | null {
 	const asset = assets.find((asset) => asset.sourceId === assetId);
 	if (!assetId || !asset || !/^[a-f0-9]{64}$/i.test(asset.sha256)) return null;
+	if (assetId.startsWith("toeic/")) {
+		if (!isToeicMediaKey(assetId)) return null;
+		return APP_ROUTES.MEDIA.DETAIL.replace("$", assetId);
+	}
 	try {
 		const url = new URL(assetId);
 		if (url.protocol !== "https:" && url.protocol !== "http:") return null;

@@ -7,7 +7,6 @@ export interface ToeicTestItem {
 	id: string;
 	categoryId: string;
 	title: string;
-	isFree: boolean;
 	questionsCount: number;
 	attemptsCount: number;
 	durationMinutes: number;
@@ -21,11 +20,6 @@ export function ToeicTestCard({ item }: { item: ToeicTestItem }) {
 					<h3 className="truncate text-sm font-bold text-card-foreground md:text-base">
 						{item.title}
 					</h3>
-					{item.isFree && (
-						<span className="inline-flex items-center rounded bg-emerald-600 px-2 py-0.5 text-[11px] font-bold text-white">
-							{m["exams.toeic.category.freeBadge"]()}
-						</span>
-					)}
 				</div>
 
 				<div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground md:gap-4">

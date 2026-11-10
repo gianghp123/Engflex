@@ -68,7 +68,9 @@ resource "coolify_service" "this" {
           - |
             until mc alias set local http://minio:9000 $SERVICE_USER_MINIO $SERVICE_PASSWORD_MINIO; do sleep 1; done;
             mc mb -p local/${var.bucket};
-            mc anonymous set download local/${var.bucket}
+            mc anonymous set download local/${var.bucket} &&
+            mc mb -p local/stories &&
+            mc anonymous set download local/stories
         networks:
           - coolify
     networks:
