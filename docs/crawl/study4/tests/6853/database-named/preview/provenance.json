@@ -1,9 +1,0 @@
-{
-  "status": "preview-needs-review",
-  "exportSchemaVersion": "0.1.0",
-  "contentHash": "6bf211dc692b34f9b35f0260fe971212908ea7477cc716e066bbea05b28f731e",
-  "draftHash": "5ad5fe4188b540c9f4b15bdf08be301f019a25dc7744a4903ac0ab2ab6e58671",
-  "sourceManifestHash": "5ad5fe4188b540c9f4b15bdf08be301f019a25dc7744a4903ac0ab2ab6e58671",
-  "reviewedBy": null,
-  "note": "Contains answer keys; server import only, never a learner-facing response"
-}
