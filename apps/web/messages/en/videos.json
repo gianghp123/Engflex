@@ -54,33 +54,56 @@
         "label": "Difficulty",
         "easy": "Easy",
         "normal": "Normal",
-        "hard": "Hard"
+        "hard": "Hard",
+        "locked": "You can choose a different difficulty in your next attempt."
       },
       "hints": {
         "reveal": "Reveal word {index}",
-        "hide": "Hide word {index}",
-        "note": "Revealed words count as mistakes and lower your score.",
+        "note": "Revealed words earn no points.",
+        "confirm": "Reveal the remaining answers and submit this sentence? Revealed words earn no points.",
+        "submit": "Reveal and submit",
         "revealAll": "Reveal all words"
       },
-      "next": "Next",
-      "summary": {
-        "title": "Session Completed",
-        "body": "You have completed all sentences in this video.",
-        "accuracy": "Accuracy: {percent}%",
-        "correctWords": "Correct words: {count}",
-        "incorrectWords": "Incorrect words: {count}",
-        "restart": "Practice Again",
-        "backToHub": "Back to Videos"
+      "input": {
+        "word": "Word {index}",
+        "hint": "Type what you hear"
       },
+      "playback": {
+        "pause": "Pause"
+      },
+      "preferences": {
+        "translation": "Vietnamese translation",
+        "phonetic": "IPA pronunciation",
+        "correct": "Show correct words while typing",
+        "sound": "Feedback sounds"
+      },
+      "review": {
+        "hinted": "Submitted with hints",
+        "submitted": "Submitted",
+        "pending": "Not submitted",
+        "lineScore": "{earned}/{total} points",
+        "noScore": "No score available",
+        "details": "Sentence details",
+        "finalScore": "Final score: {score}%",
+        "hintCount": "Hints used on {count} words",
+        "restart": "Start a new attempt"
+      },
+      "feedback": {
+        "correct": "Correct",
+        "incorrect": "Incorrect",
+        "revealed": "Revealed by a hint",
+        "completed": "Sentence completed"
+      },
+      "attempt": {
+        "saving": "Saving progress…",
+        "saveFailed": "Progress could not be saved.",
+        "loadFailed": "Could not load your dictation progress."
+      },
+      "next": "Next",
       "empty": {
         "title": "No Transcript Available",
         "body": "This video does not have subtitles available for dictation practice.",
         "back": "Back to Videos"
-      },
-      "input": {
-        "hint": "Type each word and press Space to check",
-        "sentenceDone": "Sentence completed! Press Enter or 'Next' to continue.",
-        "accuracy": "{correct}/{total} words correct"
       }
     },
     "practice": {
@@ -101,6 +124,20 @@
         "progress": "{value}%",
         "item": "Sentence {index}",
         "edit": "Edit sentence"
+      },
+      "preferences": {
+        "description": "Changes apply immediately and are remembered in this browser.",
+        "speed": "Playback speed",
+        "transcript": "Show transcript",
+        "video": "Show video",
+        "largeVideo": "Large video",
+        "reset": "Restore defaults"
+      },
+      "shortcuts": {
+        "focus": "Keys work in the focused control. Video iframe controls may use their own shortcuts.",
+        "tab": "Move between controls (Shift + Tab to go back).",
+        "activate": "Activate the focused button.",
+        "close": "Close this dialog."
       }
     },
     "shadowing": {

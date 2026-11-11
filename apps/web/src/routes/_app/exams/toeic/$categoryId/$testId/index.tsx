@@ -18,7 +18,6 @@ import { Button } from "#/components/ui/button";
 import { Skeleton } from "#/components/ui/skeleton";
 import { ToeicConfigPanel } from "#/features/exams/components/toeic-config-panel";
 import { ToeicPartsBreakdown } from "#/features/exams/components/toeic-parts-breakdown";
-import { MOCK_TEST_ATTEMPT_COUNTS } from "#/features/exams/fixtures";
 import { toeicParts } from "#/features/exams/parts";
 import {
 	examKeys,
@@ -162,12 +161,14 @@ function TestConfiguration({ test }: { test: ExamTestDetail }) {
 					<span className="inline-flex items-center gap-1.5">
 						<Users className="size-4" aria-hidden="true" />
 						{m["exams.toeic.hub.attemptsCount"]({
-							count: MOCK_TEST_ATTEMPT_COUNTS[0],
+							count: test.attemptsCount,
 						})}
 					</span>
 					<span className="inline-flex items-center gap-1.5">
 						<Clock className="size-4" aria-hidden="true" />
-						{m["exams.toeic.category.durationMinutes"]({ count: 120 })}
+						{m["exams.toeic.category.durationMinutes"]({
+							count: test.durationMinutes,
+						})}
 					</span>
 				</div>
 			</div>
@@ -177,6 +178,7 @@ function TestConfiguration({ test }: { test: ExamTestDetail }) {
 				</div>
 				<div className="flex flex-col gap-4 lg:col-span-5">
 					<ToeicConfigPanel
+						durationMinutes={test.durationMinutes}
 						parts={parts}
 						selectedMode={selectedMode}
 						selectedParts={selectedParts}

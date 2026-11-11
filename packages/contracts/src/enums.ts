@@ -127,13 +127,37 @@ export const ExamModePractice = "practice";
 export type ExamMode = typeof ExamModeExam | typeof ExamModePractice;
 
 //////////
+// source: exam_skill.go
+
+/**
+ * ExamSkill identifies the specific language skill tested (exam_tests.skill).
+ */
+export const ExamSkillReading = "reading";
+export const ExamSkillListening = "listening";
+export const ExamSkillWriting = "writing";
+export const ExamSkillSpeaking = "speaking";
+export const ExamSkillFull = "full";
+export type ExamSkill = typeof ExamSkillReading | typeof ExamSkillListening | typeof ExamSkillWriting | typeof ExamSkillSpeaking | typeof ExamSkillFull;
+
+//////////
+// source: exam_sub_type.go
+
+/**
+ * ExamSubType identifies the examination track or module (exam_categories.sub_type, exam_tests.sub_type).
+ */
+export const ExamSubTypeAcademic = "academic";
+export const ExamSubTypeGeneralTraining = "general_training";
+export type ExamSubType = typeof ExamSubTypeAcademic | typeof ExamSubTypeGeneralTraining;
+
+//////////
 // source: exam_type.go
 
 /**
  * ExamType identifies the examination format of a category (exam_categories.type).
  */
-export type ExamType = string;
-export const ExamTypeTOEIC: ExamType = "toeic";
+export const ExamTypeTOEIC = "toeic";
+export const ExamTypeIELTS = "ielts";
+export type ExamType = typeof ExamTypeTOEIC | typeof ExamTypeIELTS;
 
 //////////
 // source: feedback_subject_type.go

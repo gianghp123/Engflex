@@ -1,7 +1,3 @@
-export type DictationLevel = "easy" | "normal" | "hard";
-
-export const DICTATION_LEVELS: DictationLevel[] = ["easy", "normal", "hard"];
-
 export function splitWords(sentence: string): string[] {
 	return sentence.trim().split(/\s+/).filter(Boolean);
 }
@@ -12,6 +8,58 @@ export function maskWord(word: string): string {
 
 export function maskSentence(sentence: string): string {
 	return splitWords(sentence).map(maskWord).join(" ");
+}
+
+function normalizeWord(word: string): string {
+	return word.normalize("NFC").toLowerCase().replace(/\p{P}/gu, "");
+}
+
+export type DictationLevel = "easy" | "normal" | "hard";
+
+export function dictationInputWords(draft: string) {
+	return splitWords(draft).filter((word) => normalizeWord(word));
+}
+
+export function checkDictation(
+	sentence: string,
+	draft: string,
+	level: DictationLevel = "hard",
+	answers: string[] = [],
+) {
+	const expected = splitWords(sentence).filter((word) => normalizeWord(word));
+	const typed = splitWords(draft).map(normalizeWord).filter(Boolean);
+	const count = Math.ceil(
+		expected.length / (level === "easy" ? 3 : level === "normal" ? 2 : 1),
+	);
+	const positions = Array.from({ length: count }, (_, index) =>
+		Math.floor((index * expected.length) / count),
+	);
+	const blankIndices = new Map(
+		positions.map((position, index) => [position, index]),
+	);
+	const slots = expected.map((word, index) => {
+		const blankIndex = blankIndices.get(index);
+		const parts = splitWords(answers[blankIndex ?? -1] ?? "")
+			.map(normalizeWord)
+			.filter(Boolean);
+		const answer = level === "hard" ? typed[index] : parts[0];
+		const status = !answer
+			? ("empty" as const)
+			: (level === "hard" || parts.length === 1) &&
+					answer === normalizeWord(word)
+				? ("correct" as const)
+				: ("incorrect" as const);
+		return { word, status, blankIndex, position: index };
+	});
+	return {
+		slots,
+		complete:
+			count > 0 &&
+			(level !== "hard" || slots.length === typed.length) &&
+			slots.every(
+				(slot) => slot.blankIndex === undefined || slot.status === "correct",
+			),
+	};
 }
 
 /** Zip a sentence with its space-separated IPA, one token per word. */
@@ -32,20 +80,4 @@ export function extractYouTubeId(url?: string): string | null {
 		/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/,
 	);
 	return match ? match[1] : null;
-}
-
-export function cleanWordForComparison(word: string): string {
-	return word.toLowerCase().replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, "");
-}
-
-export function getWordHint(word: string, level: DictationLevel): string {
-	const clean = cleanWordForComparison(word);
-	if (level === "easy") {
-		if (clean.length <= 1) return clean;
-		return `${clean[0]}${"*".repeat(clean.length - 1)}`;
-	}
-	if (level === "normal") {
-		return "*".repeat(clean.length);
-	}
-	return "";
 }

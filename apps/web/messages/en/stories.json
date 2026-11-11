@@ -5,8 +5,7 @@
     "description": "Read and listen to English stories daily to expand your vocabulary and natural comprehension!",
     "tabs": {
       "all": "All stories",
-      "saved": "Saved",
-      "comingSoon": "Coming soon"
+      "saved": "Saved"
     },
     "filter": {
       "allLevels": "All levels",
@@ -19,8 +18,6 @@
       "minutes": "{count} min"
     },
     "empty": "No stories found",
-    "showingRange": "Showing {from}-{to} of {total} stories",
-    "showingAll": "Showing {total} stories",
     "reader": {
       "listenAndRead": "LISTEN & READ",
       "readOnly": "READ ONLY",
@@ -28,7 +25,24 @@
       "showTranslation": "SHOW TRANSLATION",
       "save": "SAVE",
       "saved": "SAVED",
-      "disclaimer": "Lesson content was compiled by team Parroto and intellectual property of Parroto. Please do not copy or redistribute in any form."
+      "disclaimer": "Lesson content was compiled by team Parroto and intellectual property of Parroto. Please do not copy or redistribute in any form.",
+      "settings": {
+        "title": "Reading settings",
+        "fontSize": "Font size",
+        "fontFamily": "Font family",
+        "lineHeight": "Line height",
+        "sans": "Sans serif",
+        "serif": "Serif",
+        "reset": "Restore defaults",
+        "back": "Back to stories"
+      }
+    },
+    "bookmarks": {
+      "error": "Could not load or update your stories. Please try again.",
+      "retry": "Retry",
+      "unavailable": "This saved story is no longer available.",
+      "remove": "Remove bookmark",
+      "empty": "No saved stories match your filters."
     }
   }
 }

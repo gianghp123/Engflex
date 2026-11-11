@@ -82,6 +82,7 @@ export function ToeicHistoryCard({
 						<Button
 							type="button"
 							variant="destructive"
+							disabled={locked}
 							onClick={() => {
 								if (!locked) onCancel(item);
 							}}

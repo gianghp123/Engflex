@@ -4,6 +4,7 @@ import { APP_ROUTES } from "#/app/app-route";
 import { useBreadcrumbs } from "#/app/breadcrumbs";
 import { BackButton } from "#/components/common/back-button";
 import { PageLayout } from "#/components/common/page-layout";
+import { BookmarkButton } from "#/features/bookmarks/bookmark-button";
 import { ActivityRow } from "#/features/lessons/components/activity-row";
 import { LessonHeader } from "#/features/lessons/components/lesson-header";
 import { TipBar } from "#/features/lessons/components/tip-bar";
@@ -81,6 +82,7 @@ function LessonDetailPage() {
 			}
 		>
 			<div className="flex flex-wrap items-center gap-2">
+				<BookmarkButton type="lesson" id={detail.id} />
 				<span className="chip px-2 py-0.5 text-xs">
 					{detail.section?.title}
 				</span>

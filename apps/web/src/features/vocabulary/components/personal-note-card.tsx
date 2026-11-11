@@ -1,5 +1,8 @@
+import { NoteMaxLength } from "@engflex/contracts";
 import { Pencil, Trash2 } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
+import { SubmitButton } from "#/components/common/submit-button";
 import { Button } from "#/components/ui/button";
 import { Textarea } from "#/components/ui/textarea";
 import { m } from "#/paraglide/messages";
@@ -16,13 +19,24 @@ export function PersonalNoteCard({
 	note,
 	createdAt,
 	onSave,
+	pending,
 }: {
 	note: string | undefined;
 	createdAt: string;
-	onSave: (note: string) => void;
+	onSave: (note: string) => Promise<void>;
+	pending: boolean;
 }) {
 	const [editing, setEditing] = useState(false);
 	const [draft, setDraft] = useState(note ?? "");
+
+	async function save(value: string) {
+		try {
+			await onSave(value);
+			setEditing(false);
+		} catch {
+			toast.error(m["common.toast.error"]());
+		}
+	}
 
 	return (
 		<section className="flex flex-col gap-3 rounded-xl border bg-card p-5">
@@ -39,6 +53,7 @@ export function PersonalNoteCard({
 				<div className="flex flex-col gap-2">
 					<Textarea
 						value={draft}
+						maxLength={NoteMaxLength}
 						onChange={(event) => setDraft(event.target.value)}
 						rows={3}
 					/>
@@ -54,16 +69,14 @@ export function PersonalNoteCard({
 						>
 							{m["common.actions.cancel"]()}
 						</Button>
-						<Button
+						<SubmitButton
 							type="button"
 							size="sm"
-							onClick={() => {
-								onSave(draft);
-								setEditing(false);
-							}}
+							pending={pending}
+							onClick={() => void save(draft)}
 						>
 							{m["vocabulary.detail.saveNote"]()}
-						</Button>
+						</SubmitButton>
 					</div>
 				</div>
 			) : (
@@ -84,15 +97,16 @@ export function PersonalNoteCard({
 							<Pencil data-icon="inline-start" />
 							{m["vocabulary.detail.editNote"]()}
 						</Button>
-						<Button
+						<SubmitButton
 							type="button"
 							variant="ghost"
 							size="sm"
-							onClick={() => onSave("")}
+							pending={pending}
+							onClick={() => void save("")}
 						>
 							<Trash2 data-icon="inline-start" />
 							{m["vocabulary.detail.deleteNote"]()}
-						</Button>
+						</SubmitButton>
 					</div>
 				</>
 			)}

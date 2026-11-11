@@ -2,6 +2,11 @@ type ApiId = string | number;
 
 /** Backend paths only. No hardcoded URLs in services — import from here. */
 export const API_ROUTES = {
+	VIDEO_TRANSCRIPTS: {
+		LIST: "/video-transcripts",
+		BY_ID: (id: ApiId) => `/video-transcripts/${id}`,
+		BY_VIDEO: (id: ApiId) => `/video-transcripts/video-exercise/${id}`,
+	},
 	PROFILES: {
 		ME: "/profiles/me",
 		BY_ID: (id: ApiId) => `/profiles/${id}`,
@@ -32,6 +37,7 @@ export const API_ROUTES = {
 	USER_VOCABULARY: {
 		LIST: "/user-vocabulary",
 		BY_ITEM_ID: (itemId: ApiId) => `/user-vocabulary/${itemId}`,
+		NOTE: (itemId: ApiId) => `/user-vocabulary/${itemId}/note`,
 	},
 	VIDEO_EXERCISES: {
 		LIST: "/video-exercises",
@@ -129,9 +135,12 @@ export const API_ROUTES = {
 	},
 	BOOKMARKS: {
 		LIST: "/bookmarks",
+		LIBRARY: "/bookmarks/library",
 		CREATE: "/bookmarks",
 		DELETE: (contentType: string, contentId: ApiId) =>
 			`/bookmarks/${contentType}/${contentId}`,
+		NOTE: (contentType: string, contentId: ApiId) =>
+			`/bookmarks/${contentType}/${contentId}/note`,
 	},
 	EXAMS: {
 		CATEGORIES: {
@@ -144,6 +153,7 @@ export const API_ROUTES = {
 		},
 		ATTEMPTS: {
 			LIST: "/exam-attempts",
+			STATISTICS: "/exam-attempts/statistics",
 			CANCEL: (id: ApiId) => `/exam-attempts/${id}/cancel`,
 			BY_ID: (id: ApiId) => `/exam-attempts/${id}`,
 		},

@@ -10,8 +10,8 @@ import (
 )
 
 type ExamTestRepository interface {
-	GetByID(ctx context.Context, id string) (*models.ExamTest, error)
-	ListByCategory(ctx context.Context, categoryID string, limit, offset int) ([]*models.ExamTest, error)
+	GetByID(ctx context.Context, id string) (*models.ExamTestCatalog, error)
+	ListByCategory(ctx context.Context, categoryID string, limit, offset int) ([]*models.ExamTestCatalog, error)
 	CountByCategory(ctx context.Context, categoryID string) (int64, error)
 	GetForUpdate(ctx context.Context, id string) (*models.ExamTest, error)
 	WithTx(tx *gorm.DB) ExamTestRepository
@@ -24,13 +24,13 @@ func (r *examTestRepository) WithTx(tx *gorm.DB) ExamTestRepository {
 	return &examTestRepository{db: tx}
 }
 
-func (r *examTestRepository) ListByCategory(ctx context.Context, categoryID string, limit, offset int) ([]*models.ExamTest, error) {
+func (r *examTestRepository) ListByCategory(ctx context.Context, categoryID string, limit, offset int) ([]*models.ExamTestCatalog, error) {
 	id, err := parseID(categoryID, "categoryId")
 	if err != nil {
 		return nil, err
 	}
-	var tests []*models.ExamTest
-	err = r.db.WithContext(ctx).Where("exam_tests.category_id = ?", id).Order("exam_tests.title ASC").Order("exam_tests.id ASC").Limit(limit).Offset(offset).Find(&tests).Error
+	var tests []*models.ExamTestCatalog
+	err = r.catalogQuery(ctx).Where("exam_tests.category_id = ?", id).Order("exam_tests.title ASC").Order("exam_tests.id ASC").Limit(limit).Offset(offset).Find(&tests).Error
 	return tests, err
 }
 
@@ -44,16 +44,21 @@ func (r *examTestRepository) CountByCategory(ctx context.Context, categoryID str
 	return count, err
 }
 
-func (r *examTestRepository) GetByID(ctx context.Context, id string) (*models.ExamTest, error) {
+func (r *examTestRepository) GetByID(ctx context.Context, id string) (*models.ExamTestCatalog, error) {
 	parsed, err := parseID(id, "testId")
 	if err != nil {
 		return nil, err
 	}
-	var test models.ExamTest
-	if err := r.db.WithContext(ctx).Joins("Category").First(&test, "exam_tests.id = ?", parsed).Error; err != nil {
+	var test models.ExamTestCatalog
+	if err := r.catalogQuery(ctx).Joins("Category").First(&test, "exam_tests.id = ?", parsed).Error; err != nil {
 		return nil, err
 	}
 	return &test, nil
+}
+
+func (r *examTestRepository) catalogQuery(ctx context.Context) *gorm.DB {
+	return r.db.WithContext(ctx).Select(`exam_tests.*,
+		(SELECT count(*) FROM attempts a WHERE a.exam_test_id = exam_tests.id AND a.type = 'exam') AS attempts_count`)
 }
 
 // GetForUpdate is called inside the start transaction; lock only the test row.

@@ -1,20 +1,11 @@
-import type {
-	AttemptType,
-	CompleteVideoAttempt,
-	ListVideoExercises,
-	SaveVideoProgress,
-} from "@engflex/contracts";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import type { ListVideoExercises } from "@engflex/contracts";
+import { useQuery } from "@tanstack/react-query";
 import {
-	completeVideoAttempt,
-	getOpenVideoAttempt,
+	getOpenDictationAttempt,
 	getVideo,
 	listCategoryPreviews,
 	listVideos,
-	saveVideoProgress,
-	startVideoAttempt,
 } from "#/features/videos/service";
-import { ApiError } from "#/lib/api/api";
 
 export const videoKeys = {
 	all: ["videos"] as const,
@@ -23,8 +14,8 @@ export const videoKeys = {
 	list: (params: Partial<ListVideoExercises>) =>
 		[...videoKeys.all, "list", params] as const,
 	detail: (id: string) => [...videoKeys.all, "detail", id] as const,
-	openAttempt: (id: string, type: AttemptType) =>
-		[...videoKeys.all, "attempt", "open", id, type] as const,
+	openDictation: (id: string) =>
+		[...videoKeys.all, "dictation", "open", id] as const,
 };
 
 export function videoPreviewQueryOptions(previewK: number) {
@@ -48,42 +39,6 @@ export function videoDetailQueryOptions(id: string) {
 	};
 }
 
-export function openVideoAttemptQueryOptions(id: string, type: AttemptType) {
-	return {
-		queryKey: videoKeys.openAttempt(id, type),
-		queryFn: () => getOpenVideoAttempt(id, type),
-		retry: (failureCount: number, error: unknown) =>
-			!(error instanceof ApiError && error.status === 404) && failureCount < 3,
-	};
-}
-
-export function useStartVideoAttempt() {
-	return useMutation({
-		mutationFn: (input: { videoId: string; type: AttemptType }) =>
-			startVideoAttempt(input.videoId, input.type),
-	});
-}
-
-export function useSaveVideoProgress() {
-	return useMutation({
-		mutationFn: (input: {
-			videoId: string;
-			attemptId: string;
-			req: SaveVideoProgress;
-		}) => saveVideoProgress(input.videoId, input.attemptId, input.req),
-	});
-}
-
-export function useCompleteVideoAttempt() {
-	return useMutation({
-		mutationFn: (input: {
-			videoId: string;
-			attemptId: string;
-			req: CompleteVideoAttempt;
-		}) => completeVideoAttempt(input.videoId, input.attemptId, input.req),
-	});
-}
-
 export function useVideoPreview(previewK: number) {
 	return useQuery(videoPreviewQueryOptions(previewK));
 }
@@ -94,4 +49,14 @@ export function useVideoList(params: Partial<ListVideoExercises>) {
 
 export function useVideo(id: string) {
 	return useQuery(videoDetailQueryOptions(id));
+}
+
+export function useOpenDictationAttempt(id: string, enabled: boolean) {
+	return useQuery({
+		queryKey: videoKeys.openDictation(id),
+		queryFn: () => getOpenDictationAttempt(id),
+		enabled,
+		refetchOnMount: "always",
+		refetchOnWindowFocus: false,
+	});
 }

@@ -22,6 +22,8 @@ export function TranscriptPanel({
 	actions,
 	onSelect,
 	onEdit,
+	dictationStatus,
+	onDetails,
 }: {
 	transcripts: VideoTranscriptResponse[];
 	activeIndex: number;
@@ -32,6 +34,13 @@ export function TranscriptPanel({
 	actions?: ReactNode;
 	onSelect?: (index: number) => void;
 	onEdit?: (index: number) => void;
+	dictationStatus?: (id: string) => {
+		submitted: boolean;
+		hinted: boolean;
+		earned?: number;
+		total?: number;
+	};
+	onDetails?: (index: number) => void;
 }) {
 	const value = Math.round(progress);
 	return (
@@ -65,6 +74,8 @@ export function TranscriptPanel({
 				<ol className="flex flex-col gap-2 pb-2">
 					{transcripts.map((line, index) => {
 						const active = index === activeIndex;
+						const state = dictationStatus?.(line.id);
+						const hideContent = masked && !state?.submitted;
 						const itemLabel = m["videos.practice.transcript.item"]({
 							index: line.sequence,
 						});
@@ -87,28 +98,61 @@ export function TranscriptPanel({
 									>
 										#{line.sequence}
 									</span>
-									<div className="flex items-center">
-										<Button
-											type="button"
-											variant="ghost"
-											size="icon"
-											className="size-8"
-											aria-label={`${m["videos.practice.transcript.edit"]()} — ${itemLabel}`}
-											title={m["videos.practice.transcript.edit"]()}
-											onClick={() => onEdit?.(index)}
-										>
-											<SquarePen />
-										</Button>
-									</div>
+									{state ? (
+										<div className="flex flex-wrap items-center justify-end gap-2 text-xs">
+											<span>
+												{state.submitted
+													? state.hinted
+														? m["videos.dictation.review.hinted"]()
+														: m["videos.dictation.review.submitted"]()
+													: m["videos.dictation.review.pending"]()}
+											</span>
+											{state.submitted ? (
+												<>
+													<span>
+														{state.earned !== undefined &&
+														state.total !== undefined
+															? m["videos.dictation.review.lineScore"]({
+																	earned: state.earned,
+																	total: state.total,
+																})
+															: m["videos.dictation.review.noScore"]()}
+													</span>
+													<Button
+														type="button"
+														variant="ghost"
+														size="sm"
+														onClick={() => onDetails?.(index)}
+													>
+														{m["videos.dictation.review.details"]()}
+													</Button>
+												</>
+											) : null}
+										</div>
+									) : (
+										<div className="flex items-center">
+											<Button
+												type="button"
+												variant="ghost"
+												size="icon"
+												className="size-8"
+												aria-label={`${m["videos.practice.transcript.edit"]()} — ${itemLabel}`}
+												title={m["videos.practice.transcript.edit"]()}
+												onClick={() => onEdit?.(index)}
+											>
+												<SquarePen />
+											</Button>
+										</div>
+									)}
 								</div>
 								<button
 									type="button"
 									aria-current={active ? "step" : undefined}
-									aria-label={masked ? itemLabel : undefined}
+									aria-label={hideContent ? itemLabel : undefined}
 									onClick={() => onSelect?.(index)}
 									className="flex cursor-pointer flex-col gap-1 rounded-lg text-left focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-ring"
 								>
-									{masked ? (
+									{hideContent ? (
 										<span className="font-mono text-sm leading-6 tracking-widest break-words text-muted-foreground">
 											{maskSentence(line.content)}
 										</span>

@@ -27,6 +27,25 @@ class Response(io.BytesIO):
 
 
 class ImportTests(unittest.TestCase):
+    def test_local_package_preserves_review_and_exact_exam_content(self):
+        sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+        from toeic_storage import relocate_content
+        for fault in (None, "answer", "missing", "preview", "stale_review"):
+            with self.subTest(fault=fault):
+                content = json.loads(FIXTURE.read_text(encoding="utf-8"))
+                packaged = relocate_content(content, {asset["sourceId"]: "toeic/ets/test/images/test-"+str(i)+".png" for i,asset in enumerate(content["assets"])})
+                provenance = {"status":"release","exportSchemaVersion":"0.1.0","contentHash":module.digest(content),"draftHash":"draft"}
+                report = {"payloadHash":"draft","releaseReady":True,"issues":[],"issueCounts":{}}
+                if fault == "answer": packaged["parts"][0]["items"][0]["questions"][0]["correctKey"] = "D"
+                if fault == "missing": packaged["assets"] = []
+                if fault == "preview": provenance["status"] = "preview-needs-review"
+                if fault == "stale_review": report["payloadHash"] = "old"
+                with patch.object(module,"validate_content"):
+                    if fault:
+                        with self.assertRaises(ValueError): module.prepare_package(content,provenance,report,packaged)
+                    else:
+                        self.assertEqual(packaged,module.prepare_package(content,provenance,report,packaged))
+
     def test_release_and_media_checks(self):
         for fault in (None, "preview", "changed", "unreviewed", "stale_review", "missing", "hash", "short_audio", "redirect"):
             with self.subTest(fault=fault):

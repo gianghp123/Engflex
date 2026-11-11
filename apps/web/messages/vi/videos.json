@@ -54,33 +54,56 @@
         "label": "Độ khó",
         "easy": "Dễ",
         "normal": "Vừa",
-        "hard": "Khó"
+        "hard": "Khó",
+        "locked": "Bạn có thể chọn mức khác khi bắt đầu lượt mới."
       },
       "hints": {
         "reveal": "Hiện từ {index}",
-        "hide": "Ẩn từ {index}",
-        "note": "Các từ được tiết lộ sẽ bị tính là lỗi và ảnh hưởng đến điểm số của bạn.",
+        "note": "Những từ đã mở gợi ý sẽ không được tính điểm.",
+        "confirm": "Hiện các đáp án còn lại và nộp câu này? Những từ đã mở sẽ không được tính điểm.",
+        "submit": "Hiện và nộp",
         "revealAll": "Hiện tất cả từ"
       },
-      "next": "Tiếp theo",
-      "summary": {
-        "title": "Phiên học hoàn thành",
-        "body": "Bạn đã hoàn thành tất cả các câu trong video này.",
-        "accuracy": "Độ chính xác: {percent}%",
-        "correctWords": "Từ đúng: {count}",
-        "incorrectWords": "Từ sai: {count}",
-        "restart": "Luyện tập lại",
-        "backToHub": "Về thư viện video"
+      "input": {
+        "word": "Từ thứ {index}",
+        "hint": "Gõ những gì bạn nghe được"
       },
+      "playback": {
+        "pause": "Tạm dừng"
+      },
+      "preferences": {
+        "translation": "Bản dịch tiếng Việt",
+        "phonetic": "Phiên âm IPA",
+        "correct": "Hiện từ đúng khi đang gõ",
+        "sound": "Âm thanh phản hồi"
+      },
+      "review": {
+        "hinted": "Đã nộp có gợi ý",
+        "submitted": "Đã nộp",
+        "pending": "Chưa nộp",
+        "lineScore": "{earned}/{total} điểm",
+        "noScore": "Chưa có điểm",
+        "details": "Chi tiết câu",
+        "finalScore": "Điểm cả lượt: {score}%",
+        "hintCount": "Đã dùng gợi ý cho {count} từ",
+        "restart": "Luyện lượt mới"
+      },
+      "feedback": {
+        "correct": "Đúng",
+        "incorrect": "Sai",
+        "revealed": "Đã mở gợi ý",
+        "completed": "Đã hoàn thành câu"
+      },
+      "attempt": {
+        "saving": "Đang lưu tiến độ…",
+        "saveFailed": "Không thể lưu tiến độ.",
+        "loadFailed": "Không thể tải tiến độ chép chính tả."
+      },
+      "next": "Tiếp theo",
       "empty": {
         "title": "Chưa có bản chép lời",
         "body": "Video này chưa có phụ đề để luyện tập dictation.",
         "back": "Quay lại thư viện"
-      },
-      "input": {
-        "hint": "Gõ từng từ và nhấn phím Space để kiểm tra",
-        "sentenceDone": "Hoàn thành câu! Nhấn Enter hoặc 'Tiếp theo' để tiếp tục.",
-        "accuracy": "Đúng {correct}/{total} từ"
       }
     },
     "practice": {
@@ -101,6 +124,20 @@
         "progress": "{value}%",
         "item": "Câu {index}",
         "edit": "Sửa câu"
+      },
+      "preferences": {
+        "description": "Thay đổi áp dụng ngay và được ghi nhớ trên trình duyệt này.",
+        "speed": "Tốc độ phát",
+        "transcript": "Hiện bản chép lời",
+        "video": "Hiện video",
+        "largeVideo": "Video lớn",
+        "reset": "Khôi phục mặc định"
+      },
+      "shortcuts": {
+        "focus": "Phím áp dụng cho điều khiển đang được chọn. Trình phát video có thể có phím tắt riêng.",
+        "tab": "Di chuyển giữa các điều khiển (Shift + Tab để quay lại).",
+        "activate": "Kích hoạt nút đang được chọn.",
+        "close": "Đóng hộp thoại này."
       }
     },
     "shadowing": {

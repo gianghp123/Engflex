@@ -1,3 +1,27 @@
+# Output khớp MinIO
+
+Lệnh `release` xuất package vào `output/toeic/<category-slug>/<test-slug>/`:
+
+```text
+content.json
+images/<test-slug>-part-1-q01.png
+images/<test-slug>-part-3-q62-64.png
+audio/<test-slug>-audio.mp3
+```
+
+Cấu hình qua `--category-slug`, `--test-slug`, `--output-root`. Mặc định là
+`ets-2024`, `ets-2024-test-NN`, và `scripts/toeic_pipeline/output`.
+Quy tắc đặt tên và kiểm tra hash dùng chung với publisher MinIO.
+
+```powershell
+uv run --project scripts/toeic_pipeline python scripts/toeic_pipeline/run_pipeline.py release --test 2 --category-slug ets-2024 --test-slug ets-2024-test-02 --output-root scripts/toeic_pipeline/output
+```
+
+Import qua `apps/api/scripts/import_toeic.py --package-root <output-root>` kèm
+`--release <data/test_NN/release>` và các tham số category/test. Release vẫn phải
+qua validation và review; provenance, bằng chứng và correction giữ ở workspace
+pipeline. Chi tiết lệnh: `apps/api/scripts/README-toeic-import.md`.
+
 # TOEIC 2024 Pipeline — Kế hoạch ưu tiên độ chính xác
 
 ## 1. Mục tiêu và trạng thái

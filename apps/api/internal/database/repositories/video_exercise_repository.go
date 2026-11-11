@@ -6,6 +6,7 @@ import (
 
 	"engflex-api/internal/common/enums"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 // List/Count take onlyPublished so draft exercises never leak into a
@@ -15,6 +16,7 @@ import (
 type VideoExerciseRepository interface {
 	List(ctx context.Context, limit int, offset int, onlyPublished bool) ([]*models.VideoExercise, error)
 	GetByID(ctx context.Context, id string) (*models.VideoExercise, error)
+	GetByIDForUpdate(ctx context.Context, id string) (*models.VideoExercise, error)
 	// GetDetail returns the exercise with its category (one join) and its
 	// transcripts (second query, ordered by sequence) attached.
 	GetDetail(ctx context.Context, id string) (*models.VideoExercise, error)
@@ -69,6 +71,14 @@ func (r *videoExerciseRepository) GetByID(ctx context.Context, id string) (*mode
 	return &lesson, nil
 }
 
+func (r *videoExerciseRepository) GetByIDForUpdate(ctx context.Context, id string) (*models.VideoExercise, error) {
+	var video models.VideoExercise
+	if err := r.db.WithContext(ctx).Clauses(clause.Locking{Strength: "UPDATE"}).First(&video, "id = ?", id).Error; err != nil {
+		return nil, err
+	}
+	return &video, nil
+}
+
 // GetDetail returns one exercise with its category joined in a single
 // round trip and its transcripts attached from a second query ordered by
 // sequence. Transcripts stay out of the join: a has-many join would
@@ -78,7 +88,9 @@ func (r *videoExerciseRepository) GetDetail(ctx context.Context, id string) (*mo
 		return nil, err
 	}
 	var lesson models.VideoExercise
-	if err := r.db.WithContext(ctx).Joins("Category").First(&lesson, "video_exercises.id = ?", id).Error; err != nil {
+	// VideoCount is computed by ListWithPreview and has no table column.
+	category := r.db.Omit("VideoCount")
+	if err := r.db.WithContext(ctx).Joins("Category", category).First(&lesson, "video_exercises.id = ?", id).Error; err != nil {
 		return nil, err
 	}
 	transcripts := make([]*models.VideoTranscript, 0)

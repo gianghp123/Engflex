@@ -3,14 +3,13 @@ import type { CEFR } from "@engflex/contracts";
 export const STORIES_PAGE_SIZE = 12;
 
 export interface StoriesSearch {
-	page?: number;
+	tab?: "all" | "saved";
 	cefr?: "all" | CEFR;
 	topic?: string;
 	search?: string;
 }
 
 export interface StoryFilters {
-	page: number;
 	cefr: "all" | CEFR;
 	topic: string;
 	search: string;

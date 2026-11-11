@@ -1,4 +1,4 @@
-import { Clock3, Play, RotateCcw } from "lucide-react";
+import { Clock3, Pause, Play, RotateCcw } from "lucide-react";
 import { type RefObject, useState } from "react";
 import { MoMascot } from "#/components/common/mo-mascot";
 import { Button } from "#/components/ui/button";
@@ -22,6 +22,9 @@ export function VideoPanel({
 	onPlayerReady,
 	onSegmentEnd,
 	onPlayPastEnd,
+	onPlayingChange,
+	onRateChange,
+	isPlaying = false,
 	children,
 }: {
 	video: Video;
@@ -33,6 +36,9 @@ export function VideoPanel({
 	onPlayerReady?: () => void;
 	onSegmentEnd?: () => void;
 	onPlayPastEnd?: () => void;
+	onPlayingChange?: (playing: boolean) => void;
+	onRateChange?: (rate: number) => void;
+	isPlaying?: boolean;
 	children?: React.ReactNode;
 }) {
 	const [currentTime, setCurrentTime] = useState(0);
@@ -67,6 +73,8 @@ export function VideoPanel({
 							onReady={onPlayerReady}
 							onSegmentEnd={onSegmentEnd}
 							onPlayPastEnd={onPlayPastEnd}
+							onPlayingChange={onPlayingChange}
+							onRateChange={onRateChange}
 						/>
 					) : null)}
 			</VideoStage>
@@ -76,8 +84,14 @@ export function VideoPanel({
 			</p>
 			<div className="grid grid-cols-2 gap-3">
 				<Button type="button" onClick={onStart} className="btn btn-primary">
-					<Play data-icon="inline-start" />
-					{m["videos.dictation.video.start"]()}
+					{isPlaying ? (
+						<Pause data-icon="inline-start" />
+					) : (
+						<Play data-icon="inline-start" />
+					)}
+					{isPlaying
+						? m["videos.dictation.playback.pause"]()
+						: m["videos.dictation.video.start"]()}
 				</Button>
 				<Button
 					type="button"

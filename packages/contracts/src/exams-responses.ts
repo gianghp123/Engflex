@@ -4,13 +4,34 @@
 // source: attempt.go
 
 export interface Category {
+  testsCount: number /* int64 */;
+  attemptsCount: number /* int64 */;
   id: string;
   slug: string;
   title: string;
   type: ExamType;
+  subType: ExamSubType | null;
+}
+/**
+ * CategoryReference is the category relation on a test or attempt. Live catalog
+ * counters are returned by the categories list, not by these identity joins.
+ */
+export interface CategoryReference {
+  id: string;
+  slug: string;
+  title: string;
+  type: ExamType;
+  subType: ExamSubType | null;
+}
+export interface ExamStatistics {
+  completedTests: number /* int64 */;
+  highestScore: number /* float64 */ | null;
+  averageScore: number /* float64 */ | null;
+  latestScore: number /* float64 */ | null;
 }
 export interface ExamAttemptSummary {
   result: ResultSummary | null;
+  ieltsResult: ResultSummary | null;
   id: string;
   status: AttemptStatus;
   mode: ExamMode | null;
@@ -33,7 +54,7 @@ export interface AttemptTestSummary {
   categoryId: string;
   slug: string;
   title: string;
-  category: Category | null;
+  category: CategoryReference | null;
 }
 export interface ExamAttempt {
   id: string;
@@ -48,14 +69,18 @@ export interface ExamAttempt {
   createdAt: string /* RFC3339 */;
   examTest: TakingTest | null;
   result: Result | null;
+  ieltsResult: Result | null;
 }
 export interface TakingTest {
   id: string;
   categoryId: string;
   slug: string;
   title: string;
-  category: Category | null;
+  skill: ExamSkill | null;
+  subType: ExamSubType | null;
+  category: CategoryReference | null;
   content: TakingContent | null;
+  ieltsContent: IeltsTakingContent | null;
 }
 export interface ReviewAttempt {
   id: string;
@@ -70,14 +95,102 @@ export interface ReviewAttempt {
   createdAt: string /* RFC3339 */;
   examTest: ReviewTest | null;
   result: Result | null;
+  ieltsResult: Result | null;
 }
 export interface ReviewTest {
   id: string;
   categoryId: string;
   slug: string;
   title: string;
-  category: Category | null;
+  skill: ExamSkill | null;
+  subType: ExamSubType | null;
+  category: CategoryReference | null;
   content: ReviewContent | null;
+  ieltsContent: IeltsReviewContent | null;
+}
+
+//////////
+// source: ielts.go
+
+export interface IeltsContentMetadata {
+  sections: IeltsSectionMetadata[];
+}
+export interface IeltsSectionMetadata {
+  sectionNumber: number /* int */;
+  title: string;
+  questionCount: number /* int */;
+}
+export interface IeltsTakingContent {
+  schemaVersion: string;
+  testId: string;
+  title: string;
+  skill: ExamSkill;
+  subType: ExamSubType;
+  sections: IeltsTakingSection[];
+  assets: Asset[] | null;
+}
+export interface IeltsTakingSection {
+  sectionNumber: number /* int */;
+  title: string;
+  passages: IeltsPassage[];
+  questionGroups: IeltsTakingQuestionGroup[];
+}
+export interface IeltsPassage {
+  id: string;
+  title: string | null;
+  label: string | null;
+  content: IeltsParagraph[];
+}
+export interface IeltsParagraph {
+  id: string | null;
+  label: string | null;
+  text: string;
+}
+export interface IeltsTakingQuestionGroup {
+  id: string;
+  type: string;
+  title: string | null;
+  instructions: string | null;
+  questions: IeltsTakingQuestion[];
+}
+export interface IeltsTakingQuestion {
+  id: string;
+  questionNumber: number /* int */;
+  stem: string | null;
+  options: Option[] | null;
+}
+export interface IeltsReviewContent {
+  schemaVersion: string;
+  testId: string;
+  title: string;
+  skill: ExamSkill;
+  subType: ExamSubType;
+  sections: IeltsReviewSection[];
+  assets: Asset[] | null;
+}
+export interface IeltsReviewSection {
+  sectionNumber: number /* int */;
+  title: string;
+  passages: IeltsPassage[];
+  questionGroups: IeltsReviewQuestionGroup[];
+}
+export interface IeltsReviewQuestionGroup {
+  id: string;
+  type: string;
+  title: string | null;
+  instructions: string | null;
+  questions: IeltsReviewQuestion[];
+}
+export interface IeltsReviewQuestion {
+  id: string;
+  questionNumber: number /* int */;
+  stem: string | null;
+  options: Option[] | null;
+  correctKey: string | null;
+  correctKeys: string[] | null;
+  correctAnswers: string[] | null;
+  explanation: string | null;
+  vietnameseExplanation: string | null;
 }
 
 //////////
@@ -88,19 +201,29 @@ exclude all answer-bearing and translated fields.
 */
 
 export interface TestDetail {
+  attemptsCount: number /* int64 */;
+  durationMinutes: number /* int */;
   id: string;
   categoryId: string;
   slug: string;
   title: string;
+  skill: ExamSkill | null;
+  subType: ExamSubType | null;
   content: ContentMetadata | null;
-  category: Category | null;
+  ieltsContent: IeltsContentMetadata | null;
+  category: CategoryReference | null;
 }
 export interface TestMetadata {
+  attemptsCount: number /* int64 */;
+  durationMinutes: number /* int */;
   id: string;
   categoryId: string;
   slug: string;
   title: string;
+  skill: ExamSkill | null;
+  subType: ExamSubType | null;
   content: ContentMetadata | null;
+  ieltsContent: IeltsContentMetadata | null;
 }
 export interface ContentMetadata {
   parts: PartMetadata[];
@@ -246,9 +369,12 @@ export interface Result {
   correctCount: number /* int */ | null;
   accuracyPct: number /* float64 */ | null;
   scaledScore: number /* float64 */ | null;
+  bandScore: number /* float64 */ | null;
 }
 export interface Answer {
   questionId: string;
   selectedKey: string | null;
+  selectedKeys: string[] | null;
+  textValue: string | null;
   flagged: boolean;
 }

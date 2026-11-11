@@ -200,7 +200,7 @@ func TestExamLifecyclePostgres(t *testing.T) {
 			var app *common.AppError
 			require.ErrorAs(t, err, &app)
 			require.Equal(t, http.StatusConflict, app.Status)
-			history, _, err := svc.List(ctx, "owner", 1, 100)
+			history, _, err := svc.List(ctx, "owner", 1, 100, "")
 			require.NoError(t, err)
 			found := false
 			for _, entry := range history {

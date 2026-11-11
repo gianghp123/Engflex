@@ -67,6 +67,9 @@ Thumbs.db
 *.log
 tmp/
 temp/
+.tmp/
+.codegraph/
+.playwright-mcp/
 
 # --- Design handoff bundles (Stitch exports; large, binary, not source) ---
 *.zip
@@ -80,6 +83,7 @@ apps/voice/models/
 !/docs/superpowers/rules/
 !/docs/superpowers/rules/*.md
 /docs/**/*.mjs
+/docs/crawl/study4/
 
 # --- Terraform ---
 .terraform/

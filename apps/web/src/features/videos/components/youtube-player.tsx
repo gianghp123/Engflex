@@ -9,6 +9,7 @@ export interface YTPlayerInstance {
 	getDuration: () => number;
 	setPlaybackRate: (suggestedRate: number) => void;
 	getPlaybackRate: () => number;
+	getAvailablePlaybackRates: () => number[];
 	getPlayerState: () => number;
 	destroy: () => void;
 }
@@ -20,6 +21,7 @@ export interface YouTubePlayerRef {
 	seekTo: (seconds: number) => void;
 	setSpeed: (speed: number) => void;
 	getCurrentTime: () => number;
+	getAvailableRates: () => number[];
 }
 
 export interface YouTubePlayerProps {
@@ -29,6 +31,8 @@ export interface YouTubePlayerProps {
 	onTimeUpdate?: (currentTime: number) => void;
 	onSegmentEnd?: () => void;
 	onPlayPastEnd?: () => void;
+	onPlayingChange?: (playing: boolean) => void;
+	onRateChange?: (rate: number) => void;
 	className?: string;
 }
 
@@ -53,6 +57,7 @@ declare global {
 					events?: {
 						onReady?: (event: { target: YTPlayerInstance }) => void;
 						onStateChange?: (event: { data: number }) => void;
+						onPlaybackRateChange?: (event: { data: number }) => void;
 						onError?: (event: { data: number }) => void;
 					};
 				},
@@ -79,6 +84,8 @@ export const YouTubePlayer = forwardRef<YouTubePlayerRef, YouTubePlayerProps>(
 			onTimeUpdate,
 			onSegmentEnd,
 			onPlayPastEnd,
+			onPlayingChange,
+			onRateChange,
 			className,
 		},
 		ref,
@@ -95,6 +102,8 @@ export const YouTubePlayer = forwardRef<YouTubePlayerRef, YouTubePlayerProps>(
 			onTimeUpdate,
 			onSegmentEnd,
 			onPlayPastEnd,
+			onPlayingChange,
+			onRateChange,
 			activeSegment,
 		});
 		useEffect(() => {
@@ -103,6 +112,8 @@ export const YouTubePlayer = forwardRef<YouTubePlayerRef, YouTubePlayerProps>(
 				onTimeUpdate,
 				onSegmentEnd,
 				onPlayPastEnd,
+				onPlayingChange,
+				onRateChange,
 				activeSegment,
 			};
 		});
@@ -138,6 +149,8 @@ export const YouTubePlayer = forwardRef<YouTubePlayerRef, YouTubePlayerProps>(
 				getCurrentTime: () => {
 					return playerInstanceRef.current?.getCurrentTime() ?? 0;
 				},
+				getAvailableRates: () =>
+					playerInstanceRef.current?.getAvailablePlaybackRates() ?? [],
 			}),
 			[],
 		);
@@ -211,12 +224,16 @@ export const YouTubePlayer = forwardRef<YouTubePlayerRef, YouTubePlayerProps>(
 						},
 						onStateChange: (event) => {
 							if (!isMounted) return;
+							callbacksRef.current.onPlayingChange?.(
+								event.data === window.YT?.PlayerState?.PLAYING ||
+									event.data === window.YT?.PlayerState?.BUFFERING,
+							);
 							if (event.data === window.YT?.PlayerState?.PLAYING) {
 								const current =
 									playerInstanceRef.current?.getCurrentTime() ?? 0;
 								const seg = callbacksRef.current.activeSegment;
 								if (seg) {
-									if (current >= seg.end - 0.3) {
+									if (!isSeekingRef.current && current >= seg.end - 0.3) {
 										playerInstanceRef.current?.pauseVideo();
 										callbacksRef.current.onPlayPastEnd?.();
 										return;
@@ -233,6 +250,9 @@ export const YouTubePlayer = forwardRef<YouTubePlayerRef, YouTubePlayerProps>(
 							} else {
 								stopTracking();
 							}
+						},
+						onPlaybackRateChange: (event) => {
+							if (isMounted) callbacksRef.current.onRateChange?.(event.data);
 						},
 					},
 				});

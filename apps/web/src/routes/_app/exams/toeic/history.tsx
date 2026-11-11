@@ -47,7 +47,7 @@ export const Route = createFileRoute("/_app/exams/toeic/history")({
 	loader: async ({ context: { queryClient }, deps: { page } }) => {
 		const data = await loadOr404(
 			queryClient,
-			examAttemptsQueryOptions({ page, pageSize: PAGE_SIZE }),
+			examAttemptsQueryOptions({ page, pageSize: PAGE_SIZE, type: "toeic" }),
 		);
 		const last = Math.max(1, data.pagination.totalPages);
 		if (page > last)
@@ -228,7 +228,7 @@ function ToeicHistoryPage() {
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter>
-						<AlertDialogCancel>
+						<AlertDialogCancel disabled={cancel.isPending}>
 							{m["exams.toeic.hub.history.cancelDialogCancel"]()}
 						</AlertDialogCancel>
 						<SubmitButton

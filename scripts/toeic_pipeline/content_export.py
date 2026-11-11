@@ -2,11 +2,14 @@
 
 import argparse
 import json
+import sys
+import tempfile
+from pathlib import Path
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from pipeline_io import digest, read, test_dir, write
+from pipeline_io import ROOT, digest, read, test_dir, write
 from schemas import AudioRange, Inline, Test
 
 
@@ -146,6 +149,22 @@ def export_content(test: Test, output, *, release=False):
     }
     write(output / "provenance.json", metadata)
     return content
+
+
+def package_content(content, output_root, category_slug, test_slug, source_root, crop_root):
+    # Share the publisher's naming, hash checks and bucket/key layout.
+    scripts = str(ROOT / "apps/api/scripts")
+    if scripts not in sys.path:
+        sys.path.insert(0, scripts)
+    from publish_toeic_media import prepare
+    from toeic_storage import BUCKET, export_package, relocate_content
+
+    with tempfile.TemporaryDirectory() as directory:
+        prepared = prepare(content, source_root, crop_root, Path(directory), category_slug, test_slug)
+        stored = relocate_content(
+            content, {asset["sourceId"]: f"{BUCKET}/{key}" for asset, _, key, _ in prepared}
+        )
+        return export_package(stored, prepared, output_root, category_slug, test_slug)
 
 
 def main():

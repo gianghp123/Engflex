@@ -7,11 +7,21 @@ import (
 )
 
 type VideoProgressPayload struct {
+	DictationVersion       int            `json:"dictationVersion,omitempty"`
 	ActiveSequence         int            `json:"activeSequence"`
 	ActiveTranscriptID     *string        `json:"activeTranscriptId,omitempty"`
 	Level                  *string        `json:"level,omitempty"`
 	CompletedTranscriptIDs []string       `json:"completedTranscriptIds"`
 	Transcripts            map[string]any `json:"transcripts"`
+}
+
+type DictationLineResult struct {
+	Draft     string   `json:"draft"`
+	Answers   []string `json:"answers,omitempty"`
+	Revealed  []int    `json:"revealed"`
+	Completed bool     `json:"completed"`
+	Earned    *int     `json:"earned,omitempty"`
+	Total     *int     `json:"total,omitempty"`
 }
 
 type VideoAttemptResponse struct {
