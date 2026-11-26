@@ -169,7 +169,7 @@ func NewRouter(db *gorm.DB, cfg config.Config) *gin.Engine {
 	})
 	lessons.RegisterRoutes(v1, db, cfg.Voice, cfg.LLM, cfg.Media, sessionLimiter)
 	attempts.RegisterRoutes(v1, db)
-	exams.RegisterRoutes(v1, db, accessSvc)
+	exams.RegisterRoutes(v1, db, cfg.LLM, accessSvc)
 	scenarios.RegisterRoutes(v1, db)
 	videos.RegisterRoutes(v1, db)
 	vocabulary.RegisterRoutes(v1, db)

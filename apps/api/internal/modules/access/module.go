@@ -1,5 +1,6 @@
 // Package access wires the entitlement module: the policy decision point,
-// usage metering, /premium/me, and (Task 12/13) paid-AI orchestration.
+// usage metering, /premium/me, trial start, and the admin limits + usage
+// surfaces (Task 13), plus paid-AI orchestration (Task 12).
 package access
 
 import (
@@ -16,11 +17,12 @@ import (
 )
 
 // Services bundles the singletons the router hands to other modules.
-// Admin and Trial join this bundle in Task 13.
 type Services struct {
 	Policy       *accessservices.PolicyService
 	Usage        *accessservices.UsageService
 	Entitlements *accessservices.EntitlementsService
+	Admin        *accessservices.AdminAccessService
+	Trial        *accessservices.TrialService
 	// Enforce mirrors cfg.Access.Enforce so consuming modules (exam AI)
 	// never re-read config: one flag, one source.
 	Enforce bool
@@ -43,13 +45,27 @@ func NewServices(db *gorm.DB, cfg config.Config) *Services {
 		_ = policy.SnapshotLimits(context.Background())
 		usage.StartSweeper(context.Background())
 	}
-	return &Services{Policy: policy, Usage: usage, Entitlements: accessservices.NewEntitlementsService(policy), Enforce: cfg.Access.Enforce}
+	return &Services{
+		Policy:       policy,
+		Usage:        usage,
+		Entitlements: accessservices.NewEntitlementsService(policy),
+		Admin:        accessservices.NewAdminAccessService(limits, counters, events, policy),
+		Trial:        accessservices.NewTrialService(trials),
+		Enforce:      cfg.Access.Enforce,
+	}
 }
 
 // RegisterRoutes mounts the entitlement endpoints under /api/v1.
-// Task 13 adds /premium/trial and the /admin/premium/limits group here.
 func RegisterRoutes(rg *gin.RouterGroup, svc *Services) {
 	ctl := controllers.NewEntitlementController(svc.Entitlements)
+	trialCtl := controllers.NewTrialController(svc.Trial)
+	adminCtl := controllers.NewAdminAccessController(svc.Admin, svc.Trial)
 	premium := rg.Group("/premium")
 	premium.GET("/me", middleware.RequireAuth(), ctl.GetMy)
+	premium.POST("/trial", middleware.RequireAuth(), trialCtl.StartMy)
+	admin := rg.Group("/admin", middleware.RequireAuth(), middleware.RequireAdmin())
+	admin.GET("/premium/limits", adminCtl.ListLimits)
+	admin.PUT("/premium/limits/:planKey", adminCtl.UpdatePlanLimits)
+	admin.GET("/users/:id/usage", adminCtl.UserUsage)
+	admin.POST("/users/:id/trial", adminCtl.GrantTrial)
 }

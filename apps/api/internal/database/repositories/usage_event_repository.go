@@ -34,6 +34,9 @@ type UsageEventRepository interface {
 	// HasCommitted reports whether any of the keys has a committed event —
 	// the AnalyzeTurn "was this session paid" guard.
 	HasCommitted(ctx context.Context, userID string, keys []string) (bool, error)
+	// ListByUser returns the most recent events for one user, newest first
+	// (constant query backing the admin usage lookup).
+	ListByUser(ctx context.Context, userID string, limit int) ([]*models.UsageEvent, error)
 	WithTx(tx *gorm.DB) UsageEventRepository
 }
 
@@ -118,4 +121,16 @@ func (r *usageEventRepository) HasCommitted(ctx context.Context, userID string, 
 		return false, err
 	}
 	return n > 0, nil
+}
+
+func (r *usageEventRepository) ListByUser(ctx context.Context, userID string, limit int) ([]*models.UsageEvent, error) {
+	out := make([]*models.UsageEvent, 0)
+	if err := r.db.WithContext(ctx).
+		Where("user_id = ?", userID).
+		Order("created_at DESC").
+		Limit(limit).
+		Find(&out).Error; err != nil {
+		return nil, err
+	}
+	return out, nil
 }

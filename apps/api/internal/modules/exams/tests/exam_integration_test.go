@@ -19,6 +19,8 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 
+	"engflex-api/config"
+
 	"engflex-api/internal/common/enums"
 	"engflex-api/internal/database/models"
 	"engflex-api/internal/database/repositories"
@@ -311,7 +313,7 @@ func TestExamPhase2HTTP(t *testing.T) {
 	})
 	t.Run("routes require authentication", func(t *testing.T) {
 		real := gin.New()
-		exams.RegisterRoutes(real.Group("/api/v1"), tx, nil)
+		exams.RegisterRoutes(real.Group("/api/v1"), tx, config.LLMConfig{}, nil)
 		for _, endpoint := range []struct{ method, path string }{
 			{"GET", "/api/v1/exam-categories"},
 			{"POST", "/api/v1/exam-attempts/" + attemptID + "/cancel"},
@@ -322,6 +324,10 @@ func TestExamPhase2HTTP(t *testing.T) {
 			{"GET", "/api/v1/exam-attempts/statistics"},
 			{"GET", "/api/v1/exam-attempts/" + attemptID},
 			{"PATCH", "/api/v1/exam-attempts/" + attemptID},
+			{"POST", "/api/v1/exam-attempts/" + attemptID + "/ai-review"},
+			{"GET", "/api/v1/exam-attempts/" + attemptID + "/ai-review"},
+			{"POST", "/api/v1/exam-attempts/" + attemptID + "/study-plan"},
+			{"GET", "/api/v1/exam-attempts/" + attemptID + "/study-plan"},
 		} {
 			w := httptest.NewRecorder()
 			real.ServeHTTP(w, httptest.NewRequest(endpoint.method, endpoint.path, nil))

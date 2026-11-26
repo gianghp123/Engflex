@@ -254,6 +254,80 @@ func (_c *MockUsageEventRepository_ListByIdempotencyKeysForUpdate_Call) RunAndRe
 	return _c
 }
 
+// ListByUser provides a mock function for the type MockUsageEventRepository
+func (_mock *MockUsageEventRepository) ListByUser(ctx context.Context, userID string, limit int) ([]*models.UsageEvent, error) {
+	ret := _mock.Called(ctx, userID, limit)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ListByUser")
+	}
+
+	var r0 []*models.UsageEvent
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, int) ([]*models.UsageEvent, error)); ok {
+		return returnFunc(ctx, userID, limit)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, int) []*models.UsageEvent); ok {
+		r0 = returnFunc(ctx, userID, limit)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.UsageEvent)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, int) error); ok {
+		r1 = returnFunc(ctx, userID, limit)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockUsageEventRepository_ListByUser_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ListByUser'
+type MockUsageEventRepository_ListByUser_Call struct {
+	*mock.Call
+}
+
+// ListByUser is a helper method to define mock.On call
+//   - ctx context.Context
+//   - userID string
+//   - limit int
+func (_e *MockUsageEventRepository_Expecter) ListByUser(ctx any, userID any, limit any) *MockUsageEventRepository_ListByUser_Call {
+	return &MockUsageEventRepository_ListByUser_Call{Call: _e.mock.On("ListByUser", ctx, userID, limit)}
+}
+
+func (_c *MockUsageEventRepository_ListByUser_Call) Run(run func(ctx context.Context, userID string, limit int)) *MockUsageEventRepository_ListByUser_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 int
+		if args[2] != nil {
+			arg2 = args[2].(int)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockUsageEventRepository_ListByUser_Call) Return(usageEvents []*models.UsageEvent, err error) *MockUsageEventRepository_ListByUser_Call {
+	_c.Call.Return(usageEvents, err)
+	return _c
+}
+
+func (_c *MockUsageEventRepository_ListByUser_Call) RunAndReturn(run func(ctx context.Context, userID string, limit int) ([]*models.UsageEvent, error)) *MockUsageEventRepository_ListByUser_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // ReleaseExpired provides a mock function for the type MockUsageEventRepository
 func (_mock *MockUsageEventRepository) ReleaseExpired(ctx context.Context, before time.Time, limit int) ([]*models.UsageEvent, error) {
 	ret := _mock.Called(ctx, before, limit)
