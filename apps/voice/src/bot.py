@@ -1,15 +1,14 @@
+import asyncio
 import os
 import time
 
-# NOTE (import order is load-bearing, and now ENFORCED rather than lucky).
+# NOTE (import order is structural, not lucky).
 # `settings` must be constructed before anything pulls in pipecat.runner.run,
 # because that module calls load_dotenv(override=True) at import time, which
 # overwrites process-supplied env (e.g. Playwright's API_URL) with .env values.
-# This used to rely on isort: `from config import ...` sorted before the other
-# from-imports. Renaming the routes module to `app` broke that silently — `app`
-# sorts before `config`, so the side-effect import ran first and the live e2e
-# silently talked to .env's API_URL instead of the test's. Hence the isort: off
-# region below, and the regression test in tests/test_bot_routes.py.
+# The dev path (register_dev_routes / __main__ below) imports that module
+# lazily, AFTER the config import above has run; importing `bot` itself never
+# pulls the runner in. tests/test_bot_routes.py pins both properties.
 # isort: off
 from config import settings  # must precede every pipecat import, see above
 # isort: on
@@ -19,13 +18,14 @@ from pipecat.runner.types import RunnerArguments, SmallWebRTCRunnerArguments
 from pipecat.transports.base_transport import BaseTransport, TransportParams
 from pipecat.transports.smallwebrtc.transport import SmallWebRTCTransport
 
-from app.routes import analyze  # noqa: F401 -- side effect: registers /analyze
+from app.routes import register_routes
 from app.schemas import RunnerBody
 from events import register_event_handlers
 from observability import bind_session, init_sentry
 from pipeline.services import build_context
 from pipeline.tasks import create_voice_bot_worker
 from prompts import resolve_level
+from session import SessionRegistry
 from transcript.capture import TurnCollector
 from transcript.sessions import SessionControl, register, unregister
 
@@ -106,7 +106,49 @@ async def bot(runner_args: RunnerArguments):
         unregister(body.conversationId)
 
 
+async def run_session(runner_args: RunnerArguments, *, registry: SessionRegistry) -> None:
+    """Run one dispatcher session: the pipeline, then guaranteed cleanup.
+
+    server.py's offer callback starts this as a task. Whatever bot() does —
+    clean finish, crash, cancellation — the connection is closed, the lease
+    released, and the live entry removed before the task ends.
+    """
+    connection = getattr(runner_args, "webrtc_connection", None)
+    reason = "finished"
+    try:
+        await bot(runner_args)
+    except asyncio.CancelledError:
+        reason = "cancelled"
+        raise
+    except Exception:  # noqa: BLE001 - logged here so the task never dies silent
+        reason = "error"
+        logger.exception("session crashed", session_id=runner_args.session_id)
+    finally:
+        if connection is not None:
+            try:
+                if connection.pc.connectionState != "closed":
+                    await connection.disconnect()
+            except Exception:  # noqa: BLE001 - cleanup must never mask the reason
+                logger.warning("connection close failed", session_id=runner_args.session_id)
+        registry.end_live(runner_args.session_id, reason)
+
+
+def register_dev_routes() -> None:
+    """Mount the data routes on the pipecat dev runner's shared app.
+
+    Lazy on purpose: importing pipecat.runner.run here (after `settings` was
+    constructed at module import above) is what keeps load_dotenv from
+    poisoning the process env. The production dispatcher never calls this.
+    """
+    # Named for what it is: the runner's FastAPI singleton, not our app package.
+    from pipecat.runner.run import app as runner_app
+
+    register_routes(runner_app)
+
+
 if __name__ == "__main__":
+    register_dev_routes()
+
     from pipecat.runner.run import main
 
     main()

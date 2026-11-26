@@ -5,7 +5,9 @@ from typing import Any, cast
 from fastapi.testclient import TestClient
 from pipecat.runner.run import app as runner_app
 
-import app.routes  # noqa: F401 -- side effect: registers the routes
+from app.routes import register_routes
+
+register_routes(runner_app)
 from transcript import sessions
 from transcript.capture import TurnCollector
 from transcript.sessions import SessionControl

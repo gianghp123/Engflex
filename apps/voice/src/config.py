@@ -14,6 +14,12 @@ class Settings(BaseSettings):
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore", populate_by_name=True)
 
+    def model_post_init(self, __context: object, /) -> None:
+        if self.max_sessions < 1:
+            raise ValueError("MAX_SESSIONS must be a positive integer")
+        if self.max_pending is None:
+            self.max_pending = max(1, self.max_sessions // 4)
+
     # Speech to text
     stt_api_key: str = Field(validation_alias=AliasChoices("STT_API_KEY", "DEEPGRAM_API_KEY"))
 
@@ -66,6 +72,25 @@ class Settings(BaseSettings):
     idle_timeout_sec: int = 300
     # Turn batch callback to Go (at-most-once; a failed batch is dropped).
     turns_post_timeout_sec: int = 30
+
+    # Dispatcher (production entrypoint, src/server.py)
+    # The <=20 target is a ceiling, not a default: set MAX_SESSIONS from a
+    # measured per-session footprint, never above measured capacity.
+    max_sessions: int = 10
+    # Start-flood guard. Unset derives max(1, MAX_SESSIONS // 4) at startup.
+    max_pending: int | None = None
+    # A /start whose offer never arrives is reclaimed after this window.
+    pending_ttl_sec: int = 120
+    # SIGTERM/drain window: live sessions may run out within it.
+    drain_grace_sec: int = 330
+    # Runner-compatible ICE list: JSON array, single JSON object, or
+    # comma-separated bare URLs. Parsed once at startup; malformed = boot fail.
+    pipecat_ice_servers: str = ""
+    # Own listener (production); the dev runner keeps its CLI flags.
+    voice_host: str = "0.0.0.0"
+    voice_port: int = 7860
+    # Reported by GET /status.
+    voice_version: str = "0.1.0"
 
     # Analysis (a separate SDK client: the session's LLM service is streaming).
     analyze_timeout_sec: int = 60

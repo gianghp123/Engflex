@@ -16,7 +16,9 @@ from pipecat.frames.frames import (
 # Named for what it is: the runner's FastAPI singleton, not our app package.
 from pipecat.runner.run import app as runner_app
 
-import app.routes  # noqa: F401 -- side effect: registers the transcript route
+from app.routes import register_routes
+
+register_routes(runner_app)
 from transcript import sessions
 from transcript.capture import TurnCollector
 from transcript.sessions import SessionControl

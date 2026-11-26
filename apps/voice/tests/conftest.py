@@ -33,5 +33,12 @@ os.environ.update(
         "ANALYZE_TIMEOUT_SEC": "60",
         "ANALYZE_SESSION_PREFIX": "engflex-analyze",
         "ANALYSIS_STRUCTURED_OUTPUT": "True",
+        "MAX_SESSIONS": "10",
+        "PENDING_TTL_SEC": "120",
+        "DRAIN_GRACE_SEC": "330",
+        "PIPECAT_ICE_SERVERS": "",
+        "VOICE_HOST": "0.0.0.0",
+        "VOICE_PORT": "7860",
+        "VOICE_VERSION": "0.1.0",
     }
 )

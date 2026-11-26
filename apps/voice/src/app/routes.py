@@ -1,23 +1,22 @@
-"""Non-session HTTP routes mounted on the pipecat runner's FastAPI app.
+"""Non-session HTTP routes: an APIRouter mounted by whichever app serves them.
 
-The dev runner only serves session endpoints (`/start`, per-session WebRTC)
-out of the box. Anything session-independent — like one-shot turn analysis —
-is registered here via the runner's shared `app` singleton, which must be
-imported before `pipecat.runner.run.main()` runs (see `bot.py`).
+The production dispatcher (`server.py`) mounts the router behind the
+internal secret; the dev runner (`bot.py`) mounts it without auth, matching
+the runner's own open local surface. Route bodies and status semantics are
+unchanged from the runner-app era.
 """
 
-from fastapi import File, Form, HTTPException, UploadFile
+from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 from loguru import logger
-
-# Named for what it is: the runner's FastAPI singleton, not our app package.
-from pipecat.runner.run import app as runner_app
 from pydantic import ValidationError
 
 from app.schemas import TranscriptCommandBody
 from transcript.analyze import AnalysisRefused, AnalyzeRequest, analyze_turn
 
+router = APIRouter()
 
-@runner_app.post("/analyze")
+
+@router.post("/analyze")
 async def analyze(req: AnalyzeRequest):
     """Analyze one learner turn. Any failure surfaces as an HTTP error; Go
     maps non-2xx to a per-turn error and never stores partial feedback."""
@@ -41,7 +40,7 @@ async def analyze(req: AnalyzeRequest):
 # lets anything unexpected become a 500, mirroring /analyze above.
 
 
-@runner_app.post("/transcribe")
+@router.post("/transcribe")
 async def transcribe(
     conversationId: str = Form(...),
     audio: UploadFile = File(...),  # noqa: B008 - standard FastAPI idiom
@@ -69,7 +68,7 @@ async def transcribe(
     return {"text": text}
 
 
-@runner_app.post("/transcript")
+@router.post("/transcript")
 async def transcript(req: TranscriptCommandBody):
     """One learner-initiated transcript command.
 
@@ -86,3 +85,23 @@ async def transcript(req: TranscriptCommandBody):
     except Exception as exc:
         logger.exception("transcript command failed")
         raise HTTPException(status_code=500, detail="transcript command failed") from exc
+
+
+def register_routes(app) -> None:
+    """Mount the data routes on a FastAPI app.
+
+    Idempotent: the dev runner and a test module (or several test modules
+    sharing the runner's singleton app) must not duplicate the surface.
+
+    The routes are appended eagerly rather than via ``include_router``:
+    current FastAPI materializes includes as lazy ``_IncludedRouter``
+    placeholders, so ``app.routes`` would hold no ``APIRoute`` entries and
+    the bot wiring test (which pins ``/analyze`` as a served ``APIRoute``)
+    would fail. Appending registers the same route objects with identical
+    request handling.
+    """
+    paths = {getattr(route, "path", None) for route in app.routes}
+    if "/analyze" in paths:
+        return
+    for route in router.routes:
+        app.router.routes.append(route)

@@ -12,7 +12,9 @@ from fastapi.testclient import TestClient
 from pipecat.runner.run import app as runner_app
 from pydantic import ValidationError
 
-import app.routes  # noqa: F401 -- side effect: registers the routes
+from app.routes import register_routes
+
+register_routes(runner_app)
 import transcript.analyze as analysis
 from app import routes
 from transcript.analyze import TurnFeedback
