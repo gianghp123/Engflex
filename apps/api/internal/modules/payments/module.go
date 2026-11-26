@@ -20,14 +20,17 @@ import (
 // public — ipn's security is the HMAC signature alone (VNPay calls it
 // server-to-server, no Clerk token exists there), and return is a UX-only
 // status page. Every /admin/premium/* route is admin-gated outright.
-func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB, cfg config.PaymentConfig) {
+// limits fills the pricing-table entitlement summary; nil keeps the service
+// catalog-only. The caller's own premium view lives in the access module
+// (GET /premium/me) — this module no longer mounts that path.
+func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB, cfg config.PaymentConfig, limits services.PlanLimitsReader) {
 	subRepo := repositories.NewSubscriptionRepository(db)
 	txnRepo := repositories.NewPaymentTransactionRepository(db)
 	planRepo := repositories.NewPlanRepository(db)
 	featureRepo := repositories.NewPremiumFeatureRepository(db)
 
 	subSvc := services.NewSubscriptionService(subRepo, planRepo)
-	planSvc := services.NewPlanService(planRepo)
+	planSvc := services.NewPlanServiceWithLimits(planRepo, limits)
 	featureSvc := services.NewPremiumFeatureService(featureRepo)
 	vnpaySvc := services.NewVNPayService(services.VNPayConfig{
 		TmnCode:    cfg.VNPayTmnCode,
@@ -46,8 +49,6 @@ func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB, cfg config.PaymentConfig) 
 	g.POST("/checkout", middleware.RequireAuth(), paymentCtl.Checkout)
 	g.GET("/ipn", paymentCtl.IPN)
 	g.GET("/return", paymentCtl.Return)
-
-	rg.GET("/premium/me", middleware.RequireAuth(), paymentCtl.Me)
 
 	admin := rg.Group("/admin/premium", middleware.RequireAuth(), middleware.RequireAdmin())
 	admin.GET("/plans", planCtl.List)

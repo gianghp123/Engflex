@@ -85,8 +85,37 @@ func (s *ConversationService) BuildAnalyzeRequest(ctx context.Context, conversat
 // wrong-shaped payload returns an error and writes nothing, so a turn never
 // carries a half-decoded feedback.
 func (s *ConversationService) AnalyzeTurn(ctx context.Context, userID, conversationID string, position int, language string) (*models.Feedback, error) {
-	if _, err := s.getOwned(ctx, userID, conversationID); err != nil {
+	conv, err := s.getOwned(ctx, userID, conversationID)
+	if err != nil {
 		return nil, err
+	}
+	// Per-turn analysis is included in the charged session (spec §8.1): it
+	// requires a committed session event when enforcement is on. A
+	// conversation with a speech session but no event is pre-launch
+	// (grandfathered) and still analyzes.
+	if s.access == nil {
+		appErr := common.ServiceUnavailable("policy unavailable").WithCode(common.CodePolicyUnavailable)
+		logger.Report(ctx, "analyze turn miswired: access dependencies missing", appErr, "conversationID", conversationID)
+		return nil, appErr
+	}
+	if s.access.Enforce {
+		if s.usageEvents == nil {
+			appErr := common.ServiceUnavailable("policy unavailable").WithCode(common.CodePolicyUnavailable)
+			logger.Report(ctx, "analyze turn miswired: usage events missing", appErr, "conversationID", conversationID)
+			return nil, appErr
+		}
+		committed, err := s.usageEvents.HasCommitted(ctx, userID, []string{
+			"conversation:" + conversationID + ":" + string(enums.CounterKindAICredit),
+			"conversation:" + conversationID + ":" + string(enums.CounterKindVoiceSession),
+		})
+		if err != nil {
+			appErr := common.ServiceUnavailable("policy unavailable").WithCode(common.CodePolicyUnavailable)
+			logger.Report(ctx, "analyze turn usage check failed", appErr, "conversationID", conversationID)
+			return nil, appErr
+		}
+		if !committed && conv.SpeechSessionID == "" {
+			return nil, common.Forbidden("this conversation has no active session").WithCode(common.CodePremiumRequired)
+		}
 	}
 	languageName, ok := llm.ExplanationLanguage(language)
 	if !ok {

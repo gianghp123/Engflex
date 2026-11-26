@@ -36,7 +36,7 @@ func newAnalysisService(t *testing.T) (*services.ConversationService, *repomocks
 	feedback := repomocks.NewMockFeedbackRepository(t)
 	engine := voicemocks.NewMockVoiceClient(t)
 	pronounce := voicemocks.NewMockPronounceEngine(t)
-	return services.NewConversationService(repo, turnsRepo, engine, pronounce, 300, feedback, repomocks.NewMockScenarioRepository(t), repomocks.NewMockPersonaRepository(t), fakeNotPremium{}), repo, turnsRepo, engine, feedback
+	return services.NewConversationService(repo, turnsRepo, engine, pronounce, 300, feedback, repomocks.NewMockScenarioRepository(t), repomocks.NewMockPersonaRepository(t), fakeNotPremium{}, repomocks.NewMockUsageEventRepository(t), shadowAccessBundle(t)), repo, turnsRepo, engine, feedback
 }
 
 const goodFeedback = `{"corrected":"I went yesterday.","spans":[],"relevance":{"status":"relevant","reason":null},"alternatives":{"language":null,"contextual":null},"tip":"past tense"}`

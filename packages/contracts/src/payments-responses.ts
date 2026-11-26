@@ -44,6 +44,12 @@ export interface Plan {
   currency: string;
   isActive: boolean;
   updatedAt: string /* RFC3339 */;
+  /**
+   * Entitlement summary for the pricing table (spec §10): filled from the
+   * plan_feature_limits catalog, not hardcoded, so admin edits flow through.
+   */
+  credits: number /* int */;
+  voiceSessions: number /* int */;
 }
 /**
  * CheckoutSession is the VNPay hand-off: the learner's browser is

@@ -14,6 +14,14 @@ import (
 	"engflex-api/internal/modules/payments/dtos/responses"
 )
 
+// PlanLimitsReader reads a plan's monthly counter limits for the pricing
+// table. *accessservices.PolicyService satisfies it structurally via
+// PlanMonthlyLimits.
+type PlanLimitsReader interface {
+	// PlanMonthlyLimits returns (ai_credit, voice_session) monthly limits.
+	PlanMonthlyLimits(ctx context.Context, plan enums.SubscriptionPlan) (credits int, voice int, err error)
+}
+
 // PlanService owns the admin-editable price of each fixed-duration
 // package. Rows are fixed to the three seeded enums.SubscriptionPlan
 // values (migration-seeded) — List/Update only, no Create/Delete.
@@ -28,11 +36,20 @@ type PlanService interface {
 
 type planService struct {
 	repo repositories.PlanRepository
+	// limits fills the pricing-table entitlement summary; nil keeps the
+	// service catalog-only (tests, callers without the access module).
+	limits PlanLimitsReader
 }
 
 // NewPlanService builds the service over the repository interface.
 func NewPlanService(repo repositories.PlanRepository) PlanService {
 	return &planService{repo: repo}
+}
+
+// NewPlanServiceWithLimits builds the service with the pricing-table
+// entitlement summary filled from the access policy snapshot.
+func NewPlanServiceWithLimits(repo repositories.PlanRepository, limits PlanLimitsReader) PlanService {
+	return &planService{repo: repo, limits: limits}
 }
 
 func toPlanResponse(m *models.Plan) *responses.Plan {
@@ -46,6 +63,25 @@ func toPlanResponse(m *models.Plan) *responses.Plan {
 	}
 }
 
+// toPlanResponse fills the pricing-table entitlement summary best-effort: a
+// catalog read failure logs and leaves zeros rather than failing the whole
+// pricing page (the snapshot the reader serves already falls back to
+// defaults, so this is a second net, not the first).
+func (s *planService) toPlanResponse(ctx context.Context, m *models.Plan) *responses.Plan {
+	out := toPlanResponse(m)
+	if s.limits == nil {
+		return out
+	}
+	credits, voice, err := s.limits.PlanMonthlyLimits(ctx, m.Plan)
+	if err != nil {
+		logger.Report(ctx, "plan limits lookup failed", common.Internal(), "plan", m.Plan)
+		return out
+	}
+	out.Credits = credits
+	out.VoiceSessions = voice
+	return out
+}
+
 func (s *planService) List(ctx context.Context) ([]*responses.Plan, error) {
 	items, err := s.repo.List(ctx)
 	if err != nil {
@@ -55,7 +91,7 @@ func (s *planService) List(ctx context.Context) ([]*responses.Plan, error) {
 	}
 	out := make([]*responses.Plan, 0, len(items))
 	for _, m := range items {
-		out = append(out, toPlanResponse(m))
+		out = append(out, s.toPlanResponse(ctx, m))
 	}
 	return out, nil
 }
@@ -72,7 +108,7 @@ func (s *planService) ListActive(ctx context.Context) ([]*responses.Plan, error)
 		if !m.IsActive {
 			continue
 		}
-		out = append(out, toPlanResponse(m))
+		out = append(out, s.toPlanResponse(ctx, m))
 	}
 	return out, nil
 }
@@ -97,5 +133,5 @@ func (s *planService) Update(ctx context.Context, plan enums.SubscriptionPlan, r
 		return nil, appErr
 	}
 	slog.InfoContext(ctx, "plan updated", "plan", plan, "amount", req.Amount, "months", req.Months, "is_active", req.IsActive)
-	return toPlanResponse(updated), nil
+	return s.toPlanResponse(ctx, updated), nil
 }

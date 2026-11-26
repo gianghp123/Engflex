@@ -64,6 +64,8 @@ func TestCreateGatingFollowsFlag(t *testing.T) {
 				scenarios,
 				repomocks.NewMockPersonaRepository(t),
 				fakeNotPremium{},
+				repomocks.NewMockUsageEventRepository(t),
+				shadowAccessBundle(t),
 			)
 
 			m, err := svc.Create(context.Background(), userID, tt.req)

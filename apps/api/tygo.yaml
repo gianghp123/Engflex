@@ -38,6 +38,12 @@ type_mappings:
   "enums.SubscriptionStatus": "SubscriptionStatus"
   "enums.SubscriptionPlan": "SubscriptionPlan"
   "enums.PaymentTransactionStatus": "PaymentTransactionStatus"
+  "enums.PlanKey": "PlanKey"
+  "enums.CounterKind": "CounterKind"
+  "enums.UsagePeriod": "UsagePeriod"
+  "enums.UsageEventStatus": "UsageEventStatus"
+  "enums.AIOutputKind": "AIOutputKind"
+  "enums.UsageRefType": "UsageRefType"
   # embedded by list request DTOs tagged `tstype:",extends"`
   "common.ListParams": "ListParams"
   # embedded by the LLM-triggering request DTOs tagged `tstype:",extends"`
@@ -47,8 +53,10 @@ packages:
   - path: "engflex-api/internal/common"
     output_path: "../../packages/contracts/src/common.ts"
     # AppError never crosses the wire (only its message, inside the envelope).
+    # access.go is server tuning (time.Duration leases emit invalid TS values)
     exclude_files:
       - "errors.go"
+      - "access.go"
 
   # Shared enums: one Go file per enum type -> const + union literal types.
   - path: "engflex-api/internal/common/enums"
@@ -154,4 +162,8 @@ packages:
     fallback_type: "unknown"
   - path: "engflex-api/internal/modules/stories/dtos/responses"
     output_path: "../../packages/contracts/src/stories-responses.ts"
+    fallback_type: "unknown"
+
+  - path: "engflex-api/internal/modules/access/dtos/responses"
+    output_path: "../../packages/contracts/src/access-responses.ts"
     fallback_type: "unknown"

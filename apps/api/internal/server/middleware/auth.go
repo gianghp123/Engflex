@@ -121,6 +121,12 @@ func Role(c *gin.Context) enums.UserRole {
 	return enums.UserRoleUser
 }
 
+// IsAdmin reports whether the caller carries the admin role. It reuses Role
+// (the same claim resolution RequireAdmin gates on), so the two cannot drift.
+func IsAdmin(c *gin.Context) bool {
+	return Role(c) == enums.UserRoleAdmin
+}
+
 // RequireAdmin allows only admin-role callers. Compose after RequireAuth;
 // without it Role defaults to user and every request 403s (fail-closed).
 // No route mounts this yet — first consumer is the videos authoring

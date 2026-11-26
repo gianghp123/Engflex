@@ -28,6 +28,10 @@ type Plan struct {
 	Currency  string                 `json:"currency"`
 	IsActive  bool                   `json:"isActive"`
 	UpdatedAt time.Time              `json:"updatedAt"`
+	// Entitlement summary for the pricing table (spec §10): filled from the
+	// plan_feature_limits catalog, not hardcoded, so admin edits flow through.
+	Credits       int `json:"credits"`
+	VoiceSessions int `json:"voiceSessions"`
 }
 
 // CheckoutSession is the VNPay hand-off: the learner's browser is

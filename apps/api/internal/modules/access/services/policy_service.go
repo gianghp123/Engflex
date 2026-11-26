@@ -127,6 +127,18 @@ func (s *PolicyService) LimitsForPlan(ctx context.Context, plan enums.PlanKey) (
 	return map[enums.CounterKind]Limit{}, nil
 }
 
+// PlanMonthlyLimits returns a paid plan's (ai_credit, voice_session) monthly
+// limits for the pricing table (spec §10). The plan key maps structurally
+// onto the subscription plan's wire value. Absent plans yield (0, 0, nil) —
+// the pricing row renders without entitlements rather than failing.
+func (s *PolicyService) PlanMonthlyLimits(ctx context.Context, plan enums.SubscriptionPlan) (credits int, voice int, err error) {
+	limits, err := s.LimitsForPlan(ctx, enums.PlanKey(plan))
+	if err != nil {
+		return 0, 0, err
+	}
+	return limits[enums.CounterKindAICredit].Value, limits[enums.CounterKindVoiceSession].Value, nil
+}
+
 // Principal resolves the caller's plan (spec §5.5): active paid subscription
 // → its plan; else active trial → trial; else free. A subscription lookup
 // failure is logged and resolution continues with the trial store — the

@@ -14,6 +14,22 @@ export const ActivityTypeSpeaking = "speaking";
 export type ActivityType = typeof ActivityTypeReading | typeof ActivityTypeListening | typeof ActivityTypeWriting | typeof ActivityTypeSpeaking;
 
 //////////
+// source: ai_output_kind.go
+
+/**
+ * AIOutputKind names one cached paid AI output. The (subject, kind) pair is
+ * the caching boundary: generate once, read free forever.
+ */
+export const AIOutputKindExamReview = "exam_review";
+/**
+ * WritingReview is a future Phase 2b output; allowed value only.
+ */
+export const AIOutputKindWritingReview = "writing_review";
+export const AIOutputKindStudyPlan = "study_plan";
+export const AIOutputKindTurnAnalysis = "turn_analysis";
+export type AIOutputKind = typeof AIOutputKindExamReview | typeof AIOutputKindWritingReview | typeof AIOutputKindStudyPlan | typeof AIOutputKindTurnAnalysis;
+
+//////////
 // source: attempt_status.go
 
 /**
@@ -94,6 +110,17 @@ export const ConversationStatusLive = "live";
 export const ConversationStatusEnded = "ended";
 export const ConversationStatusFailed = "failed";
 export type ConversationStatus = typeof ConversationStatusPending | typeof ConversationStatusLive | typeof ConversationStatusEnded | typeof ConversationStatusFailed;
+
+//////////
+// source: counter_kind.go
+
+/**
+ * CounterKind names a metered resource. Two exist at launch: ai_credit is
+ * the single user-facing unit; voice_session is the cost sub-cap.
+ */
+export const CounterKindAICredit = "ai_credit";
+export const CounterKindVoiceSession = "voice_session";
+export type CounterKind = typeof CounterKindAICredit | typeof CounterKindVoiceSession;
 
 //////////
 // source: exam_mode.go
@@ -240,6 +267,22 @@ export const PaymentTransactionStatusFailed = "failed";
 export type PaymentTransactionStatus = typeof PaymentTransactionStatusPending | typeof PaymentTransactionStatusSucceeded | typeof PaymentTransactionStatusFailed;
 
 //////////
+// source: plan_key.go
+
+/**
+ * PlanKey is the entitlement plan a principal resolves to: the paid
+ * subscription plan keys, the free default, the trial, and the admin
+ * bypass. Wire values are stable (contracts generate from these).
+ */
+export const PlanKeyFree = "free";
+export const PlanKeyTrial = "trial";
+export const PlanKey1M = "1m";
+export const PlanKey3M = "3m";
+export const PlanKey12M = "12m";
+export const PlanKeyAdmin = "admin";
+export type PlanKey = typeof PlanKeyFree | typeof PlanKeyTrial | typeof PlanKey1M | typeof PlanKey3M | typeof PlanKey12M | typeof PlanKeyAdmin;
+
+//////////
 // source: publish_status.go
 
 /**
@@ -329,6 +372,45 @@ export type SubscriptionStatus = typeof SubscriptionStatusPending | typeof Subsc
 export const TurnRoleUser = "user";
 export const TurnRoleAI = "ai";
 export type TurnRole = typeof TurnRoleUser | typeof TurnRoleAI;
+
+//////////
+// source: usage_event_status.go
+
+/**
+ * UsageEventStatus is the reservation lifecycle. Rows are retained for
+ * audit; released/expired rows are reused on retry, never deleted.
+ */
+export const UsageEventStatusReserved = "reserved";
+export const UsageEventStatusCommitted = "committed";
+export const UsageEventStatusReleased = "released";
+export const UsageEventStatusExpired = "expired";
+export type UsageEventStatus = typeof UsageEventStatusReserved | typeof UsageEventStatusCommitted | typeof UsageEventStatusReleased | typeof UsageEventStatusExpired;
+
+//////////
+// source: usage_period.go
+
+/**
+ * UsagePeriod is the window a limit applies over. month cuts at 00:00 in
+ * APP_TIMEZONE (YYYY-MM key), day at YYYY-MM-DD, total never rolls
+ * (trial credits, key "all").
+ */
+export const UsagePeriodDay = "day";
+export const UsagePeriodMonth = "month";
+export const UsagePeriodTotal = "total";
+export type UsagePeriod = typeof UsagePeriodDay | typeof UsagePeriodMonth | typeof UsagePeriodTotal;
+
+//////////
+// source: usage_ref_type.go
+
+/**
+ * UsageRefType names the entity a reservation is held against — the
+ * idempotency base key is derived from it.
+ */
+export const UsageRefTypeConversation = "conversation";
+export const UsageRefTypeExamAttempt = "exam_attempt";
+export const UsageRefTypeWritingActivity = "writing_activity";
+export const UsageRefTypeStudyPlan = "study_plan";
+export type UsageRefType = typeof UsageRefTypeConversation | typeof UsageRefTypeExamAttempt | typeof UsageRefTypeWritingActivity | typeof UsageRefTypeStudyPlan;
 
 //////////
 // source: vocabulary_domain.go

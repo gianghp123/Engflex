@@ -43,6 +43,12 @@ declare global {
   type SubscriptionStatus = Enums.SubscriptionStatus;
   type SubscriptionPlan = Enums.SubscriptionPlan;
   type PaymentTransactionStatus = Enums.PaymentTransactionStatus;
+  type PlanKey = Enums.PlanKey;
+  type CounterKind = Enums.CounterKind;
+  type UsagePeriod = Enums.UsagePeriod;
+  type UsageEventStatus = Enums.UsageEventStatus;
+  type AIOutputKind = Enums.AIOutputKind;
+  type UsageRefType = Enums.UsageRefType;
   type VocabularyPartOfSpeech = Enums.VocabularyPartOfSpeech;
   type ContentType = Enums.ContentType;
 }
@@ -102,6 +108,7 @@ export * from './bookmarks-requests.ts';
 export * from './bookmarks-responses.ts';
 export * from './stories-requests.ts';
 export * from './stories-responses.ts';
+export * from './access-responses.ts';
 // Both conversations and lessons responses declare structurally identical
 // MispronouncedWord/PhoneDetail/Prosody/ReferencePhone copies; an explicit
 // re-export resolves the star-export ambiguity (TS2308). Structural typing

@@ -7,12 +7,14 @@ import (
 	"errors"
 	"log/slog"
 	"net/http"
+	"time"
 
 	"engflex-api/internal/common"
 	"engflex-api/internal/common/enums"
 	"engflex-api/internal/database/models"
 	"engflex-api/internal/database/repositories"
 	"engflex-api/internal/logger"
+	accessservices "engflex-api/internal/modules/access/services"
 	"engflex-api/internal/modules/conversations/dtos/callbacks"
 	"engflex-api/internal/modules/conversations/dtos/requests"
 	"engflex-api/internal/modules/conversations/dtos/responses"
@@ -33,11 +35,23 @@ type ConversationService struct {
 	scenarios     repositories.ScenarioRepository
 	personas      repositories.PersonaRepository
 	premium       common.PremiumChecker
+	usageEvents   repositories.UsageEventRepository
+	access        *AccessDependencies
 }
 
 // NewConversationService builds the service over repository + engine interfaces.
-func NewConversationService(conversations repositories.ConversationRepository, turns repositories.ConversationTurnRepository, voice voice.VoiceClient, pronounce voice.PronounceEngine, maxDuration int, feedbacks repositories.FeedbackRepository, scenarios repositories.ScenarioRepository, personas repositories.PersonaRepository, premium common.PremiumChecker) *ConversationService {
-	return &ConversationService{conversations: conversations, turns: turns, voice: voice, pronounce: pronounce, maxDuration: maxDuration, feedbacks: feedbacks, scenarios: scenarios, personas: personas, premium: premium}
+// access must be non-nil: Start and AnalyzeTurn fail closed (503
+// policy_unavailable) when the bundle or its enforced dependencies are
+// missing, so a miswired service can never provision unmetered sessions.
+func NewConversationService(conversations repositories.ConversationRepository, turns repositories.ConversationTurnRepository, voice voice.VoiceClient, pronounce voice.PronounceEngine, maxDuration int, feedbacks repositories.FeedbackRepository, scenarios repositories.ScenarioRepository, personas repositories.PersonaRepository, premium common.PremiumChecker, usageEvents repositories.UsageEventRepository, access *AccessDependencies) *ConversationService {
+	return &ConversationService{conversations: conversations, turns: turns, voice: voice, pronounce: pronounce, maxDuration: maxDuration, feedbacks: feedbacks, scenarios: scenarios, personas: personas, premium: premium, usageEvents: usageEvents, access: access}
+}
+
+// NewConversationServiceForTest is a constructor shim exposing the
+// enforcement-relevant dependency set for black-box tests. Production
+// wiring uses NewConversationService. access must be non-nil, as above.
+func NewConversationServiceForTest(conversations repositories.ConversationRepository, usageEvents repositories.UsageEventRepository, voice voice.VoiceClient, access *AccessDependencies) *ConversationService {
+	return &ConversationService{conversations: conversations, usageEvents: usageEvents, voice: voice, access: access}
 }
 
 // Create provisions a pending conversation. The close of the caller's other
@@ -105,6 +119,12 @@ func (s *ConversationService) List(ctx context.Context, userID string, scenarioI
 }
 
 // Start provisions the engine session (idempotent) and returns the ICE config.
+//
+// Metering (spec §8.1): a cached start replays free and never charges; a
+// fresh start reserves both counters before the engine call, releases the
+// hold when the engine or the cache write fails, and commits once the row
+// is cached. Shadow mode (Enforce=false) evaluates Decide for logging only
+// and never touches the meter.
 func (s *ConversationService) Start(ctx context.Context, userID, id string) (*models.Conversation, *responses.IceConfig, error) {
 	conv, err := s.getOwned(ctx, userID, id)
 	if err != nil {
@@ -113,9 +133,53 @@ func (s *ConversationService) Start(ctx context.Context, userID, id string) (*mo
 	if conv.Status != enums.ConversationStatusPending {
 		return nil, nil, common.Conflict("conversation is not pending")
 	}
+	// Idempotent replay: a started conversation returns its cached ICE and
+	// never charges again (spec §3.2).
 	if conv.SpeechSessionID != "" && len(conv.SpeechStartResponse) > 0 {
 		if cached, ok := decodeStartResponse(conv.SpeechStartResponse); ok {
 			return conv, cached.ICEConfig, nil
+		}
+	}
+
+	var reservation *accessservices.Reservation
+	if s.access == nil {
+		appErr := common.ServiceUnavailable("policy unavailable").WithCode(common.CodePolicyUnavailable)
+		logger.Report(ctx, "voice start miswired: access dependencies missing", appErr, "conversationID", conv.ID)
+		return nil, nil, appErr
+	}
+	if s.access.Enforce && (s.access.Policy == nil || s.access.Usage == nil) {
+		appErr := common.ServiceUnavailable("policy unavailable").WithCode(common.CodePolicyUnavailable)
+		logger.Report(ctx, "voice start miswired: policy or usage missing", appErr, "conversationID", conv.ID)
+		return nil, nil, appErr
+	}
+	if s.access.Policy != nil {
+		p, _, err := s.access.Policy.Principal(ctx, userID, false)
+		if err != nil {
+			logger.Report(ctx, "voice start principal failed", err, "conversationID", conv.ID, "userID", userID)
+			return nil, nil, err
+		}
+		d, err := s.access.Policy.Decide(ctx, userID, false, accessservices.ActionVoiceStart)
+		if err != nil {
+			logger.Report(ctx, "voice start decide failed", err, "conversationID", conv.ID, "userID", userID)
+			return nil, nil, err
+		}
+		if !d.Allow {
+			// Shadow mode still evaluates; the denial is logged by Decide.
+			if s.access.Enforce {
+				return nil, nil, accessservices.AppError(d)
+			}
+		} else if s.access.Enforce {
+			reservation, err = s.reserveVoice(ctx, userID, conv, p.Plan, d.Charges)
+			if err != nil {
+				logger.Report(ctx, "voice start reserve failed", err, "conversationID", conv.ID, "userID", userID)
+				return nil, nil, err
+			}
+			if reservation == nil {
+				// A committed replay: another request already settled this
+				// conversation's hold — re-read and replay the cached ICE
+				// without calling the engine.
+				return s.replayRaceWinner(ctx, conv)
+			}
 		}
 	}
 
@@ -132,38 +196,101 @@ func (s *ConversationService) Start(ctx context.Context, userID, id string) (*mo
 		},
 	})
 	if err != nil {
+		if reservation != nil {
+			_ = s.access.Usage.Release(ctx, reservation.ID)
+		}
 		logger.Report(ctx, "voice engine start failed", err, "conversationID", conv.ID)
 		return nil, nil, common.ServiceUnavailable("voice service unavailable")
 	}
 
 	raw, err := json.Marshal(res)
 	if err != nil {
+		if reservation != nil {
+			_ = s.access.Usage.Release(ctx, reservation.ID)
+		}
 		logger.Report(ctx, "marshal voice start response failed", err, "conversationID", conv.ID)
 		return nil, nil, common.Internal()
 	}
 	affected, err := s.conversations.SetSpeechStart(ctx, conv.ID, res.SessionID, raw)
 	if err != nil {
+		if reservation != nil {
+			_ = s.access.Usage.Release(ctx, reservation.ID)
+		}
 		appErr := common.FromDBError(err, "conversation")
 		logger.Report(ctx, "cache voice start failed", appErr, "conversationID", conv.ID)
 		return nil, nil, appErr
 	}
 	if affected == 0 {
-		refreshed, err := s.conversations.GetByID(ctx, conv.ID)
-		if err != nil {
-			appErr := common.FromDBError(err, "conversation")
-			logger.Report(ctx, "recheck conversation start failed", appErr, "conversationID", conv.ID)
-			return nil, nil, appErr
+		// Another request won the conditional update: release this hold and
+		// replay the winner's cached start (the loser must not double-charge).
+		if reservation != nil {
+			_ = s.access.Usage.Release(ctx, reservation.ID)
 		}
-		if cached, ok := decodeStartResponse(refreshed.SpeechStartResponse); ok {
-			return refreshed, cached.ICEConfig, nil
+		return s.replayRaceWinner(ctx, conv)
+	}
+	if reservation != nil {
+		if err := s.access.Usage.Commit(ctx, reservation.ID); err != nil {
+			// The session started; the user got the engine. A settlement
+			// failure is logged loudly (already done by Commit) and the
+			// session is NOT rolled back — the sweeper releases the hold if
+			// the commit never landed. Fail open here, never strand a live
+			// session the engine already provisioned.
+			slog.WarnContext(ctx, "usage commit after voice start failed", "conversationID", conv.ID, "reservationID", reservation.ID)
 		}
-		return nil, nil, common.Conflict("conversation start raced")
 	}
 
 	conv.SpeechSessionID = res.SessionID
 	conv.SpeechStartResponse = raw
-	slog.InfoContext(ctx, "conversation start provisioned", "conversationID", conv.ID, "engineSessionID", res.SessionID)
+	slog.InfoContext(ctx, "conversation start provisioned", "conversationID", conv.ID, "engineSessionID", res.SessionID, "metered", reservation != nil)
 	return conv, res.ICEConfig, nil
+}
+
+// reserveVoice holds both voice-start counters. It returns (nil, nil) when
+// the hold is a committed replay — the caller re-reads and replays the
+// cached ICE instead of calling the engine. Denials and live-hold (409s)
+// come back as errors.
+func (s *ConversationService) reserveVoice(ctx context.Context, userID string, conv *models.Conversation, plan enums.PlanKey, charges []accessservices.Charge) (*accessservices.Reservation, error) {
+	reservation, err := s.access.Usage.Reserve(ctx, userID, plan, charges,
+		"conversation:"+conv.ID, enums.UsageRefTypeConversation, conv.ID,
+		common.VoiceLeaseTTL, time.Now().UTC(), s.access.Loc)
+	if err != nil {
+		// The Reserve contract: a committed replay returns
+		// (Committed, nil); a live hold returns (InProgress, 409). Any
+		// other error is a denial (429/403) or an outage (503) and
+		// propagates untouched — a denied user must never see a session.
+		return nil, err
+	}
+	if reservation == nil {
+		appErr := common.ServiceUnavailable("policy unavailable").WithCode(common.CodePolicyUnavailable)
+		logger.Report(ctx, "voice reserve returned no reservation", appErr, "userID", userID, "conversationID", conv.ID)
+		return nil, appErr
+	}
+	switch reservation.Status {
+	case accessservices.ReservationStatusCommitted:
+		return nil, nil
+	case accessservices.ReservationStatusInProgress:
+		// "in_progress" is the wire code the meter returns for a live
+		// hold; the caller maps it to 409.
+		return nil, common.Conflict("a request for this item is already in progress").WithCode("in_progress")
+	default:
+		return reservation, nil
+	}
+}
+
+// replayRaceWinner re-reads the conversation after losing the Start race
+// (committed replay or affected==0) and returns the winner's cached ICE.
+// A missing cache is a genuine race with nothing to replay: 409.
+func (s *ConversationService) replayRaceWinner(ctx context.Context, conv *models.Conversation) (*models.Conversation, *responses.IceConfig, error) {
+	refreshed, err := s.conversations.GetByID(ctx, conv.ID)
+	if err != nil {
+		appErr := common.FromDBError(err, "conversation")
+		logger.Report(ctx, "recheck conversation start failed", appErr, "conversationID", conv.ID)
+		return nil, nil, appErr
+	}
+	if cached, ok := decodeStartResponse(refreshed.SpeechStartResponse); ok {
+		return refreshed, cached.ICEConfig, nil
+	}
+	return nil, nil, common.Conflict("conversation start raced")
 }
 
 // Offer proxies SDP/ICE to the engine and applies the state transition on POST.

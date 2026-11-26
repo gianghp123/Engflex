@@ -25,7 +25,7 @@ func newTranscriptService(t *testing.T) (*services.ConversationService, *repomoc
 	engine := voicemocks.NewMockVoiceClient(t)
 	pronounce := voicemocks.NewMockPronounceEngine(t)
 	svc := services.NewConversationService(repo, repomocks.NewMockConversationTurnRepository(t), engine, pronounce, 300,
-		repomocks.NewMockFeedbackRepository(t), repomocks.NewMockScenarioRepository(t), repomocks.NewMockPersonaRepository(t), fakeNotPremium{})
+		repomocks.NewMockFeedbackRepository(t), repomocks.NewMockScenarioRepository(t), repomocks.NewMockPersonaRepository(t), fakeNotPremium{}, repomocks.NewMockUsageEventRepository(t), shadowAccessBundle(t))
 	return svc, repo, engine, pronounce
 }
 

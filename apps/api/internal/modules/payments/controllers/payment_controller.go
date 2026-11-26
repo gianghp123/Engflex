@@ -7,7 +7,9 @@ import (
 
 	"engflex-api/internal/common"
 	"engflex-api/internal/modules/payments/dtos/requests"
-	"engflex-api/internal/modules/payments/dtos/responses"
+	// Blank: responses appears only in swagger annotations below (ListPlans,
+	// Checkout), and swag resolves annotation types through imports.
+	_ "engflex-api/internal/modules/payments/dtos/responses"
 	"engflex-api/internal/modules/payments/services"
 	"engflex-api/internal/server/middleware"
 )
@@ -25,25 +27,9 @@ func NewPaymentController(plans services.PlanService, subs services.Subscription
 	return &PaymentController{plans: plans, subs: subs, vnpay: vnpay}
 }
 
-// Me godoc
-// @Summary      Get my current premium status
-// @Tags         payments
-// @Security     BearerAuth
-// @Produce      json
-// @Success      200 {object} common.ApiResponse{data=responses.MyPremiumStatus}
-// @Router       /premium/me [get]
-func (h *PaymentController) Me(c *gin.Context) {
-	sub, err := h.subs.GetActive(c.Request.Context(), middleware.UserID(c))
-	if err != nil {
-		common.Fail(c, err)
-		return
-	}
-	status := responses.MyPremiumStatus{IsPremium: sub != nil}
-	if sub != nil {
-		status.ExpiresAt = sub.ExpiresAt
-	}
-	common.OK(c, "premium status", status)
-}
+// Me was superseded by the access module's GET /premium/me
+// (MyEntitlements). The MyPremiumStatus DTO stays for the web client's
+// current premium badge until the frontend migrates (out of scope here).
 
 // ListPlans godoc
 // @Summary      List premium plans

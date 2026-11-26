@@ -5,8 +5,9 @@ package enums
 type AIOutputKind string
 
 const (
-	AIOutputKindExamReview    AIOutputKind = "exam_review"
-	AIOutputKindWritingReview AIOutputKind = "writing_review" // future Phase 2b; allowed value only
+	AIOutputKindExamReview AIOutputKind = "exam_review"
+	// WritingReview is a future Phase 2b output; allowed value only.
+	AIOutputKindWritingReview AIOutputKind = "writing_review"
 	AIOutputKindStudyPlan     AIOutputKind = "study_plan"
 	AIOutputKindTurnAnalysis  AIOutputKind = "turn_analysis"
 )

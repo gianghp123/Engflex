@@ -311,7 +311,7 @@ func TestExamPhase2HTTP(t *testing.T) {
 	})
 	t.Run("routes require authentication", func(t *testing.T) {
 		real := gin.New()
-		exams.RegisterRoutes(real.Group("/api/v1"), tx)
+		exams.RegisterRoutes(real.Group("/api/v1"), tx, nil)
 		for _, endpoint := range []struct{ method, path string }{
 			{"GET", "/api/v1/exam-categories"},
 			{"POST", "/api/v1/exam-attempts/" + attemptID + "/cancel"},

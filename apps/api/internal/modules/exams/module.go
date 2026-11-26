@@ -5,12 +5,14 @@ import (
 	"gorm.io/gorm"
 
 	"engflex-api/internal/database/repositories"
+	"engflex-api/internal/modules/access"
 	"engflex-api/internal/modules/exams/controllers"
 	"engflex-api/internal/modules/exams/services"
 	"engflex-api/internal/server/middleware"
 )
 
-func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB) {
+func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB, accessSvc *access.Services) {
+	_ = accessSvc // Task 12 consumes the policy/usage singletons.
 	categories := repositories.NewExamCategoryRepository(db)
 	tests := repositories.NewExamTestRepository(db)
 	attempts := repositories.NewAttemptRepository(db)
