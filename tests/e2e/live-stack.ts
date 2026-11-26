@@ -113,7 +113,9 @@ export function defineLiveConfig({
 		],
 		webServer: [
 			{
-				command: `uv run src/bot.py -t webrtc --port ${ENGINE_PORT}`,
+				// Production dispatcher, not the dev runner: the live suites
+				// must exercise the entrypoint deployments actually run.
+				command: `uv run src/server.py`,
 				cwd: "../../apps/voice",
 				url: `http://localhost:${ENGINE_PORT}/status`,
 				reuseExistingServer: false,
@@ -123,6 +125,7 @@ export function defineLiveConfig({
 					API_URL: `http://localhost:${API_PORT}`,
 					INTERNAL_SECRET: "dev-internal-secret",
 					SENTRY_DSN: "",
+					VOICE_PORT: String(ENGINE_PORT),
 					...engineEnv,
 				},
 			},
