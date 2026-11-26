@@ -22,6 +22,7 @@ type ConversationRepository interface {
 
 	CountByUser(ctx context.Context, userID string, scenarioID *string) (int64, error)
 	SetSpeechStart(ctx context.Context, id, speechSessionID string, startResponse []byte) (int64, error)
+	ClearSpeechStart(ctx context.Context, id string) (int64, error)
 	SetStatus(ctx context.Context, id string, from, to enums.ConversationStatus) (int64, error)
 	SetEnded(ctx context.Context, id string, durationSec *int) (int64, error)
 
@@ -143,6 +144,26 @@ func (r *conversationRepository) SetSpeechStart(ctx context.Context, id, speechS
 		Updates(map[string]any{
 			"speech_session_id":     speechSessionID,
 			"speech_start_response": datatypes.JSON(startResponse),
+			"updated_at":            gorm.Expr("now()"),
+		})
+	return res.RowsAffected, res.Error
+}
+
+// ClearSpeechStart drops a poisoned start cache: the engine no longer knows
+// the session (dispatcher restart or pending TTL), so the next /start must
+// call the engine again instead of replaying the dead session id. Only a
+// still-pending row is cleared — a live/ended conversation keeps its
+// history.
+func (r *conversationRepository) ClearSpeechStart(ctx context.Context, id string) (int64, error) {
+	if _, err := parseID(id, "conversationId"); err != nil {
+		return 0, err
+	}
+	res := r.db.WithContext(ctx).
+		Model(&models.Conversation{}).
+		Where("id = ? AND status = ?", id, enums.ConversationStatusPending).
+		Updates(map[string]any{
+			"speech_session_id":     "",
+			"speech_start_response": nil,
 			"updated_at":            gorm.Expr("now()"),
 		})
 	return res.RowsAffected, res.Error

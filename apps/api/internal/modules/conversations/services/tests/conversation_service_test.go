@@ -387,3 +387,56 @@ func TestFinalize(t *testing.T) {
 
 func errNotFound() error { return gorm.ErrRecordNotFound }
 func errBoom() error     { return errors.New("boom") }
+
+func TestOfferEngine404ClearsPoisonedStart(t *testing.T) {
+	tests := []struct {
+		name       string
+		method     string
+		setupRepo  func(*repomocks.MockConversationRepository)
+		wantStatus int
+	}{
+		{
+			name:   "post 404 clears the cached start and conflicts",
+			method: http.MethodPost,
+			setupRepo: func(repo *repomocks.MockConversationRepository) {
+				repo.On("ClearSpeechStart", mock.Anything, convID).Return(int64(1), nil).Once()
+			},
+			wantStatus: http.StatusConflict,
+		},
+		{
+			name:   "patch 404 clears the cached start and conflicts",
+			method: http.MethodPatch,
+			setupRepo: func(repo *repomocks.MockConversationRepository) {
+				repo.On("ClearSpeechStart", mock.Anything, convID).Return(int64(1), nil).Once()
+			},
+			wantStatus: http.StatusConflict,
+		},
+		{
+			name:   "clear failure surfaces the db error",
+			method: http.MethodPost,
+			setupRepo: func(repo *repomocks.MockConversationRepository) {
+				repo.On("ClearSpeechStart", mock.Anything, convID).Return(int64(0), errBoom()).Once()
+			},
+			wantStatus: http.StatusInternalServerError,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			svc, repo, _, engine, _ := newService(t)
+			repo.On("GetByID", mock.Anything, convID).Return(&models.Conversation{
+				ID: convID, UserID: userID, Status: enums.ConversationStatusPending,
+				SpeechSessionID: "eng-dead",
+			}, nil).Once()
+			tt.setupRepo(repo)
+			engine.On("Offer", mock.Anything, "eng-dead", tt.method, mock.Anything).
+				Return([]byte(`{"detail":"unknown or expired session"}`), http.StatusNotFound, nil).Once()
+
+			_, _, err := svc.Offer(context.Background(), userID, convID, tt.method, []byte(`{}`))
+			requireAppError(t, err, tt.wantStatus)
+			// The status transition must NOT have run: the row stays pending,
+			// so the client's retry goes through Start against a live engine.
+			repo.AssertNotCalled(t, "SetStatus", mock.Anything, mock.Anything, mock.Anything, mock.Anything)
+		})
+	}
+}

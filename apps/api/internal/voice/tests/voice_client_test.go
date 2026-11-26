@@ -21,6 +21,7 @@ func testVoiceClient(t *testing.T, handler http.HandlerFunc) voice.VoiceClient {
 	t.Cleanup(srv.Close)
 	return voice.NewHTTPVoiceClient(config.VoiceConfig{
 		ServiceURL:     srv.URL,
+		InternalSecret: "test-secret",
 		StartTimeout:   2 * time.Second,
 		OfferTimeout:   2 * time.Second,
 		AnalyzeTimeout: 2 * time.Second,
@@ -123,4 +124,88 @@ func TestVoiceClientTranscribeForwardsTheRealContainer(t *testing.T) {
 	res, err := client.Transcribe(context.Background(), "c1", []byte("fake-wav"), "audio/wav")
 	require.NoError(t, err)
 	assert.Equal(t, "Well, I went.", res.Text)
+}
+
+// TestVoiceClientAuthorizesEveryCall pins the dispatcher's auth boundary:
+// every Go->engine request must carry the shared secret (rollout step 1 —
+// Go sends it before the engine that requires it ships).
+func TestVoiceClientAuthorizesEveryCall(t *testing.T) {
+	const secret = "test-secret"
+	tests := []struct {
+		name string
+		call func(voice.VoiceClient) error
+	}{
+		{
+			name: "start",
+			call: func(c voice.VoiceClient) error {
+				_, err := c.Start(context.Background(), voice.StartRequest{
+					Transport: "webrtc",
+					Body:      voice.VoiceSessionBody{UserID: "u1", ConversationID: "c1"},
+				})
+				return err
+			},
+		},
+		{
+			name: "offer",
+			call: func(c voice.VoiceClient) error {
+				_, _, err := c.Offer(context.Background(), "eng-1", http.MethodPost, []byte(`{}`))
+				return err
+			},
+		},
+		{
+			name: "analyze",
+			call: func(c voice.VoiceClient) error {
+				_, err := c.AnalyzeTurn(context.Background(), voice.AnalyzeTurnRequest{
+					ConversationID: "c1", TurnID: "t1", Text: "hi",
+				})
+				return err
+			},
+		},
+		{
+			name: "transcript",
+			call: func(c voice.VoiceClient) error {
+				_, err := c.Transcript(context.Background(), "c1", "review", "")
+				return err
+			},
+		},
+		{
+			name: "transcribe",
+			call: func(c voice.VoiceClient) error {
+				_, err := c.Transcribe(context.Background(), "c1", []byte("w"), "audio/wav")
+				return err
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				assert.Equal(t, secret, r.Header.Get("X-Internal-Secret"))
+				switch r.URL.Path {
+				case "/start":
+					_, _ = w.Write([]byte(`{"sessionId":"eng-1"}`))
+				case "/sessions/eng-1/api/offer":
+					_, _ = w.Write([]byte(`{"sdp":"a"}`))
+				case "/analyze":
+					_, _ = w.Write([]byte(`{"feedback":{}}`))
+				case "/transcript":
+					_, _ = w.Write([]byte(`{}`))
+				case "/transcribe":
+					_, _ = w.Write([]byte(`{"text":"x"}`))
+				default:
+					t.Errorf("unexpected engine path %s", r.URL.Path)
+				}
+			}))
+			t.Cleanup(srv.Close)
+			client := voice.NewHTTPVoiceClient(config.VoiceConfig{
+				ServiceURL:     srv.URL,
+				InternalSecret: secret,
+				StartTimeout:   2 * time.Second,
+				OfferTimeout:   2 * time.Second,
+				AnalyzeTimeout: 2 * time.Second,
+			})
+
+			require.NoError(t, tt.call(client))
+		})
+	}
 }

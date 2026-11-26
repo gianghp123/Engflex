@@ -169,6 +169,21 @@ func (s *ConversationService) Offer(ctx context.Context, userID, id, method stri
 		return nil, 0, common.ServiceUnavailable("voice service unavailable")
 	}
 
+	// The engine forgot this session (dispatcher restart, pending TTL): the
+	// cached start reply is now poison — a retry would replay the dead id
+	// forever. Clear it while the row is still pending and tell the client
+	// to start again, before any status transition records the attempt.
+	if status == http.StatusNotFound {
+		if _, err := s.conversations.ClearSpeechStart(ctx, conv.ID); err != nil {
+			appErr := common.FromDBError(err, "conversation")
+			logger.Report(ctx, "clear voice start failed", appErr, "conversationID", conv.ID)
+			return nil, 0, appErr
+		}
+		appErr := common.Conflict("voice session expired")
+		logger.Report(ctx, "voice session expired; start cache cleared", appErr, "conversationID", conv.ID)
+		return nil, 0, appErr
+	}
+
 	if method != http.MethodPost {
 		return respBody, status, nil
 	}

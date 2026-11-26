@@ -104,6 +104,12 @@ type VoiceClient interface {
 	Transcribe(ctx context.Context, conversationID string, audio []byte, mime string) (*responses.TranscribeResult, error)
 }
 
+// internalSecretHeader authenticates Go -> engine requests. It mirrors the
+// value the engine already sends on its callbacks (see Go's
+// middleware.InternalSecretHeader; duplicated here so the client package
+// does not depend on the server package).
+const internalSecretHeader = "X-Internal-Secret"
+
 // TranscriptStatusError carries a non-2xx engine reply. The engine owns the
 // window and the live transcript, so its refusals are meaningful to the
 // learner: "no live session" (close the modal), "illegal for the current state",
@@ -122,6 +128,7 @@ func (e *TranscriptStatusError) Error() string {
 
 type httpVoiceClient struct {
 	baseURL        string
+	internalSecret string
 	http           *http.Client
 	startTimeout   time.Duration
 	offerTimeout   time.Duration
@@ -131,11 +138,18 @@ type httpVoiceClient struct {
 func NewHTTPVoiceClient(cfg config.VoiceConfig) VoiceClient {
 	return &httpVoiceClient{
 		baseURL:        cfg.ServiceURL,
+		internalSecret: cfg.InternalSecret,
 		http:           &http.Client{},
 		startTimeout:   cfg.StartTimeout,
 		offerTimeout:   cfg.OfferTimeout,
 		analyzeTimeout: cfg.AnalyzeTimeout,
 	}
+}
+
+// authorize stamps the shared secret every engine request must carry. The
+// dispatcher rejects requests without it; the dev runner ignores it.
+func (c *httpVoiceClient) authorize(req *http.Request) {
+	req.Header.Set(internalSecretHeader, c.internalSecret)
 }
 
 func (c *httpVoiceClient) AnalyzeTurn(ctx context.Context, req AnalyzeTurnRequest) (*AnalyzeTurnResponse, error) {
@@ -156,6 +170,7 @@ func (c *httpVoiceClient) AnalyzeTurn(ctx context.Context, req AnalyzeTurnReques
 	if err != nil {
 		return nil, err
 	}
+	c.authorize(httpReq)
 	httpReq.Header.Set("Content-Type", "application/json")
 
 	resp, err := c.http.Do(httpReq)
@@ -190,6 +205,7 @@ func (c *httpVoiceClient) Start(ctx context.Context, req StartRequest) (*StartRe
 	if err != nil {
 		return nil, err
 	}
+	c.authorize(httpReq)
 	httpReq.Header.Set("Content-Type", "application/json")
 
 	resp, err := c.http.Do(httpReq)
@@ -224,6 +240,7 @@ func (c *httpVoiceClient) Offer(ctx context.Context, engineSessionID, method str
 	if err != nil {
 		return nil, 0, err
 	}
+	c.authorize(httpReq)
 	httpReq.Header.Set("Content-Type", "application/json")
 
 	resp, err := c.http.Do(httpReq)
@@ -254,6 +271,7 @@ func (c *httpVoiceClient) Transcript(ctx context.Context, conversationID, action
 	if err != nil {
 		return nil, err
 	}
+	c.authorize(req)
 	req.Header.Set("Content-Type", "application/json")
 	resp, err := c.http.Do(req)
 	if err != nil {
@@ -301,6 +319,7 @@ func (c *httpVoiceClient) Transcribe(ctx context.Context, conversationID string,
 	if err != nil {
 		return nil, err
 	}
+	c.authorize(req)
 	req.Header.Set("Content-Type", w.FormDataContentType())
 	resp, err := c.http.Do(req)
 	if err != nil {

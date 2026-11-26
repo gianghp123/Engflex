@@ -51,6 +51,72 @@ func (_m *MockConversationRepository) EXPECT() *MockConversationRepository_Expec
 	return &MockConversationRepository_Expecter{mock: &_m.Mock}
 }
 
+// ClearSpeechStart provides a mock function for the type MockConversationRepository
+func (_mock *MockConversationRepository) ClearSpeechStart(ctx context.Context, id string) (int64, error) {
+	ret := _mock.Called(ctx, id)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ClearSpeechStart")
+	}
+
+	var r0 int64
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) (int64, error)); ok {
+		return returnFunc(ctx, id)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) int64); ok {
+		r0 = returnFunc(ctx, id)
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = returnFunc(ctx, id)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockConversationRepository_ClearSpeechStart_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ClearSpeechStart'
+type MockConversationRepository_ClearSpeechStart_Call struct {
+	*mock.Call
+}
+
+// ClearSpeechStart is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id string
+func (_e *MockConversationRepository_Expecter) ClearSpeechStart(ctx any, id any) *MockConversationRepository_ClearSpeechStart_Call {
+	return &MockConversationRepository_ClearSpeechStart_Call{Call: _e.mock.On("ClearSpeechStart", ctx, id)}
+}
+
+func (_c *MockConversationRepository_ClearSpeechStart_Call) Run(run func(ctx context.Context, id string)) *MockConversationRepository_ClearSpeechStart_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockConversationRepository_ClearSpeechStart_Call) Return(n int64, err error) *MockConversationRepository_ClearSpeechStart_Call {
+	_c.Call.Return(n, err)
+	return _c
+}
+
+func (_c *MockConversationRepository_ClearSpeechStart_Call) RunAndReturn(run func(ctx context.Context, id string) (int64, error)) *MockConversationRepository_ClearSpeechStart_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // CountByUser provides a mock function for the type MockConversationRepository
 func (_mock *MockConversationRepository) CountByUser(ctx context.Context, userID string, scenarioID *string) (int64, error) {
 	ret := _mock.Called(ctx, userID, scenarioID)
