@@ -32,11 +32,12 @@ type ConversationService struct {
 	feedbacks     repositories.FeedbackRepository
 	scenarios     repositories.ScenarioRepository
 	personas      repositories.PersonaRepository
+	premium       common.PremiumChecker
 }
 
 // NewConversationService builds the service over repository + engine interfaces.
-func NewConversationService(conversations repositories.ConversationRepository, turns repositories.ConversationTurnRepository, voice voice.VoiceClient, pronounce voice.PronounceEngine, maxDuration int, feedbacks repositories.FeedbackRepository, scenarios repositories.ScenarioRepository, personas repositories.PersonaRepository) *ConversationService {
-	return &ConversationService{conversations: conversations, turns: turns, voice: voice, pronounce: pronounce, maxDuration: maxDuration, feedbacks: feedbacks, scenarios: scenarios, personas: personas}
+func NewConversationService(conversations repositories.ConversationRepository, turns repositories.ConversationTurnRepository, voice voice.VoiceClient, pronounce voice.PronounceEngine, maxDuration int, feedbacks repositories.FeedbackRepository, scenarios repositories.ScenarioRepository, personas repositories.PersonaRepository, premium common.PremiumChecker) *ConversationService {
+	return &ConversationService{conversations: conversations, turns: turns, voice: voice, pronounce: pronounce, maxDuration: maxDuration, feedbacks: feedbacks, scenarios: scenarios, personas: personas, premium: premium}
 }
 
 // Create provisions a pending conversation. The close of the caller's other
@@ -46,6 +47,21 @@ func NewConversationService(conversations repositories.ConversationRepository, t
 func (s *ConversationService) Create(ctx context.Context, userID string, req requests.StartConversation) (*models.Conversation, error) {
 	if req.Mode == enums.ConversationModeRoleplay && (req.ScenarioID == nil || *req.ScenarioID == "") {
 		return nil, common.BadRequest("scenarioId is required for roleplay")
+	}
+	if common.ContentGatingEnabled() && req.Mode == enums.ConversationModeRoleplay && req.ScenarioID != nil && *req.ScenarioID != "" {
+		// Phase 0 gate (spec §5.4): a roleplay conversation is the scenario's
+		// side door — Create must not provision a pending conversation for a
+		// premium scenario a free user cannot open. Inert while content gating
+		// ships off.
+		scenario, serr := s.scenarios.GetByID(ctx, *req.ScenarioID)
+		if serr != nil {
+			appErr := common.FromDBError(serr, "scenario")
+			logger.Report(ctx, "gate conversation scenario failed", appErr, "scenarioID", *req.ScenarioID)
+			return nil, appErr
+		}
+		if appErr := common.RequirePremiumAccess(ctx, s.premium, userID, false, scenario.IsPremium); appErr != nil {
+			return nil, appErr
+		}
 	}
 
 	m := &models.Conversation{}

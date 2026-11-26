@@ -12,6 +12,7 @@ import (
 	"gorm.io/gorm"
 
 	"engflex-api/config"
+	"engflex-api/internal/common"
 	"engflex-api/internal/logger"
 	"engflex-api/internal/observability"
 	"engflex-api/internal/server"
@@ -70,6 +71,10 @@ func main() {
 		slog.Error("failed to open database", "error", err)
 		os.Exit(1)
 	}
+
+	// Option A ships with per-item content gating off (spec §5.4); the
+	// switch is read on every content read and never mutated afterwards.
+	common.SetContentGating(cfg.Access.ContentGating)
 
 	router := server.NewRouter(db, cfg)
 

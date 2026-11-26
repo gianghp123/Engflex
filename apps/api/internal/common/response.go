@@ -74,7 +74,9 @@ func Fail(c *gin.Context, err error) {
 	if !ok || appErr == nil {
 		appErr = Internal()
 	}
-	c.JSON(appErr.Status, ApiResponse{
-		Message: appErr.Message,
-	})
+	resp := ApiResponse{Message: appErr.Message}
+	if appErr.Details != nil {
+		resp.Data = appErr.Details
+	}
+	c.JSON(appErr.Status, resp)
 }

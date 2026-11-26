@@ -32,7 +32,7 @@ func TestAttemptLifecycle(t *testing.T) {
 
 	newSvc := func(t *testing.T, repo *mocks.MockLessonActivityRepository, attempts *mocks.MockAttemptRepository) services.LessonActivityService {
 		t.Helper()
-		return services.NewLessonActivityService(repo, pronunciation.NewScorer(voicemocks.NewMockPronounceEngine(t)), llmmocks.NewMockLLMClient(t), attempts)
+		return services.NewLessonActivityService(repo, pronunciation.NewScorer(voicemocks.NewMockPronounceEngine(t)), llmmocks.NewMockLLMClient(t), attempts, mocks.NewMockLessonRepository(t), fakePremiumChecker{})
 	}
 
 	openAttempt := func() *models.Attempt {

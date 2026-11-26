@@ -5,6 +5,7 @@ import (
 	"engflex-api/internal/modules/videos/dtos/requests"
 	"engflex-api/internal/modules/videos/dtos/responses"
 	"engflex-api/internal/modules/videos/services"
+	"engflex-api/internal/server/middleware"
 	"engflex-api/internal/utils"
 
 	"github.com/gin-gonic/gin"
@@ -118,7 +119,7 @@ func (h *VideoTranscriptController) Delete(c *gin.Context) {
 //	@Router			/video-transcripts/{id} [get]
 func (h *VideoTranscriptController) GetByID(c *gin.Context) {
 	id := c.Param("id")
-	m, err := h.service.GetByID(c.Request.Context(), id)
+	m, err := h.service.GetByID(c.Request.Context(), id, middleware.UserID(c))
 	if err != nil {
 		common.Fail(c, err)
 		return
@@ -142,7 +143,7 @@ func (h *VideoTranscriptController) GetByID(c *gin.Context) {
 //	@Router			/video-transcripts/video-exercise/{video_exercise_id} [get]
 func (h *VideoTranscriptController) GetByVideoExerciseID(c *gin.Context) {
 	videoExerciseID := c.Param("video_exercise_id")
-	list, err := h.service.GetByVideoExerciseID(c.Request.Context(), videoExerciseID)
+	list, err := h.service.GetByVideoExerciseID(c.Request.Context(), videoExerciseID, middleware.UserID(c))
 	if err != nil {
 		common.Fail(c, err)
 		return

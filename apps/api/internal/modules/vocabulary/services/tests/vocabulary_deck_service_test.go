@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"gorm.io/gorm"
 
+	"engflex-api/internal/common"
 	"engflex-api/internal/common/enums"
 	"engflex-api/internal/database/models"
 	"engflex-api/internal/modules/vocabulary/dtos/requests"
@@ -59,6 +60,8 @@ func TestVocabularyDeckService_GetDetail(t *testing.T) {
 // goes, but is blocked (403) for a non-premium, non-admin caller. Personal
 // decks never carry IsPremium, so they're untouched by this test.
 func TestVocabularyDeckService_GetDetail_PremiumGating(t *testing.T) {
+	common.SetContentGating(true)
+	t.Cleanup(func() { common.SetContentGating(false) })
 	premiumDeck := &models.VocabularyDeck{ID: deckID, Name: "Curated", UserID: "admin_1", IsDefault: true, Status: enums.PublishStatusPublished, IsPremium: true}
 
 	t.Run("blocked for non-premium caller", func(t *testing.T) {

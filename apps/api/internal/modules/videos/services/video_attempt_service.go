@@ -32,10 +32,11 @@ type videoAttemptService struct {
 	exercises    repositories.VideoExerciseRepository
 	transcripts  repositories.VideoTranscriptRepository
 	transactions repositories.TransactionManager
+	premium      common.PremiumChecker
 }
 
-func NewVideoAttemptService(attempts repositories.AttemptRepository, exercises repositories.VideoExerciseRepository, transcripts repositories.VideoTranscriptRepository, transactions repositories.TransactionManager) VideoAttemptService {
-	return &videoAttemptService{attempts: attempts, exercises: exercises, transcripts: transcripts, transactions: transactions}
+func NewVideoAttemptService(attempts repositories.AttemptRepository, exercises repositories.VideoExerciseRepository, transcripts repositories.VideoTranscriptRepository, transactions repositories.TransactionManager, premium common.PremiumChecker) VideoAttemptService {
+	return &videoAttemptService{attempts: attempts, exercises: exercises, transcripts: transcripts, transactions: transactions, premium: premium}
 }
 
 func (s *videoAttemptService) StartAttempt(ctx context.Context, userID, videoExerciseID string, attemptType enums.AttemptType, req requests.StartVideoAttempt) (*models.Attempt, error) {
@@ -48,6 +49,22 @@ func (s *videoAttemptService) StartAttempt(ctx context.Context, userID, videoExe
 	if req.Level != nil && (attemptType != enums.AttemptTypeDictation ||
 		(*req.Level != "easy" && *req.Level != "normal" && *req.Level != "hard")) {
 		return nil, common.BadRequest("invalid dictation level")
+	}
+	if common.ContentGatingEnabled() {
+		// Phase 0 gate (spec §5.4): premium-flagged video exercises block
+		// attempt starts for free users when content gating is on. Inert at
+		// launch — the switch ships false — but the check must exist so a
+		// future flag-on is airtight: the attempt route must not be the side
+		// door around the exercise detail gate.
+		if ex, err := s.exercises.GetByID(ctx, videoExerciseID); err == nil {
+			if appErr := common.RequirePremiumAccess(ctx, s.premium, userID, false, ex.IsPremium); appErr != nil {
+				return nil, appErr
+			}
+		} else if !errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, videoAttemptError(ctx, "gate video attempt failed", videoExerciseID, err)
+		}
+		// A video exercise that does not exist still falls through to the
+		// locked read, which maps it to 404 exactly as before.
 	}
 
 	var attempt *models.Attempt

@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 	"gorm.io/datatypes"
@@ -50,12 +51,19 @@ type lessonActivityService struct {
 	scorer   pronunciation.Scorer
 	llm      llm.LLMClient
 	attempts repositories.AttemptRepository
+	lessons  repositories.LessonRepository
+	premium  common.PremiumChecker
+	writing  *userRateLimiter
+	inflight *inflightGuard
 }
 
 // NewLessonActivityService builds the service over repository and client
 // interfaces (never concretes, never nil).
-func NewLessonActivityService(repo repositories.LessonActivityRepository, scorer pronunciation.Scorer, llm llm.LLMClient, attempts repositories.AttemptRepository) LessonActivityService {
-	return &lessonActivityService{repo: repo, scorer: scorer, llm: llm, attempts: attempts}
+func NewLessonActivityService(repo repositories.LessonActivityRepository, scorer pronunciation.Scorer, llm llm.LLMClient, attempts repositories.AttemptRepository, lessons repositories.LessonRepository, premium common.PremiumChecker) LessonActivityService {
+	return &lessonActivityService{repo: repo, scorer: scorer, llm: llm, attempts: attempts, lessons: lessons, premium: premium,
+		writing:  newUserRateLimiter(writingRequestsPerMinute, time.Minute),
+		inflight: newInflightGuard(1),
+	}
 }
 
 func (s *lessonActivityService) ListByLesson(ctx context.Context, lessonID string) ([]*models.LessonActivity, error) {
@@ -98,6 +106,24 @@ func (s *lessonActivityService) loadActivity(ctx context.Context, id string) (*m
 func (s *lessonActivityService) StartAttempt(ctx context.Context, userID, lessonID string) (*models.Attempt, error) {
 	if _, err := uuid.Parse(lessonID); err != nil {
 		return nil, common.BadRequest("invalid lesson id")
+	}
+	if common.ContentGatingEnabled() {
+		// Phase 0 gate: premium-flagged lessons block attempt starts for free
+		// users when content gating is on (spec §5.4). Inert at launch — the
+		// switch ships false — but the check must exist so a future flag-on is
+		// airtight: the attempt route must not be the side door around the
+		// lesson detail gate.
+		if m, err := s.lessons.GetByID(ctx, lessonID); err == nil {
+			if appErr := common.RequirePremiumAccess(ctx, s.premium, userID, false, m.IsPremium); appErr != nil {
+				return nil, appErr
+			}
+		} else if !errors.Is(err, gorm.ErrRecordNotFound) {
+			appErr := common.FromDBError(err, "lesson")
+			logger.Report(ctx, "gate lesson attempt failed", appErr, "lessonID", lessonID)
+			return nil, appErr
+		}
+		// A lesson that does not exist still falls through to the FK: the
+		// attempt Create maps it to 404 exactly as before.
 	}
 	if open, err := s.attempts.GetOpenAttempt(ctx, userID, lessonID); err == nil {
 		return open, nil
@@ -200,6 +226,27 @@ func (s *lessonActivityService) loadOwnedAttempt(ctx context.Context, userID, at
 	return m, nil
 }
 
+// loadRetryableAttempt fetches one attempt and proves ownership without
+// requiring open status. Completion-critical AI (spec §3.3) stays retryable
+// after a fallback part finalizes the run: a retry overwrites the same part
+// instead of meeting a closed-attempt conflict. Manual attaches
+// (CheckAnswer, AttachPartResult) keep the closed guard in loadOwnedAttempt.
+func (s *lessonActivityService) loadRetryableAttempt(ctx context.Context, userID, attemptID string) (*models.Attempt, error) {
+	if _, err := uuid.Parse(attemptID); err != nil {
+		return nil, common.BadRequest("invalid attempt id")
+	}
+	m, err := s.attempts.GetByID(ctx, attemptID)
+	if err != nil {
+		appErr := common.FromDBError(err, "attempt")
+		logger.Report(ctx, "load retryable attempt failed", appErr, "attemptID", attemptID)
+		return nil, appErr
+	}
+	if m.UserID != userID {
+		return nil, common.NotFound("attempt not found")
+	}
+	return m, nil
+}
+
 // AttachPartResult merges one part entry into the open attempt and finalizes
 // inline when the map covers every lesson activity.
 func (s *lessonActivityService) AttachPartResult(ctx context.Context, userID, attemptID, activityID string, entry PartEntry) (*models.Attempt, error) {
@@ -266,6 +313,15 @@ func (s *lessonActivityService) maybeFinalize(ctx context.Context, m *models.Att
 	}
 	slog.InfoContext(ctx, "attempt completed", "attemptID", m.ID, "score", mean)
 	return m, nil
+}
+
+// mergeWritingUnavailable merges an ai_unavailable marker into an
+// already-loaded attempt so the lesson can still finalize; a later retry
+// overwrites the same part.
+func (s *lessonActivityService) mergeWritingUnavailable(ctx context.Context, m *models.Attempt, activityID string) (*models.Attempt, error) {
+	parts := decodePartMap(m)
+	parts[activityID] = PartEntry{Type: enums.AttemptTypeWriting, Status: PartStatusAIUnavailable, Score: 0, Detail: nil}
+	return s.attachWithMap(ctx, m, parts)
 }
 
 // CheckAnswer grades one question of a reading/listening activity. Answer keys
@@ -340,6 +396,11 @@ func (s *lessonActivityService) AttachPronounceItem(ctx context.Context, userID,
 	if err != nil {
 		return nil, err
 	}
+	return s.mergePronounceItem(ctx, m, activityID, itemIndex, score)
+}
+
+// mergePronounceItem merges one item score into an already-loaded attempt.
+func (s *lessonActivityService) mergePronounceItem(ctx context.Context, m *models.Attempt, activityID string, itemIndex int, score float64) (*models.Attempt, error) {
 	parts := decodePartMap(m)
 	entry := parts[activityID]
 	var detail PronouncePartDetail
@@ -357,7 +418,35 @@ func (s *lessonActivityService) AttachPronounceItem(ctx context.Context, userID,
 		sum += v
 	}
 	mean := sum / float64(len(detail.Items))
-	parts[activityID] = PartEntry{Type: enums.AttemptTypeSpeaking, Score: mean, Detail: detail}
+	parts[activityID] = PartEntry{Type: enums.AttemptTypeSpeaking, Status: PartStatusScored, Score: mean, Detail: detail}
+	return s.attachWithMap(ctx, m, parts)
+}
+
+// AttachPronounceItemUnavailable records that the scorer failed for this
+// activity: the part exists (so the attempt can finalize), carries any
+// previously scored items, and is marked for the UI's retry hint. It proves
+// ownership without requiring open status so a retry after a fallback
+// finalize can overwrite the part.
+func (s *lessonActivityService) AttachPronounceItemUnavailable(ctx context.Context, userID, attemptID, activityID string) (*models.Attempt, error) {
+	m, err := s.loadRetryableAttempt(ctx, userID, attemptID)
+	if err != nil {
+		return nil, err
+	}
+	return s.mergePronounceUnavailable(ctx, m, activityID)
+}
+
+// mergePronounceUnavailable merges an ai_unavailable marker into an
+// already-loaded attempt, preserving previously scored items for the retry.
+func (s *lessonActivityService) mergePronounceUnavailable(ctx context.Context, m *models.Attempt, activityID string) (*models.Attempt, error) {
+	parts := decodePartMap(m)
+	entry := parts[activityID]
+	var detail PronouncePartDetail
+	if entry.Detail != nil {
+		if raw, merr := json.Marshal(entry.Detail); merr == nil {
+			_ = json.Unmarshal(raw, &detail)
+		}
+	}
+	parts[activityID] = PartEntry{Type: enums.AttemptTypeSpeaking, Status: PartStatusAIUnavailable, Score: 0, Detail: detail}
 	return s.attachWithMap(ctx, m, parts)
 }
 
@@ -379,19 +468,33 @@ func (s *lessonActivityService) Pronounce(ctx context.Context, userID, id, attem
 	if itemIndex < 0 || itemIndex >= len(cfg.Items) {
 		return nil, common.BadRequest("item index out of range")
 	}
-	if _, err := s.loadOwnedAttempt(ctx, userID, attemptID); err != nil {
-		return nil, err
-	}
-	out, err := s.scorer.Score(ctx, cfg.Items[itemIndex].Text, audio, mime)
+	am, err := s.loadRetryableAttempt(ctx, userID, attemptID)
 	if err != nil {
 		return nil, err
+	}
+	if !s.inflight.acquire(userID) {
+		return nil, common.TooManyRequests("pronunciation scoring is busy").WithCode(common.CodeRateLimited)
+	}
+	defer s.inflight.release(userID)
+	out, err := s.scorer.Score(ctx, cfg.Items[itemIndex].Text, audio, mime)
+	if err != nil {
+		// Completion-critical AI (spec §3.3): attach a fallback part so the
+		// lesson can still finalize, and return a retryable 503. The part
+		// carries the previously scored items so a retry merges over it.
+		// The attempt is already loaded, so the merge reuses it (no reload).
+		if _, aerr := s.mergePronounceUnavailable(ctx, am, id); aerr != nil {
+			return nil, aerr
+		}
+		logger.Report(ctx, "pronounce scorer failed", common.ServiceUnavailable("pronunciation unavailable").WithCode(common.CodeAIUnavailable),
+			"activityID", id, "reason", err.Error())
+		return nil, common.ServiceUnavailable("pronunciation unavailable").WithCode(common.CodeAIUnavailable)
 	}
 	var dto responses.PronunciationResult
 	if utils.Map(&dto, out) != nil {
 		logger.Report(ctx, "pronounce map failed", common.Internal(), "id", id)
 		return nil, common.Internal()
 	}
-	if _, err := s.AttachPronounceItem(ctx, userID, attemptID, id, itemIndex, dto.Score); err != nil {
+	if _, err := s.mergePronounceItem(ctx, am, id, itemIndex, dto.Score); err != nil {
 		return nil, err
 	}
 	slog.InfoContext(ctx, "pronunciation scored", "activityID", id, "score", dto.Score)
@@ -399,8 +502,9 @@ func (s *lessonActivityService) Pronounce(ctx context.Context, userID, id, attem
 }
 
 // ScoreWriting grades one writing part with a stateless LLM call and attaches
-// the result to the open lesson attempt. Any LLM or shape failure returns an
-// error and writes nothing.
+// the result to the lesson attempt. Completion-critical AI (spec §3.3): an
+// LLM or shape failure still attaches an ai_unavailable part (so the lesson
+// finalizes) and returns a retryable 503; a later retry overwrites the part.
 func (s *lessonActivityService) ScoreWriting(ctx context.Context, userID, id, attemptID, text string) (*responses.WritingScoreResponse, error) {
 	trimmed := strings.TrimSpace(text)
 	if trimmed == "" {
@@ -422,22 +526,36 @@ func (s *lessonActivityService) ScoreWriting(ctx context.Context, userID, id, at
 		logger.Report(ctx, "writing config failed", common.Internal(), "id", id)
 		return nil, common.Internal()
 	}
-	if _, err := s.loadOwnedAttempt(ctx, userID, attemptID); err != nil {
+	am, err := s.loadRetryableAttempt(ctx, userID, attemptID)
+	if err != nil {
 		return nil, err
+	}
+	if !s.writing.allow(userID, time.Now()) {
+		return nil, common.TooManyRequests("too many writing scores, retry shortly").WithCode(common.CodeRateLimited)
 	}
 	prompt := prompts.BuildWritingScorePrompt(cfg, trimmed, words)
 	var out schemas.WritingFeedback
 	if err := s.llm.CompleteStructured(ctx, prompt, &out, schemas.WritingFeedbackSchemaName, schemas.WritingFeedbackSchema); err != nil {
-		logger.Report(ctx, "writing score engine call failed", common.ServiceUnavailable("scoring unavailable"), "activityID", id)
-		return nil, common.ServiceUnavailable("scoring unavailable")
+		if _, aerr := s.mergeWritingUnavailable(ctx, am, id); aerr != nil {
+			return nil, aerr
+		}
+		logger.Report(ctx, "writing score engine call failed",
+			common.ServiceUnavailable("scoring unavailable").WithCode(common.CodeAIUnavailable), "activityID", id)
+		return nil, common.ServiceUnavailable("scoring unavailable").WithCode(common.CodeAIUnavailable)
 	}
 	scored, verr := schemas.NormalizeWritingFeedback(out, trimmed, len(cfg.Checklist))
 	if verr != nil {
-		logger.Report(ctx, "writing score rejected", common.ServiceUnavailable("scoring unavailable"), "activityID", id, "reason", verr.Error())
-		return nil, common.ServiceUnavailable("scoring unavailable")
+		if _, aerr := s.mergeWritingUnavailable(ctx, am, id); aerr != nil {
+			return nil, aerr
+		}
+		logger.Report(ctx, "writing score rejected",
+			common.ServiceUnavailable("scoring unavailable").WithCode(common.CodeAIUnavailable), "activityID", id, "reason", verr.Error())
+		return nil, common.ServiceUnavailable("scoring unavailable").WithCode(common.CodeAIUnavailable)
 	}
 	score := coverageScore(scored.Task.Verdicts)
-	attached, err := s.AttachPartResult(ctx, userID, attemptID, id, PartEntry{Type: enums.AttemptTypeWriting, Score: score, Detail: scored})
+	parts := decodePartMap(am)
+	parts[id] = PartEntry{Type: enums.AttemptTypeWriting, Status: PartStatusScored, Score: score, Detail: scored}
+	attached, err := s.attachWithMap(ctx, am, parts)
 	if err != nil {
 		return nil, err
 	}

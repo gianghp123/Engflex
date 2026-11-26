@@ -38,6 +38,8 @@ func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB, voiceCfg config.VoiceConfi
 		pronunciation.NewScorer(voice.NewHTTPPronounceEngine(voiceCfg.PronounceURL, voiceCfg.PronounceTimeout)),
 		llm.NewHTTPLLMClient(llmCfg),
 		repositories.NewAttemptRepository(db),
+		repositories.NewLessonRepository(db),
+		premiumSvc,
 	)
 	activityCtl := controllers.NewLessonActivityController(activitySvc, media)
 

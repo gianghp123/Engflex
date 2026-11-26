@@ -11,6 +11,7 @@ import (
 	"engflex-api/internal/common/enums"
 	"engflex-api/internal/database/models"
 	"engflex-api/internal/database/repositories"
+	paymentservices "engflex-api/internal/modules/payments/services"
 	"engflex-api/internal/modules/videos/dtos/requests"
 	"engflex-api/internal/modules/videos/services"
 
@@ -45,6 +46,8 @@ func TestDictationAttemptPostgres(t *testing.T) {
 		repositories.NewVideoExerciseRepository(db),
 		repositories.NewVideoTranscriptRepository(db),
 		repositories.NewTransactionManager(db),
+		paymentservices.NewSubscriptionService(
+			repositories.NewSubscriptionRepository(db), repositories.NewPlanRepository(db)),
 	)
 	ctx := t.Context()
 	user := "dictation-test-" + uuid.NewString()

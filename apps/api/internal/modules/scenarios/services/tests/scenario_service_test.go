@@ -345,6 +345,8 @@ func TestScenarioGetDetail_DraftVisibility(t *testing.T) {
 // A published premium scenario stays visible as far as existence goes, but
 // is blocked (403) for a non-premium, non-admin caller.
 func TestScenarioGetDetail_PremiumGating(t *testing.T) {
+	common.SetContentGating(true)
+	t.Cleanup(func() { common.SetContentGating(false) })
 	scenarioID := "3a8b3191-c8a3-5855-8e05-0a268cedac3e"
 	premiumScenario := &models.Scenario{ID: scenarioID, Status: enums.PublishStatusPublished, IsPremium: true}
 

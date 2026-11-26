@@ -10,10 +10,21 @@ import (
 	"engflex-api/internal/modules/lessons/schemas"
 )
 
+// PartStatus* values explain how a part came to exist. Existing rows
+// predate the field and decode as scored (spec §8.2). skipped means the
+// learner chose to move on; ai_unavailable means the scorer failed and the
+// UI offers a retry.
+const (
+	PartStatusScored        = "scored"
+	PartStatusSkipped       = "skipped"
+	PartStatusAIUnavailable = "ai_unavailable"
+)
+
 // PartEntry is one scored part attached to a lesson attempt: normalized
 // 0-100 score plus the typed detail blob of that part type.
 type PartEntry struct {
 	Type   enums.AttemptType `json:"type"`
+	Status string            `json:"status,omitempty"`
 	Score  float64           `json:"score"`
 	Detail any               `json:"detail"`
 }
@@ -43,12 +54,23 @@ func decodePartMap(m *models.Attempt) map[string]PartEntry {
 		return out
 	}
 	_ = json.Unmarshal(m.Result, &out)
+	for id, entry := range out {
+		if entry.Status == "" {
+			entry.Status = PartStatusScored
+			out[id] = entry
+		}
+	}
 	return out
 }
 
 func encodePartMap(parts map[string]PartEntry) ([]byte, error) {
 	return json.Marshal(parts)
 }
+
+// DecodePartMapForTest exposes decodePartMap for black-box tests; it exists
+// so the external tests package can pin legacy-row normalization without
+// duplicating the decode.
+func DecodePartMapForTest(m *models.Attempt) map[string]PartEntry { return decodePartMap(m) }
 
 // maxWritingWords caps one submission (cost/abuse guard).
 const maxWritingWords = 500

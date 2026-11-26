@@ -49,7 +49,7 @@ func TestGetOpenProgress(t *testing.T) {
 	}
 	twoOutcomes := `{"` + readID + `":{"type":"reading","score":50,"detail":{"outcomes":[{"index":0,"key":"A","correct":true},{"index":1,"key":"A","correct":false}]}}}`
 	newSvc := func(repo *mocks.MockLessonActivityRepository, attempts *mocks.MockAttemptRepository) services.LessonActivityService {
-		return services.NewLessonActivityService(repo, pronunciation.NewScorer(voicemocks.NewMockPronounceEngine(t)), llmmocks.NewMockLLMClient(t), attempts)
+		return services.NewLessonActivityService(repo, pronunciation.NewScorer(voicemocks.NewMockPronounceEngine(t)), llmmocks.NewMockLLMClient(t), attempts, mocks.NewMockLessonRepository(t), fakePremiumChecker{})
 	}
 
 	tests := []struct {

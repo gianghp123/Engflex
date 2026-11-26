@@ -41,7 +41,7 @@ func newService(t *testing.T) (*services.ConversationService, *repomocks.MockCon
 	engine := voicemocks.NewMockVoiceClient(t)
 	pronounce := voicemocks.NewMockPronounceEngine(t)
 	scenarios := repomocks.NewMockScenarioRepository(t)
-	return services.NewConversationService(repo, turns, engine, pronounce, 300, repomocks.NewMockFeedbackRepository(t), scenarios, repomocks.NewMockPersonaRepository(t)), repo, turns, engine, scenarios
+	return services.NewConversationService(repo, turns, engine, pronounce, 300, repomocks.NewMockFeedbackRepository(t), scenarios, repomocks.NewMockPersonaRepository(t), fakeNotPremium{}), repo, turns, engine, scenarios
 }
 
 func pendingConv() *models.Conversation {

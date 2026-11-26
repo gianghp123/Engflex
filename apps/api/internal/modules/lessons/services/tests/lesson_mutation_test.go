@@ -10,8 +10,11 @@ import (
 	"engflex-api/internal/common/enums"
 	"engflex-api/internal/database/models"
 	"engflex-api/internal/database/repositories/mocks"
+	llmmocks "engflex-api/internal/llm/mocks"
 	"engflex-api/internal/modules/lessons/dtos/requests"
 	"engflex-api/internal/modules/lessons/services"
+	voicemocks "engflex-api/internal/voice/mocks"
+	"engflex-api/internal/voice/pronunciation"
 )
 
 // Create maps the nested Details document (LessonDetailsInput ->
@@ -113,8 +116,10 @@ func lessonActivitySvc(t *testing.T, repo *mocks.MockLessonActivityRepository) s
 	t.Helper()
 	return services.NewLessonActivityService(
 		repo,
-		nil,
-		nil,
+		pronunciation.NewScorer(voicemocks.NewMockPronounceEngine(t)),
+		llmmocks.NewMockLLMClient(t),
 		mocks.NewMockAttemptRepository(t),
+		mocks.NewMockLessonRepository(t),
+		fakePremiumChecker{},
 	)
 }

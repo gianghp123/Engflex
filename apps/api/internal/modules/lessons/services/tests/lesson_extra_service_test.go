@@ -34,7 +34,7 @@ func TestLessonActivityService_ListByLesson_EmptyReturns200(t *testing.T) {
 	repo := mocks.NewMockLessonActivityRepository(t)
 	repo.On("ListByLesson", mock.Anything, lessonID).
 		Return(make([]*models.LessonActivity, 0), nil)
-	svc := services.NewLessonActivityService(repo, pronunciation.NewScorer(voicemocks.NewMockPronounceEngine(t)), llmmocks.NewMockLLMClient(t), mocks.NewMockAttemptRepository(t))
+	svc := services.NewLessonActivityService(repo, pronunciation.NewScorer(voicemocks.NewMockPronounceEngine(t)), llmmocks.NewMockLLMClient(t), mocks.NewMockAttemptRepository(t), mocks.NewMockLessonRepository(t), fakePremiumChecker{})
 
 	res, err := svc.ListByLesson(context.Background(), lessonID)
 

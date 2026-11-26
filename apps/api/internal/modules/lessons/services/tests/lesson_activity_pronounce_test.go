@@ -93,11 +93,11 @@ func TestPronounce(t *testing.T) {
 					ID: attemptID, UserID: userID, LessonID: &lessonID,
 					Type: enums.AttemptTypeLesson, Status: enums.AttemptStatusInProgress,
 					Result: []byte(`{}`),
-				}, nil).Twice()
+				}, nil).Once()
 				repo.EXPECT().ListByLesson(mock.Anything, lessonID).Return([]*models.LessonActivity{{ID: id}}, nil).Once()
 				attempts.EXPECT().Update(mock.Anything, mock.Anything).Return(nil).Once()
 			}
-			svc := services.NewLessonActivityService(repo, pronunciation.NewScorer(voice), llmmocks.NewMockLLMClient(t), attempts)
+			svc := services.NewLessonActivityService(repo, pronunciation.NewScorer(voice), llmmocks.NewMockLLMClient(t), attempts, mocks.NewMockLessonRepository(t), fakePremiumChecker{})
 			got, err := svc.Pronounce(context.Background(), userID, id, attemptID, tt.itemIndex, audio, "audio/webm")
 			if tt.wantStatus != 0 {
 				requireAppError(t, err, tt.wantStatus)

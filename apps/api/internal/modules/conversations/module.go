@@ -11,6 +11,7 @@ import (
 	"engflex-api/internal/database/repositories"
 	"engflex-api/internal/modules/conversations/controllers"
 	"engflex-api/internal/modules/conversations/services"
+	paymentservices "engflex-api/internal/modules/payments/services"
 	"engflex-api/internal/server/middleware"
 	"engflex-api/internal/voice"
 )
@@ -25,8 +26,10 @@ func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB, cfg config.VoiceConfig, se
 	feedbacks := repositories.NewFeedbackRepository(db)
 	engine := voice.NewHTTPVoiceClient(cfg)
 	pronounce := voice.NewHTTPPronounceEngine(cfg.PronounceURL, cfg.PronounceTimeout)
+	premiumSvc := paymentservices.NewSubscriptionService(
+		repositories.NewSubscriptionRepository(db), repositories.NewPlanRepository(db))
 	svc := services.NewConversationService(repo, turns, engine, pronounce, cfg.MaxDurationSec, feedbacks,
-		repositories.NewScenarioRepository(db), repositories.NewPersonaRepository(db))
+		repositories.NewScenarioRepository(db), repositories.NewPersonaRepository(db), premiumSvc)
 	ctl := controllers.NewConversationController(svc, cfg.MaxDurationSec)
 
 	g := rg.Group("/conversations")

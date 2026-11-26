@@ -14,6 +14,7 @@ import (
 	"gorm.io/datatypes"
 	"gorm.io/gorm"
 
+	"engflex-api/internal/common"
 	"engflex-api/internal/common/enums"
 	"engflex-api/internal/database/models"
 	"engflex-api/internal/database/repositories/mocks"
@@ -93,13 +94,13 @@ func TestScoreWriting(t *testing.T) {
 				llm := llmmocks.NewMockLLMClient(t)
 				repo.EXPECT().GetByID(mock.Anything, writingActID).Return(writingActivityFixture(), nil).Once()
 				expectLLMCanned(llm, writingCanned())
-				attempts.EXPECT().GetByID(mock.Anything, writingOpenID).Return(writingOpenAttempt(), nil).Twice()
+				attempts.EXPECT().GetByID(mock.Anything, writingOpenID).Return(writingOpenAttempt(), nil).Once()
 				repo.EXPECT().ListByLesson(mock.Anything, mock.Anything).Return([]*models.LessonActivity{{ID: writingActID}}, nil).Once()
 				var saved *models.Attempt
 				attempts.EXPECT().Update(mock.Anything, mock.Anything).
 					Run(func(ctx context.Context, m *models.Attempt) { saved = m }).
 					Return(nil).Once()
-				svc := services.NewLessonActivityService(repo, pronunciation.NewScorer(voicemocks.NewMockPronounceEngine(t)), llm, attempts)
+				svc := services.NewLessonActivityService(repo, pronunciation.NewScorer(voicemocks.NewMockPronounceEngine(t)), llm, attempts, mocks.NewMockLessonRepository(t), fakePremiumChecker{})
 
 				got, err := svc.ScoreWriting(context.Background(), writingUserID, writingActID, writingOpenID, writingText)
 
@@ -135,65 +136,98 @@ func TestScoreWriting(t *testing.T) {
 				require.NoError(t, json.Unmarshal(saved.Result, &parts))
 				require.Contains(t, parts, writingActID)
 				assert.Equal(t, 75.0, parts[writingActID].Score)
+				assert.Equal(t, services.PartStatusScored, parts[writingActID].Status)
 			},
 		},
 		{
-			name: "llm error maps to 503 and writes nothing",
+			name: "llm error attaches ai_unavailable part and maps to 503",
 			run: func(t *testing.T) {
 				repo := mocks.NewMockLessonActivityRepository(t)
 				attempts := mocks.NewMockAttemptRepository(t)
 				llm := llmmocks.NewMockLLMClient(t)
 				repo.EXPECT().GetByID(mock.Anything, writingActID).Return(writingActivityFixture(), nil).Once()
 				attempts.EXPECT().GetByID(mock.Anything, writingOpenID).Return(writingOpenAttempt(), nil).Once()
+				repo.EXPECT().ListByLesson(mock.Anything, mock.Anything).Return([]*models.LessonActivity{{ID: writingActID}}, nil).Once()
+				var saved *models.Attempt
+				attempts.EXPECT().Update(mock.Anything, mock.Anything).
+					Run(func(ctx context.Context, m *models.Attempt) { saved = m }).
+					Return(nil).Once()
 				llm.EXPECT().CompleteStructured(mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).
 					Return(errors.New("boom")).Once()
-				svc := services.NewLessonActivityService(repo, pronunciation.NewScorer(voicemocks.NewMockPronounceEngine(t)), llm, attempts)
+				svc := services.NewLessonActivityService(repo, pronunciation.NewScorer(voicemocks.NewMockPronounceEngine(t)), llm, attempts, mocks.NewMockLessonRepository(t), fakePremiumChecker{})
 
 				got, err := svc.ScoreWriting(context.Background(), writingUserID, writingActID, writingOpenID, writingText)
 
-				requireAppError(t, err, http.StatusServiceUnavailable)
+				appErr := requireAppError(t, err, http.StatusServiceUnavailable)
+				assert.Equal(t, common.CodeAIUnavailable, appErr.Code)
 				assert.Nil(t, got)
-				attempts.AssertNotCalled(t, "Update", mock.Anything, mock.Anything)
+				require.NotNil(t, saved)
+				assert.Equal(t, enums.AttemptStatusCompleted, saved.Status)
+				var parts map[string]services.PartEntry
+				require.NoError(t, json.Unmarshal(saved.Result, &parts))
+				require.Contains(t, parts, writingActID)
+				assert.Equal(t, services.PartStatusAIUnavailable, parts[writingActID].Status)
+				assert.Equal(t, 0.0, parts[writingActID].Score)
 			},
 		},
 		{
-			name: "span not substring maps to 503",
+			name: "span not substring attaches ai_unavailable part and maps to 503",
 			run: func(t *testing.T) {
 				repo := mocks.NewMockLessonActivityRepository(t)
 				attempts := mocks.NewMockAttemptRepository(t)
 				llm := llmmocks.NewMockLLMClient(t)
 				repo.EXPECT().GetByID(mock.Anything, writingActID).Return(writingActivityFixture(), nil).Once()
 				attempts.EXPECT().GetByID(mock.Anything, writingOpenID).Return(writingOpenAttempt(), nil).Once()
+				repo.EXPECT().ListByLesson(mock.Anything, mock.Anything).Return([]*models.LessonActivity{{ID: writingActID}}, nil).Once()
+				var saved *models.Attempt
+				attempts.EXPECT().Update(mock.Anything, mock.Anything).
+					Run(func(ctx context.Context, m *models.Attempt) { saved = m }).
+					Return(nil).Once()
 				bad := writingCanned()
 				bad.Grammar[0].Text = "never written words"
 				expectLLMCanned(llm, bad)
-				svc := services.NewLessonActivityService(repo, pronunciation.NewScorer(voicemocks.NewMockPronounceEngine(t)), llm, attempts)
+				svc := services.NewLessonActivityService(repo, pronunciation.NewScorer(voicemocks.NewMockPronounceEngine(t)), llm, attempts, mocks.NewMockLessonRepository(t), fakePremiumChecker{})
 
 				got, err := svc.ScoreWriting(context.Background(), writingUserID, writingActID, writingOpenID, writingText)
 
-				requireAppError(t, err, http.StatusServiceUnavailable)
+				appErr := requireAppError(t, err, http.StatusServiceUnavailable)
+				assert.Equal(t, common.CodeAIUnavailable, appErr.Code)
 				assert.Nil(t, got)
-				attempts.AssertNotCalled(t, "Update", mock.Anything, mock.Anything)
+				require.NotNil(t, saved)
+				var parts map[string]services.PartEntry
+				require.NoError(t, json.Unmarshal(saved.Result, &parts))
+				require.Contains(t, parts, writingActID)
+				assert.Equal(t, services.PartStatusAIUnavailable, parts[writingActID].Status)
 			},
 		},
 		{
-			name: "verdict count mismatch maps to 503",
+			name: "verdict count mismatch attaches ai_unavailable part and maps to 503",
 			run: func(t *testing.T) {
 				repo := mocks.NewMockLessonActivityRepository(t)
 				attempts := mocks.NewMockAttemptRepository(t)
 				llm := llmmocks.NewMockLLMClient(t)
 				repo.EXPECT().GetByID(mock.Anything, writingActID).Return(writingActivityFixture(), nil).Once()
 				attempts.EXPECT().GetByID(mock.Anything, writingOpenID).Return(writingOpenAttempt(), nil).Once()
+				repo.EXPECT().ListByLesson(mock.Anything, mock.Anything).Return([]*models.LessonActivity{{ID: writingActID}}, nil).Once()
+				var saved *models.Attempt
+				attempts.EXPECT().Update(mock.Anything, mock.Anything).
+					Run(func(ctx context.Context, m *models.Attempt) { saved = m }).
+					Return(nil).Once()
 				bad := writingCanned()
 				bad.Task.Verdicts = bad.Task.Verdicts[:1]
 				expectLLMCanned(llm, bad)
-				svc := services.NewLessonActivityService(repo, pronunciation.NewScorer(voicemocks.NewMockPronounceEngine(t)), llm, attempts)
+				svc := services.NewLessonActivityService(repo, pronunciation.NewScorer(voicemocks.NewMockPronounceEngine(t)), llm, attempts, mocks.NewMockLessonRepository(t), fakePremiumChecker{})
 
 				got, err := svc.ScoreWriting(context.Background(), writingUserID, writingActID, writingOpenID, writingText)
 
-				requireAppError(t, err, http.StatusServiceUnavailable)
+				appErr := requireAppError(t, err, http.StatusServiceUnavailable)
+				assert.Equal(t, common.CodeAIUnavailable, appErr.Code)
 				assert.Nil(t, got)
-				attempts.AssertNotCalled(t, "Update", mock.Anything, mock.Anything)
+				require.NotNil(t, saved)
+				var parts map[string]services.PartEntry
+				require.NoError(t, json.Unmarshal(saved.Result, &parts))
+				require.Contains(t, parts, writingActID)
+				assert.Equal(t, services.PartStatusAIUnavailable, parts[writingActID].Status)
 			},
 		},
 		{
@@ -204,7 +238,7 @@ func TestScoreWriting(t *testing.T) {
 				llm := llmmocks.NewMockLLMClient(t)
 				reading := checkReadingFixture()
 				repo.EXPECT().GetByID(mock.Anything, reading.ID).Return(reading, nil).Once()
-				svc := services.NewLessonActivityService(repo, pronunciation.NewScorer(voicemocks.NewMockPronounceEngine(t)), llm, attempts)
+				svc := services.NewLessonActivityService(repo, pronunciation.NewScorer(voicemocks.NewMockPronounceEngine(t)), llm, attempts, mocks.NewMockLessonRepository(t), fakePremiumChecker{})
 
 				got, err := svc.ScoreWriting(context.Background(), writingUserID, reading.ID, writingOpenID, writingText)
 
@@ -220,7 +254,7 @@ func TestScoreWriting(t *testing.T) {
 				repo := mocks.NewMockLessonActivityRepository(t)
 				attempts := mocks.NewMockAttemptRepository(t)
 				llm := llmmocks.NewMockLLMClient(t)
-				svc := services.NewLessonActivityService(repo, pronunciation.NewScorer(voicemocks.NewMockPronounceEngine(t)), llm, attempts)
+				svc := services.NewLessonActivityService(repo, pronunciation.NewScorer(voicemocks.NewMockPronounceEngine(t)), llm, attempts, mocks.NewMockLessonRepository(t), fakePremiumChecker{})
 
 				got, err := svc.ScoreWriting(context.Background(), writingUserID, writingActID, writingOpenID, "   ")
 
@@ -236,7 +270,7 @@ func TestScoreWriting(t *testing.T) {
 				repo := mocks.NewMockLessonActivityRepository(t)
 				attempts := mocks.NewMockAttemptRepository(t)
 				llm := llmmocks.NewMockLLMClient(t)
-				svc := services.NewLessonActivityService(repo, pronunciation.NewScorer(voicemocks.NewMockPronounceEngine(t)), llm, attempts)
+				svc := services.NewLessonActivityService(repo, pronunciation.NewScorer(voicemocks.NewMockPronounceEngine(t)), llm, attempts, mocks.NewMockLessonRepository(t), fakePremiumChecker{})
 
 				got, err := svc.ScoreWriting(context.Background(), writingUserID, writingActID, writingOpenID, strings.Repeat("word ", 501))
 
@@ -256,7 +290,7 @@ func TestScoreWriting(t *testing.T) {
 				foreign := writingOpenAttempt()
 				foreign.UserID = "user_999"
 				attempts.EXPECT().GetByID(mock.Anything, writingOpenID).Return(foreign, nil).Once()
-				svc := services.NewLessonActivityService(repo, pronunciation.NewScorer(voicemocks.NewMockPronounceEngine(t)), llm, attempts)
+				svc := services.NewLessonActivityService(repo, pronunciation.NewScorer(voicemocks.NewMockPronounceEngine(t)), llm, attempts, mocks.NewMockLessonRepository(t), fakePremiumChecker{})
 
 				got, err := svc.ScoreWriting(context.Background(), writingUserID, writingActID, writingOpenID, writingText)
 
@@ -273,7 +307,7 @@ func TestScoreWriting(t *testing.T) {
 				attempts := mocks.NewMockAttemptRepository(t)
 				llm := llmmocks.NewMockLLMClient(t)
 				repo.EXPECT().GetByID(mock.Anything, writingActID).Return(nil, gorm.ErrRecordNotFound).Once()
-				svc := services.NewLessonActivityService(repo, pronunciation.NewScorer(voicemocks.NewMockPronounceEngine(t)), llm, attempts)
+				svc := services.NewLessonActivityService(repo, pronunciation.NewScorer(voicemocks.NewMockPronounceEngine(t)), llm, attempts, mocks.NewMockLessonRepository(t), fakePremiumChecker{})
 
 				got, err := svc.ScoreWriting(context.Background(), writingUserID, writingActID, writingOpenID, writingText)
 

@@ -15,6 +15,13 @@ import (
 type AppError struct {
 	Status  int
 	Message string
+	// Code is a wire-stable machine identifier (common.Code*). Optional:
+	// legacy errors carry "". Humans read Message; the web switches on
+	// Code (via Details) — never on message text.
+	Code string
+	// Details is the structured payload serialized into the envelope's
+	// data field by Fail. nil keeps the legacy {message}-only body.
+	Details any
 	// cause is the underlying fault (a database error, usually) kept for logs
 	// and Sentry only. The response envelope serialises Message, so internals
 	// never reach a client — see Fail.
@@ -42,6 +49,23 @@ func (e *AppError) Unwrap() error { return e.cause }
 func (e *AppError) withCause(cause error) *AppError {
 	c := *e
 	c.cause = cause
+	return &c
+}
+
+// WithCode returns a copy of the error carrying a machine-readable code.
+// A copy, never a mutation: shared constructors stay safe to reuse.
+func (e *AppError) WithCode(code string) *AppError {
+	c := *e
+	c.Code = code
+	return &c
+}
+
+// WithDetails returns a copy of the error carrying a structured payload
+// for the response envelope's data field. nil Details keeps the legacy
+// body, so existing call sites are unchanged.
+func (e *AppError) WithDetails(details any) *AppError {
+	c := *e
+	c.Details = details
 	return &c
 }
 

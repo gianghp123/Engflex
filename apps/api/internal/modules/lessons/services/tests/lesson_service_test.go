@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"gorm.io/gorm"
 
+	"engflex-api/internal/common"
 	"engflex-api/internal/common/enums"
 	"engflex-api/internal/database/models"
 	"engflex-api/internal/database/repositories/mocks"
@@ -143,6 +144,8 @@ func TestLessonService_GetDetail_DraftVisibility(t *testing.T) {
 // as existence goes, but is blocked (403) from reading its detail — the
 // admin preview and premium-caller paths both pass through.
 func TestLessonService_GetDetail_PremiumGating(t *testing.T) {
+	common.SetContentGating(true)
+	t.Cleanup(func() { common.SetContentGating(false) })
 	lessonID := "11111111-1111-1111-1111-111111111111"
 	premiumLesson := &models.Lesson{ID: lessonID, Status: enums.PublishStatusPublished, IsPremium: true}
 

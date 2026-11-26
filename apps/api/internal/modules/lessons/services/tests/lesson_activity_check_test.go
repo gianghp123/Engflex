@@ -86,7 +86,7 @@ func TestCheckAnswer(t *testing.T) {
 				repo.EXPECT().ListByLesson(mock.Anything, lessonID).Return([]*models.LessonActivity{{ID: id}}, nil).Once()
 				attempts.EXPECT().Update(mock.Anything, mock.Anything).Return(nil).Once()
 			}
-			svc := services.NewLessonActivityService(repo, pronunciation.NewScorer(voicemocks.NewMockPronounceEngine(t)), llmmocks.NewMockLLMClient(t), attempts)
+			svc := services.NewLessonActivityService(repo, pronunciation.NewScorer(voicemocks.NewMockPronounceEngine(t)), llmmocks.NewMockLLMClient(t), attempts, mocks.NewMockLessonRepository(t), fakePremiumChecker{})
 			got, err := svc.CheckAnswer(context.Background(), userID, id, attemptID, tt.questionIndex, tt.key)
 			if tt.wantStatus != 0 {
 				requireAppError(t, err, tt.wantStatus)

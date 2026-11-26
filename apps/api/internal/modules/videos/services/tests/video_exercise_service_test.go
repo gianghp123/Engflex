@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"gorm.io/gorm"
 
+	"engflex-api/internal/common"
 	"engflex-api/internal/common/enums"
 	"engflex-api/internal/database/models"
 	"engflex-api/internal/database/repositories/mocks"
@@ -142,6 +143,8 @@ func TestVideoExerciseService_GetByID_DraftVisibleToAdmin(t *testing.T) {
 // A published premium exercise stays visible as far as existence goes, but
 // is blocked (403) for a non-premium, non-admin caller.
 func TestVideoExerciseService_GetByID_PremiumGating(t *testing.T) {
+	common.SetContentGating(true)
+	t.Cleanup(func() { common.SetContentGating(false) })
 	exerciseID := "11111111-1111-1111-1111-111111111111"
 	premium := &models.VideoExercise{ID: exerciseID, Status: enums.PublishStatusPublished, IsPremium: true}
 

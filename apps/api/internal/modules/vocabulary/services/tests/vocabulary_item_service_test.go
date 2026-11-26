@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
+	"engflex-api/internal/common"
 	"engflex-api/internal/common/enums"
 	"engflex-api/internal/database/models"
 	"engflex-api/internal/database/repositories/mocks"
@@ -86,6 +87,8 @@ func TestVocabularyItemService_GetByID(t *testing.T) {
 // A published premium entry stays visible as far as existence goes, but is
 // blocked (403) for a non-premium, non-admin caller.
 func TestVocabularyItemService_GetByID_PremiumGating(t *testing.T) {
+	common.SetContentGating(true)
+	t.Cleanup(func() { common.SetContentGating(false) })
 	premium := &models.VocabularyItem{ID: itemID, Status: enums.PublishStatusPublished, IsPremium: true}
 
 	t.Run("blocked for non-premium caller", func(t *testing.T) {

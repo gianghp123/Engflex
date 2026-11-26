@@ -2,7 +2,10 @@ package services
 
 import (
 	"context"
+	"errors"
 	"log/slog"
+
+	"gorm.io/gorm"
 
 	"engflex-api/internal/common"
 	"engflex-api/internal/database/models"
@@ -14,8 +17,8 @@ import (
 
 type VideoTranscriptService interface {
 	List(ctx context.Context, limit, offset int) ([]*models.VideoTranscript, int64, error)
-	GetByID(ctx context.Context, id string) (*models.VideoTranscript, error)
-	GetByVideoExerciseID(ctx context.Context, videoExerciseID string) ([]*models.VideoTranscript, error)
+	GetByID(ctx context.Context, id, userID string) (*models.VideoTranscript, error)
+	GetByVideoExerciseID(ctx context.Context, videoExerciseID, userID string) ([]*models.VideoTranscript, error)
 	Create(ctx context.Context, req requests.CreateVideoTranscript) (*models.VideoTranscript, error)
 	Update(ctx context.Context, id string, req requests.UpdateVideoTranscript) (*models.VideoTranscript, error)
 	Delete(ctx context.Context, id string) error
@@ -23,11 +26,13 @@ type VideoTranscriptService interface {
 }
 
 type videoTranscriptService struct {
-	repo repositories.VideoTranscriptRepository
+	repo      repositories.VideoTranscriptRepository
+	exercises repositories.VideoExerciseRepository
+	premium   common.PremiumChecker
 }
 
-func NewVideoTranscriptService(repo repositories.VideoTranscriptRepository) VideoTranscriptService {
-	return &videoTranscriptService{repo: repo}
+func NewVideoTranscriptService(repo repositories.VideoTranscriptRepository, exercises repositories.VideoExerciseRepository, premium common.PremiumChecker) VideoTranscriptService {
+	return &videoTranscriptService{repo: repo, exercises: exercises, premium: premium}
 }
 
 func (s *videoTranscriptService) Create(ctx context.Context, req requests.CreateVideoTranscript) (*models.VideoTranscript, error) {
@@ -79,12 +84,26 @@ func (s *videoTranscriptService) Delete(ctx context.Context, id string) error {
 	return nil
 }
 
-func (s *videoTranscriptService) GetByID(ctx context.Context, id string) (*models.VideoTranscript, error) {
+func (s *videoTranscriptService) GetByID(ctx context.Context, id, userID string) (*models.VideoTranscript, error) {
 	transcript, err := s.repo.GetByID(ctx, id)
 	if err != nil {
 		appErr := common.FromDBError(err, "video transcript")
 		logger.Report(ctx, "failed to get video transcript", appErr, "id", id)
 		return nil, appErr
+	}
+	if common.ContentGatingEnabled() && transcript.VideoExerciseID != "" {
+		// Phase 0 gate (spec §5.4): captions are the exercise's content, so a
+		// premium exercise blocks transcript reads for free users. Inert at
+		// launch.
+		if ex, err := s.exercises.GetByID(ctx, transcript.VideoExerciseID); err == nil {
+			if appErr := common.RequirePremiumAccess(ctx, s.premium, userID, false, ex.IsPremium); appErr != nil {
+				return nil, appErr
+			}
+		} else if !errors.Is(err, gorm.ErrRecordNotFound) {
+			appErr := common.FromDBError(err, "video exercise")
+			logger.Report(ctx, "gate video transcript failed", appErr, "id", id)
+			return nil, appErr
+		}
 	}
 	slog.InfoContext(ctx, "video transcript found", "id", transcript.ID)
 	return transcript, nil
@@ -107,7 +126,21 @@ func (s *videoTranscriptService) List(ctx context.Context, limit, offset int) ([
 	return transcripts, total, nil
 }
 
-func (s *videoTranscriptService) GetByVideoExerciseID(ctx context.Context, videoExerciseID string) ([]*models.VideoTranscript, error) {
+func (s *videoTranscriptService) GetByVideoExerciseID(ctx context.Context, videoExerciseID, userID string) ([]*models.VideoTranscript, error) {
+	if common.ContentGatingEnabled() {
+		// Phase 0 gate (spec §5.4): same premium check as the single-transcript
+		// read above. A missing exercise falls through to the transcript query
+		// (empty list, exactly as before).
+		if ex, err := s.exercises.GetByID(ctx, videoExerciseID); err == nil {
+			if appErr := common.RequirePremiumAccess(ctx, s.premium, userID, false, ex.IsPremium); appErr != nil {
+				return nil, appErr
+			}
+		} else if !errors.Is(err, gorm.ErrRecordNotFound) {
+			appErr := common.FromDBError(err, "video exercise")
+			logger.Report(ctx, "gate video transcripts failed", appErr, "video_exercise_id", videoExerciseID)
+			return nil, appErr
+		}
+	}
 	transcripts, err := s.repo.GetByVideoExerciseID(ctx, videoExerciseID)
 	if err != nil {
 		appErr := common.FromDBError(err, "video transcript")
