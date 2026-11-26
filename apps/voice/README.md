@@ -26,7 +26,7 @@ tests/            # Pytest suites
 
 ```bash
 uv run python src/bot.py   # dev runner (:7860, no auth — local only)
-uv run python src/server.py  # production dispatcher (:7860, X-Internal-Secret)
+uv run src/server.py  # production dispatcher (:7860, X-Internal-Secret)
 uv run pytest -q           # tests
 uv run ruff check src tests
 ```

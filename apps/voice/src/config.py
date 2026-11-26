@@ -19,6 +19,8 @@ class Settings(BaseSettings):
             raise ValueError("MAX_SESSIONS must be a positive integer")
         if self.max_pending is None:
             self.max_pending = max(1, self.max_sessions // 4)
+        if self.max_pending is not None and self.max_pending < 1:
+            raise ValueError("MAX_PENDING must be >= 1")
 
     # Speech to text
     stt_api_key: str = Field(validation_alias=AliasChoices("STT_API_KEY", "DEEPGRAM_API_KEY"))

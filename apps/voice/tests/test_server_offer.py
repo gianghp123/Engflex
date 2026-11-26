@@ -70,6 +70,18 @@ def _offer_payload(**overrides) -> dict:
     return payload
 
 
+def _wait_for(predicate, timeout: float = 2.0) -> None:
+    """Bounded wait for the fire-and-forget session task to be observable.
+
+    The offer callback starts run_session as an asyncio task; the HTTP
+    response can return before the task's first step appends to `captured`.
+    """
+    deadline = time.time() + timeout
+    while not predicate() and time.time() < deadline:
+        time.sleep(0.01)
+    assert predicate()
+
+
 def test_unknown_session_is_404(client):
     resp = client.post("/sessions/nope/api/offer", json=_offer_payload(), headers=_auth())
     assert resp.status_code == 404
@@ -85,7 +97,7 @@ def test_pending_offer_goes_live_and_starts_the_pipeline(client, captured):
     registry = client.app.state.registry
     assert registry.get_live(session_id) is not None
     assert registry.pending_count() == 0
-    assert len(captured) == 1
+    _wait_for(lambda: len(captured) == 1)
     assert captured[0].session_id == session_id
 
 
@@ -96,6 +108,7 @@ def test_request_data_cannot_override_the_start_body(client, captured):
     payload = _offer_payload(request_data={"persona": {"name": "Impostor"}})
     resp = client.post(f"/sessions/{session_id}/api/offer", json=payload, headers=_auth())
     assert resp.status_code == 200, resp.text
+    _wait_for(lambda: len(captured) == 1)
     assert captured[0].body["persona"]["name"] == "Amelia"
     handler = client.app.state.handler
     assert handler.web_requests[0].request_data is None
@@ -124,6 +137,7 @@ def test_restart_pc_renegotiates_a_live_session(client, captured):
     assert resp.status_code == 200, resp.text
     # Still exactly one pipeline: the renegotiation answered without a
     # second bot run.
+    _wait_for(lambda: len(captured) == 1)
     assert len(captured) == 1
 
 
@@ -162,6 +176,23 @@ def test_malformed_offer_body_is_400(client):
         f"/sessions/{session_id}/api/offer", content=b"not json", headers=_auth()
     )
     assert resp.status_code == 400
+
+
+def test_null_sdp_offer_is_400_and_keeps_the_lease(client):
+    # A null sdp/type fails validation before negotiation: the pending lease
+    # must survive, so a subsequent valid offer for the same session succeeds.
+    session_id = _start(client)
+    resp = client.post(
+        f"/sessions/{session_id}/api/offer",
+        json={"sdp": None, "type": "offer"},
+        headers=_auth(),
+    )
+    assert resp.status_code == 400
+    assert client.app.state.registry.get_pending(session_id) is not None
+    resp = client.post(
+        f"/sessions/{session_id}/api/offer", json=_offer_payload(), headers=_auth()
+    )
+    assert resp.status_code == 200, resp.text
 
 
 def test_failed_offer_releases_the_lease(client):

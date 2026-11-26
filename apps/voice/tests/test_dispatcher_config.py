@@ -23,3 +23,8 @@ def test_max_sessions_must_be_positive():
     # wrapped (ValidationError); both are acceptable startup failures.
     with pytest.raises((ValueError, ValidationError)):
         Settings.model_validate({"max_sessions": 0})
+
+
+def test_max_pending_must_be_positive():
+    with pytest.raises((ValueError, ValidationError)):
+        Settings.model_validate({"max_pending": 0})

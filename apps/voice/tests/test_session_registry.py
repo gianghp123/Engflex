@@ -186,6 +186,24 @@ def test_drain_cancels_pending_waits_for_live_then_refuses_starts():
     asyncio.run(scenario())
 
 
+def test_mark_live_refuses_an_expired_pending_entry():
+    async def scenario():
+        registry = make_registry()
+        pending = await registry.start("c1", {}, None)
+        registry._pending[pending.session_id].expires_at = time.time() - 1
+        task = asyncio.create_task(_park())
+        try:
+            assert await registry.mark_live(pending.session_id, "pc-1", object(), task) is None
+            assert registry.live_count() == 0
+            # The conversation mapping is dropped: a fresh start gets a new session.
+            fresh = await registry.start("c1", {}, None)
+            assert fresh.session_id != pending.session_id
+        finally:
+            await _cancel(task)
+
+    asyncio.run(scenario())
+
+
 def test_status_reports_the_operational_counters():
     async def scenario():
         registry = make_registry(max_sessions=4, max_pending=3)

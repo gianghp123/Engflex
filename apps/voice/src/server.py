@@ -38,16 +38,6 @@ from bot import run_session
 from config import Settings, settings
 from session import CapacityFull, Draining, SessionActive, SessionRegistry
 
-# Imports this file grows as later tasks add routes (kept out until used so
-# every task's ruff gate stays clean):
-#   Task 6: from fastapi.routing import APIRouter; session gains
-#           CapacityFull, Draining, SessionActive.
-#   Task 7: from bot import run_session;
-#           from pipecat.runner.types import SmallWebRTCRunnerArguments;
-#           request_handler gains IceCandidate, SmallWebRTCPatchRequest,
-#           SmallWebRTCRequest.
-#   Task 8: from fastapi.responses import JSONResponse.
-
 SWEEP_INTERVAL_SEC = 5
 DEFAULT_STUN = [{"urls": ["stun:stun.l.google.com:19302"]}]
 
@@ -128,6 +118,10 @@ async def _drain_then_exit(app: FastAPI) -> None:
 def _parse_offer_body(data: dict[str, Any]) -> SmallWebRTCRequest:
     """Build the handler request from the offer JSON; client request_data is
     deliberately dropped — the stored /start body is the only body."""
+    if not isinstance(data.get("sdp"), str) or not data["sdp"]:
+        raise HTTPException(status_code=400, detail="Invalid WebRTC request")
+    if not isinstance(data.get("type"), str) or not data["type"]:
+        raise HTTPException(status_code=400, detail="Invalid WebRTC request")
     try:
         return SmallWebRTCRequest(
             sdp=data["sdp"],
@@ -187,6 +181,8 @@ def create_app(config: Settings | None = None, handler: Any | None = None) -> Fa
         app.state.configured_ice = configured_ice
         app.state.registry = SessionRegistry(
             max_sessions=cfg.max_sessions,
+            # Unreachable after Settings validation (MAX_PENDING >= 1); kept
+            # for typing, since max_pending is Optional.
             max_pending=cfg.max_pending or 1,
             pending_ttl_sec=cfg.pending_ttl_sec,
             drain_grace_sec=cfg.drain_grace_sec,
@@ -218,9 +214,13 @@ def create_app(config: Settings | None = None, handler: Any | None = None) -> Fa
     async def require_secret(
         x_internal_secret: str | None = Header(default=None, alias="X-Internal-Secret"),
     ) -> None:
-        if x_internal_secret is None or not hmac.compare_digest(
-            x_internal_secret, cfg.internal_secret
-        ):
+        if x_internal_secret is None:
+            raise HTTPException(status_code=401, detail="unauthorized")
+        try:
+            ok = hmac.compare_digest(x_internal_secret, cfg.internal_secret)
+        except (TypeError, ValueError):
+            ok = False
+        if not ok:
             raise HTTPException(status_code=401, detail="unauthorized")
 
     # --- session routes (every one behind the internal secret) --------------

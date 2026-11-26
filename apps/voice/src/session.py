@@ -167,6 +167,11 @@ class SessionRegistry:
             pending = self._pending.pop(session_id, None)
             if pending is None:
                 return None
+            if time.time() > pending.expires_at:
+                # The TTL won the race with negotiation: drop the
+                # conversation mapping and refuse to go live.
+                self._by_conversation.pop(pending.conversation_id, None)
+                return None
             live = LiveSession(
                 session_id=session_id,
                 conversation_id=pending.conversation_id,

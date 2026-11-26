@@ -54,6 +54,19 @@ def test_health_endpoints_stay_open():
         assert client.get("/status").status_code == 200
 
 
+def test_non_ascii_secret_is_401_not_500():
+    # hmac.compare_digest raises TypeError on non-ASCII str; an auth
+    # failure must stay a 401, never a 500. Raw latin-1 bytes reach the
+    # server as a non-ASCII str (httpx refuses non-ASCII str headers
+    # client-side, so str headers can never exercise this path).
+    with _client() as client:
+        resp = client.post(
+            "/start", headers=[(b"x-internal-secret", "ünicode".encode("latin-1"))]
+        )
+        assert resp.status_code == 401, (resp.status_code, resp.text)
+        assert resp.json()["detail"] == "unauthorized"
+
+
 def test_the_right_secret_reaches_the_route():
     # 401 must not mask other refusals: with the secret present, /analyze's
     # own validation answers instead.

@@ -101,7 +101,7 @@ def register_routes(app) -> None:
     request handling.
     """
     paths = {getattr(route, "path", None) for route in app.routes}
-    if "/analyze" in paths:
+    if {"/analyze", "/transcript", "/transcribe"} <= paths:
         return
     for route in router.routes:
         app.router.routes.append(route)
