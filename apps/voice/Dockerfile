@@ -24,4 +24,6 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --no-dev
 
 EXPOSE 7860
-CMD ["uv", "run", "src/bot.py", "-t", "webrtc", "--host", "0.0.0.0", "--port", "7860"]
+# Production dispatcher (src/server.py). The dev runner stays available
+# locally via `uv run python src/bot.py -t webrtc`.
+CMD ["uv", "run", "src/server.py"]

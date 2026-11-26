@@ -15,6 +15,8 @@ src/
   clients/        # Go callbacks (turn batch ingest)
   prompts.py      # Free-talk + roleplay templates
   bot.py          # Pipeline entry point
+  server.py       # Production dispatcher (auth, capacity, drain)
+  session.py      # Dispatcher session state (leases, TTL, sweep, drain)
   config.py       # Role-named settings (stt/llm/voice)
 scripts/          # Prompt red-team set, fake-mic audio helper
 tests/            # Pytest suites
@@ -23,7 +25,8 @@ tests/            # Pytest suites
 ## Quickstart
 
 ```bash
-uv run python src/bot.py   # entry point (:7860)
+uv run python src/bot.py   # dev runner (:7860, no auth — local only)
+uv run python src/server.py  # production dispatcher (:7860, X-Internal-Secret)
 uv run pytest -q           # tests
 uv run ruff check src tests
 ```
@@ -38,3 +41,9 @@ uv run ruff check src tests
 | `MALE_VOICE_ID` / `FEMALE_VOICE_ID` | Per-gender voice identity, selected by persona gender |
 | `INTERNAL_SECRET` | Authenticates Go callbacks |
 | `MAX_DURATION_SEC` / `IDLE_TIMEOUT_SEC` | Session bounds |
+| `MAX_SESSIONS` / `MAX_PENDING` | Dispatcher capacity / start-flood guard (pending derives `max(1, MAX_SESSIONS // 4)`) |
+| `PENDING_TTL_SEC` | Offer must arrive within, else the lease is reclaimed |
+| `DRAIN_GRACE_SEC` | SIGTERM window: live sessions may run out within it |
+| `PIPECAT_ICE_SERVERS` | ICE list (JSON array, object, or comma URLs); malformed fails at boot |
+| `VOICE_HOST` / `VOICE_PORT` | Dispatcher listener |
+| `VOICE_VERSION` | Reported by `GET /status` |

@@ -28,7 +28,13 @@ services:
       - MAX_DURATION_SEC=${MAX_DURATION_SEC:-300}
       - IDLE_TIMEOUT_SEC=${IDLE_TIMEOUT_SEC:-300}
       - PIPECAT_ICE_SERVERS=${PIPECAT_ICE_SERVERS}
+      - MAX_SESSIONS=${MAX_SESSIONS:-10}
+      - PENDING_TTL_SEC=${PENDING_TTL_SEC:-120}
+      - DRAIN_GRACE_SEC=${DRAIN_GRACE_SEC:-330}
     restart: unless-stopped
+    # SIGTERM must outlive the drain window: uvicorn blocks its shutdown
+    # until live sessions finished or DRAIN_GRACE_SEC (330 s) expired.
+    stop_grace_period: 360s
     # Join the shared coolify network under a stable alias: same-project
     # containers (api, deploy.sh probes) reach voice at engflex-voice:7860.
     # The per-app compose network alone is invisible from `coolify`.
