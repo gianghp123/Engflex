@@ -122,7 +122,7 @@ func (h *ConversationController) List(c *gin.Context) {
 // @Router       /conversations/{id}/start [post]
 func (h *ConversationController) Start(c *gin.Context) {
 	userID := middleware.UserID(c)
-	conv, ice, err := h.service.Start(c.Request.Context(), userID, c.Param("id"))
+	conv, ice, err := h.service.Start(c.Request.Context(), userID, c.Param("id"), middleware.IsAdmin(c))
 	if err != nil {
 		common.Fail(c, err)
 		return

@@ -21,6 +21,14 @@
       "caption": "Mo giữ chỗ cho bạn",
       "primary": "Nâng cấp Premium"
     },
-    "quote": "Tiến bộ đều đặn mỗi ngày đáng giá hơn tốc độ."
+    "quote": "Tiến bộ đều đặn mỗi ngày đáng giá hơn tốc độ.",
+    "quota": {
+      "badge": "Hết credit",
+      "caption": "Mo đang đếm credit",
+      "title": "Tính năng này cần credit AI",
+      "body": "Credit AI của bạn sẽ được cộng lại vào {reset}. Premium gồm credit mới mỗi tháng.",
+      "bodyNoDate": "Credit AI của bạn sẽ được cộng lại vào đầu tháng sau.",
+      "upgrade": "Xem Premium"
+    }
   }
 }

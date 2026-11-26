@@ -1,5 +1,6 @@
 import type {
 	CreatePremiumFeature,
+	PlanKey,
 	SubscriptionPlan,
 	SubscriptionStatus,
 	UpdatePlan,
@@ -9,15 +10,19 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
 	createPremiumFeature,
 	deletePremiumFeature,
+	listAdminLimits,
 	listAdminPlans,
 	listAdminSubscriptions,
 	listPremiumFeatures,
+	type UpdatePlanLimits,
 	updatePlan,
+	updatePlanLimits,
 	updatePremiumFeature,
 } from "#/features/admin/premium/service";
 
 const keys = {
 	plans: ["admin", "premium-plans"] as const,
+	limits: ["admin", "premium-limits"] as const,
 	features: (page: number, pageSize: number) =>
 		["admin", "premium-features", page, pageSize] as const,
 	subscriptions: (
@@ -38,6 +43,27 @@ export function useAdminPlans() {
 	return useQuery({
 		queryKey: keys.plans,
 		queryFn: listAdminPlans,
+	});
+}
+
+export function useAdminLimits() {
+	return useQuery({
+		queryKey: keys.limits,
+		queryFn: listAdminLimits,
+	});
+}
+
+export function useUpdatePlanLimits() {
+	const invalidate = useInvalidate(["admin", "premium-limits"]);
+	return useMutation({
+		mutationFn: ({
+			plan,
+			payload,
+		}: {
+			plan: PlanKey;
+			payload: UpdatePlanLimits;
+		}) => updatePlanLimits(plan, payload),
+		onSuccess: invalidate,
 	});
 }
 

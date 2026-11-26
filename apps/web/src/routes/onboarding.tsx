@@ -38,6 +38,7 @@ import {
 } from "#/features/onboarding/components/slide-track";
 import { TimeCommitmentCard } from "#/features/onboarding/components/time-commitment-card";
 import { TopicChip } from "#/features/onboarding/components/topic-chip";
+import { entitlementKeys, startTrial } from "#/features/payments/entitlements";
 import {
 	profileKeys,
 	profileQueryOptions,
@@ -247,6 +248,18 @@ function OnboardingPage() {
 					// entry for the onboarding flag, so writing it after
 					// navigating would bounce the user back here.
 					queryClient.setQueryData(profileKeys.me, profile);
+					// Trial start is fire-and-observe: an already-used trial
+					// resolves to {started:false} and onboarding must never
+					// fail on it. The pill reads entitlementKeys.me, so the
+					// fresh trial state is invalidated explicitly — the raw
+					// startTrial() promise alone would leave the pill stale.
+					startTrial()
+						.then(() => {
+							void queryClient.invalidateQueries({
+								queryKey: entitlementKeys.me,
+							});
+						})
+						.catch(() => undefined);
 					navigate({ to: APP_ROUTES.HOME });
 				},
 			},

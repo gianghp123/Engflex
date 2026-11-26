@@ -79,7 +79,8 @@ func (s *EntitlementsService) counterView(counter enums.CounterKind, limits map[
 	}
 	view := responses.CounterView{Limit: lim.Value, Used: u.Used, Reserved: u.Reserved, Remaining: remaining}
 	if lim.Period != enums.UsagePeriodTotal && lim.Enabled {
-		view.ResetAt = s.policy.ResetAt(lim.Period, now)
+		resetAt := s.policy.ResetAt(lim.Period, now)
+		view.ResetAt = &resetAt
 	}
 	return view
 }

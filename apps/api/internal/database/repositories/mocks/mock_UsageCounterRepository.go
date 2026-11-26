@@ -193,6 +193,81 @@ func (_c *MockUsageCounterRepository_ListByUser_Call) RunAndReturn(run func(ctx 
 	return _c
 }
 
+// Refund provides a mock function for the type MockUsageCounterRepository
+func (_mock *MockUsageCounterRepository) Refund(ctx context.Context, userID string, counter enums.CounterKind, periodKey string, amount int) error {
+	ret := _mock.Called(ctx, userID, counter, periodKey, amount)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Refund")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, enums.CounterKind, string, int) error); ok {
+		r0 = returnFunc(ctx, userID, counter, periodKey, amount)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockUsageCounterRepository_Refund_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Refund'
+type MockUsageCounterRepository_Refund_Call struct {
+	*mock.Call
+}
+
+// Refund is a helper method to define mock.On call
+//   - ctx context.Context
+//   - userID string
+//   - counter enums.CounterKind
+//   - periodKey string
+//   - amount int
+func (_e *MockUsageCounterRepository_Expecter) Refund(ctx any, userID any, counter any, periodKey any, amount any) *MockUsageCounterRepository_Refund_Call {
+	return &MockUsageCounterRepository_Refund_Call{Call: _e.mock.On("Refund", ctx, userID, counter, periodKey, amount)}
+}
+
+func (_c *MockUsageCounterRepository_Refund_Call) Run(run func(ctx context.Context, userID string, counter enums.CounterKind, periodKey string, amount int)) *MockUsageCounterRepository_Refund_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 enums.CounterKind
+		if args[2] != nil {
+			arg2 = args[2].(enums.CounterKind)
+		}
+		var arg3 string
+		if args[3] != nil {
+			arg3 = args[3].(string)
+		}
+		var arg4 int
+		if args[4] != nil {
+			arg4 = args[4].(int)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+			arg4,
+		)
+	})
+	return _c
+}
+
+func (_c *MockUsageCounterRepository_Refund_Call) Return(err error) *MockUsageCounterRepository_Refund_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockUsageCounterRepository_Refund_Call) RunAndReturn(run func(ctx context.Context, userID string, counter enums.CounterKind, periodKey string, amount int) error) *MockUsageCounterRepository_Refund_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // Release provides a mock function for the type MockUsageCounterRepository
 func (_mock *MockUsageCounterRepository) Release(ctx context.Context, userID string, counter enums.CounterKind, periodKey string, amount int) error {
 	ret := _mock.Called(ctx, userID, counter, periodKey, amount)

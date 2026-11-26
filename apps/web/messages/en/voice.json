@@ -132,6 +132,9 @@
         "paceFast": "Too fast",
         "submit": "Done",
         "done": "Mo's taking notes!"
+      },
+      "sessions": {
+        "count": "{used}/{limit} sessions"
       }
     },
     "connection": {

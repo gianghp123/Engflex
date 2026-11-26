@@ -56,13 +56,15 @@ Package responses holds the access module's wire DTOs (tygo inputs).
 
 /**
  * CounterView is one metered resource's state for the UI (spec §10).
+ * ResetAt is the first instant the period rolls over, RFC3339; omitted for
+ * never-resetting total periods (the UI shows "no reset" instead).
  */
 export interface CounterView {
   limit: number /* int */;
   used: number /* int */;
   reserved: number /* int */;
   remaining: number /* int */;
-  resetAt: string /* RFC3339 */;
+  resetAt?: string /* RFC3339 */;
 }
 /**
  * TrialView reports the one-per-user trial state; null when never started.

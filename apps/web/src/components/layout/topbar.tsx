@@ -4,6 +4,7 @@ import { LocaleSwitcher } from "#/components/layout/locale-switcher";
 import { ThemeToggle } from "#/components/ThemeToggle";
 import { Separator } from "#/components/ui/separator";
 import { SidebarTrigger } from "#/components/ui/sidebar";
+import { CreditsPill } from "#/features/payments/components/credits-pill";
 
 /**
  * App header: sidebar trigger + current trail (pages publish it via
@@ -22,6 +23,7 @@ export function Topbar() {
 			/>
 			<PageCrumbs items={items} />
 			<div className="ml-auto flex items-center gap-3">
+				<CreditsPill />
 				<LocaleSwitcher />
 				<ThemeToggle />
 			</div>

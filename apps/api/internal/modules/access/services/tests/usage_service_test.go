@@ -5,9 +5,11 @@ package tests
 
 import (
 	"context"
+	"errors"
 	"testing"
 	"time"
 
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -106,7 +108,7 @@ func TestReserveReplayMatrix(t *testing.T) {
 
 			if tt.wantStatus == accessservices.ReservationStatusReserved {
 				for _, e := range tt.existing {
-					events.EXPECT().ReuseAsReserved(mock.Anything, e.ID, mock.Anything, mock.Anything).Return(nil).Once()
+					events.EXPECT().ReuseAsReserved(mock.Anything, e.ID, mock.Anything, mock.Anything).Return(true, nil).Once()
 				}
 				missing := 2 - len(tt.existing)
 				for i := 0; i < missing; i++ {
@@ -151,6 +153,10 @@ func TestReserveInsufficientCreditsRollsBack(t *testing.T) {
 	// the tx rollback discards the first hold.
 	counters.EXPECT().Reserve(mock.Anything, "user_1", enums.CounterKindAICredit, "2026-11", 1, 1).Return(true, nil).Once()
 	counters.EXPECT().Reserve(mock.Anything, "user_1", enums.CounterKindVoiceSession, "2026-11", 1, 3).Return(false, nil).Once()
+	// The denial reports the live used/remaining so the UI can explain it.
+	counters.EXPECT().ListByUser(mock.Anything, "user_1").Return([]*models.UsageCounter{
+		{UserID: "user_1", CounterKey: enums.CounterKindVoiceSession, PeriodKey: "2026-11", Used: 3, Reserved: 0},
+	}, nil).Once()
 
 	_, err := svc.Reserve(context.Background(), "user_1", enums.PlanKeyFree, voiceCharges(),
 		"conversation:00000000-0000-0000-0000-0000000000f2", enums.UsageRefTypeConversation,
@@ -159,6 +165,11 @@ func TestReserveInsufficientCreditsRollsBack(t *testing.T) {
 	require.ErrorAs(t, err, &appErr)
 	require.Equal(t, 429, appErr.Status)
 	require.Equal(t, common.CodeQuotaExceeded, appErr.Code, "the non-credit counter denies")
+	details, ok := appErr.Details.(map[string]any)
+	require.True(t, ok, "denials carry a Details payload")
+	assert.Equal(t, 1, details["required"], "the limiting charge amount is reported")
+	assert.Equal(t, 0, details["remaining"], "the counter is exhausted")
+	assert.NotNil(t, details["resetAt"], "a month-limit denial names its reset instant")
 }
 
 func TestCommitIsIdempotent(t *testing.T) {
@@ -221,3 +232,230 @@ func TestReserveFailsClosedOnStoreError(t *testing.T) {
 type fakeTxManager struct{}
 
 func (fakeTxManager) Run(ctx context.Context, fn func(tx *gorm.DB) error) error { return fn(nil) }
+
+// Reserve reuse guards (spec §7.2): the locked rows must form a whole group
+// in a reusable state. Partial groups, mixed committed/sibling states, and
+// reuses that move nothing all fail closed with 503 — never a duplicate
+// insert, never a half-charged group.
+func TestReserveReuseGuardsFailClosed(t *testing.T) {
+	fixedNow := time.Date(2026, 11, 26, 10, 0, 0, 0, time.UTC)
+	newSvc := func(t *testing.T, counters *repomocks.MockUsageCounterRepository, events *repomocks.MockUsageEventRepository) *accessservices.UsageService {
+		t.Helper()
+		return accessservices.NewUsageService(counters, events, fakeTxManager{}, fakeLimitSource{
+			limits: map[enums.PlanKey]map[enums.CounterKind]accessservices.Limit{
+				enums.PlanKeyFree: {
+					enums.CounterKindAICredit:     {Enabled: true, Value: 15, Period: enums.UsagePeriodMonth},
+					enums.CounterKindVoiceSession: {Enabled: true, Value: 3, Period: enums.UsagePeriodMonth},
+				},
+			},
+		})
+	}
+	reserve := func(t *testing.T, svc *accessservices.UsageService) error {
+		t.Helper()
+		_, err := svc.Reserve(context.Background(), "user_1", enums.PlanKeyFree, voiceCharges(),
+			"conversation:00000000-0000-0000-0000-0000000000f1", enums.UsageRefTypeConversation,
+			"00000000-0000-0000-0000-0000000000f1", 2*time.Minute, fixedNow, time.UTC)
+		return err
+	}
+
+	tests := []struct {
+		name  string
+		setup func(*repomocks.MockUsageCounterRepository, *repomocks.MockUsageEventRepository)
+	}{
+		{
+			name: "partial group fails closed",
+			setup: func(counters *repomocks.MockUsageCounterRepository, events *repomocks.MockUsageEventRepository) {
+				counters.EXPECT().WithTx(mock.Anything).Return(counters).Once()
+				events.EXPECT().WithTx(mock.Anything).Return(events).Once()
+				// One of two keys present: a crash cannot produce this.
+				events.EXPECT().ListByIdempotencyKeysForUpdate(mock.Anything, "user_1", mock.Anything).
+					Return(eventRows("00000000-0000-0000-0000-0000000000ac", "user_1", enums.UsageEventStatusReleased)[:1], nil).Once()
+			},
+		},
+		{
+			name: "mixed committed and released fails closed",
+			setup: func(counters *repomocks.MockUsageCounterRepository, events *repomocks.MockUsageEventRepository) {
+				counters.EXPECT().WithTx(mock.Anything).Return(counters).Once()
+				events.EXPECT().WithTx(mock.Anything).Return(events).Once()
+				rows := eventRows("00000000-0000-0000-0000-0000000000ac", "user_1", enums.UsageEventStatusReleased)
+				rows[0].Status = enums.UsageEventStatusCommitted
+				events.EXPECT().ListByIdempotencyKeysForUpdate(mock.Anything, "user_1", mock.Anything).
+					Return(rows, nil).Once()
+			},
+		},
+		{
+			name: "reuse that moves nothing fails closed",
+			setup: func(counters *repomocks.MockUsageCounterRepository, events *repomocks.MockUsageEventRepository) {
+				counters.EXPECT().WithTx(mock.Anything).Return(counters).Once()
+				events.EXPECT().WithTx(mock.Anything).Return(events).Once()
+				events.EXPECT().ListByIdempotencyKeysForUpdate(mock.Anything, "user_1", mock.Anything).
+					Return(eventRows("00000000-0000-0000-0000-0000000000ac", "user_1", enums.UsageEventStatusReleased), nil).Once()
+				// A concurrent settle moved the row first: nothing reusable.
+				events.EXPECT().ReuseAsReserved(mock.Anything, mock.Anything, mock.Anything, mock.Anything).
+					Return(false, nil).Once()
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			counters := repomocks.NewMockUsageCounterRepository(t)
+			events := repomocks.NewMockUsageEventRepository(t)
+			tt.setup(counters, events)
+			err := reserve(t, newSvc(t, counters, events))
+			appErr := &common.AppError{}
+			require.ErrorAs(t, err, &appErr)
+			require.Equal(t, 503, appErr.Status, "inconsistent reservation state fails closed")
+			require.Equal(t, common.CodePolicyUnavailable, appErr.Code)
+		})
+	}
+}
+
+// A duplicate idempotency insert means a concurrent Reserve won the same key:
+// the loser reports in_progress (409), not a store outage.
+func TestReserveDuplicateInsertReportsInProgress(t *testing.T) {
+	fixedNow := time.Date(2026, 11, 26, 10, 0, 0, 0, time.UTC)
+	counters := repomocks.NewMockUsageCounterRepository(t)
+	events := repomocks.NewMockUsageEventRepository(t)
+	svc := accessservices.NewUsageService(counters, events, fakeTxManager{}, fakeLimitSource{
+		limits: map[enums.PlanKey]map[enums.CounterKind]accessservices.Limit{
+			enums.PlanKeyFree: {
+				enums.CounterKindAICredit:     {Enabled: true, Value: 15, Period: enums.UsagePeriodMonth},
+				enums.CounterKindVoiceSession: {Enabled: true, Value: 3, Period: enums.UsagePeriodMonth},
+			},
+		},
+	})
+	counters.EXPECT().WithTx(mock.Anything).Return(counters).Once()
+	events.EXPECT().WithTx(mock.Anything).Return(events).Once()
+	events.EXPECT().ListByIdempotencyKeysForUpdate(mock.Anything, "user_1", mock.Anything).Return(nil, nil).Once()
+	dupErr := &pgconn.PgError{Code: "23505", Message: `duplicate key value violates unique constraint "usage_events_user_id_idem"`}
+	events.EXPECT().Insert(mock.Anything, mock.Anything).Return(dupErr).Once()
+
+	_, err := svc.Reserve(context.Background(), "user_1", enums.PlanKeyFree, voiceCharges(),
+		"conversation:00000000-0000-0000-0000-0000000000f1", enums.UsageRefTypeConversation,
+		"00000000-0000-0000-0000-0000000000f1", 2*time.Minute, fixedNow, time.UTC)
+	appErr := &common.AppError{}
+	require.ErrorAs(t, err, &appErr)
+	require.Equal(t, 409, appErr.Status)
+	require.Equal(t, "in_progress", appErr.Code)
+}
+
+// CommitTx settles one group over the caller's handle: no nested
+// transaction, per-row counter commits through the joined repos.
+func TestCommitTxSettlesGroup(t *testing.T) {
+	tests := []struct {
+		name    string
+		settled []*models.UsageEvent
+		wantErr bool
+	}{
+		{name: "settles each row through the joined counters"},
+		{name: "empty settle is a silent no-op", settled: nil},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			counters := repomocks.NewMockUsageCounterRepository(t)
+			events := repomocks.NewMockUsageEventRepository(t)
+			svc := accessservices.NewUsageService(counters, events, fakeTxManager{}, fakeLimitSource{})
+			settled := tt.settled
+			if settled == nil && !tt.wantErr {
+				settled = eventRows("00000000-0000-0000-0000-0000000000ba", "user_1", enums.UsageEventStatusReserved)
+				if tt.name == "empty settle is a silent no-op" {
+					settled = nil
+				}
+			}
+			counters.EXPECT().WithTx(mock.Anything).Return(counters).Once()
+			events.EXPECT().WithTx(mock.Anything).Return(events).Once()
+			events.EXPECT().SettleReserved(mock.Anything, "00000000-0000-0000-0000-0000000000ba", enums.UsageEventStatusCommitted).
+				Return(settled, nil).Once()
+			for _, e := range settled {
+				counters.EXPECT().Commit(mock.Anything, e.UserID, e.CounterKey, e.PeriodKey, e.Amount).Return(nil).Once()
+			}
+			require.NoError(t, svc.CommitTx(context.Background(), nil, "00000000-0000-0000-0000-0000000000ba"))
+		})
+	}
+}
+
+// The sweeper settles expiry atomically: expiry transition plus every
+// counter release in ONE tx, count only on success.
+func TestSweepExpiredIsAtomic(t *testing.T) {
+	tests := []struct {
+		name      string
+		rows      []*models.UsageEvent
+		releaseEr error
+		want      int
+		wantErr   int
+	}{
+		{
+			name: "releases every expired hold in one tx",
+			rows: eventRows("00000000-0000-0000-0000-0000000000cc", "user_1", enums.UsageEventStatusExpired),
+			want: 2,
+		},
+		{
+			name:      "counter failure rolls back the whole sweep",
+			rows:      eventRows("00000000-0000-0000-0000-0000000000cc", "user_1", enums.UsageEventStatusExpired),
+			releaseEr: errors.New("counter down"),
+			wantErr:   503,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			counters := repomocks.NewMockUsageCounterRepository(t)
+			events := repomocks.NewMockUsageEventRepository(t)
+			svc := accessservices.NewUsageService(counters, events, fakeTxManager{}, fakeLimitSource{})
+			counters.EXPECT().WithTx(mock.Anything).Return(counters).Once()
+			events.EXPECT().WithTx(mock.Anything).Return(events).Once()
+			events.EXPECT().ReleaseExpired(mock.Anything, mock.Anything, mock.Anything).Return(tt.rows, nil).Once()
+			if tt.releaseEr != nil {
+				counters.EXPECT().Release(mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).
+					Return(tt.releaseEr).Once()
+			} else {
+				for _, e := range tt.rows {
+					counters.EXPECT().Release(mock.Anything, e.UserID, e.CounterKey, e.PeriodKey, e.Amount).Return(nil).Once()
+				}
+			}
+			got, err := svc.SweepExpired(context.Background())
+			if tt.wantErr != 0 {
+				appErr := &common.AppError{}
+				require.ErrorAs(t, err, &appErr)
+				require.Equal(t, tt.wantErr, appErr.Status)
+				require.Equal(t, 0, got, "a failed sweep reports no count")
+				return
+			}
+			require.NoError(t, err)
+			require.Equal(t, tt.want, got)
+		})
+	}
+}
+
+// RefundCommitted returns settled charges: committed events move back to
+// released and each used amount is returned, in one tx. Nothing committed
+// is a silent no-op.
+func TestRefundCommitted(t *testing.T) {
+	tests := []struct {
+		name     string
+		refunded []*models.UsageEvent
+		wantErr  bool
+	}{
+		{
+			name:     "committed rows refund events and counters",
+			refunded: eventRows("00000000-0000-0000-0000-0000000000dd", "user_1", enums.UsageEventStatusCommitted),
+		},
+		{name: "nothing committed is a silent no-op", refunded: nil},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			counters := repomocks.NewMockUsageCounterRepository(t)
+			events := repomocks.NewMockUsageEventRepository(t)
+			svc := accessservices.NewUsageService(counters, events, fakeTxManager{}, fakeLimitSource{})
+			counters.EXPECT().WithTx(mock.Anything).Return(counters).Once()
+			events.EXPECT().WithTx(mock.Anything).Return(events).Once()
+			events.EXPECT().RefundCommitted(mock.Anything, "user_1", []string{
+				"conversation:00000000-0000-0000-0000-0000000000f6:ai_credit",
+				"conversation:00000000-0000-0000-0000-0000000000f6:voice_session",
+			}).Return(tt.refunded, nil).Once()
+			for _, e := range tt.refunded {
+				counters.EXPECT().Refund(mock.Anything, e.UserID, e.CounterKey, e.PeriodKey, e.Amount).Return(nil).Once()
+			}
+			require.NoError(t, svc.RefundCommitted(context.Background(), "user_1", "conversation:00000000-0000-0000-0000-0000000000f6"))
+		})
+	}
+}

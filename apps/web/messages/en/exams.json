@@ -304,6 +304,31 @@
         "minutes": "{count}m",
         "seconds": "{count}s"
       }
+    },
+    "result": {
+      "aiReview": {
+        "title": "AI mistake review",
+        "hint": "One credit. Re-opening the review is always free.",
+        "cta": "Explain my mistakes with AI (1 credit)",
+        "generating": "Reviewing your mistakes…",
+        "failed": "The review failed. Your credit was not used — try again.",
+        "summary": "Summary",
+        "mistakesTitle": "Mistakes to fix",
+        "empty": "No mistake detail available — the summary above still applies.",
+        "yourAnswer": "You answered: {answer}",
+        "correctAnswer": "Correct: {answer}"
+      },
+      "studyPlan": {
+        "title": "AI study plan",
+        "hint": "Two credits. Re-opening the plan is always free.",
+        "cta": "Build my study plan with AI (2 credits)",
+        "generating": "Building your study plan…",
+        "failed": "The study plan failed. Your credits were not used — try again.",
+        "summary": "Summary",
+        "focusTitle": "Focus areas",
+        "stepsTitle": "Next steps",
+        "empty": "No focus areas identified — keep a balanced routine."
+      }
     }
   }
 }

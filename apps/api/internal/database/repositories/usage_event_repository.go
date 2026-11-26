@@ -20,7 +20,10 @@ type UsageEventRepository interface {
 	Insert(ctx context.Context, m *models.UsageEvent) error
 	// ReuseAsReserved transitions a released/expired row back to reserved
 	// under a new reservation id with a fresh lease (spec §7.2 reuse path).
-	ReuseAsReserved(ctx context.Context, id, reservationID string, expiresAt time.Time) error
+	// It reports whether exactly one row moved: false means the row was not
+	// in a reusable state (already settled or concurrently reused) and the
+	// caller must fail closed, never insert a duplicate.
+	ReuseAsReserved(ctx context.Context, id, reservationID string, expiresAt time.Time) (bool, error)
 	// SettleReserved transitions every reserved row of one reservation to
 	// the target status, returning the settled rows so the caller adjusts
 	// counters per (counter, period, amount). There is intentionally no
@@ -34,6 +37,11 @@ type UsageEventRepository interface {
 	// HasCommitted reports whether any of the keys has a committed event —
 	// the AnalyzeTurn "was this session paid" guard.
 	HasCommitted(ctx context.Context, userID string, keys []string) (bool, error)
+	// RefundCommitted releases committed rows for the given idempotency keys
+	// (spec §8.1 engine-loss refund): the engine forgot a session the meter
+	// already settled, so the charge is returned without deleting the audit
+	// rows. Returns the refunded rows so the caller can counter-refund each.
+	RefundCommitted(ctx context.Context, userID string, keys []string) ([]*models.UsageEvent, error)
 	// ListByUser returns the most recent events for one user, newest first
 	// (constant query backing the admin usage lookup).
 	ListByUser(ctx context.Context, userID string, limit int) ([]*models.UsageEvent, error)
@@ -69,12 +77,16 @@ func (r *usageEventRepository) Insert(ctx context.Context, m *models.UsageEvent)
 	return r.db.WithContext(ctx).Create(m).Error
 }
 
-func (r *usageEventRepository) ReuseAsReserved(ctx context.Context, id, reservationID string, expiresAt time.Time) error {
-	return r.db.WithContext(ctx).Exec(`
+func (r *usageEventRepository) ReuseAsReserved(ctx context.Context, id, reservationID string, expiresAt time.Time) (bool, error) {
+	res := r.db.WithContext(ctx).Exec(`
 UPDATE usage_events
 SET status = 'reserved', reservation_id = ?, expires_at = ?, settled_at = NULL
 WHERE id = ? AND status IN ('released', 'expired')`,
-		reservationID, expiresAt, id).Error
+		reservationID, expiresAt, id)
+	if res.Error != nil {
+		return false, res.Error
+	}
+	return res.RowsAffected == 1, nil
 }
 
 func (r *usageEventRepository) SettleReserved(ctx context.Context, reservationID string, status enums.UsageEventStatus) ([]*models.UsageEvent, error) {
@@ -121,6 +133,22 @@ func (r *usageEventRepository) HasCommitted(ctx context.Context, userID string, 
 		return false, err
 	}
 	return n > 0, nil
+}
+
+func (r *usageEventRepository) RefundCommitted(ctx context.Context, userID string, keys []string) ([]*models.UsageEvent, error) {
+	out := make([]*models.UsageEvent, 0)
+	if len(keys) == 0 {
+		return out, nil
+	}
+	err := r.db.WithContext(ctx).Raw(`
+UPDATE usage_events
+SET status = 'released', settled_at = now()
+WHERE user_id = ? AND idempotency_key IN ? AND status = 'committed'
+RETURNING *`, userID, keys).Scan(&out).Error
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (r *usageEventRepository) ListByUser(ctx context.Context, userID string, limit int) ([]*models.UsageEvent, error) {

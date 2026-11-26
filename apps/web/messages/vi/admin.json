@@ -104,6 +104,20 @@
         "created": "Ngày tạo",
         "allStatuses": "Tất cả trạng thái",
         "allPlans": "Tất cả gói"
+      },
+      "limits": {
+        "tab": "Hạn mức",
+        "plan": "Gói {plan}",
+        "limit": "Hạn mức",
+        "period": "Chu kỳ",
+        "enabled": "Đang bật",
+        "save": "Lưu hạn mức",
+        "saved": "Đã cập nhật hạn mức",
+        "aiCredit": "Credit AI",
+        "voiceSession": "Buổi luyện nói",
+        "periodDay": "Ngày",
+        "periodMonth": "Tháng",
+        "periodTotal": "Tổng"
       }
     },
     "videos": {

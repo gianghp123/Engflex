@@ -12,6 +12,7 @@ import {
 	TooltipContent,
 	TooltipTrigger,
 } from "#/components/ui/tooltip";
+import { useEntitlements } from "#/features/payments/entitlements";
 import { m } from "#/paraglide/messages";
 
 /**
@@ -34,6 +35,7 @@ function VoicePanelView({
 	micSlot,
 	headerAction,
 	timeLeft,
+	sessionsCount,
 }: {
 	title: string;
 	objective: string;
@@ -43,6 +45,7 @@ function VoicePanelView({
 	micSlot: ReactNode;
 	headerAction?: ReactNode;
 	timeLeft?: string | null;
+	sessionsCount?: string | null;
 }) {
 	return (
 		<div className="surface-card flex h-full flex-col gap-6 py-6">
@@ -52,6 +55,11 @@ function VoicePanelView({
 					<span className="text-sm text-muted-foreground">{objective}</span>
 				</div>
 				<div className="flex items-center gap-3">
+					{sessionsCount ? (
+						<span className="text-xs font-medium text-muted-foreground tabular-nums">
+							{sessionsCount}
+						</span>
+					) : null}
 					{timeLeft ? (
 						<span className="text-xs font-medium text-muted-foreground">
 							{timeLeft}
@@ -125,6 +133,7 @@ export function VoicePanel({
 	const botTrack = usePipecatClientMediaTrack("audio", "bot");
 	const micTrack = usePipecatClientMediaTrack("audio", "local");
 	const audioTrack = waveformSource === "mic" ? micTrack : botTrack;
+	const { data: entitlements } = useEntitlements();
 	return (
 		<VoicePanelView
 			title={title}
@@ -134,6 +143,14 @@ export function VoicePanel({
 			audioTrack={audioTrack}
 			headerAction={headerAction}
 			timeLeft={timeLeft}
+			sessionsCount={
+				entitlements
+					? m["voice.room.sessions.count"]({
+							used: entitlements.voice.used,
+							limit: entitlements.voice.limit,
+						})
+					: null
+			}
 			micSlot={
 				<PipecatClientMicToggle>
 					{({ disabled, isMicEnabled, onClick }) => {

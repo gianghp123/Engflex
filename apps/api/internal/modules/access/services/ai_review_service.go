@@ -19,12 +19,12 @@ import (
 )
 
 // AIReviewService orchestrates paid exam AI (spec §8.3): cache read free;
-// generate = decide → reserve → LLM → store output + commit. Output and
-// charge commit together with a two-step boundary: the ai_outputs row is
-// inserted first and the usage Commit follows best-effort (a Commit failure
-// is logged loudly and left to the sweeper, which releases the uncommitted
-// hold on expiry). Never charge without an output; never return an output
-// without the insert.
+// generate = decide → reserve → LLM → store output + commit. The output row
+// and the charge commit together in ONE transaction: no output without a
+// charge, no charge without an output. An admin bypasses metering entirely:
+// after Principal, Decide denials are ignored and no hold is ever reserved
+// or committed. Shadow mode evaluates Decide for logging only and never
+// fails on a store error.
 type AIReviewService struct {
 	attempts repositories.AttemptRepository
 	tests    repositories.ExamTestRepository
@@ -33,11 +33,14 @@ type AIReviewService struct {
 	policy   PolicyDecider
 	usage    UsageMeter
 	enforce  bool
+	tx       repositories.TransactionManager
 }
 
-// NewAIReviewService builds the paid-AI orchestrator.
-func NewAIReviewService(attempts repositories.AttemptRepository, tests repositories.ExamTestRepository, outputs repositories.AIOutputRepository, llm llm.LLMClient, policy PolicyDecider, usage UsageMeter, enforce bool) *AIReviewService {
-	return &AIReviewService{attempts: attempts, tests: tests, outputs: outputs, llm: llm, policy: policy, usage: usage, enforce: enforce}
+// NewAIReviewService builds the paid-AI orchestrator. tx coordinates the
+// output insert with its settlement; it must be non-nil whenever generate
+// can meter (enforce mode), like every other constructor dependency.
+func NewAIReviewService(attempts repositories.AttemptRepository, tests repositories.ExamTestRepository, outputs repositories.AIOutputRepository, llm llm.LLMClient, policy PolicyDecider, usage UsageMeter, enforce bool, tx repositories.TransactionManager) *AIReviewService {
+	return &AIReviewService{attempts: attempts, tests: tests, outputs: outputs, llm: llm, policy: policy, usage: usage, enforce: enforce, tx: tx}
 }
 
 // GetExamReview is the free cached read (owner-only; 404 when absent).
@@ -70,20 +73,20 @@ func (s *AIReviewService) getCached(ctx context.Context, userID, attemptID strin
 
 // GenerateExamReview charges 1 credit and builds the mistake review for a
 // completed attempt (spec §8.3).
-func (s *AIReviewService) GenerateExamReview(ctx context.Context, userID, attemptID string) (*models.AIOutput, error) {
+func (s *AIReviewService) GenerateExamReview(ctx context.Context, userID, attemptID string, isAdmin bool) (*models.AIOutput, error) {
 	return s.generate(ctx, userID, attemptID, ActionExamReview,
-		enums.AIOutputKindExamReview, 1, "exam_review:"+attemptID, buildReviewPrompt)
+		enums.AIOutputKindExamReview, 1, "exam_review:"+attemptID, enums.UsageRefTypeExamAttempt, isAdmin, buildReviewPrompt)
 }
 
 // GenerateStudyPlan charges 2 credits and links free lessons/videos.
-func (s *AIReviewService) GenerateStudyPlan(ctx context.Context, userID, attemptID string) (*models.AIOutput, error) {
+func (s *AIReviewService) GenerateStudyPlan(ctx context.Context, userID, attemptID string, isAdmin bool) (*models.AIOutput, error) {
 	return s.generate(ctx, userID, attemptID, ActionStudyPlan,
-		enums.AIOutputKindStudyPlan, 2, "study_plan:"+attemptID, buildPlanPrompt)
+		enums.AIOutputKindStudyPlan, 2, "study_plan:"+attemptID, enums.UsageRefTypeStudyPlan, isAdmin, buildPlanPrompt)
 }
 
 type promptBuilder func(ctx context.Context, tests repositories.ExamTestRepository, m *models.Attempt) (string, any, string, map[string]any, error)
 
-func (s *AIReviewService) generate(ctx context.Context, userID, attemptID string, action Action, kind enums.AIOutputKind, credits int, idempotencyBase string, build promptBuilder) (*models.AIOutput, error) {
+func (s *AIReviewService) generate(ctx context.Context, userID, attemptID string, action Action, kind enums.AIOutputKind, credits int, idempotencyBase string, refType enums.UsageRefType, isAdmin bool, build promptBuilder) (*models.AIOutput, error) {
 	m, err := s.attempts.GetByID(ctx, attemptID)
 	if err != nil {
 		appErr := common.FromDBError(err, "attempt")
@@ -107,21 +110,25 @@ func (s *AIReviewService) generate(ctx context.Context, userID, attemptID string
 		return nil, err
 	}
 
-	p, _, err := s.policy.Principal(ctx, userID, false)
-	if err != nil {
-		return nil, err
-	}
-	d, err := s.policy.Decide(ctx, userID, false, action)
-	if err != nil {
-		return nil, err
-	}
-	if !d.Allow && s.enforce {
-		return nil, AppError(d)
-	}
+	p, _, err := s.policy.Principal(ctx, userID, isAdmin)
 	var reservation *Reservation
-	if s.enforce {
+	if err != nil {
+		if s.enforce {
+			return nil, err
+		}
+		logger.Report(ctx, "ai review principal failed, proceeding unmetered", err, "attemptID", attemptID)
+	} else if d, derr := s.policy.Decide(ctx, userID, isAdmin, action); derr != nil {
+		if s.enforce {
+			return nil, derr
+		}
+		logger.Report(ctx, "ai review decide failed, proceeding unmetered", derr, "attemptID", attemptID, "kind", string(kind))
+	} else if p.IsAdmin {
+		slog.InfoContext(ctx, "ai review admin bypass", "attemptID", attemptID, "userID", userID, "kind", string(kind))
+	} else if !d.Allow && s.enforce {
+		return nil, AppError(d)
+	} else if s.enforce {
 		reservation, err = s.usage.Reserve(ctx, userID, p.Plan, d.Charges, idempotencyBase,
-			enums.UsageRefTypeExamAttempt, attemptID, common.ReviewLeaseTTL, time.Now().UTC(), s.policy.Location())
+			refType, attemptID, common.ReviewLeaseTTL, time.Now().UTC(), s.policy.Location())
 		if err != nil {
 			appErr, ok := err.(*common.AppError)
 			if !ok {
@@ -179,21 +186,50 @@ func (s *AIReviewService) generate(ctx context.Context, userID, attemptID string
 		Payload:        raw,
 		CreditsCharged: credits,
 	}
-	if err := s.outputs.Create(ctx, out); err != nil {
-		if reservation != nil {
+	if reservation != nil {
+		// The output row and its settlement commit atomically (spec §7.1):
+		// no output without a charge, no charge without an output. A tx
+		// error rolls back and releases the hold — never strand a paid
+		// result the ledger cannot see.
+		if s.tx == nil {
 			_ = s.usage.Release(ctx, reservation.ID)
+			appErr := common.ServiceUnavailable("policy unavailable").WithCode(common.CodePolicyUnavailable)
+			logger.Report(ctx, "ai review miswired: transaction manager missing", appErr, "attemptID", attemptID)
+			return nil, appErr
 		}
+		txErr := s.tx.Run(ctx, func(tx *gorm.DB) error {
+			if err := s.outputs.WithTx(tx).Create(ctx, out); err != nil {
+				return &outputStoreError{err}
+			}
+			return s.usage.CommitTx(ctx, tx, reservation.ID)
+		})
+		if txErr != nil {
+			_ = s.usage.Release(ctx, reservation.ID)
+			var ose *outputStoreError
+			if errors.As(txErr, &ose) {
+				appErr := common.FromDBError(ose.err, "ai output")
+				logger.Report(ctx, "ai output store failed", appErr, "attemptID", attemptID, "kind", string(kind))
+				return nil, appErr
+			}
+			appErr := common.ServiceUnavailable("policy unavailable").WithCode(common.CodePolicyUnavailable)
+			logger.Report(ctx, "ai output settle failed", appErr, "attemptID", attemptID, "reservationID", reservation.ID, "cause", txErr.Error())
+			return nil, appErr
+		}
+	} else if err := s.outputs.Create(ctx, out); err != nil {
+		// Unmetered (shadow/admin) generations still persist: the output is
+		// the billable artifact, and there is no hold to reconcile.
 		appErr := common.FromDBError(err, "ai output")
 		logger.Report(ctx, "ai output store failed", appErr, "attemptID", attemptID, "kind", string(kind))
 		return nil, appErr
 	}
-	if reservation != nil {
-		if err := s.usage.Commit(ctx, reservation.ID); err != nil {
-			// Same policy as voice: the output exists; the sweeper
-			// reconciles a failed settlement. Never strand a paid result.
-			slog.WarnContext(ctx, "usage commit after ai output failed", "attemptID", attemptID, "reservationID", reservation.ID)
-		}
-	}
 	slog.InfoContext(ctx, "ai output generated", "attemptID", attemptID, "kind", string(kind), "credits", credits, "metered", reservation != nil)
 	return out, nil
 }
+
+// outputStoreError marks an ai_outputs insert failure inside the settle
+// transaction so the caller can map it (duplicate → 409, else 500) instead
+// of reporting a settlement outage.
+type outputStoreError struct{ err error }
+
+func (e *outputStoreError) Error() string { return e.err.Error() }
+func (e *outputStoreError) Unwrap() error { return e.err }

@@ -132,6 +132,9 @@
         "paceFast": "Hơi nhanh",
         "submit": "Xong",
         "done": "Mo ghi chép đây!"
+      },
+      "sessions": {
+        "count": "{used}/{limit} buổi nói"
       }
     },
     "connection": {

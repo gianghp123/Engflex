@@ -10,6 +10,8 @@ import (
 	"context"
 	"time"
 
+	"gorm.io/gorm"
+
 	"engflex-api/internal/common/enums"
 	accessservices "engflex-api/internal/modules/access/services"
 
@@ -516,6 +518,132 @@ func (_c *MockUsageMeter_Reserve_Call) Return(reservation *accessservices.Reserv
 }
 
 func (_c *MockUsageMeter_Reserve_Call) RunAndReturn(run func(ctx context.Context, userID string, plan enums.PlanKey, charges []accessservices.Charge, idempotencyBase string, refType enums.UsageRefType, refID string, lease time.Duration, now time.Time, loc *time.Location) (*accessservices.Reservation, error)) *MockUsageMeter_Reserve_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// CommitTx provides a mock function for the type MockUsageMeter
+func (_mock *MockUsageMeter) CommitTx(ctx context.Context, tx *gorm.DB, reservationID string) error {
+	ret := _mock.Called(ctx, tx, reservationID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CommitTx")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *gorm.DB, string) error); ok {
+		r0 = returnFunc(ctx, tx, reservationID)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockUsageMeter_CommitTx_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CommitTx'
+type MockUsageMeter_CommitTx_Call struct {
+	*mock.Call
+}
+
+// CommitTx is a helper method to define mock.On call
+//   - ctx context.Context
+//   - tx *gorm.DB
+//   - reservationID string
+func (_e *MockUsageMeter_Expecter) CommitTx(ctx any, tx any, reservationID any) *MockUsageMeter_CommitTx_Call {
+	return &MockUsageMeter_CommitTx_Call{Call: _e.mock.On("CommitTx", ctx, tx, reservationID)}
+}
+
+func (_c *MockUsageMeter_CommitTx_Call) Run(run func(ctx context.Context, tx *gorm.DB, reservationID string)) *MockUsageMeter_CommitTx_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 *gorm.DB
+		if args[1] != nil {
+			arg1 = args[1].(*gorm.DB)
+		}
+		var arg2 string
+		if args[2] != nil {
+			arg2 = args[2].(string)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockUsageMeter_CommitTx_Call) Return(err error) *MockUsageMeter_CommitTx_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockUsageMeter_CommitTx_Call) RunAndReturn(run func(ctx context.Context, tx *gorm.DB, reservationID string) error) *MockUsageMeter_CommitTx_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// RefundCommitted provides a mock function for the type MockUsageMeter
+func (_mock *MockUsageMeter) RefundCommitted(ctx context.Context, userID string, idempotencyBase string) error {
+	ret := _mock.Called(ctx, userID, idempotencyBase)
+
+	if len(ret) == 0 {
+		panic("no return value specified for RefundCommitted")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string) error); ok {
+		r0 = returnFunc(ctx, userID, idempotencyBase)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockUsageMeter_RefundCommitted_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'RefundCommitted'
+type MockUsageMeter_RefundCommitted_Call struct {
+	*mock.Call
+}
+
+// RefundCommitted is a helper method to define mock.On call
+//   - ctx context.Context
+//   - userID string
+//   - idempotencyBase string
+func (_e *MockUsageMeter_Expecter) RefundCommitted(ctx any, userID any, idempotencyBase any) *MockUsageMeter_RefundCommitted_Call {
+	return &MockUsageMeter_RefundCommitted_Call{Call: _e.mock.On("RefundCommitted", ctx, userID, idempotencyBase)}
+}
+
+func (_c *MockUsageMeter_RefundCommitted_Call) Run(run func(ctx context.Context, userID string, idempotencyBase string)) *MockUsageMeter_RefundCommitted_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 string
+		if args[2] != nil {
+			arg2 = args[2].(string)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockUsageMeter_RefundCommitted_Call) Return(err error) *MockUsageMeter_RefundCommitted_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockUsageMeter_RefundCommitted_Call) RunAndReturn(run func(ctx context.Context, userID string, idempotencyBase string) error) *MockUsageMeter_RefundCommitted_Call {
 	_c.Call.Return(run)
 	return _c
 }

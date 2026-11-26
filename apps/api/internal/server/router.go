@@ -17,6 +17,7 @@ import (
 
 	"engflex-api/config"
 	_ "engflex-api/docs"
+	"engflex-api/internal/database/repositories"
 	"engflex-api/internal/modules/access"
 	"engflex-api/internal/modules/attempts"
 	"engflex-api/internal/modules/bookmarks"
@@ -166,6 +167,7 @@ func NewRouter(db *gorm.DB, cfg config.Config) *gin.Engine {
 		Usage:   accessSvc.Usage,
 		Enforce: cfg.Access.Enforce,
 		Loc:     cfg.Access.Location(),
+		Tx:      repositories.NewTransactionManager(db),
 	})
 	lessons.RegisterRoutes(v1, db, cfg.Voice, cfg.LLM, cfg.Media, sessionLimiter)
 	attempts.RegisterRoutes(v1, db)

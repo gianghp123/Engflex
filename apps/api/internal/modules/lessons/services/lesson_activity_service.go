@@ -386,7 +386,7 @@ func (s *lessonActivityService) AttachCheckOutcome(ctx context.Context, userID, 
 	if len(detail.Outcomes) > 0 {
 		score = float64(correct) / float64(len(detail.Outcomes)) * 100
 	}
-	parts[activityID] = PartEntry{Type: partType, Score: score, Detail: detail}
+	parts[activityID] = PartEntry{Type: partType, Status: PartStatusScored, Score: score, Detail: detail}
 	return s.attachWithMap(ctx, m, parts)
 }
 

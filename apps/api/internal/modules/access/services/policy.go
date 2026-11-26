@@ -3,6 +3,8 @@
 package services
 
 import (
+	"time"
+
 	"github.com/google/uuid"
 
 	"engflex-api/internal/common"
@@ -53,7 +55,9 @@ type Principal struct {
 }
 
 // Decision is the PDP result. On deny, Code is one of the common.Code*
-// strings (or admin_bypass on the admin allow path).
+// strings (or admin_bypass on the admin allow path). ResetAt is the first
+// instant the limiting counter rolls over (nil for never-resetting totals);
+// the wire renders it RFC3339 so the UI can show "resets in …".
 type Decision struct {
 	Allow           bool
 	Code            string
@@ -63,6 +67,7 @@ type Decision struct {
 	Limit           int
 	Used            int
 	Remaining       int
+	ResetAt         *time.Time
 	RequiredPlan    enums.PlanKey
 }
 

@@ -32,6 +32,7 @@ func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB, llmCfg config.LLMConfig, a
 	aiReviews := accessservices.NewAIReviewService(
 		attempts, tests, repositories.NewAIOutputRepository(db),
 		llm.NewHTTPLLMClient(llmCfg), accessPolicy(accessSvc), accessUsage(accessSvc), accessEnforce(accessSvc),
+		repositories.NewTransactionManager(db),
 	)
 	aiCtl := controllers.NewAIReviewController(aiReviews)
 	rg.POST("/exam-attempts/:id/ai-review", middleware.RequireAuth(), aiCtl.GenerateExamReview)

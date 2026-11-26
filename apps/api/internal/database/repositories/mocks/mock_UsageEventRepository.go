@@ -328,6 +328,80 @@ func (_c *MockUsageEventRepository_ListByUser_Call) RunAndReturn(run func(ctx co
 	return _c
 }
 
+// RefundCommitted provides a mock function for the type MockUsageEventRepository
+func (_mock *MockUsageEventRepository) RefundCommitted(ctx context.Context, userID string, keys []string) ([]*models.UsageEvent, error) {
+	ret := _mock.Called(ctx, userID, keys)
+
+	if len(ret) == 0 {
+		panic("no return value specified for RefundCommitted")
+	}
+
+	var r0 []*models.UsageEvent
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, []string) ([]*models.UsageEvent, error)); ok {
+		return returnFunc(ctx, userID, keys)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, []string) []*models.UsageEvent); ok {
+		r0 = returnFunc(ctx, userID, keys)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.UsageEvent)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, []string) error); ok {
+		r1 = returnFunc(ctx, userID, keys)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockUsageEventRepository_RefundCommitted_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'RefundCommitted'
+type MockUsageEventRepository_RefundCommitted_Call struct {
+	*mock.Call
+}
+
+// RefundCommitted is a helper method to define mock.On call
+//   - ctx context.Context
+//   - userID string
+//   - keys []string
+func (_e *MockUsageEventRepository_Expecter) RefundCommitted(ctx any, userID any, keys any) *MockUsageEventRepository_RefundCommitted_Call {
+	return &MockUsageEventRepository_RefundCommitted_Call{Call: _e.mock.On("RefundCommitted", ctx, userID, keys)}
+}
+
+func (_c *MockUsageEventRepository_RefundCommitted_Call) Run(run func(ctx context.Context, userID string, keys []string)) *MockUsageEventRepository_RefundCommitted_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 []string
+		if args[2] != nil {
+			arg2 = args[2].([]string)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockUsageEventRepository_RefundCommitted_Call) Return(usageEvents []*models.UsageEvent, err error) *MockUsageEventRepository_RefundCommitted_Call {
+	_c.Call.Return(usageEvents, err)
+	return _c
+}
+
+func (_c *MockUsageEventRepository_RefundCommitted_Call) RunAndReturn(run func(ctx context.Context, userID string, keys []string) ([]*models.UsageEvent, error)) *MockUsageEventRepository_RefundCommitted_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // ReleaseExpired provides a mock function for the type MockUsageEventRepository
 func (_mock *MockUsageEventRepository) ReleaseExpired(ctx context.Context, before time.Time, limit int) ([]*models.UsageEvent, error) {
 	ret := _mock.Called(ctx, before, limit)
@@ -403,20 +477,29 @@ func (_c *MockUsageEventRepository_ReleaseExpired_Call) RunAndReturn(run func(ct
 }
 
 // ReuseAsReserved provides a mock function for the type MockUsageEventRepository
-func (_mock *MockUsageEventRepository) ReuseAsReserved(ctx context.Context, id string, reservationID string, expiresAt time.Time) error {
+func (_mock *MockUsageEventRepository) ReuseAsReserved(ctx context.Context, id string, reservationID string, expiresAt time.Time) (bool, error) {
 	ret := _mock.Called(ctx, id, reservationID, expiresAt)
 
 	if len(ret) == 0 {
 		panic("no return value specified for ReuseAsReserved")
 	}
 
-	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string, time.Time) error); ok {
+	var r0 bool
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string, time.Time) (bool, error)); ok {
+		return returnFunc(ctx, id, reservationID, expiresAt)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string, time.Time) bool); ok {
 		r0 = returnFunc(ctx, id, reservationID, expiresAt)
 	} else {
-		r0 = ret.Error(0)
+		r0 = ret.Get(0).(bool)
 	}
-	return r0
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, string, time.Time) error); ok {
+		r1 = returnFunc(ctx, id, reservationID, expiresAt)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
 }
 
 // MockUsageEventRepository_ReuseAsReserved_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ReuseAsReserved'
@@ -461,12 +544,12 @@ func (_c *MockUsageEventRepository_ReuseAsReserved_Call) Run(run func(ctx contex
 	return _c
 }
 
-func (_c *MockUsageEventRepository_ReuseAsReserved_Call) Return(err error) *MockUsageEventRepository_ReuseAsReserved_Call {
-	_c.Call.Return(err)
+func (_c *MockUsageEventRepository_ReuseAsReserved_Call) Return(b bool, err error) *MockUsageEventRepository_ReuseAsReserved_Call {
+	_c.Call.Return(b, err)
 	return _c
 }
 
-func (_c *MockUsageEventRepository_ReuseAsReserved_Call) RunAndReturn(run func(ctx context.Context, id string, reservationID string, expiresAt time.Time) error) *MockUsageEventRepository_ReuseAsReserved_Call {
+func (_c *MockUsageEventRepository_ReuseAsReserved_Call) RunAndReturn(run func(ctx context.Context, id string, reservationID string, expiresAt time.Time) (bool, error)) *MockUsageEventRepository_ReuseAsReserved_Call {
 	_c.Call.Return(run)
 	return _c
 }

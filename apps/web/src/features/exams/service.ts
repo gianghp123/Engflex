@@ -1,4 +1,5 @@
 import type {
+	AIReviewOutput,
 	ExamAnswer,
 	ExamAttempt,
 	ExamAttemptSummary,
@@ -100,6 +101,26 @@ export function patchExamAttempt(
 			body: JSON.stringify(req),
 		},
 	);
+}
+
+export function getAiReview(attemptId: string): Promise<AIReviewOutput> {
+	return api<AIReviewOutput>(API_ROUTES.EXAMS.ATTEMPTS.AI_REVIEW(attemptId));
+}
+
+export function generateAiReview(attemptId: string): Promise<AIReviewOutput> {
+	return api<AIReviewOutput>(API_ROUTES.EXAMS.ATTEMPTS.AI_REVIEW(attemptId), {
+		method: "POST",
+	});
+}
+
+export function getStudyPlan(attemptId: string): Promise<AIReviewOutput> {
+	return api<AIReviewOutput>(API_ROUTES.EXAMS.ATTEMPTS.STUDY_PLAN(attemptId));
+}
+
+export function generateStudyPlan(attemptId: string): Promise<AIReviewOutput> {
+	return api<AIReviewOutput>(API_ROUTES.EXAMS.ATTEMPTS.STUDY_PLAN(attemptId), {
+		method: "POST",
+	});
 }
 
 export function isExamReviewAttempt(

@@ -21,6 +21,14 @@
       "caption": "Mo is holding your spot",
       "primary": "Upgrade to Premium"
     },
-    "quote": "Steady progress beats speed every single day."
+    "quote": "Steady progress beats speed every single day.",
+    "quota": {
+      "badge": "Out of credits",
+      "caption": "Mo is counting credits",
+      "title": "That feature needs AI credits",
+      "body": "Your AI credits reset on {reset}. Premium includes credits every month.",
+      "bodyNoDate": "Your AI credits will reset at the start of next month.",
+      "upgrade": "See Premium"
+    }
   }
 }

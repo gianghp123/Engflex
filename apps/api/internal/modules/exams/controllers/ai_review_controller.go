@@ -34,7 +34,7 @@ func NewAIReviewController(reviews *accessservices.AIReviewService) *AIReviewCon
 // @Failure      422 {object} common.ApiResponse
 // @Router       /exam-attempts/{id}/ai-review [post]
 func (h *AIReviewController) GenerateExamReview(c *gin.Context) {
-	m, err := h.reviews.GenerateExamReview(c.Request.Context(), middleware.UserID(c), c.Param("id"))
+	m, err := h.reviews.GenerateExamReview(c.Request.Context(), middleware.UserID(c), c.Param("id"), middleware.IsAdmin(c))
 	if err != nil {
 		common.Fail(c, err)
 		return
@@ -84,7 +84,7 @@ func (h *AIReviewController) GetExamReview(c *gin.Context) {
 // @Failure      422 {object} common.ApiResponse
 // @Router       /exam-attempts/{id}/study-plan [post]
 func (h *AIReviewController) GenerateStudyPlan(c *gin.Context) {
-	m, err := h.reviews.GenerateStudyPlan(c.Request.Context(), middleware.UserID(c), c.Param("id"))
+	m, err := h.reviews.GenerateStudyPlan(c.Request.Context(), middleware.UserID(c), c.Param("id"), middleware.IsAdmin(c))
 	if err != nil {
 		common.Fail(c, err)
 		return

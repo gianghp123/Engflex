@@ -3,6 +3,7 @@ import { APP_ROUTES } from "#/app/app-route";
 import { useBreadcrumbs } from "#/app/breadcrumbs";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "#/components/ui/tabs";
 import { FeaturesPanel } from "#/features/admin/premium/components/features-panel";
+import { LimitsPanel } from "#/features/admin/premium/components/limits-panel";
 import { PlansPanel } from "#/features/admin/premium/components/plans-panel";
 import { SubscriptionsPanel } from "#/features/admin/premium/components/subscriptions-panel";
 import { m } from "#/paraglide/messages";
@@ -37,6 +38,9 @@ function AdminPremium() {
 					<TabsTrigger value="subscriptions">
 						{m["admin.premium.tabs.subscriptions"]()}
 					</TabsTrigger>
+					<TabsTrigger value="limits">
+						{m["admin.premium.limits.tab"]()}
+					</TabsTrigger>
 				</TabsList>
 				<TabsContent value="plans">
 					<PlansPanel />
@@ -46,6 +50,9 @@ function AdminPremium() {
 				</TabsContent>
 				<TabsContent value="subscriptions">
 					<SubscriptionsPanel />
+				</TabsContent>
+				<TabsContent value="limits">
+					<LimitsPanel />
 				</TabsContent>
 			</Tabs>
 		</div>

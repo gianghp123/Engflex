@@ -64,11 +64,16 @@ export const API_ROUTES = {
 		PREMIUM_FEATURES: "/admin/premium/features",
 		PREMIUM_FEATURE: (id: ApiId) => `/admin/premium/features/${id}`,
 		PREMIUM_SUBSCRIPTIONS: "/admin/premium/subscriptions",
+		PREMIUM_LIMITS: "/admin/premium/limits",
+		PREMIUM_LIMIT: (plan: ApiId) => `/admin/premium/limits/${plan}`,
+		USER_USAGE: (id: ApiId) => `/admin/users/${id}/usage`,
+		USER_TRIAL: (id: ApiId) => `/admin/users/${id}/trial`,
 	},
 	PAYMENTS: {
 		PLANS: "/payments/vnpay/plans",
 		CHECKOUT: "/payments/vnpay/checkout",
 		ME: "/premium/me",
+		TRIAL: "/premium/trial",
 	},
 	PERSONAS: {
 		LIST: "/personas",
@@ -150,6 +155,8 @@ export const API_ROUTES = {
 			STATISTICS: "/exam-attempts/statistics",
 			CANCEL: (id: ApiId) => `/exam-attempts/${id}/cancel`,
 			BY_ID: (id: ApiId) => `/exam-attempts/${id}`,
+			AI_REVIEW: (id: ApiId) => `/exam-attempts/${id}/ai-review`,
+			STUDY_PLAN: (id: ApiId) => `/exam-attempts/${id}/study-plan`,
 		},
 	},
 } as const;

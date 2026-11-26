@@ -1,9 +1,4 @@
-import type {
-	Checkout,
-	CheckoutSession,
-	MyPremiumStatus,
-	Plan,
-} from "@engflex/contracts";
+import type { Checkout, CheckoutSession, Plan } from "@engflex/contracts";
 import { API_ROUTES } from "#/app/api-routes";
 import { api } from "#/lib/api";
 
@@ -18,8 +13,4 @@ export function startCheckout(body: Checkout): Promise<CheckoutSession> {
 		method: "POST",
 		body: JSON.stringify(body),
 	});
-}
-
-export function getMyPremiumStatus(): Promise<MyPremiumStatus> {
-	return api<MyPremiumStatus>(API_ROUTES.PAYMENTS.ME);
 }

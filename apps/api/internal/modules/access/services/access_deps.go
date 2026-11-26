@@ -6,6 +6,8 @@ import (
 	"context"
 	"time"
 
+	"gorm.io/gorm"
+
 	"engflex-api/internal/common/enums"
 )
 
@@ -21,10 +23,14 @@ type PolicyDecider interface {
 }
 
 // UsageMeter is the narrow metering surface consuming modules program
-// against: the full ten-arg Reserve plus Commit/Release. *UsageService
-// satisfies it structurally.
+// against: the full ten-arg Reserve plus Commit/Release/RefundCommitted.
+// CommitTx is Commit's transactional body over the caller's handle, so a
+// state write and its settlement commit atomically. *UsageService satisfies
+// it structurally.
 type UsageMeter interface {
 	Reserve(ctx context.Context, userID string, plan enums.PlanKey, charges []Charge, idempotencyBase string, refType enums.UsageRefType, refID string, lease time.Duration, now time.Time, loc *time.Location) (*Reservation, error)
 	Commit(ctx context.Context, reservationID string) error
+	CommitTx(ctx context.Context, tx *gorm.DB, reservationID string) error
 	Release(ctx context.Context, reservationID string) error
+	RefundCommitted(ctx context.Context, userID, idempotencyBase string) error
 }

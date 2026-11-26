@@ -27,6 +27,16 @@
       "pendingBody": "Chúng tôi đang xác nhận giao dịch của bạn.",
       "backHome": "Về trang chủ",
       "tryAgain": "Thử lại"
+    },
+    "entitlements": {
+      "pill": "✦ {remaining} credit AI",
+      "modal": {
+        "title": "Bạn đã hết credit AI",
+        "body": "Premium gồm credit AI hằng tháng cho luyện nói và chấm bài thi. Credit của bạn sẽ được cộng lại vào {reset}.",
+        "upgrade": "Xem Premium",
+        "later": "Để sau",
+        "noReset": "đầu tháng sau"
+      }
     }
   }
 }

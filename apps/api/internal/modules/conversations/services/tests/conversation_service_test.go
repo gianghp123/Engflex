@@ -209,7 +209,7 @@ func TestStart(t *testing.T) {
 			svc, repo, _, engine, scenarios := newService(t)
 			tt.setup(repo, engine, scenarios)
 
-			_, _, err := svc.Start(context.Background(), userID, convID)
+			_, _, err := svc.Start(context.Background(), userID, convID, false)
 			if tt.wantStatus != 0 {
 				requireAppError(t, err, tt.wantStatus)
 				return

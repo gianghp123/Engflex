@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"time"
 
+	"github.com/jackc/pgx/v5/pgconn"
 	"gorm.io/gorm"
 
 	"engflex-api/internal/common"
@@ -101,7 +102,13 @@ func (s *UsageService) Reserve(ctx context.Context, userID string, plan enums.Pl
 			found[e.IdempotencyKey] = e
 		}
 
-		// Replay semantics (spec §7.2), decided on locked rows.
+		// Replay semantics (spec §7.2), decided on locked rows. A partial
+		// group (some keys present, some absent) is an inconsistent state a
+		// crash cannot produce through this path — fail closed, never mint
+		// a hold around it.
+		if len(found) > 0 && len(found) < len(keys) {
+			return errInconsistentReservation
+		}
 		if len(found) == len(keys) && len(charges) > 0 {
 			committed, reservedLive := 0, 0
 			for _, e := range found {
@@ -119,6 +126,11 @@ func (s *UsageService) Reserve(ctx context.Context, userID string, plan enums.Pl
 				res.Status = ReservationStatusCommitted
 				return nil
 			}
+			if committed > 0 {
+				// Some rows settled while siblings did not: the group is
+				// torn, and settling around it would double-charge.
+				return errInconsistentReservation
+			}
 			if reservedLive > 0 {
 				appErr := common.Conflict("a request for this item is already in progress").WithCode("in_progress")
 				return &inProgressError{appErr}
@@ -130,8 +142,14 @@ func (s *UsageService) Reserve(ctx context.Context, userID string, plan enums.Pl
 			ch := byKey[key]
 			if e, ok := found[key]; ok {
 				// Released or expired: reuse the row under the new group.
-				if err := events.ReuseAsReserved(ctx, e.ID, reservationID, expiresAt); err != nil {
+				// A row that did not move was settled concurrently — fail
+				// closed rather than inserting a duplicate idempotency key.
+				reused, err := events.ReuseAsReserved(ctx, e.ID, reservationID, expiresAt)
+				if err != nil {
 					return err
+				}
+				if !reused {
+					return errInconsistentReservation
 				}
 				continue
 			}
@@ -148,6 +166,13 @@ func (s *UsageService) Reserve(ctx context.Context, userID string, plan enums.Pl
 				RefID:          refID,
 				ExpiresAt:      &expiresAt,
 			}); err != nil {
+				// A duplicate key means a concurrent Reserve won the same
+				// idempotency key first: report in_progress (409), not a
+				// store outage — the other holder owns the action.
+				if isDuplicateKeyError(err) {
+					appErr := common.Conflict("a request for this item is already in progress").WithCode("in_progress")
+					return &inProgressError{appErr}
+				}
 				return err
 			}
 		}
@@ -159,9 +184,10 @@ func (s *UsageService) Reserve(ctx context.Context, userID string, plan enums.Pl
 				return err
 			}
 			if !ok {
+				used, remaining := currentUsage(ctx, counters, userID, ch.Counter, lim, now, loc)
 				appErr := common.TooManyRequests(limitMessageFor(ch.Counter)).
 					WithCode(limitCodeFor(ch.Counter)).
-					WithDetails(quotaDetails(ch, lim, userID))
+					WithDetails(quotaDetails(ch, lim, used, remaining, resetAtFor(lim.Period, now, loc)))
 				return &denyError{appErr}
 			}
 		}
@@ -190,18 +216,7 @@ func (s *UsageService) Reserve(ctx context.Context, userID string, plan enums.Pl
 // zero rows and touches nothing (spec §7.1).
 func (s *UsageService) Commit(ctx context.Context, reservationID string) error {
 	err := s.tx.Run(ctx, func(tx *gorm.DB) error {
-		events := s.events.WithTx(tx)
-		counters := s.counters.WithTx(tx)
-		rows, err := events.SettleReserved(ctx, reservationID, enums.UsageEventStatusCommitted)
-		if err != nil {
-			return err
-		}
-		for _, e := range rows {
-			if err := counters.Commit(ctx, e.UserID, e.CounterKey, e.PeriodKey, e.Amount); err != nil {
-				return err
-			}
-		}
-		return nil
+		return s.CommitTx(ctx, tx, reservationID)
 	})
 	if err != nil {
 		appErr := common.ServiceUnavailable("policy unavailable").WithCode(common.CodePolicyUnavailable)
@@ -209,6 +224,25 @@ func (s *UsageService) Commit(ctx context.Context, reservationID string) error {
 		return appErr
 	}
 	slog.InfoContext(ctx, "usage committed", "reservationID", reservationID)
+	return nil
+}
+
+// CommitTx is Commit's transactional body over the caller's handle: settles
+// the group's rows and commits the counters without opening a nested
+// transaction. Consuming modules run it inside their own tx.Run together
+// with the state write, so the output row and its charge commit atomically.
+func (s *UsageService) CommitTx(ctx context.Context, tx *gorm.DB, reservationID string) error {
+	events := s.events.WithTx(tx)
+	counters := s.counters.WithTx(tx)
+	rows, err := events.SettleReserved(ctx, reservationID, enums.UsageEventStatusCommitted)
+	if err != nil {
+		return err
+	}
+	for _, e := range rows {
+		if err := counters.Commit(ctx, e.UserID, e.CounterKey, e.PeriodKey, e.Amount); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
@@ -238,25 +272,70 @@ func (s *UsageService) Release(ctx context.Context, reservationID string) error 
 }
 
 // SweepExpired releases every expired hold (spec §7.3): crash recovery for
-// reservations abandoned between Reserve and Commit/Release.
+// reservations abandoned between Reserve and Commit/Release. The expiry
+// transition and every counter release run in ONE transaction — the count
+// is returned only when the whole batch settled.
 func (s *UsageService) SweepExpired(ctx context.Context) (int, error) {
-	rows, err := s.events.ReleaseExpired(ctx, time.Now().UTC(), common.SweeperBatch)
+	var rows []*models.UsageEvent
+	err := s.tx.Run(ctx, func(tx *gorm.DB) error {
+		var err error
+		rows, err = s.events.WithTx(tx).ReleaseExpired(ctx, time.Now().UTC(), common.SweeperBatch)
+		if err != nil {
+			return err
+		}
+		counters := s.counters.WithTx(tx)
+		for _, e := range rows {
+			if err := counters.Release(ctx, e.UserID, e.CounterKey, e.PeriodKey, e.Amount); err != nil {
+				return err
+			}
+		}
+		return nil
+	})
 	if err != nil {
 		appErr := common.ServiceUnavailable("policy unavailable").WithCode(common.CodePolicyUnavailable)
 		logger.Report(ctx, "sweep failed", appErr, "cause", err.Error())
 		return 0, appErr
 	}
-	for _, e := range rows {
-		if err := s.counters.Release(ctx, e.UserID, e.CounterKey, e.PeriodKey, e.Amount); err != nil {
-			appErr := common.ServiceUnavailable("policy unavailable").WithCode(common.CodePolicyUnavailable)
-			logger.Report(ctx, "sweep counter release failed", appErr, "eventID", e.ID, "cause", err.Error())
-			return len(rows), appErr
-		}
-	}
 	if len(rows) > 0 {
 		slog.InfoContext(ctx, "swept expired reservations", "count", len(rows))
 	}
 	return len(rows), nil
+}
+
+// RefundCommitted returns settled charges for one idempotency base (spec
+// §8.1 engine-loss refund): the engine forgot a session the meter already
+// settled, so the committed events move back to released and each used
+// amount is returned, in one transaction. A base with nothing committed is
+// a silent no-op.
+func (s *UsageService) RefundCommitted(ctx context.Context, userID, idempotencyBase string) error {
+	keys := []string{
+		idempotencyBase + ":" + string(enums.CounterKindAICredit),
+		idempotencyBase + ":" + string(enums.CounterKindVoiceSession),
+	}
+	var refunded []*models.UsageEvent
+	err := s.tx.Run(ctx, func(tx *gorm.DB) error {
+		var err error
+		refunded, err = s.events.WithTx(tx).RefundCommitted(ctx, userID, keys)
+		if err != nil {
+			return err
+		}
+		counters := s.counters.WithTx(tx)
+		for _, e := range refunded {
+			if err := counters.Refund(ctx, e.UserID, e.CounterKey, e.PeriodKey, e.Amount); err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		appErr := common.ServiceUnavailable("policy unavailable").WithCode(common.CodePolicyUnavailable)
+		logger.Report(ctx, "refund committed failed", appErr, "userID", userID, "base", idempotencyBase, "cause", err.Error())
+		return appErr
+	}
+	if len(refunded) > 0 {
+		slog.InfoContext(ctx, "committed usage refunded", "userID", userID, "base", idempotencyBase, "count", len(refunded))
+	}
+	return nil
 }
 
 // StartSweeper runs SweepExpired on the house cadence until the context is
@@ -281,11 +360,25 @@ func (s *UsageService) StartSweeper(ctx context.Context) {
 
 // inProgressError and denyError carry pre-built AppErrors through the tx
 // boundary without them being mistaken for store failures.
+// errInconsistentReservation fails the tx closed when the locked rows form a
+// group no crash path can produce: partial keys, mixed committed/sibling
+// states, or a reuse that moved nothing. The outer mapping turns it into a
+// 503 policy_unavailable — paid AI fails closed (spec §12).
+var errInconsistentReservation = errors.New("inconsistent reservation state")
+
 type inProgressError struct{ *common.AppError }
 type denyError struct{ *common.AppError }
 
 func (e *inProgressError) Error() string { return e.AppError.Error() }
 func (e *denyError) Error() string       { return e.AppError.Error() }
+
+// isDuplicateKeyError reports a unique-violation (23505): a concurrent
+// Reserve won the same idempotency key first, so the loser reports
+// in_progress rather than a store outage.
+func isDuplicateKeyError(err error) bool {
+	var pgErr *pgconn.PgError
+	return errors.As(err, &pgErr) && pgErr.Code == "23505"
+}
 
 func limitCodeFor(counter enums.CounterKind) string {
 	if counter == enums.CounterKindAICredit {
@@ -301,14 +394,63 @@ func limitMessageFor(counter enums.CounterKind) string {
 	return "voice session limit reached"
 }
 
-func quotaDetails(ch Charge, lim Limit, userID string) map[string]any {
+func quotaDetails(ch Charge, lim Limit, used, remaining int, resetAt *time.Time) map[string]any {
+	var resetAtValue any
+	if resetAt != nil {
+		resetAtValue = resetAt.Format(time.RFC3339)
+	}
 	return map[string]any{
 		"code":       limitCodeFor(ch.Counter),
 		"feature":    string(ch.Counter),
 		"required":   ch.Amount,
 		"limit":      lim.Value,
+		"used":       used,
+		"remaining":  remaining,
+		"resetAt":    resetAtValue,
 		"upgradeUrl": "/payments/pricing",
 	}
+}
+
+// resetAtFor is the first instant of the next period in loc — the same math
+// PolicyService.ResetAt applies, so advisory (Decide) and authoritative
+// (Reserve) denials report the same reset instant. Total periods never
+// reset: nil.
+func resetAtFor(period enums.UsagePeriod, now time.Time, loc *time.Location) *time.Time {
+	if loc == nil {
+		loc = time.UTC
+	}
+	local := now.In(loc)
+	var next time.Time
+	switch period {
+	case enums.UsagePeriodDay:
+		next = time.Date(local.Year(), local.Month(), local.Day(), 0, 0, 0, 0, loc).AddDate(0, 0, 1)
+	case enums.UsagePeriodTotal:
+		return nil
+	default:
+		next = time.Date(local.Year(), local.Month(), 1, 0, 0, 0, 0, loc).AddDate(0, 1, 0)
+	}
+	return &next
+}
+
+// currentUsage reads the live used+reserved total for one counter inside the
+// Reserve transaction so the denial can report used/remaining. A read
+// failure degrades to zeros — the denial itself (429) still stands.
+func currentUsage(ctx context.Context, counters repositories.UsageCounterRepository, userID string, counter enums.CounterKind, lim Limit, now time.Time, loc *time.Location) (used, remaining int) {
+	rows, err := counters.ListByUser(ctx, userID)
+	if err != nil {
+		return 0, 0
+	}
+	key := periodKeyFor(lim.Period, now, loc)
+	for _, r := range rows {
+		if r.CounterKey == counter && r.PeriodKey == key {
+			used = r.Used + r.Reserved
+		}
+	}
+	remaining = lim.Value - used
+	if remaining < 0 {
+		remaining = 0
+	}
+	return used, remaining
 }
 
 func firstReservationID(found map[string]*models.UsageEvent) string {

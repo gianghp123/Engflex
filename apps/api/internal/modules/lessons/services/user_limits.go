@@ -26,18 +26,31 @@ func newUserRateLimiter(limit int, window time.Duration) *userRateLimiter {
 func (l *userRateLimiter) allow(userID string, now time.Time) bool {
 	l.mu.Lock()
 	defer l.mu.Unlock()
-	fresh := l.hits[userID][:0]
+	// Build a fresh slice: reusing l.hits[userID][:0] aliases the stored
+	// backing array, so the filter's appends can clobber not-yet-visited
+	// entries and the map retains memory for idle users.
+	fresh := make([]time.Time, 0, len(l.hits[userID]))
 	for _, at := range l.hits[userID] {
 		if now.Sub(at) < l.window {
 			fresh = append(fresh, at)
 		}
 	}
-	if len(fresh) >= l.limit {
+	if len(fresh) == 0 {
+		delete(l.hits, userID)
+	} else {
 		l.hits[userID] = fresh
+	}
+	if len(fresh) >= l.limit {
 		return false
 	}
 	l.hits[userID] = append(fresh, now)
 	return true
+}
+
+// NewUserRateLimiterForTest exposes the limiter for white-box rate tests
+// with explicit timestamps. Never pass nil; the zero limit denies all.
+func NewUserRateLimiterForTest(limit int, window time.Duration) *userRateLimiter {
+	return newUserRateLimiter(limit, window)
 }
 
 // inflightGuard allows at most max concurrent entries per key. Pronunciation

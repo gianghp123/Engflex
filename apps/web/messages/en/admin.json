@@ -104,6 +104,20 @@
         "created": "Created",
         "allStatuses": "All statuses",
         "allPlans": "All plans"
+      },
+      "limits": {
+        "tab": "Limits",
+        "plan": "Plan {plan}",
+        "limit": "Limit",
+        "period": "Period",
+        "enabled": "Enabled",
+        "save": "Save limits",
+        "saved": "Limits updated",
+        "aiCredit": "AI credits",
+        "voiceSession": "Voice sessions",
+        "periodDay": "Day",
+        "periodMonth": "Month",
+        "periodTotal": "Total"
       }
     },
     "videos": {

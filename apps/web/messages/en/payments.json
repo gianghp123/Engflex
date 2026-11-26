@@ -27,6 +27,16 @@
       "pendingBody": "We're confirming your transaction.",
       "backHome": "Back to home",
       "tryAgain": "Try again"
+    },
+    "entitlements": {
+      "pill": "✦ {remaining} AI credits",
+      "modal": {
+        "title": "You're out of AI credits",
+        "body": "Premium includes monthly AI credits for voice sessions and exam reviews. Your credits reset on {reset}.",
+        "upgrade": "See Premium",
+        "later": "Maybe later",
+        "noReset": "the start of next month"
+      }
     }
   }
 }

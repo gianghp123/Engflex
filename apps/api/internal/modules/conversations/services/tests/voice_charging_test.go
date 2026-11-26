@@ -14,6 +14,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"gorm.io/datatypes"
+	"gorm.io/gorm"
 
 	"engflex-api/internal/common"
 	"engflex-api/internal/common/enums"
@@ -77,13 +78,36 @@ func newAccessMocks(t *testing.T, enforce bool) (*accessmocks.MockPolicyDecider,
 	t.Helper()
 	policy := accessmocks.NewMockPolicyDecider(t)
 	usage := accessmocks.NewMockUsageMeter(t)
-	return policy, usage, &services.AccessDependencies{Policy: policy, Usage: usage, Enforce: enforce}
+	return policy, usage, &services.AccessDependencies{Policy: policy, Usage: usage, Enforce: enforce, Tx: &trackingTx{}}
+}
+
+// trackingTx is a TransactionManager fake that counts runs: the atomicity
+// tests assert the state write and its settlement share one Run, and that
+// the repos joined it via WithTx.
+type trackingTx struct{ runs int }
+
+func (f *trackingTx) Run(ctx context.Context, fn func(*gorm.DB) error) error {
+	f.runs++
+	return fn(nil)
 }
 
 func expectVoicePrincipal(t *testing.T, policy *accessmocks.MockPolicyDecider) {
 	t.Helper()
 	policy.EXPECT().Principal(mock.Anything, "user_1", false).
 		Return(accessservices.Principal{UserID: "user_1", Plan: enums.PlanKeyFree}, accessservices.TrialInfo{}, nil).Once()
+}
+
+// expectTxSettle wires the atomic settle: the conversation repo joins the tx
+// and the usage CommitTx settles the hold inside the same Run.
+func expectTxSettle(t *testing.T, conversations *repomocks.MockConversationRepository, usage *accessmocks.MockUsageMeter, sessionID string, rows int64, commitErr error) {
+	t.Helper()
+	conversations.EXPECT().WithTx(mock.Anything).Return(conversations).Once()
+	conversations.EXPECT().SetSpeechStart(mock.Anything, "00000000-0000-0000-0000-000000000101", sessionID, mock.Anything).Return(rows, nil).Once()
+	if commitErr != nil {
+		usage.EXPECT().CommitTx(mock.Anything, mock.Anything, mock.Anything).Return(commitErr).Once()
+	} else {
+		usage.EXPECT().CommitTx(mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
+	}
 }
 
 // shadowAccessBundle wires the access mocks in shadow mode for the
@@ -98,7 +122,8 @@ func shadowAccessBundle(t *testing.T) *services.AccessDependencies {
 		Return(accessservices.Principal{Plan: enums.PlanKeyFree}, accessservices.TrialInfo{}, nil).Maybe()
 	policy.EXPECT().Decide(mock.Anything, mock.Anything, mock.Anything, mock.Anything).
 		Return(accessservices.Decision{Allow: true, Plan: enums.PlanKeyFree}, nil).Maybe()
-	return &services.AccessDependencies{Policy: policy, Usage: usage}
+	usage.EXPECT().RefundCommitted(mock.Anything, mock.Anything, mock.Anything).Return(nil).Maybe()
+	return &services.AccessDependencies{Policy: policy, Usage: usage, Tx: &trackingTx{}}
 }
 
 func TestStartChargesVoiceSession(t *testing.T) {
@@ -116,19 +141,19 @@ func TestStartChargesVoiceSession(t *testing.T) {
 		"conversation:00000000-0000-0000-0000-000000000101", enums.UsageRefTypeConversation,
 		"00000000-0000-0000-0000-000000000101", common.VoiceLeaseTTL, mock.Anything, mock.Anything).
 		Return(&accessservices.Reservation{ID: "res-1", Status: accessservices.ReservationStatusReserved}, nil).Once()
-	usage.EXPECT().Commit(mock.Anything, "res-1").Return(nil).Once()
 
 	conversations := repomocks.NewMockConversationRepository(t)
 	conversations.EXPECT().GetByID(mock.Anything, "00000000-0000-0000-0000-000000000101").Return(conv, nil).Once()
-	conversations.EXPECT().SetSpeechStart(mock.Anything, "00000000-0000-0000-0000-000000000101", "engine-1", mock.Anything).Return(int64(1), nil).Once()
+	expectTxSettle(t, conversations, usage, "engine-1", 1, nil)
 
 	svc := services.NewConversationServiceForTest(conversations, repomocks.NewMockUsageEventRepository(t), fakeVoice{
 		start: engineStartResponse("engine-1"),
 	}, deps)
-	got, ice, err := svc.Start(context.Background(), "user_1", "00000000-0000-0000-0000-000000000101")
+	got, ice, err := svc.Start(context.Background(), "user_1", "00000000-0000-0000-0000-000000000101", false)
 	require.NoError(t, err)
 	require.NotNil(t, got)
 	assert.NotNil(t, ice)
+	assert.Equal(t, 1, deps.Tx.(*trackingTx).runs, "cache write and settlement share one transaction")
 }
 
 func TestStartCachedNeverCharges(t *testing.T) {
@@ -141,7 +166,7 @@ func TestStartCachedNeverCharges(t *testing.T) {
 	conversations.EXPECT().GetByID(mock.Anything, "00000000-0000-0000-0000-000000000101").Return(conv, nil).Once()
 
 	svc := services.NewConversationServiceForTest(conversations, repomocks.NewMockUsageEventRepository(t), fakeVoice{}, deps)
-	_, ice, err := svc.Start(context.Background(), "user_1", "00000000-0000-0000-0000-000000000101")
+	_, ice, err := svc.Start(context.Background(), "user_1", "00000000-0000-0000-0000-000000000101", false)
 	require.NoError(t, err)
 	require.NotNil(t, ice, "cached ICE replays without touching the access services")
 }
@@ -157,7 +182,7 @@ func TestStartDeniedByPolicy(t *testing.T) {
 	conversations.EXPECT().GetByID(mock.Anything, "00000000-0000-0000-0000-000000000101").Return(conv, nil).Once()
 
 	svc := services.NewConversationServiceForTest(conversations, repomocks.NewMockUsageEventRepository(t), fakeVoice{}, deps)
-	_, _, err := svc.Start(context.Background(), "user_1", "00000000-0000-0000-0000-000000000101")
+	_, _, err := svc.Start(context.Background(), "user_1", "00000000-0000-0000-0000-000000000101", false)
 	appErr := &common.AppError{}
 	require.ErrorAs(t, err, &appErr)
 	require.Equal(t, 429, appErr.Status)
@@ -180,15 +205,16 @@ func TestStartEngineFailureReleases(t *testing.T) {
 	conversations.EXPECT().GetByID(mock.Anything, "00000000-0000-0000-0000-000000000101").Return(conv, nil).Once()
 
 	svc := services.NewConversationServiceForTest(conversations, repomocks.NewMockUsageEventRepository(t), fakeVoice{startErr: errors.New("boom")}, deps)
-	_, _, err := svc.Start(context.Background(), "user_1", "00000000-0000-0000-0000-000000000101")
+	_, _, err := svc.Start(context.Background(), "user_1", "00000000-0000-0000-0000-000000000101", false)
 	appErr := &common.AppError{}
 	require.ErrorAs(t, err, &appErr)
 	require.Equal(t, 503, appErr.Status, "engine never started: released, not charged")
 }
 
-// TestStartCacheWriteFailureReleases pins the pre-commit guarantee: when
-// the start row cannot be cached, the hold is released and the request
-// fails — the user is never charged for a session that was not recorded.
+// TestStartCacheWriteFailureReleases pins the pre-settle guarantee: when the
+// start row cannot be cached inside the settle tx, the hold is released and
+// the request fails closed (503) — the user is never charged for a session
+// that was not recorded.
 func TestStartCacheWriteFailureReleases(t *testing.T) {
 	policy, usage, deps := newAccessMocks(t, true)
 	conv := pendingConversation()
@@ -199,26 +225,29 @@ func TestStartCacheWriteFailureReleases(t *testing.T) {
 		mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).
 		Return(&accessservices.Reservation{ID: "res-cache", Status: accessservices.ReservationStatusReserved}, nil).Once()
 	usage.EXPECT().Release(mock.Anything, "res-cache").Return(nil).Once()
-	// No Commit expectation: mockery fails the test if Commit is called.
+	// No CommitTx expectation: mockery fails the test if CommitTx is called.
 
 	conversations := repomocks.NewMockConversationRepository(t)
 	conversations.EXPECT().GetByID(mock.Anything, "00000000-0000-0000-0000-000000000101").Return(conv, nil).Once()
+	conversations.EXPECT().WithTx(mock.Anything).Return(conversations).Once()
 	conversations.EXPECT().SetSpeechStart(mock.Anything, "00000000-0000-0000-0000-000000000101", "engine-1", mock.Anything).
 		Return(int64(0), errors.New("boom")).Once()
 
 	svc := services.NewConversationServiceForTest(conversations, repomocks.NewMockUsageEventRepository(t), fakeVoice{
 		start: engineStartResponse("engine-1"),
 	}, deps)
-	_, _, err := svc.Start(context.Background(), "user_1", "00000000-0000-0000-0000-000000000101")
+	_, _, err := svc.Start(context.Background(), "user_1", "00000000-0000-0000-0000-000000000101", false)
 	appErr := &common.AppError{}
 	require.ErrorAs(t, err, &appErr)
-	require.Equal(t, 500, appErr.Status)
+	require.Equal(t, 503, appErr.Status)
+	require.Equal(t, common.CodePolicyUnavailable, appErr.Code)
 }
 
-// TestStartCommitFailureStillSucceeds pins fail-open settlement: the engine
-// session is live and cached, so a Commit error must not fail the request
-// (the sweeper owns the unsettled hold) and must not release it either.
-func TestStartCommitFailureStillSucceeds(t *testing.T) {
+// TestStartSettleFailureRollsBackAndReleases pins the atomic-settlement
+// contract: when the tx covering the cache write and the charge fails, the
+// row rolls back, the hold is released, and the request fails closed (503
+// policy_unavailable) — a session the API cannot serve must not be charged.
+func TestStartSettleFailureRollsBackAndReleases(t *testing.T) {
 	policy, usage, deps := newAccessMocks(t, true)
 	conv := pendingConversation()
 	expectVoicePrincipal(t, policy)
@@ -227,21 +256,20 @@ func TestStartCommitFailureStillSucceeds(t *testing.T) {
 	usage.EXPECT().Reserve(mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything,
 		mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).
 		Return(&accessservices.Reservation{ID: "res-commit", Status: accessservices.ReservationStatusReserved}, nil).Once()
-	usage.EXPECT().Commit(mock.Anything, "res-commit").Return(errors.New("boom")).Once()
-	// No Release expectation: mockery fails the test if Release is called.
+	usage.EXPECT().Release(mock.Anything, "res-commit").Return(nil).Once()
 
 	conversations := repomocks.NewMockConversationRepository(t)
 	conversations.EXPECT().GetByID(mock.Anything, "00000000-0000-0000-0000-000000000101").Return(conv, nil).Once()
-	conversations.EXPECT().SetSpeechStart(mock.Anything, "00000000-0000-0000-0000-000000000101", "engine-9", mock.Anything).Return(int64(1), nil).Once()
+	expectTxSettle(t, conversations, usage, "engine-9", 1, errors.New("settle down"))
 
 	svc := services.NewConversationServiceForTest(conversations, repomocks.NewMockUsageEventRepository(t), fakeVoice{
 		start: engineStartResponse("engine-9"),
 	}, deps)
-	got, ice, err := svc.Start(context.Background(), "user_1", "00000000-0000-0000-0000-000000000101")
-	require.NoError(t, err)
-	require.NotNil(t, got)
-	assert.Equal(t, "engine-9", got.SpeechSessionID)
-	require.NotNil(t, ice)
+	_, _, err := svc.Start(context.Background(), "user_1", "00000000-0000-0000-0000-000000000101", false)
+	appErr := &common.AppError{}
+	require.ErrorAs(t, err, &appErr)
+	require.Equal(t, 503, appErr.Status)
+	require.Equal(t, common.CodePolicyUnavailable, appErr.Code)
 }
 
 func TestStartRaceLoserReleasesReservation(t *testing.T) {
@@ -261,13 +289,14 @@ func TestStartRaceLoserReleasesReservation(t *testing.T) {
 	raced.SpeechStartResponse = cachedStartResponse()
 	conversations := repomocks.NewMockConversationRepository(t)
 	conversations.EXPECT().GetByID(mock.Anything, "00000000-0000-0000-0000-000000000101").Return(conv, nil).Once()
+	conversations.EXPECT().WithTx(mock.Anything).Return(conversations).Once()
 	conversations.EXPECT().SetSpeechStart(mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(int64(0), nil).Once()
 	conversations.EXPECT().GetByID(mock.Anything, "00000000-0000-0000-0000-000000000101").Return(raced, nil).Once()
 
 	svc := services.NewConversationServiceForTest(conversations, repomocks.NewMockUsageEventRepository(t), fakeVoice{
 		start: engineStartResponse("engine-loser"),
 	}, deps)
-	_, ice, err := svc.Start(context.Background(), "user_1", "00000000-0000-0000-0000-000000000101")
+	_, ice, err := svc.Start(context.Background(), "user_1", "00000000-0000-0000-0000-000000000101", false)
 	require.NoError(t, err, "the loser replays the winner's cached ICE")
 	require.NotNil(t, ice)
 }
@@ -288,7 +317,7 @@ func TestStartInProgressReplayReturns409(t *testing.T) {
 	conversations.EXPECT().GetByID(mock.Anything, "00000000-0000-0000-0000-000000000101").Return(conv, nil).Once()
 
 	svc := services.NewConversationServiceForTest(conversations, repomocks.NewMockUsageEventRepository(t), fakeVoice{}, deps)
-	_, _, err := svc.Start(context.Background(), "user_1", "00000000-0000-0000-0000-000000000101")
+	_, _, err := svc.Start(context.Background(), "user_1", "00000000-0000-0000-0000-000000000101", false)
 	appErr := &common.AppError{}
 	require.ErrorAs(t, err, &appErr)
 	require.Equal(t, 409, appErr.Status)
@@ -318,7 +347,7 @@ func TestStartCommittedReplayReplaysCache(t *testing.T) {
 	svc := services.NewConversationServiceForTest(conversations, repomocks.NewMockUsageEventRepository(t), fakeVoice{
 		startErr: errors.New("engine must not be called on a committed replay"),
 	}, deps)
-	got, ice, err := svc.Start(context.Background(), "user_1", "00000000-0000-0000-0000-000000000101")
+	got, ice, err := svc.Start(context.Background(), "user_1", "00000000-0000-0000-0000-000000000101", false)
 	require.NoError(t, err)
 	require.NotNil(t, got)
 	assert.Equal(t, "engine-1", got.SpeechSessionID)
@@ -341,7 +370,7 @@ func TestStartShadowModeSkipsMetering(t *testing.T) {
 	svc := services.NewConversationServiceForTest(conversations, repomocks.NewMockUsageEventRepository(t), fakeVoice{
 		start: engineStartResponse("engine-1"),
 	}, deps)
-	_, _, err := svc.Start(context.Background(), "user_1", "00000000-0000-0000-0000-000000000101")
+	_, _, err := svc.Start(context.Background(), "user_1", "00000000-0000-0000-0000-000000000101", false)
 	require.NoError(t, err, "shadow mode: decide + log, no reserve/commit")
 }
 
@@ -352,9 +381,10 @@ func voiceChargingTurn() *models.ConversationTurn {
 	}
 }
 
-// TestAnalyzeTurnEnforcement pins the AnalyzeTurn guard: a committed event
-// (or a grandfathered speech session) analyzes; an unpaid conversation is
-// 403; a store failure is 503; shadow mode skips the check.
+// TestAnalyzeTurnEnforcement pins the AnalyzeTurn guard: BOTH session counters
+// committed (or a grandfathered speech session) analyzes; a half-paid or
+// unpaid conversation is 403; a store failure is 503; shadow mode skips the
+// check.
 func TestAnalyzeTurnEnforcement(t *testing.T) {
 	const convID = "00000000-0000-0000-0000-000000000101"
 	good := `{"corrected":"I went yesterday.","spans":[],"relevance":{"status":"relevant","reason":null},"alternatives":{"language":null,"contextual":null},"tip":"past tense"}`
@@ -363,14 +393,17 @@ func TestAnalyzeTurnEnforcement(t *testing.T) {
 		name        string
 		enforce     bool
 		speech      string // SpeechSessionID on the owned conversation
-		committed   bool
+		aiCredit    bool
+		voiceSlot   bool
 		commitErr   error
 		wantStatus  int
 		wantCode    string
 		expectUsage bool
 	}{
-		{name: "committed session analyzes", enforce: true, committed: true, expectUsage: true},
+		{name: "committed session analyzes", enforce: true, aiCredit: true, voiceSlot: true, expectUsage: true},
 		{name: "grandfathered speech session analyzes without an event", enforce: true, speech: "engine-1", expectUsage: true},
+		{name: "only the credit key committed is 403", enforce: true, aiCredit: true, wantStatus: 403, wantCode: common.CodePremiumRequired, expectUsage: true},
+		{name: "only the voice key committed is 403", enforce: true, voiceSlot: true, wantStatus: 403, wantCode: common.CodePremiumRequired, expectUsage: true},
 		{name: "unpaid conversation is 403", enforce: true, wantStatus: 403, wantCode: common.CodePremiumRequired, expectUsage: true},
 		{name: "usage check failure is 503", enforce: true, commitErr: errors.New("boom"), wantStatus: 503, wantCode: common.CodePolicyUnavailable, expectUsage: true},
 		{name: "shadow mode skips the check", enforce: false},
@@ -392,8 +425,12 @@ func TestAnalyzeTurnEnforcement(t *testing.T) {
 			if tt.expectUsage {
 				usageEvents.EXPECT().HasCommitted(mock.Anything, "user_1", []string{
 					"conversation:" + convID + ":ai_credit",
-					"conversation:" + convID + ":voice_session",
-				}).Return(tt.committed, tt.commitErr).Once()
+				}).Return(tt.aiCredit, tt.commitErr).Once()
+				if tt.commitErr == nil {
+					usageEvents.EXPECT().HasCommitted(mock.Anything, "user_1", []string{
+						"conversation:" + convID + ":voice_session",
+					}).Return(tt.voiceSlot, nil).Once()
+				}
 			}
 
 			turns := repomocks.NewMockConversationTurnRepository(t)
@@ -422,6 +459,161 @@ func TestAnalyzeTurnEnforcement(t *testing.T) {
 			}
 			require.NoError(t, err)
 			require.NotNil(t, got)
+		})
+	}
+}
+
+// Admin bypass on the paid voice path (spec §5.5): after Principal reports
+// an admin, a denial-shaped Decide is ignored and no hold is ever reserved
+// or committed — the engine still provisions. A free user with the same
+// denial keeps the 429.
+func TestStartAdminBypassSkipsMetering(t *testing.T) {
+	tests := []struct {
+		name       string
+		isAdmin    bool
+		principal  accessservices.Principal
+		wantStatus int
+	}{
+		{
+			name:       "admin succeeds despite a denial-shaped decide",
+			isAdmin:    true,
+			principal:  accessservices.Principal{UserID: "user_1", Plan: enums.PlanKeyAdmin, IsAdmin: true},
+			wantStatus: 0,
+		},
+		{
+			name:       "free user with the same denial is still denied",
+			isAdmin:    false,
+			principal:  accessservices.Principal{UserID: "user_1", Plan: enums.PlanKeyFree},
+			wantStatus: 429,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			policy, usage, deps := newAccessMocks(t, true)
+			conv := pendingConversation()
+			policy.EXPECT().Principal(mock.Anything, "user_1", tt.isAdmin).
+				Return(tt.principal, accessservices.TrialInfo{}, nil).Once()
+			if !tt.principal.IsAdmin {
+				policy.EXPECT().Decide(mock.Anything, "user_1", tt.isAdmin, accessservices.ActionVoiceStart).
+					Return(accessservices.Decision{Allow: false, Code: common.CodeInsufficientCredits, Plan: enums.PlanKeyFree}, nil).Once()
+			} else {
+				policy.EXPECT().Decide(mock.Anything, "user_1", tt.isAdmin, accessservices.ActionVoiceStart).
+					Return(accessservices.Decision{Allow: false, Code: common.CodeInsufficientCredits, Plan: enums.PlanKeyAdmin}, nil).Once()
+			}
+
+			conversations := repomocks.NewMockConversationRepository(t)
+			conversations.EXPECT().GetByID(mock.Anything, "00000000-0000-0000-0000-000000000101").Return(conv, nil).Once()
+			if tt.wantStatus == 0 {
+				conversations.EXPECT().SetSpeechStart(mock.Anything, "00000000-0000-0000-0000-000000000101", "engine-admin", mock.Anything).
+					Return(int64(1), nil).Once()
+			}
+
+			svc := services.NewConversationServiceForTest(conversations, repomocks.NewMockUsageEventRepository(t), fakeVoice{
+				start: engineStartResponse("engine-admin"),
+			}, deps)
+			got, ice, err := svc.Start(context.Background(), "user_1", "00000000-0000-0000-0000-000000000101", tt.isAdmin)
+			if tt.wantStatus != 0 {
+				appErr := &common.AppError{}
+				require.ErrorAs(t, err, &appErr)
+				require.Equal(t, tt.wantStatus, appErr.Status)
+				return
+			}
+			require.NoError(t, err)
+			require.NotNil(t, got)
+			require.NotNil(t, ice)
+			usage.AssertNotCalled(t, "Reserve", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything)
+			usage.AssertNotCalled(t, "CommitTx", mock.Anything, mock.Anything, mock.Anything)
+		})
+	}
+}
+
+// Shadow mode never blocks (spec §12): a Principal or Decide store error is
+// logged and the session provisions unmetered instead of 503ing.
+func TestStartShadowModeToleratesStoreErrors(t *testing.T) {
+	tests := []struct {
+		name  string
+		setup func(*accessmocks.MockPolicyDecider)
+	}{
+		{
+			name: "principal store error proceeds unmetered",
+			setup: func(policy *accessmocks.MockPolicyDecider) {
+				policy.EXPECT().Principal(mock.Anything, "user_1", false).
+					Return(accessservices.Principal{}, accessservices.TrialInfo{}, errors.New("billing down")).Once()
+			},
+		},
+		{
+			name: "decide store error proceeds unmetered",
+			setup: func(policy *accessmocks.MockPolicyDecider) {
+				policy.EXPECT().Principal(mock.Anything, "user_1", false).
+					Return(accessservices.Principal{UserID: "user_1", Plan: enums.PlanKeyFree}, accessservices.TrialInfo{}, nil).Once()
+				policy.EXPECT().Decide(mock.Anything, "user_1", false, accessservices.ActionVoiceStart).
+					Return(accessservices.Decision{}, errors.New("usage store down")).Once()
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			policy, usage, deps := newAccessMocks(t, false)
+			conv := pendingConversation()
+			tt.setup(policy)
+
+			conversations := repomocks.NewMockConversationRepository(t)
+			conversations.EXPECT().GetByID(mock.Anything, "00000000-0000-0000-0000-000000000101").Return(conv, nil).Once()
+			conversations.EXPECT().SetSpeechStart(mock.Anything, "00000000-0000-0000-0000-000000000101", "engine-1", mock.Anything).Return(int64(1), nil).Once()
+
+			svc := services.NewConversationServiceForTest(conversations, repomocks.NewMockUsageEventRepository(t), fakeVoice{
+				start: engineStartResponse("engine-1"),
+			}, deps)
+			_, ice, err := svc.Start(context.Background(), "user_1", "00000000-0000-0000-0000-000000000101", false)
+			require.NoError(t, err, "shadow mode never fails on a store error")
+			require.NotNil(t, ice)
+			usage.AssertNotCalled(t, "Reserve", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything)
+		})
+	}
+}
+
+// The dead-engine clear path refunds a committed session (spec §8.1): the
+// engine forgot the session, so the settled charge is returned best-effort
+// and the client still gets the 409 retry. A refund failure never masks the
+// retry signal.
+func TestOfferEngine404RefundsCommittedSession(t *testing.T) {
+	const convID = "00000000-0000-0000-0000-000000000101"
+	tests := []struct {
+		name      string
+		refundErr error
+	}{
+		{name: "refund succeeds, client retries", refundErr: nil},
+		{name: "refund failure still surfaces the retry", refundErr: errors.New("meter down")},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			policy := accessmocks.NewMockPolicyDecider(t)
+			usage := accessmocks.NewMockUsageMeter(t)
+			deps := &services.AccessDependencies{Policy: policy, Usage: usage, Enforce: true, Tx: &trackingTx{}}
+			usage.EXPECT().RefundCommitted(mock.Anything, "user_1", "conversation:"+convID).Return(tt.refundErr).Once()
+
+			conversations := repomocks.NewMockConversationRepository(t)
+			conversations.EXPECT().GetByID(mock.Anything, convID).Return(&models.Conversation{
+				ID: convID, UserID: "user_1", Status: enums.ConversationStatusPending,
+				SpeechSessionID: "eng-dead",
+			}, nil).Once()
+			conversations.EXPECT().ClearSpeechStart(mock.Anything, convID).Return(int64(1), nil).Once()
+
+			engine := voicemocks.NewMockVoiceClient(t)
+			engine.EXPECT().Offer(mock.Anything, "eng-dead", "POST", mock.Anything).
+				Return([]byte(`{"detail":"unknown or expired session"}`), 404, nil).Once()
+
+			turns := repomocks.NewMockConversationTurnRepository(t)
+			feedbacks := repomocks.NewMockFeedbackRepository(t)
+			svc := services.NewConversationService(conversations, turns, engine,
+				voicemocks.NewMockPronounceEngine(t), 300, feedbacks,
+				repomocks.NewMockScenarioRepository(t), repomocks.NewMockPersonaRepository(t),
+				fakeNotPremium{}, repomocks.NewMockUsageEventRepository(t), deps)
+
+			_, _, err := svc.Offer(context.Background(), "user_1", convID, "POST", []byte(`{}`))
+			appErr := &common.AppError{}
+			require.ErrorAs(t, err, &appErr)
+			require.Equal(t, 409, appErr.Status)
 		})
 	}
 }

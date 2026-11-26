@@ -90,9 +90,9 @@ func (s *ConversationService) AnalyzeTurn(ctx context.Context, userID, conversat
 		return nil, err
 	}
 	// Per-turn analysis is included in the charged session (spec §8.1): it
-	// requires a committed session event when enforcement is on. A
-	// conversation with a speech session but no event is pre-launch
-	// (grandfathered) and still analyzes.
+	// requires BOTH committed session counters (ai_credit AND voice_session)
+	// when enforcement is on. A conversation with a speech session but no
+	// event is pre-launch (grandfathered) and still analyzes.
 	if s.access == nil {
 		appErr := common.ServiceUnavailable("policy unavailable").WithCode(common.CodePolicyUnavailable)
 		logger.Report(ctx, "analyze turn miswired: access dependencies missing", appErr, "conversationID", conversationID)
@@ -104,8 +104,15 @@ func (s *ConversationService) AnalyzeTurn(ctx context.Context, userID, conversat
 			logger.Report(ctx, "analyze turn miswired: usage events missing", appErr, "conversationID", conversationID)
 			return nil, appErr
 		}
-		committed, err := s.usageEvents.HasCommitted(ctx, userID, []string{
+		aiCommitted, err := s.usageEvents.HasCommitted(ctx, userID, []string{
 			"conversation:" + conversationID + ":" + string(enums.CounterKindAICredit),
+		})
+		if err != nil {
+			appErr := common.ServiceUnavailable("policy unavailable").WithCode(common.CodePolicyUnavailable)
+			logger.Report(ctx, "analyze turn usage check failed", appErr, "conversationID", conversationID)
+			return nil, appErr
+		}
+		voiceCommitted, err := s.usageEvents.HasCommitted(ctx, userID, []string{
 			"conversation:" + conversationID + ":" + string(enums.CounterKindVoiceSession),
 		})
 		if err != nil {
@@ -113,7 +120,7 @@ func (s *ConversationService) AnalyzeTurn(ctx context.Context, userID, conversat
 			logger.Report(ctx, "analyze turn usage check failed", appErr, "conversationID", conversationID)
 			return nil, appErr
 		}
-		if !committed && conv.SpeechSessionID == "" {
+		if !(aiCommitted && voiceCommitted) && conv.SpeechSessionID == "" {
 			return nil, common.Forbidden("this conversation has no active session").WithCode(common.CodePremiumRequired)
 		}
 	}

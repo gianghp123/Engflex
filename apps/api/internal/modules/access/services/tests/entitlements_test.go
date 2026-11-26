@@ -92,13 +92,13 @@ func TestMyEntitlementsShape(t *testing.T) {
 			assert.Equal(t, tt.wantCredits.Reserved, got.Credits.Reserved)
 			assert.Equal(t, tt.wantCredits.Remaining, got.Credits.Remaining)
 			if tt.wantPlan == enums.PlanKeyTrial {
-				assert.True(t, got.Credits.ResetAt.IsZero(), "total-period limits never reset")
-				assert.True(t, got.Voice.ResetAt.IsZero(), "total-period limits never reset")
+				assert.Nil(t, got.Credits.ResetAt, "total-period limits never reset")
+				assert.Nil(t, got.Voice.ResetAt, "total-period limits never reset")
 				require.NotNil(t, got.Trial, "active trial is reported separately")
 				assert.True(t, got.Trial.Active)
 			} else {
-				assert.False(t, got.Credits.ResetAt.IsZero(), "resetAt must be present for period limits")
-				assert.False(t, got.Voice.ResetAt.IsZero(), "resetAt must be present for period limits")
+				require.NotNil(t, got.Credits.ResetAt, "resetAt must be present for period limits")
+				require.NotNil(t, got.Voice.ResetAt, "resetAt must be present for period limits")
 				assert.Nil(t, got.Trial)
 			}
 			assert.NotEmpty(t, got.Costs, "costs table for the pricing surfaces")

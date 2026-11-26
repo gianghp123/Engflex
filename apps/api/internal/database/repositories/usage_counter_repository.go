@@ -23,6 +23,9 @@ type UsageCounterRepository interface {
 	Commit(ctx context.Context, userID string, counter enums.CounterKind, periodKey string, amount int) error
 	// Release drops amount from reserved (guarded: reserved >= amount).
 	Release(ctx context.Context, userID string, counter enums.CounterKind, periodKey string, amount int) error
+	// Refund returns a settled (used) amount to the user (spec §8.1
+	// engine-loss refund): guarded so used can never go negative.
+	Refund(ctx context.Context, userID string, counter enums.CounterKind, periodKey string, amount int) error
 	// ListByUser returns every counter row for the user (few rows; the
 	// service filters by period key in Go).
 	ListByUser(ctx context.Context, userID string) ([]*models.UsageCounter, error)
@@ -68,6 +71,14 @@ func (r *usageCounterRepository) Release(ctx context.Context, userID string, cou
 UPDATE usage_counters
 SET reserved = reserved - ?, updated_at = now()
 WHERE user_id = ? AND counter_key = ? AND period_key = ? AND reserved >= ?`,
+		amount, userID, string(counter), periodKey, amount).Error
+}
+
+func (r *usageCounterRepository) Refund(ctx context.Context, userID string, counter enums.CounterKind, periodKey string, amount int) error {
+	return r.db.WithContext(ctx).Exec(`
+UPDATE usage_counters
+SET used = used - ?, updated_at = now()
+WHERE user_id = ? AND counter_key = ? AND period_key = ? AND used >= ?`,
 		amount, userID, string(counter), periodKey, amount).Error
 }
 

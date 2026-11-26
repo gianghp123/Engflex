@@ -8,6 +8,7 @@ import { BackButton } from "#/components/common/back-button";
 import { CardShell } from "#/components/common/card-shell";
 import { PageLayout } from "#/components/common/page-layout";
 import { Skeleton } from "#/components/ui/skeleton";
+import { AiReviewPanel } from "#/features/exams/components/result/ai-review-panel";
 import { ToeicResultHeaderCard } from "#/features/exams/components/result/toeic-result-header-card";
 import { ToeicResultPaletteCard } from "#/features/exams/components/result/toeic-result-palette-card";
 import { ToeicResultPartsCard } from "#/features/exams/components/result/toeic-result-parts-card";
@@ -26,7 +27,8 @@ export const Route = createFileRoute("/_app/exams/toeic/session/$id/result")({
 				...examAttemptQueryOptions(id),
 				retry: (count: number, error: unknown) =>
 					!(
-						error instanceof ApiError && [401, 404, 409].includes(error.status)
+						error instanceof ApiError &&
+						[401, 403, 404, 409, 429].includes(error.status)
 					) && count < 3,
 			});
 			if (!isExamReviewAttempt(attempt))
@@ -118,6 +120,7 @@ function ResultContent({ attempt }: { attempt: ExamReviewAttempt }) {
 		>
 			<h1 className="text-2xl font-bold">{m["exams.toeic.result.title"]()}</h1>
 			<ToeicResultHeaderCard attempt={attempt} answers={answers} />
+			<AiReviewPanel attemptId={attempt.id} />
 			<ToeicResultPartsCard
 				parts={parts.map((part) => partStatistics(part, answers))}
 			/>

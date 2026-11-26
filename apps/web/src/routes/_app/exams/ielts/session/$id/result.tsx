@@ -27,6 +27,7 @@ import { CardShell } from "#/components/common/card-shell";
 import { PageLayout } from "#/components/common/page-layout";
 import { Button } from "#/components/ui/button";
 import { Skeleton } from "#/components/ui/skeleton";
+import { AiReviewPanel } from "#/features/exams/components/result/ai-review-panel";
 import { examAttemptQueryOptions } from "#/features/exams/queries";
 import { ApiError } from "#/lib/api/api";
 import { m } from "#/paraglide/messages";
@@ -39,7 +40,8 @@ export const Route = createFileRoute("/_app/exams/ielts/session/$id/result")({
 				...examAttemptQueryOptions(id),
 				retry: (count: number, error: unknown) =>
 					!(
-						error instanceof ApiError && [401, 404, 409].includes(error.status)
+						error instanceof ApiError &&
+						[401, 403, 404, 409, 429].includes(error.status)
 					) && count < 3,
 			});
 			if (attempt.status !== "completed")
@@ -260,6 +262,8 @@ function IeltsExamResultPage() {
 						</div>
 					</div>
 				</div>
+
+				<AiReviewPanel attemptId={attempt.id} />
 
 				<div className="flex flex-col gap-4 rounded-2xl border border-border/80 bg-card p-6 shadow-sm">
 					<div className="flex flex-wrap items-center justify-between gap-4 border-b border-border/60 pb-4">

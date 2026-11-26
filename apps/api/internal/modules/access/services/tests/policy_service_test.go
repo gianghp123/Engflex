@@ -244,6 +244,7 @@ func TestAppErrorMapsDenials(t *testing.T) {
 	deny := func(code string) accessservices.Decision {
 		return accessservices.Decision{
 			Allow: false, Code: code, Plan: enums.PlanKeyFree,
+			Charges:         []accessservices.Charge{{Counter: enums.CounterKindAICredit, Amount: 1}},
 			LimitingCounter: enums.CounterKindAICredit, Limit: 15, Used: 15, Remaining: 0,
 			RequiredPlan: enums.PlanKey1M,
 		}
@@ -273,10 +274,82 @@ func TestAppErrorMapsDenials(t *testing.T) {
 			assert.Equal(t, tt.wantCode, got.Code)
 			details, ok := got.Details.(map[string]any)
 			require.True(t, ok, "denials carry a Details payload")
-			for _, key := range []string{"code", "feature", "limit", "used", "remaining", "requiredPlan", "upgradeUrl"} {
+			for _, key := range []string{"code", "feature", "required", "limit", "used", "remaining", "resetAt", "requiredPlan", "upgradeUrl"} {
 				assert.Contains(t, details, key)
 			}
 			assert.Equal(t, tt.wantCode, details["code"])
+			assert.Equal(t, 1, details["required"], "the limiting charge amount is reported")
+		})
+	}
+}
+
+// Decide stamps the limiting counter's reset instant: rolling periods get
+// the next boundary in APP_TIMEZONE, total periods get nil (the UI shows
+// "no reset"). The denial wire detail mirrors it RFC3339-or-nil.
+func TestDecideResetAtFollowsLimitingPeriod(t *testing.T) {
+	newSvc := func(t *testing.T, limits []*models.PlanFeatureLimit, counters []*models.UsageCounter) *accessservices.PolicyService {
+		t.Helper()
+		limitsRepo := repomocks.NewMockPlanFeatureLimitRepository(t)
+		limitsRepo.EXPECT().ListAll(mock.Anything).Return(limits, nil).Once()
+		countersRepo := repomocks.NewMockUsageCounterRepository(t)
+		countersRepo.EXPECT().ListByUser(mock.Anything, "user_1").Return(counters, nil).Once()
+		return newPolicy(t, fakeSubscriptions{sub: paidSub(enums.SubscriptionPlanOneMonth)},
+			repomocks.NewMockUserTrialRepository(t), countersRepo, limitsRepo)
+	}
+	tests := []struct {
+		name       string
+		limits     []*models.PlanFeatureLimit
+		counters   []*models.UsageCounter
+		wantReset  bool
+		wantDetail any
+	}{
+		{
+			name: "month denial carries the next reset",
+			limits: []*models.PlanFeatureLimit{
+				{PlanKey: enums.PlanKey1M, CounterKey: enums.CounterKindAICredit, IsEnabled: true, LimitValue: 1, Period: enums.UsagePeriodMonth},
+			},
+			counters: []*models.UsageCounter{
+				{UserID: "user_1", CounterKey: enums.CounterKindAICredit, PeriodKey: "2026-11", Used: 1},
+			},
+			wantReset: true,
+		},
+		{
+			name: "total denial never resets",
+			limits: []*models.PlanFeatureLimit{
+				{PlanKey: enums.PlanKey1M, CounterKey: enums.CounterKindAICredit, IsEnabled: true, LimitValue: 1, Period: enums.UsagePeriodTotal},
+			},
+			counters: []*models.UsageCounter{
+				{UserID: "user_1", CounterKey: enums.CounterKindAICredit, PeriodKey: "all", Used: 1},
+			},
+			wantReset: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			svc := newSvc(t, tt.limits, tt.counters)
+			d, err := svc.Decide(context.Background(), "user_1", false, accessservices.ActionExamReview)
+			require.NoError(t, err)
+			require.False(t, d.Allow)
+			if tt.wantReset {
+				require.NotNil(t, d.ResetAt, "a month-limit denial names its reset")
+			} else {
+				require.Nil(t, d.ResetAt, "a total-limit denial never resets")
+			}
+			wire := accessservices.AppError(d)
+			require.NotNil(t, wire)
+			details, ok := wire.Details.(map[string]any)
+			require.True(t, ok)
+			assert.Contains(t, details, "required")
+			assert.Contains(t, details, "remaining")
+			if tt.wantReset {
+				resetAt, ok := details["resetAt"].(string)
+				require.True(t, ok, "a month-limit denial renders resetAt RFC3339")
+				parsed, perr := time.Parse(time.RFC3339, resetAt)
+				require.NoError(t, perr)
+				assert.Equal(t, d.ResetAt.Format(time.RFC3339), parsed.Format(time.RFC3339))
+			} else {
+				assert.Nil(t, details["resetAt"], "a total-limit denial renders a null resetAt")
+			}
 		})
 	}
 }

@@ -8,12 +8,14 @@ import (
 )
 
 // CounterView is one metered resource's state for the UI (spec §10).
+// ResetAt is the first instant the period rolls over, RFC3339; omitted for
+// never-resetting total periods (the UI shows "no reset" instead).
 type CounterView struct {
-	Limit     int       `json:"limit"`
-	Used      int       `json:"used"`
-	Reserved  int       `json:"reserved"`
-	Remaining int       `json:"remaining"`
-	ResetAt   time.Time `json:"resetAt"`
+	Limit     int        `json:"limit"`
+	Used      int        `json:"used"`
+	Reserved  int        `json:"reserved"`
+	Remaining int        `json:"remaining"`
+	ResetAt   *time.Time `json:"resetAt,omitempty"`
 }
 
 // TrialView reports the one-per-user trial state; null when never started.

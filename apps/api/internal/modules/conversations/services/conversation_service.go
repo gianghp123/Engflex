@@ -9,6 +9,8 @@ import (
 	"net/http"
 	"time"
 
+	"gorm.io/gorm"
+
 	"engflex-api/internal/common"
 	"engflex-api/internal/common/enums"
 	"engflex-api/internal/database/models"
@@ -118,14 +120,21 @@ func (s *ConversationService) List(ctx context.Context, userID string, scenarioI
 	return rows, total, nil
 }
 
+// errStartRaceLost aborts the settle transaction when another request won
+// the conditional cache write: the tx rolls back and the loser replays the
+// winner's cached start outside, releasing its own hold.
+var errStartRaceLost = errors.New("start race lost")
+
 // Start provisions the engine session (idempotent) and returns the ICE config.
 //
 // Metering (spec §8.1): a cached start replays free and never charges; a
 // fresh start reserves both counters before the engine call, releases the
-// hold when the engine or the cache write fails, and commits once the row
-// is cached. Shadow mode (Enforce=false) evaluates Decide for logging only
-// and never touches the meter.
-func (s *ConversationService) Start(ctx context.Context, userID, id string) (*models.Conversation, *responses.IceConfig, error) {
+// hold when the engine fails, and settles the cache write together with the
+// charge in ONE transaction (spec §7.1). An admin bypasses metering
+// entirely: after Principal, Decide denials are ignored and no hold is ever
+// reserved or committed. Shadow mode (Enforce=false) evaluates Decide for
+// logging only, never touches the meter, and never fails on a store error.
+func (s *ConversationService) Start(ctx context.Context, userID, id string, isAdmin bool) (*models.Conversation, *responses.IceConfig, error) {
 	conv, err := s.getOwned(ctx, userID, id)
 	if err != nil {
 		return nil, nil, err
@@ -153,32 +162,40 @@ func (s *ConversationService) Start(ctx context.Context, userID, id string) (*mo
 		return nil, nil, appErr
 	}
 	if s.access.Policy != nil {
-		p, _, err := s.access.Policy.Principal(ctx, userID, false)
-		if err != nil {
-			logger.Report(ctx, "voice start principal failed", err, "conversationID", conv.ID, "userID", userID)
-			return nil, nil, err
-		}
-		d, err := s.access.Policy.Decide(ctx, userID, false, accessservices.ActionVoiceStart)
-		if err != nil {
-			logger.Report(ctx, "voice start decide failed", err, "conversationID", conv.ID, "userID", userID)
-			return nil, nil, err
-		}
-		if !d.Allow {
-			// Shadow mode still evaluates; the denial is logged by Decide.
+		p, _, perr := s.access.Policy.Principal(ctx, userID, isAdmin)
+		if perr != nil {
 			if s.access.Enforce {
-				return nil, nil, accessservices.AppError(d)
+				logger.Report(ctx, "voice start principal failed", perr, "conversationID", conv.ID, "userID", userID)
+				return nil, nil, perr
 			}
-		} else if s.access.Enforce {
-			reservation, err = s.reserveVoice(ctx, userID, conv, p.Plan, d.Charges)
-			if err != nil {
-				logger.Report(ctx, "voice start reserve failed", err, "conversationID", conv.ID, "userID", userID)
-				return nil, nil, err
-			}
-			if reservation == nil {
-				// A committed replay: another request already settled this
-				// conversation's hold — re-read and replay the cached ICE
-				// without calling the engine.
-				return s.replayRaceWinner(ctx, conv)
+			logger.Report(ctx, "voice start principal failed, proceeding unmetered", perr, "conversationID", conv.ID, "userID", userID)
+		} else {
+			d, derr := s.access.Policy.Decide(ctx, userID, isAdmin, accessservices.ActionVoiceStart)
+			if derr != nil {
+				if s.access.Enforce {
+					logger.Report(ctx, "voice start decide failed", derr, "conversationID", conv.ID, "userID", userID)
+					return nil, nil, derr
+				}
+				logger.Report(ctx, "voice start decide failed, proceeding unmetered", derr, "conversationID", conv.ID, "userID", userID)
+			} else if p.IsAdmin {
+				slog.InfoContext(ctx, "voice start admin bypass", "conversationID", conv.ID, "userID", userID)
+			} else if !d.Allow {
+				// Shadow mode still evaluates; the denial is logged by Decide.
+				if s.access.Enforce {
+					return nil, nil, accessservices.AppError(d)
+				}
+			} else if s.access.Enforce {
+				reservation, err = s.reserveVoice(ctx, userID, conv, p.Plan, d.Charges)
+				if err != nil {
+					logger.Report(ctx, "voice start reserve failed", err, "conversationID", conv.ID, "userID", userID)
+					return nil, nil, err
+				}
+				if reservation == nil {
+					// A committed replay: another request already settled this
+					// conversation's hold — re-read and replay the cached ICE
+					// without calling the engine.
+					return s.replayRaceWinner(ctx, conv)
+				}
 			}
 		}
 	}
@@ -211,31 +228,49 @@ func (s *ConversationService) Start(ctx context.Context, userID, id string) (*mo
 		logger.Report(ctx, "marshal voice start response failed", err, "conversationID", conv.ID)
 		return nil, nil, common.Internal()
 	}
-	affected, err := s.conversations.SetSpeechStart(ctx, conv.ID, res.SessionID, raw)
-	if err != nil {
-		if reservation != nil {
-			_ = s.access.Usage.Release(ctx, reservation.ID)
-		}
-		appErr := common.FromDBError(err, "conversation")
-		logger.Report(ctx, "cache voice start failed", appErr, "conversationID", conv.ID)
-		return nil, nil, appErr
-	}
-	if affected == 0 {
-		// Another request won the conditional update: release this hold and
-		// replay the winner's cached start (the loser must not double-charge).
-		if reservation != nil {
-			_ = s.access.Usage.Release(ctx, reservation.ID)
-		}
-		return s.replayRaceWinner(ctx, conv)
-	}
 	if reservation != nil {
-		if err := s.access.Usage.Commit(ctx, reservation.ID); err != nil {
-			// The session started; the user got the engine. A settlement
-			// failure is logged loudly (already done by Commit) and the
-			// session is NOT rolled back — the sweeper releases the hold if
-			// the commit never landed. Fail open here, never strand a live
-			// session the engine already provisioned.
-			slog.WarnContext(ctx, "usage commit after voice start failed", "conversationID", conv.ID, "reservationID", reservation.ID)
+		// The cache write and its settlement commit atomically (spec §7.1):
+		// a cached session is never uncharged, and a charge never lands
+		// without the cache row. A lost race rolls back and replays the
+		// winner; any other tx error rolls back, releases the hold, and
+		// fails closed — the engine session is orphaned but the user is not
+		// charged for a session the API cannot serve.
+		if s.access.Tx == nil {
+			_ = s.access.Usage.Release(ctx, reservation.ID)
+			appErr := common.ServiceUnavailable("policy unavailable").WithCode(common.CodePolicyUnavailable)
+			logger.Report(ctx, "voice start miswired: transaction manager missing", appErr, "conversationID", conv.ID)
+			return nil, nil, appErr
+		}
+		txErr := s.access.Tx.Run(ctx, func(tx *gorm.DB) error {
+			affected, err := s.conversations.WithTx(tx).SetSpeechStart(ctx, conv.ID, res.SessionID, raw)
+			if err != nil {
+				return err
+			}
+			if affected == 0 {
+				return errStartRaceLost
+			}
+			return s.access.Usage.CommitTx(ctx, tx, reservation.ID)
+		})
+		if txErr != nil {
+			_ = s.access.Usage.Release(ctx, reservation.ID)
+			if errors.Is(txErr, errStartRaceLost) {
+				return s.replayRaceWinner(ctx, conv)
+			}
+			appErr := common.ServiceUnavailable("policy unavailable").WithCode(common.CodePolicyUnavailable)
+			logger.Report(ctx, "voice start settle failed", appErr, "conversationID", conv.ID, "reservationID", reservation.ID, "cause", txErr.Error())
+			return nil, nil, appErr
+		}
+	} else {
+		affected, err := s.conversations.SetSpeechStart(ctx, conv.ID, res.SessionID, raw)
+		if err != nil {
+			appErr := common.FromDBError(err, "conversation")
+			logger.Report(ctx, "cache voice start failed", appErr, "conversationID", conv.ID)
+			return nil, nil, appErr
+		}
+		if affected == 0 {
+			// Another request won the conditional update: replay the
+			// winner's cached start (unmetered paths hold nothing).
+			return s.replayRaceWinner(ctx, conv)
 		}
 	}
 
@@ -316,11 +351,18 @@ func (s *ConversationService) Offer(ctx context.Context, userID, id, method stri
 	// cached start reply is now poison — a retry would replay the dead id
 	// forever. Clear it while the row is still pending and tell the client
 	// to start again, before any status transition records the attempt.
+	// The session was already settled, so its charge is refunded best-effort
+	// (spec §8.1 engine-loss refund): the next /start re-reserves cleanly.
 	if status == http.StatusNotFound {
 		if _, err := s.conversations.ClearSpeechStart(ctx, conv.ID); err != nil {
 			appErr := common.FromDBError(err, "conversation")
 			logger.Report(ctx, "clear voice start failed", appErr, "conversationID", conv.ID)
 			return nil, 0, appErr
+		}
+		if s.access != nil && s.access.Usage != nil {
+			if rerr := s.access.Usage.RefundCommitted(ctx, userID, "conversation:"+conv.ID); rerr != nil {
+				logger.Report(ctx, "refund committed session failed", rerr, "conversationID", conv.ID)
+			}
 		}
 		appErr := common.Conflict("voice session expired")
 		logger.Report(ctx, "voice session expired; start cache cleared", appErr, "conversationID", conv.ID)

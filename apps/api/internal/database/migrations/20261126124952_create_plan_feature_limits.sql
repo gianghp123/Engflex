@@ -11,7 +11,7 @@ ON CONFLICT (key) DO NOTHING;
 
 CREATE TABLE plan_feature_limits (
     plan_key     text        NOT NULL CHECK (plan_key IN ('free','trial','1m','3m','12m','admin')),
-    counter_key  text        NOT NULL REFERENCES premium_features(key) ON DELETE CASCADE,
+    counter_key  text        NOT NULL REFERENCES premium_features(key),
     is_enabled   boolean     NOT NULL DEFAULT true,
     limit_value  integer     NOT NULL DEFAULT 0 CHECK (limit_value >= 0),
     period       text        NOT NULL DEFAULT 'month' CHECK (period IN ('day','month','total')),

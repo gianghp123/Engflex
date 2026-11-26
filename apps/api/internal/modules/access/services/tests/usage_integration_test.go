@@ -226,3 +226,131 @@ func TestReserveRejectsOverLimitOnFreshRow(t *testing.T) {
 		"SELECT count(*) FROM usage_events WHERE user_id = ?", user).Scan(&events).Error)
 	assert.Equal(t, int64(0), events, "the denied reserve's event insert rolls back with the tx")
 }
+
+// Same-base concurrency (spec §7.2 exactly-once): 20 goroutines racing one
+// idempotency base elect exactly one Reserved holder; every loser reports
+// in_progress (409). The ledger holds exactly 2 event rows (one per
+// counter) and each counter holds exactly 1 unit.
+func TestReserveSameBaseConcurrent(t *testing.T) {
+	db := newIntegrationDB(t)
+	svc := accessservices.NewUsageService(
+		repositories.NewUsageCounterRepository(db),
+		repositories.NewUsageEventRepository(db),
+		repositories.NewTransactionManager(db),
+		staticLimits{},
+	)
+	user := uniqueUser(t)
+	ctx := context.Background()
+	base := fmt.Sprintf("conversation:same-%d", time.Now().UnixNano())
+
+	const goroutines = 20
+	start := make(chan struct{})
+	var wg sync.WaitGroup
+	var mu sync.Mutex
+	reserved, inProgress, other := 0, 0, 0
+	for i := 0; i < goroutines; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			<-start
+			// voiceCharges reserves ai_credit + voice_session under the
+			// shared base: a whole-group hold.
+			_, err := svc.Reserve(ctx, user, enums.PlanKeyFree,
+				[]accessservices.Charge{
+					{Counter: enums.CounterKindAICredit, Amount: 1},
+					{Counter: enums.CounterKindVoiceSession, Amount: 1},
+				},
+				base, enums.UsageRefTypeConversation, "conv-same",
+				2*time.Minute, time.Now().UTC(), time.UTC)
+			mu.Lock()
+			defer mu.Unlock()
+			if err == nil {
+				reserved++
+				return
+			}
+			appErr := &common.AppError{}
+			if assert.ErrorAs(t, err, &appErr) && appErr.Status == 409 && appErr.Code == "in_progress" {
+				inProgress++
+				return
+			}
+			other++
+		}()
+	}
+	close(start)
+	wg.Wait()
+
+	assert.Equal(t, 1, reserved, "exactly one holder wins the base")
+	assert.Equal(t, goroutines-1, inProgress, "every loser replays in_progress")
+	assert.Equal(t, 0, other, "no loser fails any other way")
+
+	var events int64
+	require.NoError(t, db.Raw("SELECT count(*) FROM usage_events WHERE user_id = ? AND idempotency_key LIKE ?", user, base+":%").Scan(&events).Error)
+	assert.Equal(t, int64(2), events, "one audit row per counter, never duplicated")
+
+	type row struct {
+		Counter  string
+		Used     int
+		Reserved int
+	}
+	var rows []row
+	require.NoError(t, db.Raw("SELECT counter_key AS counter, used, reserved FROM usage_counters WHERE user_id = ?", user).Scan(&rows).Error)
+	require.Len(t, rows, 2)
+	for _, r := range rows {
+		assert.Equal(t, 1, r.Used+r.Reserved, "counter %s holds exactly one unit", r.Counter)
+	}
+}
+
+// Engine-loss refund (spec §8.1): a committed group the engine forgot is
+// refunded, and a fresh Reserve with the same base reuses the released rows
+// (a new hold) without inserting new audit rows.
+func TestRefundCommittedThenReuse(t *testing.T) {
+	db := newIntegrationDB(t)
+	svc := accessservices.NewUsageService(
+		repositories.NewUsageCounterRepository(db),
+		repositories.NewUsageEventRepository(db),
+		repositories.NewTransactionManager(db),
+		staticLimits{},
+	)
+	user := uniqueUser(t)
+	ctx := context.Background()
+	base := fmt.Sprintf("conversation:refund-%d", time.Now().UnixNano())
+	charges := []accessservices.Charge{
+		{Counter: enums.CounterKindAICredit, Amount: 1},
+		{Counter: enums.CounterKindVoiceSession, Amount: 1},
+	}
+
+	res, err := svc.Reserve(ctx, user, enums.PlanKeyFree, charges,
+		base, enums.UsageRefTypeConversation, "conv-refund",
+		2*time.Minute, time.Now().UTC(), time.UTC)
+	require.NoError(t, err)
+	require.Equal(t, accessservices.ReservationStatusReserved, res.Status)
+	require.NoError(t, svc.Commit(ctx, res.ID))
+
+	// The engine forgot the session: refund the settled charge.
+	require.NoError(t, svc.RefundCommitted(ctx, user, base))
+
+	var released int64
+	require.NoError(t, db.Raw("SELECT count(*) FROM usage_events WHERE user_id = ? AND idempotency_key LIKE ? AND status = 'released'", user, base+":%").Scan(&released).Error)
+	assert.Equal(t, int64(2), released, "both committed rows move back to released")
+
+	// A fresh Reserve reuses the released rows under a new group id: a new
+	// hold, no new audit rows.
+	res2, err := svc.Reserve(ctx, user, enums.PlanKeyFree, charges,
+		base, enums.UsageRefTypeConversation, "conv-refund",
+		2*time.Minute, time.Now().UTC(), time.UTC)
+	require.NoError(t, err)
+	require.Equal(t, accessservices.ReservationStatusReserved, res2.Status)
+	assert.NotEqual(t, res.ID, res2.ID, "reuse mints a new group id")
+
+	var events int64
+	require.NoError(t, db.Raw("SELECT count(*) FROM usage_events WHERE user_id = ? AND idempotency_key LIKE ?", user, base+":%").Scan(&events).Error)
+	assert.Equal(t, int64(2), events, "reuse never duplicates audit rows")
+
+	type hold struct{ Reserved int }
+	var holds []hold
+	require.NoError(t, db.Raw("SELECT reserved FROM usage_counters WHERE user_id = ?", user).Scan(&holds).Error)
+	require.Len(t, holds, 2)
+	for _, h := range holds {
+		assert.Equal(t, 1, h.Reserved, "the fresh hold is back on the counters")
+	}
+}

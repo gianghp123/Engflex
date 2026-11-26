@@ -212,6 +212,7 @@ func (s *PolicyService) Decide(ctx context.Context, userID string, isAdmin bool,
 	if err != nil {
 		return Decision{}, err
 	}
+	now := time.Now().UTC()
 	usage := UsageSnapshot{}
 	if !isAdmin {
 		rows, err := s.counters.ListByUser(ctx, userID)
@@ -228,12 +229,18 @@ func (s *PolicyService) Decide(ctx context.Context, userID string, isAdmin bool,
 				// anyway, so they must not seed the usage snapshot.
 				continue
 			}
-			if r.PeriodKey == s.PeriodKey(lim.Period, time.Now().UTC()) {
+			if r.PeriodKey == s.PeriodKey(lim.Period, now) {
 				usage[r.CounterKey] = CounterUsage{Used: r.Used, Reserved: r.Reserved}
 			}
 		}
 	}
 	d := Evaluate(p, action, limits, usage)
+	if d.LimitingCounter != "" {
+		if lim, ok := limits[d.LimitingCounter]; ok && lim.Period != enums.UsagePeriodTotal {
+			resetAt := s.ResetAt(lim.Period, now)
+			d.ResetAt = &resetAt
+		}
+	}
 	slog.InfoContext(ctx, "access decision", "action", string(action), "plan", string(p.Plan),
 		"allow", d.Allow, "code", d.Code, "remaining", d.Remaining)
 	return d, nil
@@ -261,10 +268,33 @@ func AppError(d Decision) *common.AppError {
 	return base.WithCode(d.Code).WithDetails(map[string]any{
 		"code":         d.Code,
 		"feature":      string(d.LimitingCounter),
+		"required":     requiredFor(d),
 		"limit":        d.Limit,
 		"used":         d.Used,
 		"remaining":    d.Remaining,
+		"resetAt":      resetAtDetail(d.ResetAt),
 		"requiredPlan": string(d.RequiredPlan),
 		"upgradeUrl":   "/payments/pricing",
 	})
+}
+
+// requiredFor names the limiting charge's amount: how many units the denied
+// action needed, so the UI can say "needs 2 credits".
+func requiredFor(d Decision) int {
+	for _, ch := range d.Charges {
+		if ch.Counter == d.LimitingCounter {
+			return ch.Amount
+		}
+	}
+	return 0
+}
+
+// resetAtDetail renders the reset instant RFC3339, or nil when the limiting
+// counter never resets (total periods) — the UI shows "no reset" instead of
+// a bogus date.
+func resetAtDetail(t *time.Time) any {
+	if t == nil {
+		return nil
+	}
+	return t.Format(time.RFC3339)
 }

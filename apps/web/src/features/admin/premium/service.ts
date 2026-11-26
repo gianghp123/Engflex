@@ -1,16 +1,45 @@
 import type {
+	CounterKind,
 	CreatePremiumFeature,
 	Pagination,
 	Plan,
+	PlanKey,
 	PremiumFeature,
 	Subscription,
 	SubscriptionPlan,
 	SubscriptionStatus,
 	UpdatePlan,
 	UpdatePremiumFeature,
+	UsagePeriod,
 } from "@engflex/contracts";
 import { API_ROUTES } from "#/app/api-routes";
 import { api, apiPage } from "#/lib/api";
+
+/** Local wire copy of models.PlanFeatureLimit (the catalog rows): the
+ *  contracts package does not export this model, so the admin console keeps
+ *  the same field names here for one utils-free mapping. */
+export interface PlanFeatureLimit {
+	planKey: PlanKey;
+	counterKey: CounterKind;
+	isEnabled: boolean;
+	limitValue: number;
+	period: UsagePeriod;
+	createdAt: string;
+	updatedAt: string;
+}
+
+/** Local wire copy of requests.PlanLimitInput. */
+export interface PlanLimitInput {
+	counterKey: CounterKind;
+	isEnabled: boolean;
+	limitValue: number;
+	period: UsagePeriod;
+}
+
+/** Local wire copy of requests.UpdatePlanLimits. */
+export interface UpdatePlanLimits {
+	counters: PlanLimitInput[];
+}
 
 export function listAdminPlans(): Promise<Plan[]> {
 	return api<Plan[]>(API_ROUTES.ADMIN.PREMIUM_PLANS);
@@ -73,4 +102,18 @@ export function listAdminSubscriptions(
 			query: { page, pageSize, status, plan },
 		},
 	);
+}
+
+export function listAdminLimits(): Promise<PlanFeatureLimit[]> {
+	return api<PlanFeatureLimit[]>(API_ROUTES.ADMIN.PREMIUM_LIMITS);
+}
+
+export function updatePlanLimits(
+	plan: PlanKey,
+	payload: UpdatePlanLimits,
+): Promise<void> {
+	return api<void>(API_ROUTES.ADMIN.PREMIUM_LIMIT(plan), {
+		method: "PUT",
+		body: JSON.stringify(payload),
+	});
 }

@@ -3,6 +3,7 @@ package services
 import (
 	"time"
 
+	"engflex-api/internal/database/repositories"
 	accessservices "engflex-api/internal/modules/access/services"
 )
 
@@ -15,4 +16,9 @@ type AccessDependencies struct {
 	// Loc is the quota-period location (APP_TIMEZONE): Reserve cuts period
 	// keys with it so a hold's keys always match the Decide snapshot's.
 	Loc *time.Location
+	// Tx coordinates the state write with its settlement: SetSpeechStart
+	// and Usage.CommitTx commit atomically (spec §7.1), so a cached
+	// session is never uncharged and a charge never lands without the
+	// cache row.
+	Tx repositories.TransactionManager
 }

@@ -16,11 +16,23 @@ export { withQuery };
 
 export class ApiError extends Error {
 	status: number;
+	/** Wire-stable entitlement code (insufficient_credits, ...) when the
+	 *  envelope's data carried one. Render by code, never by message. */
+	code?: string;
+	/** The envelope's data payload for coded errors (remaining, resetAt, ...). */
+	data?: Record<string, unknown>;
 
-	constructor(status: number, message: string) {
+	constructor(
+		status: number,
+		message: string,
+		code?: string,
+		data?: Record<string, unknown>,
+	) {
 		super(message);
 		this.name = "ApiError";
 		this.status = status;
+		this.code = code;
+		this.data = data;
 	}
 }
 
@@ -101,9 +113,15 @@ function parseEnvelope<T>(result: ProxyResult): {
 		);
 	}
 	if (result.status < 200 || result.status >= 300) {
+		const data = (result.envelope?.data ?? undefined) as
+			| Record<string, unknown>
+			| undefined;
+		const code = typeof data?.code === "string" ? data.code : undefined;
 		throw new ApiError(
 			result.status,
 			result.envelope.message || `Request failed (${result.status})`,
+			code,
+			data,
 		);
 	}
 	return {

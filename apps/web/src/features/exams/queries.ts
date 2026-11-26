@@ -6,9 +6,11 @@ import type {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
 	cancelExamAttempt,
+	getAiReview,
 	getExamAttempt,
 	getExamStatistics,
 	getExamTest,
+	getStudyPlan,
 	listExamAttempts,
 	listExamCategories,
 	listExamTests,
@@ -95,6 +97,23 @@ export function examAttemptQueryOptions(id: string) {
 	return {
 		queryKey: examKeys.attempt(id),
 		queryFn: () => getExamAttempt(id),
+	};
+}
+
+/** Free cached read of a previously generated AI review (no credit spent).
+ *  A 404 means nothing was generated yet — the caller renders its CTA. */
+export function aiReviewQueryOptions(id: string) {
+	return {
+		queryKey: [...examKeys.attempt(id), "ai-review"] as const,
+		queryFn: () => getAiReview(id),
+	};
+}
+
+/** Free cached read of a previously generated study plan. */
+export function studyPlanQueryOptions(id: string) {
+	return {
+		queryKey: [...examKeys.attempt(id), "study-plan"] as const,
+		queryFn: () => getStudyPlan(id),
 	};
 }
 
