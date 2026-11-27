@@ -4,8 +4,13 @@ import "sort"
 
 // Confidence policy: the engine's per-word precision is low enough that
 // showing every flag teaches the learner to distrust the panel. These are
-// starting values, not validated policy — calibrate them against the
-// recorded fixtures in internal/voice/tests/testdata before launch.
+// starting values, not validated policy. Calibration against the recorded
+// fixtures (voice/tests/testdata, pinned by TestGatingRecordedFixtures): the
+// fully-wrong attempt's word confidences are 0.749–1.0, so the word floor keeps
+// all 7 and truncation shows 3; the phone floor drops 2 of 24 phone claims
+// (0.314, 0.498). The clean attempt has no errors. Replace these only with a
+// larger labelled set — the fixtures cannot measure false positives on their
+// own.
 const (
 	MinWordConfidence  = 0.65
 	MinPhoneConfidence = 0.70
