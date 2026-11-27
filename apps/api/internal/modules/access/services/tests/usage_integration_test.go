@@ -64,7 +64,10 @@ func TestReserveAtomicUnderConcurrency(t *testing.T) {
 	user := uniqueUser(t)
 	ctx := context.Background()
 
-	const goroutines = 100
+	// Keep the stress meaningful without exhausting the shared dev Postgres
+	// connection limit: 100 concurrent transactions can produce fail-closed
+	// 503s ("too many clients") unrelated to the atomicity under test.
+	const goroutines = 20
 	start := make(chan struct{})
 	var wg sync.WaitGroup
 	var mu sync.Mutex
