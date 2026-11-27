@@ -1,5 +1,5 @@
 import { cn } from "cn";
-import { Copy, Send } from "lucide-react";
+import { Copy, Send, Trash2 } from "lucide-react";
 import { SubmitButton } from "#/components/common/submit-button";
 import { Button } from "#/components/ui/button";
 import { Textarea } from "#/components/ui/textarea";
@@ -10,19 +10,25 @@ export function WritingEditorCard({
 	onChange,
 	maxWords,
 	onClear,
+	onDelete,
 	onSubmit,
 	onRevise,
 	submitted = false,
 	pending = false,
+	deletePending = false,
+	canDelete = false,
 }: {
 	value: string;
 	onChange: (next: string) => void;
 	maxWords: number;
 	onClear: () => void;
+	onDelete?: () => void;
 	onSubmit: () => void;
 	onRevise: () => void;
 	submitted?: boolean;
 	pending?: boolean;
+	deletePending?: boolean;
+	canDelete?: boolean;
 }) {
 	const words = value.trim() ? value.trim().split(/\s+/).length : 0;
 	const overLimit = words > maxWords;
@@ -65,16 +71,32 @@ export function WritingEditorCard({
 				</span>
 			</div>
 			<div className="mt-auto flex items-center justify-between gap-2 pt-1">
-				<Button
-					type="button"
-					variant="ghost"
-					size="sm"
-					className="btn btn-outline"
-					onClick={onClear}
-					disabled={pending}
-				>
-					{m["common.actions.clear"]()}
-				</Button>
+				<div className="flex flex-wrap items-center gap-2">
+					<Button
+						type="button"
+						variant="ghost"
+						size="sm"
+						className="btn btn-outline"
+						onClick={onClear}
+						disabled={pending}
+					>
+						{m["common.actions.clear"]()}
+					</Button>
+					{canDelete && onDelete ? (
+						<SubmitButton
+							type="button"
+							variant="ghost"
+							size="sm"
+							className="btn btn-outline text-ai-coral"
+							pending={deletePending}
+							disabled={pending}
+							onClick={onDelete}
+						>
+							<Trash2 data-icon="inline-start" />
+							{m["lessons.writing.deleteText"]()}
+						</SubmitButton>
+					) : null}
+				</div>
 				{submitted && !pending ? (
 					<Button
 						type="button"

@@ -47,6 +47,20 @@ func NormalizeLanguageFeedback(raw json.RawMessage) (models.TurnFeedback, error)
 	if fb.Spans == nil {
 		fb.Spans = []models.AnalysisSpan{}
 	}
+	for i, s := range fb.Spans {
+		if s.Text == "" || s.Correction == "" {
+			return models.TurnFeedback{}, common.UnprocessableEntity("span incomplete")
+		}
+		if s.Status != enums.SpanStatusIncorrect && s.Status != enums.SpanStatusAwkward {
+			return models.TurnFeedback{}, common.UnprocessableEntity("unknown span status")
+		}
+		if fb.Spans[i].ErrorType == "" {
+			fb.Spans[i].ErrorType = enums.ErrorTypeOther
+		}
+		if !fb.Spans[i].ErrorType.Valid() {
+			return models.TurnFeedback{}, common.UnprocessableEntity("unknown error type")
+		}
+	}
 	return fb, nil
 }
 

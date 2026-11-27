@@ -9,6 +9,7 @@ import (
 
 	"engflex-api/config"
 	"engflex-api/internal/database/repositories"
+	"engflex-api/internal/llm"
 	"engflex-api/internal/modules/conversations/controllers"
 	"engflex-api/internal/modules/conversations/services"
 	paymentservices "engflex-api/internal/modules/payments/services"
@@ -20,7 +21,7 @@ import (
 // sessionLimiter is an optional IP-keyed throttle (nil = disabled) applied
 // BEFORE auth on engine-costly routes (sona parity: limiter precedes auth
 // because the userID is unavailable pre-auth).
-func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB, cfg config.VoiceConfig, sessionLimiter gin.HandlerFunc, accessDeps *services.AccessDependencies) {
+func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB, cfg config.VoiceConfig, llmCfg config.LLMConfig, sessionLimiter gin.HandlerFunc, accessDeps *services.AccessDependencies) {
 	repo := repositories.NewConversationRepository(db)
 	turns := repositories.NewConversationTurnRepository(db)
 	feedbacks := repositories.NewFeedbackRepository(db)
@@ -28,7 +29,7 @@ func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB, cfg config.VoiceConfig, se
 	pronounce := voice.NewHTTPPronounceEngine(cfg.PronounceURL, cfg.PronounceTimeout)
 	premiumSvc := paymentservices.NewSubscriptionService(
 		repositories.NewSubscriptionRepository(db), repositories.NewPlanRepository(db))
-	svc := services.NewConversationService(repo, turns, engine, pronounce, cfg.MaxDurationSec, feedbacks,
+	svc := services.NewConversationService(repo, turns, engine, pronounce, llm.NewHTTPLLMClient(llmCfg), cfg.MaxDurationSec, feedbacks,
 		repositories.NewScenarioRepository(db), repositories.NewPersonaRepository(db), premiumSvc,
 		repositories.NewUsageEventRepository(db), accessDeps)
 	ctl := controllers.NewConversationController(svc, cfg.MaxDurationSec)
@@ -46,6 +47,7 @@ func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB, cfg config.VoiceConfig, se
 	g.POST("/:id/offer", append(strictAuth, ctl.Offer)...)
 	g.PATCH("/:id/offer", append(strictAuth, ctl.Offer)...)
 	g.POST("/:id/end", middleware.RequireAuth(), ctl.End)
+	g.POST("/:id/summarize", middleware.RequireAuth(), ctl.Summarize)
 	g.POST("/:id/turns/:position/analyze", append(strictAuth, ctl.AnalyzeTurn)...)
 	// One command for the correction modal: the engine owns the reviewed turn.
 	// Retake audio uploads here; gin buffers the multipart file in memory, so

@@ -1,4 +1,4 @@
-import type { CEFR, VocabularyDomain } from "@engflex/contracts";
+import type { CEFR } from "@engflex/contracts";
 import { Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -35,31 +35,9 @@ const CEFR_OPTIONS: Array<{ value: CEFR; label: () => string }> = [
 	{ value: "C1", label: () => m["vocabulary.addWord.cefrOptions.c1"]() },
 ];
 
-const DOMAIN_OPTIONS: Array<{ value: VocabularyDomain; label: () => string }> =
-	[
-		{
-			value: "backend_db",
-			label: () => m["vocabulary.filter.domain.backendDb"](),
-		},
-		{
-			value: "distributed_systems",
-			label: () => m["vocabulary.filter.domain.distributedSystems"](),
-		},
-		{
-			value: "devops_cloud",
-			label: () => m["vocabulary.filter.domain.devopsCloud"](),
-		},
-		{
-			value: "frontend_ui",
-			label: () => m["vocabulary.filter.domain.frontendUi"](),
-		},
-		{ value: "ai_ml", label: () => m["vocabulary.filter.domain.aiMl"]() },
-	];
-
 const EMPTY_FORM = {
 	term: "",
 	cefr: "B2" as CEFR,
-	domain: "" as VocabularyDomain | "",
 	definition: "",
 };
 
@@ -79,7 +57,6 @@ export function AddWordDialog() {
 				term: form.term.trim(),
 				cefr: form.cefr,
 				definition: form.definition.trim(),
-				domain: form.domain || undefined,
 			},
 			{
 				onSuccess: () => {
@@ -123,53 +100,26 @@ export function AddWordDialog() {
 								}
 							/>
 						</Field>
-						<div className="grid gap-3 sm:grid-cols-2">
-							<Field>
-								<FieldLabel>{m["vocabulary.addWord.cefrLabel"]()}</FieldLabel>
-								<Select
-									value={form.cefr}
-									onValueChange={(value) =>
-										setForm((current) => ({ ...current, cefr: value as CEFR }))
-									}
-								>
-									<SelectTrigger className="w-full">
-										<SelectValue />
-									</SelectTrigger>
-									<SelectContent>
-										{CEFR_OPTIONS.map((option) => (
-											<SelectItem key={option.value} value={option.value}>
-												{option.label()}
-											</SelectItem>
-										))}
-									</SelectContent>
-								</Select>
-							</Field>
-							<Field>
-								<FieldLabel>{m["vocabulary.filter.domainLabel"]()}</FieldLabel>
-								<Select
-									value={form.domain || "none"}
-									onValueChange={(value) =>
-										setForm((current) => ({
-											...current,
-											domain:
-												value === "none" ? "" : (value as VocabularyDomain),
-										}))
-									}
-								>
-									<SelectTrigger className="w-full">
-										<SelectValue />
-									</SelectTrigger>
-									<SelectContent>
-										<SelectItem value="none">—</SelectItem>
-										{DOMAIN_OPTIONS.map((option) => (
-											<SelectItem key={option.value} value={option.value}>
-												{option.label()}
-											</SelectItem>
-										))}
-									</SelectContent>
-								</Select>
-							</Field>
-						</div>
+						<Field>
+							<FieldLabel>{m["vocabulary.addWord.cefrLabel"]()}</FieldLabel>
+							<Select
+								value={form.cefr}
+								onValueChange={(value) =>
+									setForm((current) => ({ ...current, cefr: value as CEFR }))
+								}
+							>
+								<SelectTrigger className="w-full">
+									<SelectValue />
+								</SelectTrigger>
+								<SelectContent>
+									{CEFR_OPTIONS.map((option) => (
+										<SelectItem key={option.value} value={option.value}>
+											{option.label()}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+						</Field>
 						<Field data-invalid={Boolean(error)}>
 							<FieldLabel htmlFor="word-definition">
 								{m["vocabulary.addWord.definitionLabel"]()}

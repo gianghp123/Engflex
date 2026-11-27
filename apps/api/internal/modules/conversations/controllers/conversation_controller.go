@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"encoding/json"
 	"errors"
 	"io"
 	"net/http"
@@ -9,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"engflex-api/internal/common"
+	"engflex-api/internal/database/models"
 	"engflex-api/internal/modules/conversations/dtos/requests"
 	"engflex-api/internal/modules/conversations/dtos/responses"
 	"engflex-api/internal/modules/conversations/services"
@@ -53,6 +55,7 @@ func (h *ConversationController) Create(c *gin.Context) {
 	var dto responses.Conversation
 	_ = utils.Map(&dto, m)
 	dto.Turns = []responses.Turn{}
+	decodeConversationJSON(m, &dto)
 	common.Created(c, "conversation created", dto)
 }
 
@@ -77,6 +80,7 @@ func (h *ConversationController) Get(c *gin.Context) {
 	var turnDtos []responses.Turn
 	_ = utils.MapSlice(&turnDtos, turns)
 	dto.Turns = turnDtos
+	decodeConversationJSON(m, &dto)
 	common.OK(c, "conversation", dto)
 }
 
@@ -178,6 +182,7 @@ func (h *ConversationController) End(c *gin.Context) {
 	var dto responses.Conversation
 	_ = utils.Map(&dto, m)
 	dto.Turns = []responses.Turn{}
+	decodeConversationJSON(m, &dto)
 	common.OK(c, "conversation ended", dto)
 }
 
@@ -355,4 +360,43 @@ func (h *ConversationController) Pronounce(c *gin.Context) {
 		return
 	}
 	common.OK(c, "attempt scored", result)
+}
+
+// Summarize godoc
+// @Summary      Generate the post-session summary once
+// @Description  Idempotent: returns the stored summary when present, else computes from turns and stores it
+// @Tags         conversations
+// @Security     BearerAuth
+// @Produce      json
+// @Param        id path string true "Conversation ID"
+// @Success      200 {object} common.ApiResponse{data=responses.ConversationSummaryDTO}
+// @Router       /conversations/{id}/summarize [post]
+func (h *ConversationController) Summarize(c *gin.Context) {
+	out, err := h.service.Summarize(c.Request.Context(), middleware.UserID(c), c.Param("id"))
+	if err != nil {
+		common.Fail(c, err)
+		return
+	}
+	var dto responses.ConversationSummaryDTO
+	_ = utils.Map(&dto, out)
+	common.OK(c, "session summary", dto)
+}
+
+// decodeConversationJSON fills the Objectives snapshot and Summary from the
+// model's jsonb columns. copier cannot cross the datatypes.JSON boundary
+// (different types, same names), so this is two explicit decodes per read.
+func decodeConversationJSON(m *models.Conversation, dto *responses.Conversation) {
+	dto.Objectives = []responses.ConversationObjective{}
+	if len(m.Objectives) > 0 {
+		var objs []responses.ConversationObjective
+		if err := json.Unmarshal(m.Objectives, &objs); err == nil {
+			dto.Objectives = objs
+		}
+	}
+	if len(m.Summary) > 0 {
+		var s responses.ConversationSummaryDTO
+		if err := json.Unmarshal(m.Summary, &s); err == nil {
+			dto.Summary = &s
+		}
+	}
 }

@@ -1,6 +1,5 @@
 import type {
 	CEFR,
-	VocabularyDomain,
 	VocabularySort,
 	VocabularySource,
 } from "@engflex/contracts";
@@ -24,19 +23,10 @@ const SORT_MESSAGES: Record<VocabularySort, () => string> = {
 	interval: () => m["vocabulary.filter.sort.interval"](),
 };
 
-const DOMAIN_MESSAGES: Record<VocabularyDomain, () => string> = {
-	backend_db: () => m["vocabulary.filter.domain.backendDb"](),
-	distributed_systems: () => m["vocabulary.filter.domain.distributedSystems"](),
-	devops_cloud: () => m["vocabulary.filter.domain.devopsCloud"](),
-	frontend_ui: () => m["vocabulary.filter.domain.frontendUi"](),
-	ai_ml: () => m["vocabulary.filter.domain.aiMl"](),
-};
-
 export interface VocabFilters {
 	search: string;
 	sort: VocabularySort;
 	source: "all" | VocabularySource;
-	domain: "all" | VocabularyDomain;
 	cefr: "all" | CEFR;
 }
 
@@ -44,7 +34,6 @@ export const DEFAULT_VOCAB_FILTERS: VocabFilters = {
 	search: "",
 	sort: "recent",
 	source: "all",
-	domain: "all",
 	cefr: "all",
 };
 
@@ -128,37 +117,6 @@ export function VocabFilterBar({
 						)}
 					>
 						{tab.label()}
-					</button>
-				))}
-			</div>
-
-			<div className="flex flex-wrap items-center gap-2">
-				<span className="text-[11px] font-semibold text-muted-foreground">
-					{m["vocabulary.filter.domainLabel"]()}
-				</span>
-				<button
-					type="button"
-					onClick={() => onChange({ ...filters, domain: "all" })}
-					className={cn(
-						"chip px-2.5 py-1 text-[11px] transition",
-						filters.domain === "all" ? "chip-selected" : "hover:border-primary",
-					)}
-				>
-					{m["vocabulary.filter.domainAll"]()}
-				</button>
-				{(Object.keys(DOMAIN_MESSAGES) as VocabularyDomain[]).map((domain) => (
-					<button
-						key={domain}
-						type="button"
-						onClick={() => onChange({ ...filters, domain })}
-						className={cn(
-							"chip px-2.5 py-1 text-[11px] transition",
-							filters.domain === domain
-								? "chip-selected"
-								: "hover:border-primary",
-						)}
-					>
-						{DOMAIN_MESSAGES[domain]()}
 					</button>
 				))}
 			</div>

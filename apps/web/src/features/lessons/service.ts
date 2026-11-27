@@ -5,6 +5,7 @@ import type {
 	LessonDetail,
 	LessonProgressSummary,
 	PronunciationResult,
+	RespeakResponse,
 	UnitSection,
 	WritingScoreResponse,
 } from "@engflex/contracts";
@@ -68,6 +69,24 @@ export function pronounceAttempt(
 	});
 }
 
+export function respeak(
+	expectedText: string,
+	audio: Blob,
+	mime: string,
+): Promise<RespeakResponse> {
+	const form = new FormData();
+	form.append("expectedText", expectedText);
+	form.append(
+		"audio",
+		audio,
+		mime.includes("wav") ? "attempt.wav" : "attempt.webm",
+	);
+	return api<RespeakResponse>(API_ROUTES.PRONUNCIATION.RESPEAK, {
+		method: "POST",
+		body: form,
+	});
+}
+
 export function startLessonAttempt(lessonId: string): Promise<Attempt> {
 	return api<Attempt>(API_ROUTES.LESSONS.START_ATTEMPT(lessonId), {
 		method: "POST",
@@ -94,6 +113,14 @@ export function scoreWriting(
 	});
 }
 
+/** Irreversibly clears the stored prose on one attempt; feedback and hash
+ *  stay so aggregates remain valid. */
+export function redactWriting(attemptId: string): Promise<void> {
+	return api<void>(API_ROUTES.LESSONS.REDACT_WRITING(attemptId), {
+		method: "DELETE",
+	});
+}
+
 export type {
 	Attempt,
 	AttemptProgress,
@@ -101,6 +128,7 @@ export type {
 	LessonDetail,
 	LessonProgressSummary,
 	PronunciationResult,
+	RespeakResponse,
 	UnitSection,
 	WritingScoreResponse,
 };

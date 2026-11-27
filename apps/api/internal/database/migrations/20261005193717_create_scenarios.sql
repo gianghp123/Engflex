@@ -16,5 +16,9 @@ CREATE TABLE scenarios (
 CREATE INDEX idx_scenarios_topic_id ON scenarios (topic_id);
 CREATE INDEX idx_scenarios_persona_id ON scenarios (persona_id);
 
+ALTER TABLE scenarios ADD COLUMN IF NOT EXISTS objectives jsonb NOT NULL DEFAULT '[]';
+-- objectives: [{"id":1,"label":"Greet and introduce yourself","hint":"Say hello and your name"}]
+-- ids are local-only 1-based positions the server assigns on write; max 3.
+
 -- +goose Down
 DROP TABLE IF EXISTS scenarios;

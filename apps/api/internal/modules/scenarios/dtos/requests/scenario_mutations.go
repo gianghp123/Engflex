@@ -20,6 +20,13 @@ type DetailOpeningInput struct {
 	Text  string `json:"text"`
 }
 
+// ScenarioObjectiveInput is one roleplay task from the admin. No id: the
+// server assigns id = index+1 on write, ignoring any client-sent value.
+type ScenarioObjectiveInput struct {
+	Label string `json:"label" binding:"required,max=200"`
+	Hint  string `json:"hint" binding:"max=500"`
+}
+
 // CreateScenario adds an admin-curated roleplay card. Always starts as
 // draft (service-enforced); Status is not accepted here.
 type CreateScenario struct {
@@ -27,6 +34,7 @@ type CreateScenario struct {
 	PersonaID   *string                  `json:"personaId" binding:"omitempty,uuid"`
 	Title       string                   `json:"title" binding:"required"`
 	Objective   string                   `json:"objective"`
+	Objectives  []ScenarioObjectiveInput `json:"objectives" binding:"max=3,dive"`
 	CEFRLevel   enums.ScenarioDifficulty `json:"cefrLevel" binding:"required,oneof=B1+ B2 C1"`
 	MaxDuration int                      `json:"maxDuration" binding:"required,min=1"`
 	Details     ScenarioDetailInput      `json:"details"`
@@ -41,6 +49,7 @@ type UpdateScenario struct {
 	PersonaID   *string                   `json:"personaId" binding:"omitempty,uuid"`
 	Title       *string                   `json:"title"`
 	Objective   *string                   `json:"objective"`
+	Objectives  []ScenarioObjectiveInput  `json:"objectives" binding:"max=3,dive"`
 	CEFRLevel   *enums.ScenarioDifficulty `json:"cefrLevel" binding:"omitempty,oneof=B1+ B2 C1"`
 	MaxDuration *int                      `json:"maxDuration" binding:"omitempty,min=1"`
 	Details     *ScenarioDetailInput      `json:"details"`

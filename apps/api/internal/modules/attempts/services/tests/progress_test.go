@@ -3,6 +3,7 @@ package tests
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 	"testing"
 	"time"
@@ -34,6 +35,10 @@ func requireAppError(t *testing.T, err error, status int) {
 	assert.Equal(t, status, appErr.Status)
 }
 
+func speakingAttempt(score float64) *models.Attempt {
+	return &models.Attempt{Result: []byte(fmt.Sprintf(`{"a":{"type":"speaking","score":%v,"detail":{}}}`, score))}
+}
+
 func TestGetProgress(t *testing.T) {
 	profile := func(minutes int) *models.UserProfile {
 		return &models.UserProfile{
@@ -51,6 +56,8 @@ func TestGetProgress(t *testing.T) {
 		profile     *models.UserProfile
 		profileErr  error
 		daysErr     error
+		recent      []*models.Attempt
+		recentErr   error
 		want        *responses.Progress
 		wantStatus  int
 	}{
@@ -82,6 +89,24 @@ func TestGetProgress(t *testing.T) {
 			want:        &responses.Progress{StreakDays: 3, DailyGoalMinutes: 15},
 		},
 		{
+			name:        "pronunciation trend keeps newest ten speaking scores oldest first",
+			attemptDays: []string{day(0)},
+			profile:     profile(15),
+			recent: []*models.Attempt{
+				speakingAttempt(90),
+				{Result: []byte(`{"a":{"type":"reading","score":50,"detail":{}}}`)},
+				speakingAttempt(70),
+			},
+			want: &responses.Progress{StreakDays: 1, DailyGoalMinutes: 15, PronunciationTrend: []float64{70, 90}},
+		},
+		{
+			name:        "recent attempts failure degrades to an empty trend",
+			attemptDays: []string{day(0)},
+			profile:     profile(15),
+			recentErr:   errors.New("boom"),
+			want:        &responses.Progress{StreakDays: 1, DailyGoalMinutes: 15},
+		},
+		{
 			name:        "missing profile falls back to the default goal",
 			attemptDays: []string{day(0)},
 			profileErr:  gorm.ErrRecordNotFound,
@@ -111,6 +136,8 @@ func TestGetProgress(t *testing.T) {
 				Return(tt.seconds, nil).Maybe()
 			profiles.On("GetByUserID", mock.Anything, progressUserID).
 				Return(tt.profile, tt.profileErr).Maybe()
+			attempts.On("ListRecentByUser", mock.Anything, progressUserID, 50).
+				Return(tt.recent, tt.recentErr).Maybe()
 
 			svc := services.NewProgressService(attempts, convs, profiles)
 			got, err := svc.GetProgress(context.Background(), progressUserID)

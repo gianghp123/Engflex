@@ -11,6 +11,9 @@ export const API_ROUTES = {
 		ME: "/profiles/me",
 		BY_ID: (id: ApiId) => `/profiles/${id}`,
 	},
+	PRONUNCIATION: {
+		RESPEAK: "/pronunciation/respeak",
+	},
 	VOCABULARY: {
 		LIST: "/vocabulary",
 		BY_ID: (id: ApiId) => `/vocabulary/${id}`,
@@ -98,6 +101,7 @@ export const API_ROUTES = {
 		// to the live engine session.
 		TRANSCRIPT: (id: ApiId) => `/conversations/${id}/transcript`,
 		TRANSCRIBE: (id: ApiId) => `/conversations/${id}/transcribe`,
+		SUMMARIZE: (id: ApiId) => `/conversations/${id}/summarize`,
 	},
 	LESSONS: {
 		LIST: "/lessons",
@@ -110,9 +114,13 @@ export const API_ROUTES = {
 		SCORE: (activityId: ApiId) => `/lesson-activities/${activityId}/score`,
 		PRONOUNCE: (activityId: ApiId) =>
 			`/lesson-activities/${activityId}/pronounce`,
+		REDACT_WRITING: (attemptId: ApiId) =>
+			`/lesson-activities/attempts/${attemptId}/writing`,
 	},
 	PROGRESS: {
 		SUMMARY: "/progress",
+		ERRORS: "/progress/errors",
+		MISTAKES: "/progress/mistakes",
 	},
 	VIDEOS: {
 		LIST: "/video-exercises",

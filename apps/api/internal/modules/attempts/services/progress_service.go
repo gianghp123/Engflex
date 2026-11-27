@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"log/slog"
+	"slices"
 	"time"
 
 	"gorm.io/gorm"
@@ -14,6 +15,7 @@ import (
 	"engflex-api/internal/database/repositories"
 	"engflex-api/internal/logger"
 	"engflex-api/internal/modules/attempts/dtos/responses"
+	lessonsservices "engflex-api/internal/modules/lessons/services"
 )
 
 // defaultDailyGoalMinutes is the fallback before onboarding stores a value,
@@ -98,8 +100,26 @@ func (s *ProgressService) GetProgress(ctx context.Context, userID string) (*resp
 		DailyGoalMinutes:  goal,
 		LessonsCompleted:  int(lessons),
 	}
+	// Pronunciation trend: one cheap read over the same recent attempts the
+	// error stats already use. A failure degrades to an empty sparkline
+	// rather than failing the whole dashboard.
+	recent, err := s.attempts.ListRecentByUser(ctx, userID, 50)
+	if err != nil {
+		logger.Report(ctx, "progress recent attempts failed", common.FromDBError(err, "progress"), "userID", userID)
+	} else {
+		var trend []float64
+		for _, m := range recent { // newest first
+			trend = append(trend, lessonsservices.SpeakingScores(m)...)
+		}
+		slices.Reverse(trend) // oldest -> newest for a left-to-right sparkline
+		if len(trend) > 10 {
+			trend = trend[len(trend)-10:]
+		}
+		out.PronunciationTrend = trend
+	}
 	slog.InfoContext(ctx, "progress computed",
-		"userID", userID, "streak", out.StreakDays, "minutes", out.VoiceMinutesToday)
+		"userID", userID, "streak", out.StreakDays, "minutes", out.VoiceMinutesToday,
+		"pronunciationPoints", len(out.PronunciationTrend))
 	return out, nil
 }
 

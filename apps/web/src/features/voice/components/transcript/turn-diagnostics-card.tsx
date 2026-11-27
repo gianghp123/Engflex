@@ -218,7 +218,12 @@ export function TurnDiagnosticsCard({
 						<span className="text-xs text-primary">
 							{m["voice.room.feedback.grammarCorrection"]()}
 						</span>
-						<Badge variant="outline">{spanStatusLabel[span.status]}</Badge>
+						<span className="flex items-center gap-1.5">
+							{span.errorType ? (
+								<Badge variant="outline">{span.errorType}</Badge>
+							) : null}
+							<Badge variant="outline">{spanStatusLabel[span.status]}</Badge>
+						</span>
 					</div>
 					<div className="flex flex-wrap items-center gap-2">
 						<span className="text-sm text-ai-coral line-through opacity-85">

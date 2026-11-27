@@ -20,6 +20,7 @@ import (
 	"engflex-api/internal/common/enums"
 	"engflex-api/internal/database/models"
 	repomocks "engflex-api/internal/database/repositories/mocks"
+	llmmocks "engflex-api/internal/llm/mocks"
 	accessservices "engflex-api/internal/modules/access/services"
 	accessmocks "engflex-api/internal/modules/access/services/mocks"
 	"engflex-api/internal/modules/conversations/dtos/responses"
@@ -444,7 +445,7 @@ func TestAnalyzeTurnEnforcement(t *testing.T) {
 			}
 
 			svc := services.NewConversationService(conversations, turns, engine,
-				voicemocks.NewMockPronounceEngine(t), 300, feedbacks,
+				voicemocks.NewMockPronounceEngine(t), llmmocks.NewMockLLMClient(t), 300, feedbacks,
 				repomocks.NewMockScenarioRepository(t), repomocks.NewMockPersonaRepository(t),
 				fakeNotPremium{}, usageEvents, deps)
 
@@ -606,7 +607,7 @@ func TestOfferEngine404RefundsCommittedSession(t *testing.T) {
 			turns := repomocks.NewMockConversationTurnRepository(t)
 			feedbacks := repomocks.NewMockFeedbackRepository(t)
 			svc := services.NewConversationService(conversations, turns, engine,
-				voicemocks.NewMockPronounceEngine(t), 300, feedbacks,
+				voicemocks.NewMockPronounceEngine(t), llmmocks.NewMockLLMClient(t), 300, feedbacks,
 				repomocks.NewMockScenarioRepository(t), repomocks.NewMockPersonaRepository(t),
 				fakeNotPremium{}, repomocks.NewMockUsageEventRepository(t), deps)
 

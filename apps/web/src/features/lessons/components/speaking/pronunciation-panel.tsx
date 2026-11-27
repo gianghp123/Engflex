@@ -1,66 +1,51 @@
-import type {
-	MispronouncedWord,
-	PronunciationResult,
-	ReferencePhone,
-} from "@engflex/contracts";
+import type { MispronouncedWord, ReferencePhone } from "@engflex/contracts";
 import { cn } from "cn";
 import { Pause, Play } from "lucide-react";
-import { Fragment, type ReactNode, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { MoMascot, type MoVariant } from "#/components/common/mo-mascot";
 import { ProgressBar } from "#/components/common/progress-bar";
 import { Button } from "#/components/ui/button";
 import { m } from "#/paraglide/messages";
-import { getLocale } from "#/paraglide/runtime";
+
+/**
+ * PronunciationView is the subset every feedback surface can provide. A
+ * read-aloud attempt supplies the full engine result; a targeted re-speak
+ * supplies only score/errors/tip, so the recipe bars disappear rather than
+ * inventing 100%.
+ */
+export interface PronunciationView {
+	score: number;
+	errors?: MispronouncedWord[] | null;
+	phonemeErrorRate?: number | null;
+	wordErrorRate?: number | null;
+	referencePhones?: ReferencePhone[] | null;
+	totalErrors?: number | null;
+	tip?: string | null;
+}
 
 /** Go nil slices arrive as `null` — every list below null-guards before use. */
-function errorEntries(result: PronunciationResult): MispronouncedWord[] {
+function errorEntries(result: PronunciationView): MispronouncedWord[] {
 	return result.errors ?? [];
 }
 
 /**
- * Coaching bubble from the attempt state: a positive default when nothing was
- * flagged (same `>= 70` boundary as the "Near model" band below), the rhythm
- * note when the score is low-but-clean, otherwise every flagged word, ranked
- * by confidence, highlighted in the conjuncted list. Structured content (not
- * a flat string) so the words keep a highlight; private-use sentinels never
- * reach the screen — formatToParts only maps elements back to error entries.
+ * Coaching bubble: the server's per-contrast tip wins; a clean attempt gets
+ * the positive default (same `>= 70` boundary as the "Near model" band); a
+ * flagged attempt with no matching rule falls back to the generic prompt.
+ * Ranking and word-highlighting live in the chips below, not in this string.
  */
-const LIST_SENTINEL = "\uE000";
 function coachingMessage(
 	score: number,
 	errors: MispronouncedWord[],
-): ReactNode {
-	const ranked = [...errors].sort((a, b) => b.confidence - a.confidence);
-	if (ranked.length === 0) {
+	tip: string | null | undefined,
+): string {
+	if (tip && tip.trim().length > 0) return tip;
+	if (errors.length === 0) {
 		return score >= 70
 			? m["lessons.speaking.coachCorrect"]()
 			: m["lessons.speaking.coachNone"]();
 	}
-	const parts = new Intl.ListFormat(getLocale(), {
-		style: "long",
-		type: "conjunction",
-	}).formatToParts(
-		ranked.map((_, index) => `${LIST_SENTINEL}${index}${LIST_SENTINEL}`),
-	);
-	return (
-		<>
-			{m["lessons.speaking.coachPrefix"]()}{" "}
-			{parts.map((part, partIndex) => {
-				if (part.type !== "element") {
-					// biome-ignore lint/suspicious/noArrayIndexKey: parts never reorder within a message; the index disambiguates repeated literals (", ", " and ").
-					return <Fragment key={partIndex}>{part.value}</Fragment>;
-				}
-				const error = ranked[Number(part.value.replaceAll(LIST_SENTINEL, ""))];
-				if (!error) return null;
-				return (
-					// biome-ignore lint/suspicious/noArrayIndexKey: same stability argument as above.
-					<Fragment key={partIndex}>
-						<span className="rounded-sm bg-secondary px-1">{error.word}</span>
-					</Fragment>
-				);
-			})}
-		</>
-	);
+	return m["lessons.speaking.coachFlagged"]();
 }
 
 /**
@@ -265,23 +250,36 @@ export function PronunciationPanel({
 	referenceText,
 	selfAudioUrl,
 }: {
-	result: PronunciationResult;
+	result: PronunciationView;
 	referenceText: string;
 	selfAudioUrl: string | null;
 }) {
 	const errors = errorEntries(result);
 	const score = Number.isFinite(result.score) ? result.score : 0;
 	const chips = buildChips(referenceText, errors, result.referencePhones ?? []);
-	// Recipe bars only — the raw rates never render.
-	const sounds = clampPct(100 * (1 - (result.phonemeErrorRate ?? 0)));
-	const words = clampPct(100 * (1 - (result.wordErrorRate ?? 0)));
+	// Recipe bars only when the source supplied rates — a re-speak response
+	// omits them, and 100% would be a lie.
+	const hasRates =
+		Number.isFinite(result.phonemeErrorRate) &&
+		Number.isFinite(result.wordErrorRate);
+	const sounds = hasRates
+		? clampPct(100 * (1 - (result.phonemeErrorRate ?? 0)))
+		: 0;
+	const words = hasRates
+		? clampPct(100 * (1 - (result.wordErrorRate ?? 0)))
+		: 0;
+	const totalErrors = result.totalErrors ?? errors.length;
+	const showTotal = totalErrors > errors.length;
+	// Re-speak carries one top-level tip; a read-aloud result carries one per
+	// gated word, so the first (highest-confidence) error is the tip source.
+	const tip = result.tip ?? errors[0]?.tip;
 
 	return (
 		<div className="surface-card flex flex-col gap-4 p-5">
 			<div className="flex items-start gap-2.5">
 				<MoMascot variant={moVariant(score, errors)} size={44} />
 				<p className="bubble bubble-partner min-w-0 flex-1 text-[15px]">
-					{coachingMessage(score, errors)}
+					{coachingMessage(score, errors, tip)}
 				</p>
 			</div>
 			<div>
@@ -296,22 +294,32 @@ export function PronunciationPanel({
 						· {bandLabel(score)}
 					</span>
 				</div>
-				<div className="mt-2 flex flex-col gap-2">
-					<div>
-						<div className="flex items-baseline justify-between text-xs font-medium text-muted-foreground">
-							<span>{m["lessons.speaking.soundsLabel"]()}</span>
-							<span>{sounds}</span>
+				{hasRates ? (
+					<div className="mt-2 flex flex-col gap-2">
+						<div>
+							<div className="flex items-baseline justify-between text-xs font-medium text-muted-foreground">
+								<span>{m["lessons.speaking.soundsLabel"]()}</span>
+								<span>{sounds}</span>
+							</div>
+							<ProgressBar value={sounds} tone="accuracy" />
 						</div>
-						<ProgressBar value={sounds} tone="accuracy" />
-					</div>
-					<div>
-						<div className="flex items-baseline justify-between text-xs font-medium text-muted-foreground">
-							<span>{m["lessons.speaking.wordsLabel"]()}</span>
-							<span>{words}</span>
+						<div>
+							<div className="flex items-baseline justify-between text-xs font-medium text-muted-foreground">
+								<span>{m["lessons.speaking.wordsLabel"]()}</span>
+								<span>{words}</span>
+							</div>
+							<ProgressBar value={words} tone="primary" />
 						</div>
-						<ProgressBar value={words} tone="primary" />
 					</div>
-				</div>
+				) : null}
+				{showTotal ? (
+					<p className="mt-2 text-xs font-medium text-muted-foreground">
+						{m["lessons.speaking.showingErrors"]({
+							shown: errors.length,
+							total: totalErrors,
+						})}
+					</p>
+				) : null}
 			</div>
 			<div className="flex flex-wrap items-start gap-x-3 gap-y-2">
 				{chips.map((chip) => (

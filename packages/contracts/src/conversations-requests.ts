@@ -33,6 +33,7 @@ export interface AnalysisSpanInput {
   text: string;
   occurrence: number /* int */;
   status: SpanStatus;
+  errorType: ErrorType;
   correction: string;
   reason: string;
 }

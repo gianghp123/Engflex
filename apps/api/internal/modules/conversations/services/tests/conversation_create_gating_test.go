@@ -11,6 +11,7 @@ import (
 	"engflex-api/internal/common/enums"
 	"engflex-api/internal/database/models"
 	repomocks "engflex-api/internal/database/repositories/mocks"
+	llmmocks "engflex-api/internal/llm/mocks"
 	"engflex-api/internal/modules/conversations/dtos/requests"
 	"engflex-api/internal/modules/conversations/services"
 	voicemocks "engflex-api/internal/voice/mocks"
@@ -34,11 +35,12 @@ func TestCreateGatingFollowsFlag(t *testing.T) {
 		gatingOn bool
 		req      requests.StartConversation
 		scenario *models.Scenario // nil = the scenario must never load
+		loads    int              // GetByID calls: gating probe + objectives snapshot
 		wantErr  int              // 0 = nil
 	}{
-		{name: "gating off skips the scenario load", gatingOn: false, req: roleplay()},
-		{name: "gating on blocks a premium scenario for a free user", gatingOn: true, req: roleplay(), scenario: &models.Scenario{ID: scenarioID, IsPremium: true}, wantErr: 403},
-		{name: "gating on passes free scenarios", gatingOn: true, req: roleplay(), scenario: &models.Scenario{ID: scenarioID, IsPremium: false}},
+		{name: "gating off still loads the scenario for the objectives snapshot", gatingOn: false, req: roleplay(), scenario: &models.Scenario{ID: scenarioID}, loads: 1},
+		{name: "gating on blocks a premium scenario for a free user", gatingOn: true, req: roleplay(), scenario: &models.Scenario{ID: scenarioID, IsPremium: true}, loads: 1, wantErr: 403},
+		{name: "gating on passes free scenarios", gatingOn: true, req: roleplay(), scenario: &models.Scenario{ID: scenarioID, IsPremium: false}, loads: 2},
 		{name: "free talk never loads the scenario", gatingOn: true, req: requests.StartConversation{Mode: enums.ConversationModeFreeTalk}},
 	}
 	for _, tt := range tests {
@@ -48,7 +50,7 @@ func TestCreateGatingFollowsFlag(t *testing.T) {
 
 			scenarios := repomocks.NewMockScenarioRepository(t)
 			if tt.scenario != nil {
-				scenarios.EXPECT().GetByID(mock.Anything, scenarioID).Return(tt.scenario, nil).Once()
+				scenarios.EXPECT().GetByID(mock.Anything, scenarioID).Return(tt.scenario, nil).Times(tt.loads)
 			}
 			convos := repomocks.NewMockConversationRepository(t)
 			if tt.wantErr == 0 {
@@ -59,6 +61,7 @@ func TestCreateGatingFollowsFlag(t *testing.T) {
 				repomocks.NewMockConversationTurnRepository(t),
 				voicemocks.NewMockVoiceClient(t),
 				voicemocks.NewMockPronounceEngine(t),
+				llmmocks.NewMockLLMClient(t),
 				300,
 				repomocks.NewMockFeedbackRepository(t),
 				scenarios,

@@ -97,6 +97,7 @@ type MispronouncedWord struct {
 	Heard      string        `json:"heard"`
 	Confidence float64       `json:"confidence"`
 	Phones     []PhoneDetail `json:"phones"`
+	Tip        string        `json:"tip"`
 }
 
 // Prosody carries the learner's pitch and energy contours, downsampled by
@@ -114,6 +115,7 @@ type PronunciationResult struct {
 	WordErrorRate    float64             `json:"wordErrorRate"`
 	AcousticDistance float64             `json:"acousticDistance"`
 	Errors           []MispronouncedWord `json:"errors"`
+	TotalErrors      int                 `json:"totalErrors"`
 	Prosody          Prosody             `json:"prosody"`
 	ModelCurve       []float64           `json:"modelCurve"`
 	LearnerCurve     []float64           `json:"learnerCurve"`
@@ -146,10 +148,11 @@ type TaskVerdict struct {
 // Span is one quoted problem with a minimal fix. The array it sits in is the
 // label (grammar vs phrasing).
 type Span struct {
-	Text       string `json:"text"`
-	Occurrence int    `json:"occurrence"`
-	Correction string `json:"correction"`
-	Reason     string `json:"reason"`
+	Text       string          `json:"text"`
+	Occurrence int             `json:"occurrence"`
+	ErrorType  enums.ErrorType `json:"errorType"`
+	Correction string          `json:"correction"`
+	Reason     string          `json:"reason"`
 }
 
 // TaskCompletion is section 1; counts live in ScoreSummary, never here.

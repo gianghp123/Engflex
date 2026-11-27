@@ -4,6 +4,8 @@ import (
 	"database/sql/driver"
 	"time"
 
+	"gorm.io/datatypes"
+
 	"engflex-api/internal/common/enums"
 )
 
@@ -25,12 +27,22 @@ type Scenario struct {
 	CEFRLevel   enums.ScenarioDifficulty `gorm:"column:cefr_level;not null" json:"cefrLevel"`
 	MaxDuration int                      `gorm:"column:max_duration;not null" json:"maxDuration"`
 	Details     ScenarioDetail           `gorm:"type:jsonb;not null" json:"details"`
+	Objectives  datatypes.JSON           `gorm:"type:jsonb;not null;default:'[]'" json:"objectives"`
 	Status      enums.PublishStatus      `gorm:"not null;default:draft" json:"status"`
 	IsPremium   bool                     `gorm:"not null;default:false" json:"isPremium"`
 	Topic       *ScenarioTopic           `json:"topic,omitempty"`
 	Persona     *Persona                 `json:"persona,omitempty"`
 	CreatedAt   time.Time                `gorm:"autoCreateTime" json:"createdAt"`
 	UpdatedAt   time.Time                `gorm:"autoUpdateTime" json:"updatedAt"`
+}
+
+// ScenarioObjective is one roleplay task. ID is the 1-based position, local
+// to this scenario only — never referenced across tables. The server assigns
+// id = index+1 on write, ignoring any client-sent id.
+type ScenarioObjective struct {
+	ID    int    `json:"id"`
+	Label string `json:"label"`
+	Hint  string `json:"hint"`
 }
 
 func (Scenario) TableName() string { return "scenarios" }

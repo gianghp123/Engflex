@@ -61,9 +61,8 @@ export interface VocabularyItem {
   id: string;
   term: string;
   ipa: string;
-  partOfSpeech: string;
+  partOfSpeech?: VocabularyPartOfSpeech;
   cefr: CEFR;
-  domain?: VocabularyDomain;
   definition: string;
   status: PublishStatus;
   isPremium: boolean;

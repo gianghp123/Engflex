@@ -38,6 +38,9 @@ contracts:
 	@tygo generate
 	@node ../../packages/contracts/scripts/gen-enum-values.mjs
 
+eval:
+	go test ./internal/eval/... -count=1 -v
+
 # regenerate swagger docs in docs/ (served at /swagger/*any)
 swagger:
 	@swag init -g cmd/server/main.go

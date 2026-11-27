@@ -11,6 +11,7 @@ import (
 
 type FeedbackRepository interface {
 	Upsert(ctx context.Context, f *models.Feedback) error
+	ListRecentByUser(ctx context.Context, userID string, limit int) ([]*models.Feedback, error)
 	WithTx(tx *gorm.DB) FeedbackRepository
 }
 
@@ -33,4 +34,19 @@ func (r *feedbackRepository) Upsert(ctx context.Context, f *models.Feedback) err
 			DoUpdates: clause.AssignmentColumns([]string{"payload", "user_id", "updated_at"}),
 		}).
 		Create(f).Error
+}
+
+// ListRecentByUser returns the caller's newest coaching rows for the error
+// aggregation endpoints (query-light: capped at 200 by the caller).
+func (r *feedbackRepository) ListRecentByUser(ctx context.Context, userID string, limit int) ([]*models.Feedback, error) {
+	if limit <= 0 {
+		limit = 200
+	}
+	var rows []*models.Feedback
+	err := r.db.WithContext(ctx).
+		Where("user_id = ?", userID).
+		Order("created_at DESC").
+		Limit(limit).
+		Find(&rows).Error
+	return rows, err
 }

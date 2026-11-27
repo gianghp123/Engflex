@@ -120,6 +120,16 @@
         "periodTotal": "Total"
       }
     },
+    "scenarios": {
+      "objectives": {
+        "title": "Objectives (max 3)",
+        "help": "Each objective becomes a checklist item in the roleplay room.",
+        "add": "Add objective",
+        "labelPlaceholder": "Objective label",
+        "hintPlaceholder": "Hint (optional)",
+        "remove": "Remove objective"
+      }
+    },
     "videos": {
       "transcripts": {
         "title": "Transcripts",

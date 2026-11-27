@@ -1,7 +1,9 @@
 import type {
 	Conversation,
+	ConversationObjective,
 	ConversationSession,
 	ConversationSummary,
+	ConversationSummaryDTO,
 	Feedback,
 	ListScenarios,
 	Pagination,
@@ -14,6 +16,23 @@ import type {
 import { API_ROUTES } from "#/app/api-routes";
 import { api, apiPage } from "#/lib/api/api";
 import { explanationLanguage } from "#/lib/language/explanation-language";
+
+export type { ConversationObjective, ConversationSummaryDTO };
+
+/**
+ * Generate (or return the stored) post-session summary. Idempotent:
+ * the first view computes it from turns and stores it, later views read
+ * the stored column (`POST /conversations/:id/summarize`).
+ */
+export function summarizeConversation(
+	id: string,
+): Promise<ConversationSummaryDTO> {
+	return api<ConversationSummaryDTO>(
+		API_ROUTES.CONVERSATIONS.SUMMARIZE(id),
+		{ method: "POST" },
+		{ withCredentials: true },
+	);
+}
 
 /** The three actions of the correction modal, in the engine's vocabulary. */
 export type TranscriptAction = "review" | "send" | "dismiss";

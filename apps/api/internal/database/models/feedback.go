@@ -31,6 +31,7 @@ type AnalysisSpan struct {
 	Text       string           `json:"text"`
 	Occurrence int              `json:"occurrence"`
 	Status     enums.SpanStatus `json:"status"`
+	ErrorType  enums.ErrorType  `json:"errorType"`
 	Correction string           `json:"correction"`
 	Reason     string           `json:"reason"`
 }

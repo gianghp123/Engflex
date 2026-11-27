@@ -84,10 +84,6 @@ func (s *vocabularyItemService) Create(ctx context.Context, userID string, req r
 		return nil, common.Internal()
 	}
 	i.CEFR = enums.CEFR(req.CEFR)
-	if req.Domain != nil {
-		d := enums.VocabularyDomain(*req.Domain)
-		i.Domain = &d
-	}
 	if userID != "" {
 		uid := userID
 		i.CreatedByUserID = &uid
@@ -114,10 +110,6 @@ func (s *vocabularyItemService) CreateSystemEntry(ctx context.Context, req reque
 		return nil, common.Internal()
 	}
 	i.CEFR = enums.CEFR(req.CEFR)
-	if req.Domain != nil {
-		d := enums.VocabularyDomain(*req.Domain)
-		i.Domain = &d
-	}
 	i.Status = enums.PublishStatusDraft
 	if err := s.repo.Create(ctx, i); err != nil {
 		appErr := common.FromDBError(err, "vocabulary item")
@@ -151,9 +143,8 @@ func (s *vocabularyItemService) Update(ctx context.Context, id string, req reque
 	if req.CEFR != nil {
 		i.CEFR = enums.CEFR(*req.CEFR)
 	}
-	if req.Domain != nil {
-		d := enums.VocabularyDomain(*req.Domain)
-		i.Domain = &d
+	if req.PartOfSpeech != nil {
+		i.PartOfSpeech = req.PartOfSpeech
 	}
 	if req.Status != nil {
 		i.Status = *req.Status

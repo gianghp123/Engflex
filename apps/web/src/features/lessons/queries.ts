@@ -7,6 +7,8 @@ import {
 	listLessonProgress,
 	listSections,
 	pronounceAttempt,
+	redactWriting,
+	respeak,
 	scoreWriting,
 	startLessonAttempt,
 } from "#/features/lessons/service";
@@ -108,6 +110,13 @@ export function usePronounceAttempt() {
 	});
 }
 
+export function useRespeak() {
+	return useMutation({
+		mutationFn: (input: { expectedText: string; audio: Blob; mime: string }) =>
+			respeak(input.expectedText, input.audio, input.mime),
+	});
+}
+
 export function useStartLessonAttempt() {
 	return useMutation({
 		mutationFn: (lessonId: string) => startLessonAttempt(lessonId),
@@ -124,6 +133,12 @@ export function openAttemptQueryOptions(id: string) {
 		retry: (failureCount: number, error: unknown) =>
 			!(error instanceof ApiError && error.status === 404) && failureCount < 3,
 	};
+}
+
+export function useRedactWriting() {
+	return useMutation({
+		mutationFn: (attemptId: string) => redactWriting(attemptId),
+	});
 }
 
 export function useScoreWriting() {

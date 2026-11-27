@@ -18,6 +18,7 @@ import { Skeleton } from "#/components/ui/skeleton";
 import { useProgress } from "#/features/attempts/queries";
 import { ActiveLessonCard } from "#/features/dashboard/components/active-lesson-card";
 import { LiveVoicePartnerCard } from "#/features/dashboard/components/live-voice-partner-card";
+import { TopMistakesCard } from "#/features/dashboard/components/top-mistakes-card";
 import { m } from "#/paraglide/messages";
 import { getLocale } from "#/paraglide/runtime";
 
@@ -60,6 +61,12 @@ function DashboardPage() {
 				</div>
 				<div className="lg:col-span-5">
 					<LiveVoicePartnerCard />
+				</div>
+			</div>
+
+			<div className="grid gap-4 lg:grid-cols-12">
+				<div className="lg:col-span-7">
+					<TopMistakesCard />
 				</div>
 			</div>
 

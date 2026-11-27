@@ -38,6 +38,8 @@ from pydantic import BaseModel, Field
 
 from config import settings
 
+ErrorType = Literal["verb_tense", "subject_verb_agreement", "article", "preposition", "plural", "word_order", "spelling", "punctuation", "lexical_choice", "collocation", "other"]
+
 
 class AnalysisSpan(BaseModel):
     """One problematic span: the smallest meaningful unit, located by exact
@@ -46,6 +48,7 @@ class AnalysisSpan(BaseModel):
     text: str
     occurrence: int = Field(ge=1)
     status: Literal["incorrect", "awkward"]
+    error_type: ErrorType = "other"
     correction: str
     reason: str
 
@@ -175,8 +178,10 @@ def build_feedback_prompt(req: AnalyzeRequest) -> str:
         '  "corrected": the utterance with the learner\'s own words kept, '
         "lightly corrected where it reads wrong;\n"
         '  "spans": [{"text": "<exact substring>", "occurrence": <1-based>, '
-        '"status": "incorrect|awkward", "correction": "<fix>", '
-        '"reason": "<why>"}];\n'
+        '"status": "incorrect|awkward", "error_type": "<taxonomy>", "correction": "<fix>", '
+        '"reason": "<why>"} where error_type is one of: verb_tense, subject_verb_agreement, article, preposition, '
+        "plural, word_order, spelling, punctuation, lexical_choice, collocation, other. Grammar errors get a specific "
+        "type; awkward-but-grammatical gets lexical_choice or collocation or other.];\n"
         '  "relevance": {"status": '
         '"relevant|partially_relevant|off_topic|not_applicable", '
         '"reason": "<why or null>"};\n'
@@ -259,26 +264,88 @@ async def _structured(client: AsyncOpenAI, req: AnalyzeRequest) -> TurnFeedback:
     `refusal` carries the reason), so it must be checked before treating a
     missing result as a fallback trigger.
     """
-    completion = await client.chat.completions.parse(
-        model=settings.llm_model,
-        messages=_messages(req),
-        response_format=TurnFeedback,
-        temperature=0.2,
-    )
+    import time
+
+    t0 = time.perf_counter()
+    try:
+        completion = await client.chat.completions.parse(
+            model=settings.llm_model,
+            messages=_messages(req),
+            response_format=TurnFeedback,
+            temperature=0.2,
+        )
+    except Exception as exc:
+        logger.info(
+            "llm call",
+            model=settings.llm_model,
+            op="structured",
+            latency_ms=int((time.perf_counter() - t0) * 1000),
+            status="error",
+            error=str(exc)[:200],
+        )
+        raise
     message = completion.choices[0].message
     if message.refusal:
+        logger.info(
+            "llm call",
+            model=settings.llm_model,
+            op="structured",
+            latency_ms=int((time.perf_counter() - t0) * 1000),
+            status="refused",
+        )
         raise AnalysisRefused(message.refusal)
     if message.parsed is not None:
+        usage = getattr(completion, "usage", None)
+        logger.info(
+            "llm call",
+            model=settings.llm_model,
+            op="structured",
+            latency_ms=int((time.perf_counter() - t0) * 1000),
+            status="ok",
+            prompt_tokens=getattr(usage, "prompt_tokens", None),
+            completion_tokens=getattr(usage, "completion_tokens", None),
+        )
         return message.parsed
+    logger.info(
+        "llm call",
+        model=settings.llm_model,
+        op="structured",
+        latency_ms=int((time.perf_counter() - t0) * 1000),
+        status="unsupported",
+    )
     raise _StructuredUnsupported
 
 
 async def _extraction(client: AsyncOpenAI, req: AnalyzeRequest) -> TurnFeedback:
     """Fallback: prompt-forced JSON, then extract and validate."""
-    completion = await client.chat.completions.create(
+    import time
+
+    t0 = time.perf_counter()
+    try:
+        completion = await client.chat.completions.create(
+            model=settings.llm_model,
+            messages=_messages(req),
+            temperature=0.2,
+        )
+    except Exception as exc:
+        logger.info(
+            "llm call",
+            model=settings.llm_model,
+            op="extraction",
+            latency_ms=int((time.perf_counter() - t0) * 1000),
+            status="error",
+            error=str(exc)[:200],
+        )
+        raise
+    usage = getattr(completion, "usage", None)
+    logger.info(
+        "llm call",
         model=settings.llm_model,
-        messages=_messages(req),
-        temperature=0.2,
+        op="extraction",
+        latency_ms=int((time.perf_counter() - t0) * 1000),
+        status="ok",
+        prompt_tokens=getattr(usage, "prompt_tokens", None),
+        completion_tokens=getattr(usage, "completion_tokens", None),
     )
     return parse_feedback(completion.choices[0].message.content or "")
 

@@ -162,7 +162,7 @@ func NewRouter(db *gorm.DB, cfg config.Config) *gin.Engine {
 	sessionLimiter := buildLimiter("session", cfg.RateLimit.SessionRate, "session")
 	accessSvc := access.NewServices(db, cfg)
 	access.RegisterRoutes(v1, accessSvc)
-	conversations.RegisterRoutes(v1, db, cfg.Voice, sessionLimiter, &conversationservices.AccessDependencies{
+	conversations.RegisterRoutes(v1, db, cfg.Voice, cfg.LLM, sessionLimiter, &conversationservices.AccessDependencies{
 		Policy:  accessSvc.Policy,
 		Usage:   accessSvc.Usage,
 		Enforce: cfg.Access.Enforce,

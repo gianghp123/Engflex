@@ -54,17 +54,16 @@ type UserVocabularyState struct {
 
 // VocabularyItem is a vocabulary hub card / word detail payload.
 type VocabularyItem struct {
-	ID           string                  `json:"id"`
-	Term         string                  `json:"term"`
-	IPA          string                  `json:"ipa"`
-	PartOfSpeech string                  `json:"partOfSpeech"`
-	CEFR         enums.CEFR              `json:"cefr"`
-	Domain       *enums.VocabularyDomain `json:"domain"`
-	Definition   string                  `json:"definition"`
-	Status       enums.PublishStatus     `json:"status"`
-	IsPremium    bool                    `json:"isPremium"`
-	Details      *VocabularyDetails      `json:"details"`
-	UserState    *UserVocabularyState    `json:"userState"`
+	ID           string                        `json:"id"`
+	Term         string                        `json:"term"`
+	IPA          string                        `json:"ipa"`
+	PartOfSpeech *enums.VocabularyPartOfSpeech `json:"partOfSpeech"`
+	CEFR         enums.CEFR                    `json:"cefr"`
+	Definition   string                        `json:"definition"`
+	Status       enums.PublishStatus           `json:"status"`
+	IsPremium    bool                          `json:"isPremium"`
+	Details      *VocabularyDetails            `json:"details"`
+	UserState    *UserVocabularyState          `json:"userState"`
 }
 
 // VocabularyStats aggregates the hub's four stat cards (computed by

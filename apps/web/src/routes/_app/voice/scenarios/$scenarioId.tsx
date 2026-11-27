@@ -5,6 +5,7 @@ import { useBreadcrumbs } from "#/app/breadcrumbs";
 import { BackButton } from "#/components/common/back-button";
 import { MoMascot } from "#/components/common/mo-mascot";
 import { PageLayout } from "#/components/common/page-layout";
+import { ObjectivesRow } from "#/features/voice/components/objectives-row";
 import { ScenarioDetailBody } from "#/features/voice/components/scenario-detail/scenario-detail-body";
 import { ScenarioDetailHero } from "#/features/voice/components/scenario-detail/scenario-detail-hero";
 import { ScenarioDetailSide } from "#/features/voice/components/scenario-detail/scenario-detail-side";
@@ -88,8 +89,9 @@ function ScenarioDetailPage() {
 				}}
 			/>
 			<div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-				<div className="lg:col-span-7">
+				<div className="flex flex-col gap-6 lg:col-span-7">
 					<ScenarioDetailBody scenario={scenario} />
+					<ObjectivesRow objectives={scenario.objectives ?? []} />
 				</div>
 				<div className="lg:col-span-5">
 					<ScenarioDetailSide scenario={scenario} />

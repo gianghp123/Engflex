@@ -39,5 +39,30 @@ type Conversation struct {
 	StartedAt   time.Time                `json:"startedAt"`
 	EndedAt     *time.Time               `json:"endedAt"`
 	DurationSec *int                     `json:"durationSec,omitempty"`
+	Objectives  []ConversationObjective  `json:"objectives"`
+	Summary     *ConversationSummaryDTO  `json:"summary,omitempty"`
 	Turns       []Turn                   `json:"turns"`
+}
+
+// ConversationObjective is one roleplay task from the objectives snapshot.
+// Field names mirror models.ScenarioObjective so utils.Map copies whole.
+type ConversationObjective struct {
+	ID    int    `json:"id"`
+	Label string `json:"label"`
+	Hint  string `json:"hint"`
+}
+
+// ObjectiveResult is one objective's post-session verdict.
+// Field names mirror models.ObjectiveResult.
+type ObjectiveResult struct {
+	ID       int    `json:"id"`
+	Status   string `json:"status"`
+	Evidence string `json:"evidence"`
+}
+
+// ConversationSummaryDTO is the stored post-session analysis.
+type ConversationSummaryDTO struct {
+	Takeaways  []string          `json:"takeaways"`
+	Objectives []ObjectiveResult `json:"objectives"`
+	LevelNote  string            `json:"levelNote"`
 }

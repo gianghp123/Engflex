@@ -40,7 +40,7 @@ func TestPronounce(t *testing.T) {
 		WordErrorRate:    0.2,
 		AcousticDistance: 2.5,
 		Errors: []conversationsresponses.MispronouncedWord{
-			{Word: "call", Expected: "kɔːl", Heard: "kɑːl", Confidence: 0.4},
+			{Word: "think", Expected: "θɪŋk", Heard: "tɪŋk", Confidence: 0.9},
 		},
 		ReferencePhones: []conversationsresponses.ReferencePhone{
 			{Word: "call", Phones: "kɔːl"},
@@ -110,7 +110,9 @@ func TestPronounce(t *testing.T) {
 			assert.Equal(t, 88.5, got.Score)
 			assert.Equal(t, "please call me back", got.Transcription)
 			require.Len(t, got.Errors, 1)
-			assert.Equal(t, "call", got.Errors[0].Word)
+			assert.Equal(t, "think", got.Errors[0].Word)
+			assert.Equal(t, 1, got.TotalErrors)
+			assert.Contains(t, got.Errors[0].Tip, "θ")
 			// Reference phones survive both maps: conversations DTO → scorer
 			// Result → lessons DTO (web copies whole graphs).
 			require.Len(t, got.ReferencePhones, 2)

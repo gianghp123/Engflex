@@ -1,0 +1,22 @@
+[
+  {"text": "We discuss about the plan.", "spans": [{"text": "discuss about", "occurrence": 1, "errorType": "preposition", "correction": "discuss", "reason": "transitive verb"}], "expectedErrorTypes": ["preposition"]},
+  {"text": "She can to swim.", "spans": [{"text": "to swim", "occurrence": 1, "errorType": "verb_tense", "correction": "swim", "reason": "bare infinitive after modal"}], "expectedErrorTypes": ["verb_tense"]},
+  {"text": "The books is expensive.", "spans": [{"text": "is", "occurrence": 1, "errorType": "subject_verb_agreement", "correction": "are", "reason": "plural subject"}], "expectedErrorTypes": ["subject_verb_agreement"]},
+  {"text": "I went to the Ho Chi Minh city.", "spans": [{"text": "the Ho Chi Minh city", "occurrence": 1, "errorType": "article", "correction": "Ho Chi Minh City", "reason": "proper noun"}], "expectedErrorTypes": ["article"]},
+  {"text": "They arrived to the station.", "spans": [{"text": "to", "occurrence": 1, "errorType": "preposition", "correction": "at", "reason": "arrive at"}], "expectedErrorTypes": ["preposition"]},
+  {"text": "I have three brother.", "spans": [{"text": "brother", "occurrence": 1, "errorType": "plural", "correction": "brothers", "reason": "count plural"}], "expectedErrorTypes": ["plural"]},
+  {"text": "Never I have seen that.", "spans": [{"text": "Never I have", "occurrence": 1, "errorType": "word_order", "correction": "Never have I", "reason": "inversion"}], "expectedErrorTypes": ["word_order"]},
+  {"text": "Definately I will come.", "spans": [{"text": "Definately", "occurrence": 1, "errorType": "spelling", "correction": "Definitely", "reason": "spelling"}], "expectedErrorTypes": ["spelling"]},
+  {"text": "Hello, how are you.", "spans": [{"text": "you.", "occurrence": 1, "errorType": "punctuation", "correction": "you?", "reason": "question mark"}], "expectedErrorTypes": ["punctuation"]},
+  {"text": "I did a mistake.", "spans": [{"text": "did", "occurrence": 1, "errorType": "lexical_choice", "correction": "made", "reason": "make a mistake"}], "expectedErrorTypes": ["lexical_choice"]},
+  {"text": "We need strong coffee.", "spans": [{"text": "strong coffee", "occurrence": 1, "errorType": "collocation", "correction": "strong coffee", "reason": "awkward collocation kept"}, {"text": "We need", "occurrence": 1, "errorType": "lexical_choice", "correction": "We need", "reason": "placeholder"}], "expectedErrorTypes": ["collocation", "lexical_choice"]},
+  {"text": "Other people thinks so.", "spans": [{"text": "thinks", "occurrence": 1, "errorType": "subject_verb_agreement", "correction": "think", "reason": "plural subject"}], "expectedErrorTypes": ["subject_verb_agreement"]},
+  {"text": "I have been to Hanoi last year.", "spans": [{"text": "have been", "occurrence": 1, "errorType": "verb_tense", "correction": "went", "reason": "finished time"}], "expectedErrorTypes": ["verb_tense"]},
+  {"text": "She is doctor.", "spans": [{"text": "is doctor", "occurrence": 1, "errorType": "article", "correction": "is a doctor", "reason": "singular countable"}], "expectedErrorTypes": ["article"]},
+  {"text": "Depend of the weather.", "spans": [{"text": "of", "occurrence": 1, "errorType": "preposition", "correction": "on", "reason": "depend on"}], "expectedErrorTypes": ["preposition"]},
+  {"text": "Two womans came.", "spans": [{"text": "womans", "occurrence": 1, "errorType": "plural", "correction": "women", "reason": "irregular plural"}], "expectedErrorTypes": ["plural"]},
+  {"text": "What means this word?", "spans": [{"text": "What means", "occurrence": 1, "errorType": "word_order", "correction": "What does", "reason": "question form"}], "expectedErrorTypes": ["word_order"]},
+  {"text": "I am writting now.", "spans": [{"text": "writting", "occurrence": 1, "errorType": "spelling", "correction": "writing", "reason": "double consonant"}], "expectedErrorTypes": ["spelling"]},
+  {"text": "My friend, he is kind.", "spans": [{"text": "My friend, he", "occurrence": 1, "errorType": "punctuation", "correction": "My friend is", "reason": "comma splice"}], "expectedErrorTypes": ["punctuation"]},
+  {"text": "Open the light please.", "spans": [{"text": "Open", "occurrence": 1, "errorType": "lexical_choice", "correction": "Turn on", "reason": "collocation"}], "expectedErrorTypes": ["lexical_choice"]}
+]

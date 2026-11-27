@@ -53,15 +53,6 @@
         "conversation": "From AI sparring",
         "manual": "Custom"
       },
-      "domainLabel": "Domain:",
-      "domainAll": "All domains",
-      "domain": {
-        "backendDb": "Backend & DB",
-        "distributedSystems": "Distributed systems",
-        "devopsCloud": "DevOps & Cloud",
-        "frontendUi": "Frontend & UI",
-        "aiMl": "AI & Machine learning"
-      },
       "cefrLabel": "CEFR:",
       "cefrAll": "All",
       "sort": {

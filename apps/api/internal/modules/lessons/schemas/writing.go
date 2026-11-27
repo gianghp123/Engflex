@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"strings"
 
+	"engflex-api/internal/common/enums"
 	"engflex-api/internal/llm"
 )
 
@@ -14,10 +15,11 @@ import (
 // label (grammar = real error, phrasing = awkward only) — there is no status
 // field to drift.
 type Span struct {
-	Text       string `json:"text" jsonschema_description:"Exact problematic substring"`
-	Occurrence int    `json:"occurrence" jsonschema_description:"1-based occurrence"`
-	Correction string `json:"correction" jsonschema_description:"Fix for this span only"`
-	Reason     string `json:"reason" jsonschema_description:"Brief why"`
+	Text       string          `json:"text" jsonschema_description:"Exact problematic substring"`
+	Occurrence int             `json:"occurrence" jsonschema_description:"1-based occurrence"`
+	ErrorType  enums.ErrorType `json:"errorType" jsonschema_description:"Error taxonomy tag"`
+	Correction string          `json:"correction" jsonschema_description:"Fix for this span only"`
+	Reason     string          `json:"reason" jsonschema_description:"Brief why"`
 }
 
 type TaskVerdict struct {
@@ -64,10 +66,22 @@ func NormalizeWritingFeedback(out WritingFeedback, text string, checklistLen int
 		if sp.Text == "" || !strings.Contains(text, sp.Text) || sp.Occurrence < 1 {
 			return WritingFeedback{}, fmt.Errorf("grammar span %d is not an exact substring", i)
 		}
+		if out.Grammar[i].ErrorType == "" {
+			out.Grammar[i].ErrorType = enums.ErrorTypeOther
+		}
+		if !out.Grammar[i].ErrorType.Valid() {
+			return WritingFeedback{}, fmt.Errorf("grammar span %d has unknown error type", i)
+		}
 	}
 	for i, sp := range out.Phrasing {
 		if sp.Text == "" || !strings.Contains(text, sp.Text) || sp.Occurrence < 1 {
 			return WritingFeedback{}, fmt.Errorf("phrasing span %d is not an exact substring", i)
+		}
+		if out.Phrasing[i].ErrorType == "" {
+			out.Phrasing[i].ErrorType = enums.ErrorTypeOther
+		}
+		if !out.Phrasing[i].ErrorType.Valid() {
+			return WritingFeedback{}, fmt.Errorf("phrasing span %d has unknown error type", i)
 		}
 	}
 	if len(out.Task.Verdicts) != checklistLen {

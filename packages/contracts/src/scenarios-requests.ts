@@ -46,6 +46,14 @@ export interface DetailOpeningInput {
   text: string;
 }
 /**
+ * ScenarioObjectiveInput is one roleplay task from the admin. No id: the
+ * server assigns id = index+1 on write, ignoring any client-sent value.
+ */
+export interface ScenarioObjectiveInput {
+  label: string;
+  hint: string;
+}
+/**
  * CreateScenario adds an admin-curated roleplay card. Always starts as
  * draft (service-enforced); Status is not accepted here.
  */
@@ -54,6 +62,7 @@ export interface CreateScenario {
   personaId?: string;
   title: string;
   objective: string;
+  objectives: ScenarioObjectiveInput[];
   cefrLevel: ScenarioDifficulty;
   maxDuration: number /* int */;
   details: ScenarioDetailInput;
@@ -69,6 +78,7 @@ export interface UpdateScenario {
   personaId?: string;
   title?: string;
   objective?: string;
+  objectives: ScenarioObjectiveInput[];
   cefrLevel?: ScenarioDifficulty;
   maxDuration?: number /* int */;
   details?: ScenarioDetailInput;

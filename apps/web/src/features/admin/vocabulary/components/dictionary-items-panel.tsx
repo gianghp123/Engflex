@@ -1,8 +1,5 @@
-import type {
-	CEFR,
-	VocabularyDomain,
-	VocabularyItem,
-} from "@engflex/contracts";
+import type { CEFR, VocabularyItem } from "@engflex/contracts";
+import { VOCABULARY_PART_OF_SPEECH_VALUES } from "@engflex/contracts";
 import { Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -32,26 +29,17 @@ import {
 	useDeleteVocabularyItem,
 	useUpdateVocabularyItem,
 } from "#/features/admin/vocabulary/queries";
+import { enumOptions } from "#/lib/enum-options";
 import { m } from "#/paraglide/messages";
 
 const CEFR_OPTIONS: CEFR[] = ["A1", "A2", "B1", "B2", "C1", "C2"];
-const DOMAIN_OPTIONS: VocabularyDomain[] = [
-	"backend_db",
-	"distributed_systems",
-	"devops_cloud",
-	"frontend_ui",
-	"ai_ml",
-];
-
-function domainLabel(domain: string): string {
-	return domain.replace(/_/g, " ");
-}
+const POS_OPTIONS = enumOptions(VOCABULARY_PART_OF_SPEECH_VALUES);
 
 interface ItemFormState {
 	term: string;
 	definition: string;
 	cefr: CEFR;
-	domain: VocabularyDomain | "";
+	partOfSpeech: (typeof VOCABULARY_PART_OF_SPEECH_VALUES)[number] | "";
 	status: "draft" | "published";
 	isPremium: boolean;
 }
@@ -60,7 +48,7 @@ const EMPTY_FORM: ItemFormState = {
 	term: "",
 	definition: "",
 	cefr: "B1",
-	domain: "",
+	partOfSpeech: "",
 	status: "draft",
 	isPremium: false,
 };
@@ -92,7 +80,7 @@ export function DictionaryItemsPanel() {
 			term: item.term,
 			definition: item.definition,
 			cefr: item.cefr,
-			domain: item.domain ?? "",
+			partOfSpeech: item.partOfSpeech ?? "",
 			status: item.status === "published" ? "published" : "draft",
 			isPremium: item.isPremium,
 		});
@@ -113,7 +101,7 @@ export function DictionaryItemsPanel() {
 						term: form.term.trim(),
 						definition: form.definition.trim(),
 						cefr: form.cefr,
-						domain: form.domain || undefined,
+						partOfSpeech: form.partOfSpeech || undefined,
 						status: form.status,
 						isPremium: form.isPremium,
 					},
@@ -132,7 +120,7 @@ export function DictionaryItemsPanel() {
 					term: form.term.trim(),
 					definition: form.definition.trim(),
 					cefr: form.cefr,
-					domain: form.domain || undefined,
+					partOfSpeech: form.partOfSpeech || undefined,
 					isPremium: form.isPremium,
 				},
 				{
@@ -177,9 +165,9 @@ export function DictionaryItemsPanel() {
 		{ id: "term", header: "Term", cell: (row) => row.term },
 		{ id: "cefr", header: "CEFR", cell: (row) => row.cefr },
 		{
-			id: "domain",
-			header: "Domain",
-			cell: (row) => (row.domain ? domainLabel(row.domain) : "—"),
+			id: "partOfSpeech",
+			header: "Part of speech",
+			cell: (row) => row.partOfSpeech ?? "—",
 		},
 		{
 			id: "status",
@@ -288,13 +276,16 @@ export function DictionaryItemsPanel() {
 						</Select>
 					</Field>
 					<Field>
-						<FieldLabel>Domain</FieldLabel>
+						<FieldLabel>Part of speech</FieldLabel>
 						<Select
-							value={form.domain || "none"}
+							value={form.partOfSpeech || "none"}
 							onValueChange={(value) =>
 								setForm((current) => ({
 									...current,
-									domain: value === "none" ? "" : (value as VocabularyDomain),
+									partOfSpeech:
+										value === "none"
+											? ""
+											: (value as ItemFormState["partOfSpeech"]),
 								}))
 							}
 						>
@@ -303,9 +294,9 @@ export function DictionaryItemsPanel() {
 							</SelectTrigger>
 							<SelectContent>
 								<SelectItem value="none">—</SelectItem>
-								{DOMAIN_OPTIONS.map((option) => (
-									<SelectItem key={option} value={option}>
-										{domainLabel(option)}
+								{POS_OPTIONS.map((option) => (
+									<SelectItem key={option.value} value={option.value}>
+										{option.label()}
 									</SelectItem>
 								))}
 							</SelectContent>

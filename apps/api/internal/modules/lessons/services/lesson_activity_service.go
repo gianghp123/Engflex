@@ -2,6 +2,8 @@ package services
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -37,10 +39,12 @@ type LessonActivityService interface {
 	GetByID(ctx context.Context, id string) (*models.LessonActivity, error)
 	CheckAnswer(ctx context.Context, userID, id, attemptID string, questionIndex int, key string) (*responses.CheckResult, error)
 	Pronounce(ctx context.Context, userID, id, attemptID string, itemIndex int, audio []byte, mime string) (*responses.PronunciationResult, error)
+	Respeak(ctx context.Context, expectedText string, audio []byte, mime string) (*responses.RespeakResponse, error)
 	StartAttempt(ctx context.Context, userID, lessonID string) (*models.Attempt, error)
 	GetOpenProgress(ctx context.Context, userID, lessonID string) (*responses.AttemptProgress, error)
 	AttachPartResult(ctx context.Context, userID, attemptID, activityID string, entry PartEntry) (*models.Attempt, error)
 	ScoreWriting(ctx context.Context, userID, id, attemptID, text string) (*responses.WritingScoreResponse, error)
+	RedactWriting(ctx context.Context, userID, attemptID string) (*models.Attempt, error)
 	Create(ctx context.Context, req requests.CreateLessonActivity) (*models.LessonActivity, error)
 	Update(ctx context.Context, id string, req requests.UpdateLessonActivity) (*models.LessonActivity, error)
 	Delete(ctx context.Context, id string) error
@@ -390,35 +394,35 @@ func (s *lessonActivityService) AttachCheckOutcome(ctx context.Context, userID, 
 	return s.attachWithMap(ctx, m, parts)
 }
 
-// AttachPronounceItem merges one item score (latest wins) into the part entry.
-func (s *lessonActivityService) AttachPronounceItem(ctx context.Context, userID, attemptID, activityID string, itemIndex int, score float64) (*models.Attempt, error) {
+// AttachPronounceItem merges one scored item (latest wins) into the part entry.
+func (s *lessonActivityService) AttachPronounceItem(ctx context.Context, userID, attemptID, activityID string, itemIndex int, detail PronounceItemDetail) (*models.Attempt, error) {
 	m, err := s.loadOwnedAttempt(ctx, userID, attemptID)
 	if err != nil {
 		return nil, err
 	}
-	return s.mergePronounceItem(ctx, m, activityID, itemIndex, score)
+	return s.mergePronounceItem(ctx, m, activityID, itemIndex, detail)
 }
 
-// mergePronounceItem merges one item score into an already-loaded attempt.
-func (s *lessonActivityService) mergePronounceItem(ctx context.Context, m *models.Attempt, activityID string, itemIndex int, score float64) (*models.Attempt, error) {
+// mergePronounceItem merges one item into an already-loaded attempt.
+func (s *lessonActivityService) mergePronounceItem(ctx context.Context, m *models.Attempt, activityID string, itemIndex int, detail PronounceItemDetail) (*models.Attempt, error) {
 	parts := decodePartMap(m)
 	entry := parts[activityID]
-	var detail PronouncePartDetail
+	var part PronouncePartDetail
 	if entry.Detail != nil {
 		if raw, merr := json.Marshal(entry.Detail); merr == nil {
-			_ = json.Unmarshal(raw, &detail)
+			part = ParsePronounceDetail(raw)
 		}
 	}
-	if detail.Items == nil {
-		detail.Items = map[string]float64{}
+	if part.Items == nil {
+		part.Items = map[string]PronounceItemDetail{}
 	}
-	detail.Items[strconv.Itoa(itemIndex)] = score
+	part.Items[strconv.Itoa(itemIndex)] = detail
 	sum := 0.0
-	for _, v := range detail.Items {
-		sum += v
+	for _, v := range part.Items {
+		sum += v.Score
 	}
-	mean := sum / float64(len(detail.Items))
-	parts[activityID] = PartEntry{Type: enums.AttemptTypeSpeaking, Status: PartStatusScored, Score: mean, Detail: detail}
+	mean := sum / float64(len(part.Items))
+	parts[activityID] = PartEntry{Type: enums.AttemptTypeSpeaking, Status: PartStatusScored, Score: mean, Detail: part}
 	return s.attachWithMap(ctx, m, parts)
 }
 
@@ -443,7 +447,7 @@ func (s *lessonActivityService) mergePronounceUnavailable(ctx context.Context, m
 	var detail PronouncePartDetail
 	if entry.Detail != nil {
 		if raw, merr := json.Marshal(entry.Detail); merr == nil {
-			_ = json.Unmarshal(raw, &detail)
+			detail = ParsePronounceDetail(raw)
 		}
 	}
 	parts[activityID] = PartEntry{Type: enums.AttemptTypeSpeaking, Status: PartStatusAIUnavailable, Score: 0, Detail: detail}
@@ -451,7 +455,8 @@ func (s *lessonActivityService) mergePronounceUnavailable(ctx context.Context, m
 }
 
 // Pronounce scores one read-aloud attempt. It resolves the reference text
-// from the speaking config and delegates scoring to the shared scorer.
+// from the speaking config and delegates scoring to the shared scorer. Errors
+// are gated once here, before both the response and the persisted detail.
 func (s *lessonActivityService) Pronounce(ctx context.Context, userID, id, attemptID string, itemIndex int, audio []byte, mime string) (*responses.PronunciationResult, error) {
 	m, err := s.loadActivity(ctx, id)
 	if err != nil {
@@ -476,7 +481,8 @@ func (s *lessonActivityService) Pronounce(ctx context.Context, userID, id, attem
 		return nil, common.TooManyRequests("pronunciation scoring is busy").WithCode(common.CodeRateLimited)
 	}
 	defer s.inflight.release(userID)
-	out, err := s.scorer.Score(ctx, cfg.Items[itemIndex].Text, audio, mime)
+	reference := cfg.Items[itemIndex].Text
+	out, err := s.scorer.Score(ctx, reference, audio, mime)
 	if err != nil {
 		// Completion-critical AI (spec §3.3): attach a fallback part so the
 		// lesson can still finalize, and return a retryable 503. The part
@@ -489,15 +495,48 @@ func (s *lessonActivityService) Pronounce(ctx context.Context, userID, id, attem
 			"activityID", id, "reason", err.Error())
 		return nil, common.ServiceUnavailable("pronunciation unavailable").WithCode(common.CodeAIUnavailable)
 	}
+	total := len(out.Errors)
+	out.Errors = pronunciation.GateErrors(out.Errors)
 	var dto responses.PronunciationResult
 	if utils.Map(&dto, out) != nil {
 		logger.Report(ctx, "pronounce map failed", common.Internal(), "id", id)
 		return nil, common.Internal()
 	}
-	if _, err := s.mergePronounceItem(ctx, am, id, itemIndex, dto.Score); err != nil {
+	dto.TotalErrors = total
+	detail := newPronounceItemDetail(out, reference, total)
+	if _, err := s.mergePronounceItem(ctx, am, id, itemIndex, detail); err != nil {
 		return nil, err
 	}
-	slog.InfoContext(ctx, "pronunciation scored", "activityID", id, "score", dto.Score)
+	slog.InfoContext(ctx, "pronunciation scored", "activityID", id, "score", dto.Score, "errors", len(dto.Errors), "totalErrors", total)
+	return &dto, nil
+}
+
+// Respeak scores one targeted repeat against a caller-supplied reference.
+// Practice only: nothing is persisted and no attempt row is created.
+func (s *lessonActivityService) Respeak(ctx context.Context, expectedText string, audio []byte, mime string) (*responses.RespeakResponse, error) {
+	trimmed := strings.TrimSpace(expectedText)
+	if trimmed == "" {
+		return nil, common.BadRequest("expectedText is required")
+	}
+	if len([]rune(trimmed)) > 120 {
+		return nil, common.BadRequest("expectedText is too long")
+	}
+	out, err := s.scorer.Score(ctx, trimmed, audio, mime)
+	if err != nil {
+		return nil, err
+	}
+	total := len(out.Errors)
+	out.Errors = pronunciation.GateErrors(out.Errors)
+	var dto responses.RespeakResponse
+	if utils.Map(&dto, out) != nil {
+		logger.Report(ctx, "respeak map failed", common.Internal())
+		return nil, common.Internal()
+	}
+	dto.TotalErrors = total
+	if len(out.Errors) > 0 {
+		dto.Tip = pronunciation.CoachingTip(out.Errors[0].Expected, out.Errors[0].Heard)
+	}
+	slog.InfoContext(ctx, "respeak scored", "score", dto.Score, "errors", len(dto.Errors), "totalErrors", total)
 	return &dto, nil
 }
 
@@ -553,8 +592,10 @@ func (s *lessonActivityService) ScoreWriting(ctx context.Context, userID, id, at
 		return nil, common.ServiceUnavailable("scoring unavailable").WithCode(common.CodeAIUnavailable)
 	}
 	score := coverageScore(scored.Task.Verdicts)
+	rawHash := sha256.Sum256([]byte(trimmed))
+	detail := WritingPartDetail{Feedback: scored, RawHash: hex.EncodeToString(rawHash[:]), WordCount: words, RawText: trimmed}
 	parts := decodePartMap(am)
-	parts[id] = PartEntry{Type: enums.AttemptTypeWriting, Status: PartStatusScored, Score: score, Detail: scored}
+	parts[id] = PartEntry{Type: enums.AttemptTypeWriting, Status: PartStatusScored, Score: score, Detail: detail}
 	attached, err := s.attachWithMap(ctx, am, parts)
 	if err != nil {
 		return nil, err
@@ -575,6 +616,62 @@ func (s *lessonActivityService) ScoreWriting(ctx context.Context, userID, id, at
 	dto.Attempt = responses.AttemptSummary{ID: attached.ID, Status: string(attached.Status), Score: attached.Score}
 	slog.InfoContext(ctx, "writing scored", "activityID", id, "score", score)
 	return &dto, nil
+}
+
+// RedactWriting clears stored learner prose from every writing part on the
+// attempt, keeping the feedback and hash so aggregates still work. The
+// attempt must be owned by the caller; closed attempts redact too (a delete
+// is a delete, whatever the run state).
+func (s *lessonActivityService) RedactWriting(ctx context.Context, userID, attemptID string) (*models.Attempt, error) {
+	if _, err := uuid.Parse(attemptID); err != nil {
+		return nil, common.BadRequest("invalid attempt id")
+	}
+	m, err := s.attempts.GetByID(ctx, attemptID)
+	if err != nil {
+		appErr := common.FromDBError(err, "attempt")
+		logger.Report(ctx, "redact writing load failed", appErr, "attemptID", attemptID)
+		return nil, appErr
+	}
+	if m.UserID != userID {
+		return nil, common.NotFound("attempt not found")
+	}
+	parts := decodePartMap(m)
+	redacted := false
+	for activityID, entry := range parts {
+		if entry.Type != enums.AttemptTypeWriting {
+			continue
+		}
+		raw, merr := json.Marshal(entry.Detail)
+		if merr != nil {
+			continue
+		}
+		var detail WritingPartDetail
+		if uerr := json.Unmarshal(raw, &detail); uerr != nil {
+			continue
+		}
+		if detail.RawText == "" {
+			continue
+		}
+		detail.RawText = ""
+		parts[activityID] = PartEntry{Type: entry.Type, Score: entry.Score, Detail: detail}
+		redacted = true
+	}
+	if !redacted {
+		return m, nil
+	}
+	encoded, err := encodePartMap(parts)
+	if err != nil {
+		logger.Report(ctx, "redact encode failed", common.Internal(), "attemptID", attemptID)
+		return nil, common.Internal()
+	}
+	m.Result = encoded
+	if err := s.attempts.Update(ctx, m); err != nil {
+		appErr := common.FromDBError(err, "attempt")
+		logger.Report(ctx, "redact save failed", appErr, "attemptID", attemptID)
+		return nil, appErr
+	}
+	slog.InfoContext(ctx, "writing redacted", "attemptID", attemptID)
+	return m, nil
 }
 
 // validateActivityConfig parses the raw config against the shape its type

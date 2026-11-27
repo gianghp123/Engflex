@@ -33,13 +33,15 @@ type ReferencePhone struct {
 }
 
 // MispronouncedWord mirrors the engine's per-word finding. Go field names match
-// the wire DTOs so utils.Map copies whole.
+// the wire DTOs so utils.Map copies whole. Tip is Go-side coaching prose, set
+// after the engine map; the engine never sends it.
 type MispronouncedWord struct {
 	Word       string
 	Expected   string
 	Heard      string
 	Confidence float64
 	Phones     []PhoneDetail
+	Tip        string
 }
 
 // Prosody mirrors the engine's pitch and energy contours.
@@ -85,6 +87,9 @@ func (s *scorer) Score(ctx context.Context, expectedText string, audio []byte, m
 	var out Result
 	if utils.Map(&out, res) != nil {
 		return nil, common.Internal()
+	}
+	for i := range out.Errors {
+		out.Errors[i].Tip = CoachingTip(out.Errors[i].Expected, out.Errors[i].Heard)
 	}
 	return &out, nil
 }

@@ -40,9 +40,18 @@ type VoicePersonaBody struct {
 
 // VoiceScenarioBody mirrors the engine's ScenarioBody.
 type VoiceScenarioBody struct {
-	Title     string `json:"title"`
-	Objective string `json:"objective,omitempty"`
-	CEFRLevel string `json:"cefrLevel,omitempty"`
+	Title      string               `json:"title"`
+	Objective  string               `json:"objective,omitempty"`
+	CEFRLevel  string               `json:"cefrLevel,omitempty"`
+	Objectives []VoiceObjectiveBody `json:"objectives,omitempty"`
+}
+
+// VoiceObjectiveBody mirrors the engine's ObjectiveBody: one roleplay task.
+// ID is the 1-based position, local to the scenario.
+type VoiceObjectiveBody struct {
+	ID    int    `json:"id"`
+	Label string `json:"label"`
+	Hint  string `json:"hint"`
 }
 
 // VoiceLearnerBody mirrors the engine's LearnerBody. Nil selects the engine

@@ -116,6 +116,19 @@
         "minutes": "minutes",
         "corrections": "fix-ups"
       },
+      "objectives": {
+        "title": "Session tasks",
+        "hint": "{hint}",
+        "done": "Done",
+        "partial": "Partial",
+        "missed": "Missed"
+      },
+      "summary": {
+        "title": "Session recap",
+        "takeaways": "Takeaways",
+        "evidence": "You said: “{quote}”",
+        "empty": "Mo is still writing up this session — check back in a moment."
+      },
       "scene": {
         "label": "Just practiced",
         "freeTitle": "Free talk",

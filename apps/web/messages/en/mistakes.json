@@ -1,0 +1,30 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "mistakes": {
+    "crumb": {
+      "hub": "Mistakes"
+    },
+    "hub": {
+      "title": "Your mistakes",
+      "subtitle": "Every error Mo caught, grouped by type — review and fix them one by one.",
+      "emptyTitle": "No mistakes yet",
+      "emptyBody": "Keep practicing — every error Mo catches will show up here.",
+      "loadingFailed": "Could not load your mistakes. Please try again later."
+    },
+    "filter": {
+      "all": "All",
+      "label": "Error type"
+    },
+    "top": {
+      "title": "Top mistakes",
+      "viewAll": "View all",
+      "empty": "Nothing to fix yet — keep practicing.",
+      "count": "{count}×"
+    },
+    "row": {
+      "example": "e.g. “{text}” → “{correction}”",
+      "fromFeedback": "In conversation",
+      "fromWriting": "In writing"
+    }
+  }
+}

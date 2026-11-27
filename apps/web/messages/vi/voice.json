@@ -116,6 +116,19 @@
         "minutes": "phút",
         "corrections": "chỗ cần sửa"
       },
+      "objectives": {
+        "title": "Nhiệm vụ buổi này",
+        "hint": "{hint}",
+        "done": "Đạt",
+        "partial": "Một phần",
+        "missed": "Chưa đạt"
+      },
+      "summary": {
+        "title": "Tổng kết buổi luyện",
+        "takeaways": "Điểm cần nhớ",
+        "evidence": "Bạn đã nói: “{quote}”",
+        "empty": "Mo đang tổng kết buổi này — quay lại sau một lát nhé."
+      },
       "scene": {
         "label": "Vừa mới luyện",
         "freeTitle": "Nói tự do",

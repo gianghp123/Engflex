@@ -13,10 +13,11 @@ import (
 // storedTurnFeedback is the exact blob shape the wire DTO used to write:
 // camelCase keys, written by the removed datatypes.JSON path and still seeded
 // by apps/web/e2e/helpers.ts. Renaming any model tag would make every stored
-// row decode to the zero value, so this fixture is the contract.
+// row decode to the zero value, so this fixture is the contract. Old rows
+// predate the errorType tag and decode it as "" (treated as other on read).
 const storedTurnFeedback = `{
   "corrected": "I have went to the office.",
-  "spans": [{"text": "have went", "occurrence": 1, "status": "incorrect", "correction": "have gone", "reason": "present perfect"}],
+  "spans": [{"text": "have went", "occurrence": 1, "status": "incorrect", "errorType": "", "correction": "have gone", "reason": "present perfect"}],
   "relevance": {"status": "relevant", "reason": "answers the question"},
   "alternatives": {"language": {"text": "I went to the office.", "reason": "simpler"}, "contextual": null},
   "tip": "Prefer the present perfect for an unfinished time."

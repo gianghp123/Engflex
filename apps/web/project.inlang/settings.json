@@ -19,6 +19,7 @@
       "./messages/{locale}/lessons.json",
       "./messages/{locale}/vocabulary.json",
       "./messages/{locale}/voice.json",
+      "./messages/{locale}/mistakes.json",
       "./messages/{locale}/progress.json",
       "./messages/{locale}/errors.json",
       "./messages/{locale}/about.json",

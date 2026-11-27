@@ -49,6 +49,80 @@ func (_m *MockFeedbackRepository) EXPECT() *MockFeedbackRepository_Expecter {
 	return &MockFeedbackRepository_Expecter{mock: &_m.Mock}
 }
 
+// ListRecentByUser provides a mock function for the type MockFeedbackRepository
+func (_mock *MockFeedbackRepository) ListRecentByUser(ctx context.Context, userID string, limit int) ([]*models.Feedback, error) {
+	ret := _mock.Called(ctx, userID, limit)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ListRecentByUser")
+	}
+
+	var r0 []*models.Feedback
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, int) ([]*models.Feedback, error)); ok {
+		return returnFunc(ctx, userID, limit)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, int) []*models.Feedback); ok {
+		r0 = returnFunc(ctx, userID, limit)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.Feedback)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, int) error); ok {
+		r1 = returnFunc(ctx, userID, limit)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockFeedbackRepository_ListRecentByUser_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ListRecentByUser'
+type MockFeedbackRepository_ListRecentByUser_Call struct {
+	*mock.Call
+}
+
+// ListRecentByUser is a helper method to define mock.On call
+//   - ctx context.Context
+//   - userID string
+//   - limit int
+func (_e *MockFeedbackRepository_Expecter) ListRecentByUser(ctx any, userID any, limit any) *MockFeedbackRepository_ListRecentByUser_Call {
+	return &MockFeedbackRepository_ListRecentByUser_Call{Call: _e.mock.On("ListRecentByUser", ctx, userID, limit)}
+}
+
+func (_c *MockFeedbackRepository_ListRecentByUser_Call) Run(run func(ctx context.Context, userID string, limit int)) *MockFeedbackRepository_ListRecentByUser_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 int
+		if args[2] != nil {
+			arg2 = args[2].(int)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockFeedbackRepository_ListRecentByUser_Call) Return(feedbacks []*models.Feedback, err error) *MockFeedbackRepository_ListRecentByUser_Call {
+	_c.Call.Return(feedbacks, err)
+	return _c
+}
+
+func (_c *MockFeedbackRepository_ListRecentByUser_Call) RunAndReturn(run func(ctx context.Context, userID string, limit int) ([]*models.Feedback, error)) *MockFeedbackRepository_ListRecentByUser_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // Upsert provides a mock function for the type MockFeedbackRepository
 func (_mock *MockFeedbackRepository) Upsert(ctx context.Context, f *models.Feedback) error {
 	ret := _mock.Called(ctx, f)

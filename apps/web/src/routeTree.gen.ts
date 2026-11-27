@@ -29,6 +29,7 @@ import { Route as AdminVocabularyRouteImport } from './routes/admin/vocabulary'
 import { Route as SignInSplatRouteImport } from './routes/sign-in.$'
 import { Route as SignUpSplatRouteImport } from './routes/sign-up.$'
 import { Route as AppLessonsIndexRouteImport } from './routes/_app/lessons/index'
+import { Route as AppMistakesIndexRouteImport } from './routes/_app/mistakes/index'
 import { Route as AppNotesIndexRouteImport } from './routes/_app/notes/index'
 import { Route as AppPaymentsPricingRouteImport } from './routes/_app/payments/pricing'
 import { Route as AppPaymentsUsageRouteImport } from './routes/_app/payments/usage'
@@ -163,6 +164,11 @@ const SignUpSplatRoute = SignUpSplatRouteImport.update({
 const AppLessonsIndexRoute = AppLessonsIndexRouteImport.update({
   id: '/lessons/',
   path: '/lessons/',
+  getParentRoute: () => AppRouteRoute,
+} as any)
+const AppMistakesIndexRoute = AppMistakesIndexRouteImport.update({
+  id: '/mistakes/',
+  path: '/mistakes/',
   getParentRoute: () => AppRouteRoute,
 } as any)
 const AppNotesIndexRoute = AppNotesIndexRouteImport.update({
@@ -388,6 +394,7 @@ export interface FileRoutesByFullPath {
   '/voice/preview': typeof AppVoicePreviewRoute
   '/api/media/$': typeof ApiMediaSplatRoute
   '/lessons/': typeof AppLessonsIndexRoute
+  '/mistakes/': typeof AppMistakesIndexRoute
   '/notes/': typeof AppNotesIndexRoute
   '/stories/': typeof AppStoriesIndexRoute
   '/videos/': typeof AppVideosIndexRoute
@@ -444,6 +451,7 @@ export interface FileRoutesByTo {
   '/voice/preview': typeof AppVoicePreviewRoute
   '/api/media/$': typeof ApiMediaSplatRoute
   '/lessons': typeof AppLessonsIndexRoute
+  '/mistakes': typeof AppMistakesIndexRoute
   '/notes': typeof AppNotesIndexRoute
   '/stories': typeof AppStoriesIndexRoute
   '/videos': typeof AppVideosIndexRoute
@@ -503,6 +511,7 @@ export interface FileRoutesById {
   '/_app/voice/preview': typeof AppVoicePreviewRoute
   '/api/media/$': typeof ApiMediaSplatRoute
   '/_app/lessons/': typeof AppLessonsIndexRoute
+  '/_app/mistakes/': typeof AppMistakesIndexRoute
   '/_app/notes/': typeof AppNotesIndexRoute
   '/_app/stories/': typeof AppStoriesIndexRoute
   '/_app/videos/': typeof AppVideosIndexRoute
@@ -562,6 +571,7 @@ export interface FileRouteTypes {
     | '/voice/preview'
     | '/api/media/$'
     | '/lessons/'
+    | '/mistakes/'
     | '/notes/'
     | '/stories/'
     | '/videos/'
@@ -618,6 +628,7 @@ export interface FileRouteTypes {
     | '/voice/preview'
     | '/api/media/$'
     | '/lessons'
+    | '/mistakes'
     | '/notes'
     | '/stories'
     | '/videos'
@@ -676,6 +687,7 @@ export interface FileRouteTypes {
     | '/_app/voice/preview'
     | '/api/media/$'
     | '/_app/lessons/'
+    | '/_app/mistakes/'
     | '/_app/notes/'
     | '/_app/stories/'
     | '/_app/videos/'
@@ -864,6 +876,13 @@ declare module '@tanstack/react-router' {
       path: '/lessons'
       fullPath: '/lessons/'
       preLoaderRoute: typeof AppLessonsIndexRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/_app/mistakes/': {
+      id: '/_app/mistakes/'
+      path: '/mistakes'
+      fullPath: '/mistakes/'
+      preLoaderRoute: typeof AppMistakesIndexRouteImport
       parentRoute: typeof AppRouteRoute
     }
     '/_app/notes/': {
@@ -1129,6 +1148,7 @@ interface AppRouteRouteChildren {
   AppVocabularyItemIdRoute: typeof AppVocabularyItemIdRoute
   AppVoicePreviewRoute: typeof AppVoicePreviewRoute
   AppLessonsIndexRoute: typeof AppLessonsIndexRoute
+  AppMistakesIndexRoute: typeof AppMistakesIndexRoute
   AppNotesIndexRoute: typeof AppNotesIndexRoute
   AppStoriesIndexRoute: typeof AppStoriesIndexRoute
   AppVideosIndexRoute: typeof AppVideosIndexRoute
@@ -1167,6 +1187,7 @@ const AppRouteRouteChildren: AppRouteRouteChildren = {
   AppVocabularyItemIdRoute: AppVocabularyItemIdRoute,
   AppVoicePreviewRoute: AppVoicePreviewRoute,
   AppLessonsIndexRoute: AppLessonsIndexRoute,
+  AppMistakesIndexRoute: AppMistakesIndexRoute,
   AppNotesIndexRoute: AppNotesIndexRoute,
   AppStoriesIndexRoute: AppStoriesIndexRoute,
   AppVideosIndexRoute: AppVideosIndexRoute,
