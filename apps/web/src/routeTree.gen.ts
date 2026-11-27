@@ -168,6 +168,8 @@ const AppLessonsIndexRoute = AppLessonsIndexRouteImport.update({
 const AppMistakesIndexRoute = AppMistakesIndexRouteImport.update({
   id: '/mistakes/',
   path: '/mistakes/',
+  getParentRoute: () => AppRouteRoute,
+} as any)
 const AppNotesIndexRoute = AppNotesIndexRouteImport.update({
   id: '/notes/',
   path: '/notes/',
@@ -869,6 +871,8 @@ declare module '@tanstack/react-router' {
       path: '/mistakes'
       fullPath: '/mistakes/'
       preLoaderRoute: typeof AppMistakesIndexRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
     '/_app/notes/': {
       id: '/_app/notes/'
       path: '/notes'

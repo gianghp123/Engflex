@@ -91,3 +91,4 @@ apps/voice/models/
 *.tfstate.*
 *.tfvars
 !*.tfvars.example
+docs/*
