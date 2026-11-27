@@ -107,7 +107,10 @@
         "missing": "Missing",
         "failed": "Could not score this response. Try again."
       },
-      "responseTitle": "Your response"
+      "responseTitle": "Your response",
+      "deleteText": "Delete my text",
+      "textDeleted": "Your text was deleted.",
+      "deleteFailed": "Could not delete your text. Try again."
     },
     "speaking": {
       "title": "Read aloud",

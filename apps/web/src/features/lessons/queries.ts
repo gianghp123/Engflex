@@ -7,6 +7,7 @@ import {
 	listLessonProgress,
 	listSections,
 	pronounceAttempt,
+	redactWriting,
 	respeak,
 	scoreWriting,
 	startLessonAttempt,
@@ -132,6 +133,12 @@ export function openAttemptQueryOptions(id: string) {
 		retry: (failureCount: number, error: unknown) =>
 			!(error instanceof ApiError && error.status === 404) && failureCount < 3,
 	};
+}
+
+export function useRedactWriting() {
+	return useMutation({
+		mutationFn: (attemptId: string) => redactWriting(attemptId),
+	});
 }
 
 export function useScoreWriting() {

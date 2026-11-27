@@ -113,6 +113,14 @@ export function scoreWriting(
 	});
 }
 
+/** Irreversibly clears the stored prose on one attempt; feedback and hash
+ *  stay so aggregates remain valid. */
+export function redactWriting(attemptId: string): Promise<void> {
+	return api<void>(API_ROUTES.LESSONS.REDACT_WRITING(attemptId), {
+		method: "DELETE",
+	});
+}
+
 export type {
 	Attempt,
 	AttemptProgress,

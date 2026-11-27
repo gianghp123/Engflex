@@ -107,7 +107,10 @@
         "missing": "Còn thiếu",
         "failed": "Không chấm được bài này. Hãy thử lại."
       },
-      "responseTitle": "Bài viết của bạn"
+      "responseTitle": "Bài viết của bạn",
+      "deleteText": "Xóa văn bản của tôi",
+      "textDeleted": "Đã xóa văn bản của bạn.",
+      "deleteFailed": "Không xóa được văn bản. Hãy thử lại."
     },
     "speaking": {
       "title": "Đọc to",

@@ -33,6 +33,7 @@ import {
 	openAttemptQueryOptions,
 	useCheckAnswer,
 	useLessonDetailBySlug,
+	useRedactWriting,
 	useScoreWriting,
 	useStartLessonAttempt,
 } from "#/features/lessons/queries";
@@ -533,6 +534,7 @@ function WritingActivity({
 	const payload = activity.writing;
 	const [text, setText] = useState("");
 	const score = useScoreWriting();
+	const redact = useRedactWriting();
 	const { withLanguage } = useExplanationLanguage("writing");
 	const [result, setResult] = useState<WritingScoreResponse | null>(null);
 	// The first Check writing on this browser picks the explanation language
@@ -550,6 +552,20 @@ function WritingActivity({
 				},
 			),
 		);
+	}
+
+	function handleDelete() {
+		if (!attemptId || redact.isPending) return;
+		redact.mutate(attemptId, {
+			onSuccess: () => {
+				// The server receipt is gone; clear the local copy and let the
+				// learner start a fresh response rather than resurrect it.
+				setText("");
+				setResult(null);
+				toast.success(m["lessons.writing.textDeleted"]());
+			},
+			onError: () => toast.error(m["lessons.writing.deleteFailed"]()),
+		});
 	}
 	const { continueLabel, handleContinue } = useContinue(
 		lessonId,
@@ -596,6 +612,9 @@ function WritingActivity({
 							setText("");
 							setResult(null);
 						}}
+						onDelete={handleDelete}
+						canDelete={result !== null}
+						deletePending={redact.isPending}
 						onSubmit={handleSubmit}
 						onRevise={() => setResult(null)}
 						submitted={result !== null || score.isPending}

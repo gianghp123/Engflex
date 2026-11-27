@@ -108,6 +108,8 @@ export const API_ROUTES = {
 		SCORE: (activityId: ApiId) => `/lesson-activities/${activityId}/score`,
 		PRONOUNCE: (activityId: ApiId) =>
 			`/lesson-activities/${activityId}/pronounce`,
+		REDACT_WRITING: (attemptId: ApiId) =>
+			`/lesson-activities/attempts/${attemptId}/writing`,
 	},
 	PROGRESS: {
 		SUMMARY: "/progress",
