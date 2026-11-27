@@ -126,6 +126,9 @@
       "costs": {
         "title": "AI action costs",
         "hint": "Credits charged per action. 0 makes the action temporarily free.",
+        "action": "Action",
+        "credits": "Credits",
+        "updated": "Last updated",
         "voiceSession": "Voice session",
         "examReview": "Exam AI review",
         "studyPlan": "Study plan",
@@ -135,6 +138,9 @@
       "trial": {
         "title": "Trial terms",
         "description": "Applies to new trials. Existing trial end dates and granted credits do not change.",
+        "setting": "Setting",
+        "value": "Value",
+        "updated": "Last updated {date}",
         "days": "Duration (days)",
         "credits": "Credits",
         "voiceSessions": "Voice sessions",

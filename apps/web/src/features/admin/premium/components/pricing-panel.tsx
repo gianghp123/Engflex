@@ -2,9 +2,16 @@ import type { AccessAction } from "@engflex/contracts";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { SubmitButton } from "#/components/common/submit-button";
-import { Field, FieldLabel } from "#/components/ui/field";
 import { Input } from "#/components/ui/input";
 import { Skeleton } from "#/components/ui/skeleton";
+import {
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from "#/components/ui/table";
 import {
 	useAdminActionCosts,
 	useAdminTrialTerms,
@@ -26,6 +33,40 @@ const ACTION_LABELS: Record<(typeof PAID_ACTIONS)[number], () => string> = {
 	study_plan: () => m["admin.premium.costs.studyPlan"](),
 };
 
+type TrialKey = "days" | "credits" | "voiceSessions";
+
+const TRIAL_ROWS: {
+	id: TrialKey;
+	label: () => string;
+	min: number;
+	max: number;
+}[] = [
+	{
+		id: "days",
+		label: () => m["admin.premium.trial.days"](),
+		min: 1,
+		max: 365,
+	},
+	{
+		id: "credits",
+		label: () => m["admin.premium.trial.credits"](),
+		min: 0,
+		max: 100000,
+	},
+	{
+		id: "voiceSessions",
+		label: () => m["admin.premium.trial.voiceSessions"](),
+		min: 0,
+		max: 100000,
+	},
+];
+
+function formatUpdated(iso: string | undefined): string {
+	if (!iso) return "—";
+	const date = new Date(iso);
+	return Number.isNaN(date.getTime()) ? "—" : date.toLocaleString();
+}
+
 export function PricingPanel() {
 	const costsQuery = useAdminActionCosts();
 	const trialQuery = useAdminTrialTerms();
@@ -40,10 +81,13 @@ export function PricingPanel() {
 
 	useEffect(() => {
 		if (costsQuery.data) {
+			const byAction = new Map(
+				costsQuery.data.map((row) => [row.action, row.credits]),
+			);
 			setCosts(
-				costsQuery.data.map((row) => ({
-					action: row.action,
-					credits: row.credits,
+				PAID_ACTIONS.map((action) => ({
+					action,
+					credits: byAction.get(action) ?? 0,
 				})),
 			);
 		}
@@ -69,124 +113,162 @@ export function PricingPanel() {
 		);
 	}
 
+	const costRows = PAID_ACTIONS.map((action) => {
+		const draft = costs.find((row) => row.action === action);
+		const meta = costsQuery.data?.find((row) => row.action === action);
+		return {
+			action,
+			credits: draft?.credits ?? 0,
+			updatedAt: meta?.updatedAt,
+		};
+	});
+
+	function updateCost(action: AccessAction, credits: number) {
+		setCosts((current) =>
+			current.map((row) => (row.action === action ? { ...row, credits } : row)),
+		);
+	}
+
+	function updateTrial(key: TrialKey, value: number) {
+		setTrial((current) => ({ ...current, [key]: value }));
+	}
+
 	return (
-		<div className="grid gap-4 lg:grid-cols-2">
-			<section className="surface-card flex flex-col gap-3 p-4 sm:p-5">
-				<h2 className="text-sm font-bold">
-					{m["admin.premium.costs.title"]()}
-				</h2>
-				<p className="text-xs text-muted-foreground">
-					{m["admin.premium.costs.hint"]()}
-				</p>
-				{PAID_ACTIONS.map((action) => {
-					const row = costs.find((item) => item.action === action);
-					return (
-						<Field key={action}>
-							<FieldLabel htmlFor={`cost-${action}`}>
-								{ACTION_LABELS[action]()}
-							</FieldLabel>
-							<Input
-								id={`cost-${action}`}
-								type="number"
-								min={0}
-								max={100000}
-								value={row?.credits ?? 0}
-								onChange={(event) =>
-									setCosts((current) =>
-										current.map((item) =>
-											item.action === action
-												? { ...item, credits: Number(event.target.value) }
-												: item,
-										),
-									)
-								}
-							/>
-						</Field>
-					);
-				})}
-				<SubmitButton
-					pending={saveCosts.isPending}
-					onClick={() => {
-						saveCosts.mutate(
-							{ costs },
-							{
-								onSuccess: () =>
-									toast.success(m["admin.premium.costs.saved"]()),
-								onError: () => toast.error(m["admin.toast.error"]()),
-							},
-						);
-					}}
-				>
-					{m["admin.premium.costs.save"]()}
-				</SubmitButton>
+		<div className="flex flex-col gap-6">
+			<section className="flex flex-col gap-3">
+				<div>
+					<h2 className="text-sm font-bold">
+						{m["admin.premium.costs.title"]()}
+					</h2>
+					<p className="text-xs text-muted-foreground">
+						{m["admin.premium.costs.hint"]()}
+					</p>
+				</div>
+				<div className="overflow-hidden rounded-md border bg-card text-card-foreground">
+					<Table>
+						<TableHeader>
+							<TableRow>
+								<TableHead>{m["admin.premium.costs.action"]()}</TableHead>
+								<TableHead className="w-40">
+									{m["admin.premium.costs.credits"]()}
+								</TableHead>
+								<TableHead className="w-56">
+									{m["admin.premium.costs.updated"]()}
+								</TableHead>
+							</TableRow>
+						</TableHeader>
+						<TableBody>
+							{costRows.map((row) => (
+								<TableRow key={row.action}>
+									<TableCell className="font-medium">
+										{ACTION_LABELS[row.action]()}
+									</TableCell>
+									<TableCell>
+										<Input
+											aria-label={`${ACTION_LABELS[row.action]()} ${m["admin.premium.costs.credits"]()}`}
+											type="number"
+											min={0}
+											max={100000}
+											className="w-28"
+											value={row.credits}
+											onChange={(event) =>
+												updateCost(row.action, Number(event.target.value))
+											}
+										/>
+									</TableCell>
+									<TableCell className="text-muted-foreground">
+										{formatUpdated(row.updatedAt)}
+									</TableCell>
+								</TableRow>
+							))}
+						</TableBody>
+					</Table>
+				</div>
+				<div className="flex justify-end">
+					<SubmitButton
+						type="button"
+						pending={saveCosts.isPending}
+						onClick={() => {
+							saveCosts.mutate(
+								{ costs },
+								{
+									onSuccess: () =>
+										toast.success(m["admin.premium.costs.saved"]()),
+									onError: () => toast.error(m["admin.toast.error"]()),
+								},
+							);
+						}}
+					>
+						{m["admin.premium.costs.save"]()}
+					</SubmitButton>
+				</div>
 			</section>
 
-			<section className="surface-card flex flex-col gap-3 p-4 sm:p-5">
-				<h2 className="text-sm font-bold">
-					{m["admin.premium.trial.title"]()}
-				</h2>
-				<p className="text-xs text-muted-foreground">
-					{m["admin.premium.trial.description"]()}
-				</p>
-				<Field>
-					<FieldLabel htmlFor="trial-days">
-						{m["admin.premium.trial.days"]()}
-					</FieldLabel>
-					<Input
-						id="trial-days"
-						type="number"
-						min={1}
-						max={365}
-						value={trial.days}
-						onChange={(event) =>
-							setTrial({ ...trial, days: Number(event.target.value) })
-						}
-					/>
-				</Field>
-				<Field>
-					<FieldLabel htmlFor="trial-credits">
-						{m["admin.premium.trial.credits"]()}
-					</FieldLabel>
-					<Input
-						id="trial-credits"
-						type="number"
-						min={0}
-						max={100000}
-						value={trial.credits}
-						onChange={(event) =>
-							setTrial({ ...trial, credits: Number(event.target.value) })
-						}
-					/>
-				</Field>
-				<Field>
-					<FieldLabel htmlFor="trial-voice">
-						{m["admin.premium.trial.voiceSessions"]()}
-					</FieldLabel>
-					<Input
-						id="trial-voice"
-						type="number"
-						min={0}
-						max={100000}
-						value={trial.voiceSessions}
-						onChange={(event) =>
-							setTrial({
-								...trial,
-								voiceSessions: Number(event.target.value),
-							})
-						}
-					/>
-				</Field>
-				<SubmitButton
-					pending={saveTrial.isPending}
-					onClick={() => {
-						saveTrial.mutate(trial, {
-							onSuccess: () => toast.success(m["admin.premium.trial.saved"]()),
-							onError: () => toast.error(m["admin.toast.error"]()),
-						});
-					}}
-				>
-					{m["admin.premium.trial.save"]()}
-				</SubmitButton>
+			<section className="flex flex-col gap-3">
+				<div>
+					<h2 className="text-sm font-bold">
+						{m["admin.premium.trial.title"]()}
+					</h2>
+					<p className="text-xs text-muted-foreground">
+						{m["admin.premium.trial.description"]()}
+					</p>
+				</div>
+				<div className="overflow-hidden rounded-md border bg-card text-card-foreground">
+					<Table>
+						<TableHeader>
+							<TableRow>
+								<TableHead>{m["admin.premium.trial.setting"]()}</TableHead>
+								<TableHead className="w-40">
+									{m["admin.premium.trial.value"]()}
+								</TableHead>
+							</TableRow>
+						</TableHeader>
+						<TableBody>
+							{TRIAL_ROWS.map((row) => (
+								<TableRow key={row.id}>
+									<TableCell className="font-medium">{row.label()}</TableCell>
+									<TableCell>
+										<Input
+											aria-label={row.label()}
+											type="number"
+											min={row.min}
+											max={row.max}
+											className="w-28"
+											value={trial[row.id]}
+											onChange={(event) =>
+												updateTrial(row.id, Number(event.target.value))
+											}
+										/>
+									</TableCell>
+								</TableRow>
+							))}
+						</TableBody>
+					</Table>
+				</div>
+				<div className="flex items-center justify-between gap-3">
+					{trialQuery.data?.updatedAt ? (
+						<p className="text-xs text-muted-foreground">
+							{m["admin.premium.trial.updated"]({
+								date: formatUpdated(trialQuery.data.updatedAt),
+							})}
+						</p>
+					) : (
+						<span />
+					)}
+					<SubmitButton
+						type="button"
+						pending={saveTrial.isPending}
+						onClick={() => {
+							saveTrial.mutate(trial, {
+								onSuccess: () =>
+									toast.success(m["admin.premium.trial.saved"]()),
+								onError: () => toast.error(m["admin.toast.error"]()),
+							});
+						}}
+					>
+						{m["admin.premium.trial.save"]()}
+					</SubmitButton>
+				</div>
 			</section>
 		</div>
 	);

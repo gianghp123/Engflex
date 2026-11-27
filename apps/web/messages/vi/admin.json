@@ -126,6 +126,9 @@
       "costs": {
         "title": "Chi phí AI theo hành động",
         "hint": "Số credit thu cho mỗi hành động. Đặt 0 để tạm thời miễn phí.",
+        "action": "Hành động",
+        "credits": "Credit",
+        "updated": "Cập nhật lần cuối",
         "voiceSession": "Buổi luyện nói",
         "examReview": "Chấm bài thi bằng AI",
         "studyPlan": "Lộ trình học",
@@ -135,6 +138,9 @@
       "trial": {
         "title": "Điều khoản dùng thử",
         "description": "Áp dụng cho lượt dùng thử mới. Ngày kết thúc và credit đã cấp không thay đổi.",
+        "setting": "Thiết lập",
+        "value": "Giá trị",
+        "updated": "Cập nhật lần cuối {date}",
         "days": "Thời hạn (ngày)",
         "credits": "Credit",
         "voiceSessions": "Buổi luyện nói",
