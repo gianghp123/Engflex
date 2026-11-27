@@ -352,21 +352,6 @@ export const TurnRoleAI = "ai";
 export type TurnRole = typeof TurnRoleUser | typeof TurnRoleAI;
 
 //////////
-// source: vocabulary_domain.go
-
-/**
- * VocabularyDomain groups technical vocabulary (vocabulary_items.domain).
- * Open set: when a domain is added, extend these constants and the
- * chk_vocabulary_items_domain CHECK together.
- */
-export const VocabularyDomainBackendDB = "backend_db";
-export const VocabularyDomainDistributed = "distributed_systems";
-export const VocabularyDomainDevOpsCloud = "devops_cloud";
-export const VocabularyDomainFrontendUI = "frontend_ui";
-export const VocabularyDomainAIML = "ai_ml";
-export type VocabularyDomain = typeof VocabularyDomainBackendDB | typeof VocabularyDomainDistributed | typeof VocabularyDomainDevOpsCloud | typeof VocabularyDomainFrontendUI | typeof VocabularyDomainAIML;
-
-//////////
 // source: vocabulary_part_of_speech.go
 
 /**

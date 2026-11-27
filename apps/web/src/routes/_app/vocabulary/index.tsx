@@ -64,8 +64,6 @@ function VocabularyPage() {
 			if (!haystack.includes(filters.search.trim().toLowerCase())) return false;
 		}
 		if (item.cefr !== filters.cefr && filters.cefr !== "all") return false;
-		if (item.domain !== filters.domain && filters.domain !== "all")
-			return false;
 		if (
 			item.userState?.sourceType !== filters.source &&
 			filters.source !== "all"

@@ -14,19 +14,19 @@ INSERT INTO vocabulary_categories (id, name, description) VALUES
 ON CONFLICT (id) DO NOTHING;
 
 -- Dictionary entries (shared vocabulary_items, admin-curated) ----------------
-INSERT INTO vocabulary_items (id, term, definition, cefr, domain, status) VALUES
- ('66666666-0000-4000-8000-000000000001','idempotent','An operation that can be applied multiple times without changing the result beyond the first application.','C1','backend_db','published'),
- ('66666666-0000-4000-8000-000000000002','connection pooling','Reusing a set of open database connections instead of opening a new one per request.','B1','backend_db','published'),
- ('66666666-0000-4000-8000-000000000003','cache invalidation','Removing or marking stale a cached value so the next read fetches fresh data.','B2','backend_db','published'),
- ('66666666-0000-4000-8000-000000000004','sharding','Splitting a dataset across multiple databases or nodes to spread load.','C1','distributed_systems','published'),
- ('66666666-0000-4000-8000-000000000005','eventual consistency','A guarantee that replicas converge to the same value given no new writes, but not immediately.','C1','distributed_systems','draft'),
- ('66666666-0000-4000-8000-000000000006','container orchestration','Automated deployment, scaling and management of containerized applications.','B2','devops_cloud','published'),
- ('66666666-0000-4000-8000-000000000007','blue-green deployment','A release strategy that runs two production environments and switches traffic between them.','B2','devops_cloud','draft'),
- ('66666666-0000-4000-8000-000000000008','load balancer','A component that distributes incoming requests across multiple servers.','A2','devops_cloud','published'),
- ('66666666-0000-4000-8000-000000000009','responsive design','Layout that adapts to different screen sizes.','B1','frontend_ui','published'),
- ('66666666-0000-4000-8000-00000000000a','hydration','Attaching client-side interactivity to server-rendered HTML.','B2','frontend_ui','published'),
- ('66666666-0000-4000-8000-00000000000b','gradient descent','An optimization algorithm that iteratively moves parameters toward lower loss.','C1','ai_ml','published'),
- ('66666666-0000-4000-8000-00000000000c','overfitting','A model that fits training data too closely and generalizes poorly.','B2','ai_ml','draft')
+INSERT INTO vocabulary_items (id, term, definition, cefr, part_of_speech, status) VALUES
+ ('66666666-0000-4000-8000-000000000001','idempotent','An operation that can be applied multiple times without changing the result beyond the first application.','C1','adjective','published'),
+ ('66666666-0000-4000-8000-000000000002','connection pooling','Reusing a set of open database connections instead of opening a new one per request.','B1','noun','published'),
+ ('66666666-0000-4000-8000-000000000003','cache invalidation','Removing or marking stale a cached value so the next read fetches fresh data.','B2','noun','published'),
+ ('66666666-0000-4000-8000-000000000004','sharding','Splitting a dataset across multiple databases or nodes to spread load.','C1','noun','published'),
+ ('66666666-0000-4000-8000-000000000005','eventual consistency','A guarantee that replicas converge to the same value given no new writes, but not immediately.','C1','noun','draft'),
+ ('66666666-0000-4000-8000-000000000006','container orchestration','Automated deployment, scaling and management of containerized applications.','B2','noun','published'),
+ ('66666666-0000-4000-8000-000000000007','blue-green deployment','A release strategy that runs two production environments and switches traffic between them.','B2','noun','draft'),
+ ('66666666-0000-4000-8000-000000000008','load balancer','A component that distributes incoming requests across multiple servers.','A2','noun','published'),
+ ('66666666-0000-4000-8000-000000000009','responsive design','Layout that adapts to different screen sizes.','B1','noun','published'),
+ ('66666666-0000-4000-8000-00000000000a','hydration','Attaching client-side interactivity to server-rendered HTML.','B2','noun','published'),
+ ('66666666-0000-4000-8000-00000000000b','gradient descent','An optimization algorithm that iteratively moves parameters toward lower loss.','C1','noun','published'),
+ ('66666666-0000-4000-8000-00000000000c','overfitting','A model that fits training data too closely and generalizes poorly.','B2','noun','draft')
 ON CONFLICT (id) DO NOTHING;
 
 -- System flashcard decks -------------------------------------------------------
@@ -48,10 +48,10 @@ ON CONFLICT (id) DO NOTHING;
 -- Video categories --------------------------------------------------------------
 INSERT INTO video_categories (id, slug, name) VALUES
  ('99999999-0000-4000-8000-000000000001','trailer','Trailer'),
- ('99999999-0000-4000-8000-000000000002','podcast','Podcast Clip'),
+ ('99999999-0000-4000-8000-000000000002','podcast-clip','Podcast Clip'),
  ('99999999-0000-4000-8000-000000000003','interview','Interview'),
  ('99999999-0000-4000-8000-000000000004','tutorial','Tutorial')
-ON CONFLICT (id) DO NOTHING;
+ON CONFLICT (slug) DO NOTHING;
 
 -- Video exercises ----------------------------------------------------------------
 INSERT INTO video_exercises (id, category_id, title, description, video_url, thumbnail_url, cefr_level, duration, status) VALUES

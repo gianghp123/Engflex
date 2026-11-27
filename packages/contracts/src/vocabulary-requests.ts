@@ -88,7 +88,7 @@ export interface CreateVocabularyItem {
   term: string;
   definition: string;
   cefr: string;
-  domain?: string;
+  partOfSpeech?: VocabularyPartOfSpeech;
   isPremium: boolean;
 }
 /**
@@ -100,7 +100,7 @@ export interface UpdateVocabularyItem {
   term?: string;
   definition?: string;
   cefr?: string;
-  domain?: string;
+  partOfSpeech?: VocabularyPartOfSpeech;
   status?: PublishStatus;
   isPremium?: boolean;
 }

@@ -40,7 +40,6 @@ declare global {
   type RelevanceStatus = Enums.RelevanceStatus;
   type VocabularySort = Enums.VocabularySort;
   type VocabularySource = Enums.VocabularySource;
-  type VocabularyDomain = Enums.VocabularyDomain;
   type SubscriptionStatus = Enums.SubscriptionStatus;
   type SubscriptionPlan = Enums.SubscriptionPlan;
   type PaymentTransactionStatus = Enums.PaymentTransactionStatus;

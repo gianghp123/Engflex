@@ -12,17 +12,17 @@ import (
 // (jsonb) holds audio, syllables, stress, etymology, contexts, collocations,
 // and word forms.
 type VocabularyItem struct {
-	ID              string                  `gorm:"type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
-	Term            string                  `gorm:"not null" json:"term"`
-	Definition      string                  `gorm:"not null;default:''" json:"definition"`
-	CEFR            enums.CEFR              `gorm:"column:cefr;not null" json:"cefr"`
-	Domain          *enums.VocabularyDomain `gorm:"column:domain" json:"domain"`
-	CreatedByUserID *string                 `json:"createdByUserId"`
-	Status          enums.PublishStatus     `gorm:"not null;default:draft" json:"status"`
-	IsPremium       bool                    `gorm:"not null;default:false" json:"isPremium"`
-	Details         VocabularyDetails       `gorm:"type:jsonb;not null;default:'{}'" json:"details"`
-	CreatedAt       time.Time               `gorm:"autoCreateTime" json:"createdAt"`
-	UpdatedAt       time.Time               `gorm:"autoUpdateTime" json:"updatedAt"`
+	ID              string                        `gorm:"type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
+	Term            string                        `gorm:"not null" json:"term"`
+	Definition      string                        `gorm:"not null;default:''" json:"definition"`
+	CEFR            enums.CEFR                    `gorm:"column:cefr;not null" json:"cefr"`
+	PartOfSpeech    *enums.VocabularyPartOfSpeech `gorm:"column:part_of_speech" json:"partOfSpeech"`
+	CreatedByUserID *string                       `json:"createdByUserId"`
+	Status          enums.PublishStatus           `gorm:"not null;default:draft" json:"status"`
+	IsPremium       bool                          `gorm:"not null;default:false" json:"isPremium"`
+	Details         VocabularyDetails             `gorm:"type:jsonb;not null;default:'{}'" json:"details"`
+	CreatedAt       time.Time                     `gorm:"autoCreateTime" json:"createdAt"`
+	UpdatedAt       time.Time                     `gorm:"autoUpdateTime" json:"updatedAt"`
 }
 
 func (VocabularyItem) TableName() string { return "vocabulary_items" }

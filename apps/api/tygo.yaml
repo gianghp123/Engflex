@@ -30,7 +30,6 @@ type_mappings:
   "enums.TurnRole": "TurnRole"
   "enums.VocabularySort": "VocabularySort"
   "enums.VocabularySource": "VocabularySource"
-  "enums.VocabularyDomain": "VocabularyDomain"
   "enums.VocabularyPartOfSpeech": "VocabularyPartOfSpeech"
   "enums.ContentType": "ContentType"
   "enums.SpanStatus": "SpanStatus"

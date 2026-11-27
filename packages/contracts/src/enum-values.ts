@@ -25,7 +25,6 @@ export const SPAN_STATUS_VALUES = ["incorrect", "awkward"] as const satisfies re
 export const SUBSCRIPTION_PLAN_VALUES = ["1m", "3m", "12m"] as const satisfies readonly Enums.SubscriptionPlan[];
 export const SUBSCRIPTION_STATUS_VALUES = ["pending", "active", "expired", "cancelled", "failed"] as const satisfies readonly Enums.SubscriptionStatus[];
 export const TURN_ROLE_VALUES = ["user", "ai"] as const satisfies readonly Enums.TurnRole[];
-export const VOCABULARY_DOMAIN_VALUES = ["backend_db", "distributed_systems", "devops_cloud", "frontend_ui", "ai_ml"] as const satisfies readonly Enums.VocabularyDomain[];
 export const VOCABULARY_PART_OF_SPEECH_VALUES = ["noun", "verb", "adjective", "adverb", "pronoun", "preposition", "conjunction", "interjection", "determiner", "phrase", "idiom", "phrasal_verb"] as const satisfies readonly Enums.VocabularyPartOfSpeech[];
 export const VOCABULARY_SORT_VALUES = ["recent", "mastery", "alphabetical", "interval"] as const satisfies readonly Enums.VocabularySort[];
 export const VOCABULARY_SOURCE_VALUES = ["lesson", "conversation", "video", "manual", "story"] as const satisfies readonly Enums.VocabularySource[];

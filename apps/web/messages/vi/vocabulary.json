@@ -53,15 +53,6 @@
         "conversation": "Từ hội thoại AI",
         "manual": "Tùy chỉnh"
       },
-      "domainLabel": "Lĩnh vực:",
-      "domainAll": "Mọi lĩnh vực",
-      "domain": {
-        "backendDb": "Backend & CSDL",
-        "distributedSystems": "Hệ phân tán",
-        "devopsCloud": "DevOps & Cloud",
-        "frontendUi": "Frontend & UI",
-        "aiMl": "AI & Học máy"
-      },
       "cefrLabel": "CEFR:",
       "cefrAll": "Tất cả",
       "sort": {
