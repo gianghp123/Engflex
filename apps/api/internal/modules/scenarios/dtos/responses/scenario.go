@@ -11,17 +11,18 @@ import (
 // blob, whose struct shape matches models.ScenarioDetail field for field.
 // A non-null Persona marks curated scenarios.
 type Scenario struct {
-	ID          string                   `json:"id"`
-	Topic       *ScenarioTopic           `json:"topic,omitempty"`
-	Persona     *Persona                 `json:"persona"`
-	Title       string                   `json:"title"`
-	Objective   string                   `json:"objective"`
-	Objectives  []ScenarioObjective      `json:"objectives"`
-	CEFRLevel   enums.ScenarioDifficulty `json:"cefrLevel"`
-	MaxDuration int                      `json:"maxDuration"`
-	Details     ScenarioDetail           `json:"details"`
-	Status      enums.PublishStatus      `json:"status"`
-	IsPremium   bool                     `json:"isPremium"`
+	ID           string                   `json:"id"`
+	Topic        *ScenarioTopic           `json:"topic,omitempty"`
+	Persona      *Persona                 `json:"persona"`
+	Title        string                   `json:"title"`
+	Objective    string                   `json:"objective"`
+	Objectives   []ScenarioObjective      `json:"objectives"`
+	CEFRLevel    enums.ScenarioDifficulty `json:"cefrLevel"`
+	MaxDuration  int                      `json:"maxDuration"`
+	Details      ScenarioDetail           `json:"details"`
+	Status       enums.PublishStatus      `json:"status"`
+	IsPremium    bool                     `json:"isPremium"`
+	AICreditCost int                      `json:"aiCreditCost"`
 }
 
 // ScenarioObjective is one roleplay task. ID is the 1-based position, local

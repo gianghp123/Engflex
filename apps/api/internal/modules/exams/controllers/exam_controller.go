@@ -7,6 +7,7 @@ import (
 
 	"engflex-api/internal/common"
 	"engflex-api/internal/common/enums"
+	accessservices "engflex-api/internal/modules/access/services"
 	"engflex-api/internal/modules/exams/dtos/requests"
 	"engflex-api/internal/modules/exams/dtos/responses"
 	"engflex-api/internal/modules/exams/services"
@@ -144,6 +145,7 @@ func (h *ExamController) Start(c *gin.Context) {
 		common.Fail(c, common.Internal())
 		return
 	}
+	decorateAttempt(&dto)
 	common.Created(c, "exam attempt started", dto)
 }
 
@@ -224,6 +226,7 @@ func (h *ExamController) GetAttempt(c *gin.Context) {
 			common.Fail(c, common.Internal())
 			return
 		}
+		decorateReview(&dto)
 		common.OK(c, "exam attempt", dto)
 		return
 	}
@@ -232,6 +235,7 @@ func (h *ExamController) GetAttempt(c *gin.Context) {
 		common.Fail(c, common.Internal())
 		return
 	}
+	decorateAttempt(&dto)
 	common.OK(c, "exam attempt", dto)
 }
 
@@ -271,10 +275,32 @@ func (h *ExamController) PatchAttempt(c *gin.Context) {
 	if m.Status == enums.AttemptStatusCompleted {
 		var dto responses.ReviewAttempt
 		_ = utils.Map(&dto, m)
+		decorateReview(&dto)
 		common.OK(c, "exam attempt", dto)
 		return
 	}
 	var dto responses.ExamAttempt
 	_ = utils.Map(&dto, m)
+	decorateAttempt(&dto)
 	common.OK(c, "exam attempt", dto)
+}
+
+// decorateAttempt stamps the paid-AI badge costs on an in-progress attempt
+// view; decorateReview does the same for a completed review view. Both are
+// server data from the access policy, set after the blanket Map.
+func decorateAttempt(dto *responses.ExamAttempt) {
+	if dto == nil {
+		return
+	}
+	dto.AIReviewCreditCost = accessservices.CreditCost(accessservices.ActionExamReview)
+	dto.StudyPlanCreditCost = accessservices.CreditCost(accessservices.ActionStudyPlan)
+}
+
+// decorateReview stamps the paid-AI badge costs on a completed review view.
+func decorateReview(dto *responses.ReviewAttempt) {
+	if dto == nil {
+		return
+	}
+	dto.AIReviewCreditCost = accessservices.CreditCost(accessservices.ActionExamReview)
+	dto.StudyPlanCreditCost = accessservices.CreditCost(accessservices.ActionStudyPlan)
 }

@@ -120,7 +120,11 @@ function ResultContent({ attempt }: { attempt: ExamReviewAttempt }) {
 		>
 			<h1 className="text-2xl font-bold">{m["exams.toeic.result.title"]()}</h1>
 			<ToeicResultHeaderCard attempt={attempt} answers={answers} />
-			<AiReviewPanel attemptId={attempt.id} />
+			<AiReviewPanel
+				attemptId={attempt.id}
+				examReviewCost={attempt.aiReviewCreditCost}
+				studyPlanCost={attempt.studyPlanCreditCost}
+			/>
 			<ToeicResultPartsCard
 				parts={parts.map((part) => partStatistics(part, answers))}
 			/>

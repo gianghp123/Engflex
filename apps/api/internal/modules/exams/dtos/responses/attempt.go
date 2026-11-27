@@ -62,19 +62,21 @@ type AttemptTestSummary struct {
 }
 
 type ExamAttempt struct {
-	ID                string              `json:"id"`
-	Status            enums.AttemptStatus `json:"status"`
-	Mode              *enums.ExamMode     `json:"mode"`
-	SelectedParts     []int64             `json:"selectedParts"`
-	Score             *float64            `json:"score"`
-	DurationSec       *int                `json:"durationSec"`
-	StartedAt         *time.Time          `json:"startedAt"`
-	SubmittedAt       *time.Time          `json:"submittedAt"`
-	DeadlineAt        *time.Time          `json:"deadlineAt"`
-	CreatedAt         time.Time           `json:"createdAt"`
-	ExamTest          *TakingTest         `json:"examTest"`
-	ParsedResult      *Result             `json:"result,omitempty"`
-	ParsedIeltsResult *Result             `json:"ieltsResult,omitempty"`
+	ID                  string              `json:"id"`
+	Status              enums.AttemptStatus `json:"status"`
+	Mode                *enums.ExamMode     `json:"mode"`
+	SelectedParts       []int64             `json:"selectedParts"`
+	Score               *float64            `json:"score"`
+	DurationSec         *int                `json:"durationSec"`
+	StartedAt           *time.Time          `json:"startedAt"`
+	SubmittedAt         *time.Time          `json:"submittedAt"`
+	DeadlineAt          *time.Time          `json:"deadlineAt"`
+	CreatedAt           time.Time           `json:"createdAt"`
+	ExamTest            *TakingTest         `json:"examTest"`
+	ParsedResult        *Result             `json:"result,omitempty"`
+	ParsedIeltsResult   *Result             `json:"ieltsResult,omitempty"`
+	AIReviewCreditCost  int                 `json:"aiReviewCreditCost"`
+	StudyPlanCreditCost int                 `json:"studyPlanCreditCost"`
 }
 type TakingTest struct {
 	ID                 string              `json:"id"`
@@ -89,19 +91,21 @@ type TakingTest struct {
 }
 
 type ReviewAttempt struct {
-	ID                string              `json:"id"`
-	Status            enums.AttemptStatus `json:"status"`
-	Mode              *enums.ExamMode     `json:"mode"`
-	SelectedParts     []int64             `json:"selectedParts"`
-	Score             *float64            `json:"score"`
-	DurationSec       *int                `json:"durationSec"`
-	StartedAt         *time.Time          `json:"startedAt"`
-	SubmittedAt       *time.Time          `json:"submittedAt"`
-	DeadlineAt        *time.Time          `json:"deadlineAt"`
-	CreatedAt         time.Time           `json:"createdAt"`
-	ExamTest          *ReviewTest         `json:"examTest"`
-	ParsedResult      *Result             `json:"result,omitempty"`
-	ParsedIeltsResult *Result             `json:"ieltsResult,omitempty"`
+	ID                  string              `json:"id"`
+	Status              enums.AttemptStatus `json:"status"`
+	Mode                *enums.ExamMode     `json:"mode"`
+	SelectedParts       []int64             `json:"selectedParts"`
+	Score               *float64            `json:"score"`
+	DurationSec         *int                `json:"durationSec"`
+	StartedAt           *time.Time          `json:"startedAt"`
+	SubmittedAt         *time.Time          `json:"submittedAt"`
+	DeadlineAt          *time.Time          `json:"deadlineAt"`
+	CreatedAt           time.Time           `json:"createdAt"`
+	ExamTest            *ReviewTest         `json:"examTest"`
+	ParsedResult        *Result             `json:"result,omitempty"`
+	ParsedIeltsResult   *Result             `json:"ieltsResult,omitempty"`
+	AIReviewCreditCost  int                 `json:"aiReviewCreditCost"`
+	StudyPlanCreditCost int                 `json:"studyPlanCreditCost"`
 }
 type ReviewTest struct {
 	ID                 string              `json:"id"`

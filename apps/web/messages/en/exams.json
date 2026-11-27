@@ -321,8 +321,8 @@
     "result": {
       "aiReview": {
         "title": "AI mistake review",
-        "hint": "One credit. Re-opening the review is always free.",
-        "cta": "Explain my mistakes with AI (1 credit)",
+        "hint": "AI cost: {credits} credit. Re-opening the review is always free.",
+        "cta": "Explain my mistakes with AI ({credits} credit cost)",
         "generating": "Reviewing your mistakes…",
         "failed": "The review failed. Your credit was not used — try again.",
         "summary": "Summary",
@@ -333,8 +333,8 @@
       },
       "studyPlan": {
         "title": "AI study plan",
-        "hint": "Two credits. Re-opening the plan is always free.",
-        "cta": "Build my study plan with AI (2 credits)",
+        "hint": "AI cost: {credits} credit. Re-opening the plan is always free.",
+        "cta": "Build my study plan with AI ({credits} credit cost)",
         "generating": "Building your study plan…",
         "failed": "The study plan failed. Your credits were not used — try again.",
         "summary": "Summary",

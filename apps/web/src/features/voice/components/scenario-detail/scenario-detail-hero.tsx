@@ -1,5 +1,5 @@
 import type { Scenario } from "@engflex/contracts";
-import { ArrowRight, Clock3 } from "lucide-react";
+import { ArrowRight, Clock3, Coins } from "lucide-react";
 import { CefrBadge } from "#/components/common/cefr-badge";
 import { SubmitButton } from "#/components/common/submit-button";
 import { personaInitials } from "#/features/voice/persona";
@@ -30,6 +30,14 @@ export function ScenarioDetailHero({
 							<Clock3 className="size-3.5" />
 							{m["voice.detail.upTo"]({ max: scenario.maxDuration })}
 						</span>
+						{scenario.aiCreditCost > 0 ? (
+							<span className="inline-flex items-center gap-1 text-[11px] font-medium text-muted-foreground">
+								<Coins className="size-3.5" />
+								{m["voice.detail.creditCost"]({
+									credits: scenario.aiCreditCost,
+								})}
+							</span>
+						) : null}
 						<span className="ml-auto shrink-0">
 							<CefrBadge value={scenario.cefrLevel} />
 						</span>
@@ -64,7 +72,11 @@ export function ScenarioDetailHero({
 					onClick={onStart}
 					pending={pending}
 				>
-					{m["voice.detail.start"]()}
+					{scenario.aiCreditCost > 0
+						? m["voice.detail.startWithCost"]({
+								credits: scenario.aiCreditCost,
+							})
+						: m["voice.detail.start"]()}
 					<ArrowRight data-icon="inline-end" />
 				</SubmitButton>
 			</div>

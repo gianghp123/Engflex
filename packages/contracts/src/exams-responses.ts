@@ -70,6 +70,8 @@ export interface ExamAttempt {
   examTest: TakingTest | null;
   result: Result | null;
   ieltsResult: Result | null;
+  aiReviewCreditCost: number /* int */;
+  studyPlanCreditCost: number /* int */;
 }
 export interface TakingTest {
   id: string;
@@ -96,6 +98,8 @@ export interface ReviewAttempt {
   examTest: ReviewTest | null;
   result: Result | null;
   ieltsResult: Result | null;
+  aiReviewCreditCost: number /* int */;
+  studyPlanCreditCost: number /* int */;
 }
 export interface ReviewTest {
   id: string;

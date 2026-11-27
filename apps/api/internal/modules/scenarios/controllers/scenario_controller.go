@@ -9,6 +9,7 @@ import (
 	"engflex-api/internal/common"
 	"engflex-api/internal/common/enums"
 	"engflex-api/internal/database/models"
+	accessservices "engflex-api/internal/modules/access/services"
 	"engflex-api/internal/modules/scenarios/dtos/requests"
 	"engflex-api/internal/modules/scenarios/dtos/responses"
 	"engflex-api/internal/modules/scenarios/services"
@@ -54,6 +55,7 @@ func (h *ScenarioController) List(c *gin.Context) {
 	for i := range dtos {
 		if i < len(items) {
 			decodeScenarioObjectives(&dtos[i], items[i])
+			decorateScenario(&dtos[i])
 		}
 	}
 	common.Paginated(c, "scenarios", dtos, page, pageSize, total)
@@ -103,6 +105,7 @@ func (h *ScenarioController) TopicsWithPreview(c *gin.Context) {
 				decodeScenarioObjectives(&dtos[i].Scenarios[j], topics[i].Scenarios[j])
 			}
 		}
+		decorateTopic(&dtos[i])
 	}
 	// Plain array, NOT Paginated: the web reads it with api<T>. Each banner
 	// carries its own scenarios, so the browser renders what it got.
@@ -126,6 +129,7 @@ func (h *ScenarioController) GetByID(c *gin.Context) {
 	var dto responses.Scenario
 	_ = utils.Map(&dto, m)
 	decodeScenarioObjectives(&dto, m)
+	decorateScenario(&dto)
 	common.OK(c, "scenario", dto)
 }
 
@@ -152,6 +156,7 @@ func (h *ScenarioController) Create(c *gin.Context) {
 	var dto responses.Scenario
 	_ = utils.Map(&dto, m)
 	decodeScenarioObjectives(&dto, m)
+	decorateScenario(&dto)
 	common.Created(c, "scenario created", dto)
 }
 
@@ -179,6 +184,7 @@ func (h *ScenarioController) Update(c *gin.Context) {
 	var dto responses.Scenario
 	_ = utils.Map(&dto, m)
 	decodeScenarioObjectives(&dto, m)
+	decorateScenario(&dto)
 	common.OK(c, "scenario updated", dto)
 }
 
@@ -220,6 +226,7 @@ func (h *ScenarioController) CreateTopic(c *gin.Context) {
 	}
 	var dto responses.ScenarioTopic
 	_ = utils.Map(&dto, m)
+	decorateTopic(&dto)
 	common.Created(c, "scenario topic created", dto)
 }
 
@@ -246,6 +253,7 @@ func (h *ScenarioController) UpdateTopic(c *gin.Context) {
 	}
 	var dto responses.ScenarioTopic
 	_ = utils.Map(&dto, m)
+	decorateTopic(&dto)
 	common.OK(c, "scenario topic updated", dto)
 }
 
@@ -263,6 +271,27 @@ func (h *ScenarioController) DeleteTopic(c *gin.Context) {
 		return
 	}
 	common.OK(c, "scenario topic deleted", nil)
+}
+
+// decorateScenario stamps the voice-session credit badge on one card. The
+// model carries no cost column — the value is server data from the access
+// policy, set after the blanket Map so copier has nothing to mirror.
+func decorateScenario(dto *responses.Scenario) {
+	if dto == nil {
+		return
+	}
+	dto.AICreditCost = accessservices.CreditCost(accessservices.ActionVoiceStart)
+}
+
+// decorateTopic stamps every nested preview card; topics themselves carry
+// no cost.
+func decorateTopic(dto *responses.ScenarioTopic) {
+	if dto == nil {
+		return
+	}
+	for i := range dto.Scenarios {
+		decorateScenario(&dto.Scenarios[i])
+	}
 }
 
 // decodeScenarioObjectives fills the wire list from the model's jsonb blob.

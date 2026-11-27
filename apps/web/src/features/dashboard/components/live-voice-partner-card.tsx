@@ -78,6 +78,13 @@ export function LiveVoicePartnerCard() {
 						}
 						selected={selectedId === scenario.id}
 						onSelect={() => setPickedId(scenario.id)}
+						costText={
+							scenario.aiCreditCost > 0
+								? m["voice.card.creditCost"]({
+										credits: scenario.aiCreditCost,
+									})
+								: undefined
+						}
 					/>
 				))}
 			</div>

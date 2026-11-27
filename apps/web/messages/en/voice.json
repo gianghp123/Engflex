@@ -205,6 +205,8 @@
       "loading": "Loading scenario…",
       "upTo": "Up to {max} min",
       "start": "Start sparring with Mo",
+      "creditCost": "{credits} AI credit",
+      "startWithCost": "Start conversation · {credits} credit",
       "context": {
         "title": "The situation & context",
         "role": "Your role",
@@ -226,7 +228,8 @@
     },
     "card": {
       "maxSession": "Max {max} min session",
-      "start": "Start practice"
+      "start": "Start practice",
+      "creditCost": "{credits} AI credit"
     },
     "history": {
       "title": "Your speaking history",

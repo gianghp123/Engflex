@@ -210,7 +210,13 @@ function PlanBody({ payload }: { payload: StudyPlanPayload }) {
 	);
 }
 
-function ReviewSection({ attemptId }: { attemptId: string }) {
+function ReviewSection({
+	attemptId,
+	examReviewCost,
+}: {
+	attemptId: string;
+	examReviewCost: number;
+}) {
 	const queryClient = useQueryClient();
 	const [quotaError, setQuotaError] = useState<ApiError | null>(null);
 	const cached = useQuery({
@@ -253,14 +259,14 @@ function ReviewSection({ attemptId }: { attemptId: string }) {
 								pending={cached.isFetching}
 								onClick={() => void cached.refetch()}
 							>
-								{m["exams.result.aiReview.cta"]()}
+								{m["exams.result.aiReview.cta"]({ credits: examReviewCost })}
 							</SubmitButton>
 						</div>
 					</>
 				) : (
 					<>
 						<p className="text-sm text-muted-foreground">
-							{m["exams.result.aiReview.hint"]()}
+							{m["exams.result.aiReview.hint"]({ credits: examReviewCost })}
 						</p>
 						{generate.isError && !isQuotaError(generate.error) ? (
 							<p className="text-sm text-destructive">
@@ -274,7 +280,7 @@ function ReviewSection({ attemptId }: { attemptId: string }) {
 								loadingLabel={m["exams.result.aiReview.generating"]()}
 								onClick={() => generate.mutate()}
 							>
-								{m["exams.result.aiReview.cta"]()}
+								{m["exams.result.aiReview.cta"]({ credits: examReviewCost })}
 							</SubmitButton>
 						</div>
 					</>
@@ -288,7 +294,13 @@ function ReviewSection({ attemptId }: { attemptId: string }) {
 	);
 }
 
-function PlanSection({ attemptId }: { attemptId: string }) {
+function PlanSection({
+	attemptId,
+	studyPlanCost,
+}: {
+	attemptId: string;
+	studyPlanCost: number;
+}) {
 	const queryClient = useQueryClient();
 	const [quotaError, setQuotaError] = useState<ApiError | null>(null);
 	const cached = useQuery({
@@ -331,14 +343,14 @@ function PlanSection({ attemptId }: { attemptId: string }) {
 								pending={cached.isFetching}
 								onClick={() => void cached.refetch()}
 							>
-								{m["exams.result.studyPlan.cta"]()}
+								{m["exams.result.studyPlan.cta"]({ credits: studyPlanCost })}
 							</SubmitButton>
 						</div>
 					</>
 				) : (
 					<>
 						<p className="text-sm text-muted-foreground">
-							{m["exams.result.studyPlan.hint"]()}
+							{m["exams.result.studyPlan.hint"]({ credits: studyPlanCost })}
 						</p>
 						{generate.isError && !isQuotaError(generate.error) ? (
 							<p className="text-sm text-destructive">
@@ -352,7 +364,7 @@ function PlanSection({ attemptId }: { attemptId: string }) {
 								loadingLabel={m["exams.result.studyPlan.generating"]()}
 								onClick={() => generate.mutate()}
 							>
-								{m["exams.result.studyPlan.cta"]()}
+								{m["exams.result.studyPlan.cta"]({ credits: studyPlanCost })}
 							</SubmitButton>
 						</div>
 					</>
@@ -366,14 +378,23 @@ function PlanSection({ attemptId }: { attemptId: string }) {
 	);
 }
 
-/** Paid AI analysis for a completed attempt: the mistake review (1 credit)
- *  and the study plan (2 credits). A previously generated document loads via
- *  the free cached GET on mount — no CTA, no credit spent. */
-export function AiReviewPanel({ attemptId }: { attemptId: string }) {
+/** Paid AI analysis for a completed attempt: the mistake review and the study
+ *  plan, each charged at the per-attempt cost passed in via props. A
+ *  previously generated document loads via the free cached GET on mount —
+ *  no CTA, no credit spent. */
+export function AiReviewPanel({
+	attemptId,
+	examReviewCost,
+	studyPlanCost,
+}: {
+	attemptId: string;
+	examReviewCost: number;
+	studyPlanCost: number;
+}) {
 	return (
 		<div className="flex flex-col gap-4">
-			<ReviewSection attemptId={attemptId} />
-			<PlanSection attemptId={attemptId} />
+			<ReviewSection attemptId={attemptId} examReviewCost={examReviewCost} />
+			<PlanSection attemptId={attemptId} studyPlanCost={studyPlanCost} />
 		</div>
 	);
 }

@@ -321,8 +321,8 @@
     "result": {
       "aiReview": {
         "title": "AI chữa lỗi sai",
-        "hint": "Tốn 1 credit. Mở lại bài chữa luôn miễn phí.",
-        "cta": "Nhờ AI chữa lỗi sai (1 credit)",
+        "hint": "Chi phí AI: {credits} credit. Mở lại bài chữa luôn miễn phí.",
+        "cta": "Nhờ AI chữa lỗi sai ({credits} credit)",
         "generating": "Đang chữa lỗi sai…",
         "failed": "Chữa bài thất bại. Bạn không bị trừ credit — hãy thử lại.",
         "summary": "Nhận xét chung",
@@ -333,8 +333,8 @@
       },
       "studyPlan": {
         "title": "Lộ trình học AI",
-        "hint": "Tốn 2 credit. Mở lại lộ trình luôn miễn phí.",
-        "cta": "Nhờ AI lập lộ trình học (2 credit)",
+        "hint": "Chi phí AI: {credits} credit. Mở lại lộ trình luôn miễn phí.",
+        "cta": "Nhờ AI lập lộ trình học ({credits} credit)",
         "generating": "Đang lập lộ trình học…",
         "failed": "Lập lộ trình thất bại. Bạn không bị trừ credit — hãy thử lại.",
         "summary": "Nhận xét chung",

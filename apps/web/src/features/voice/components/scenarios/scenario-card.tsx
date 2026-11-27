@@ -1,7 +1,7 @@
 import type { Scenario } from "@engflex/contracts";
 import { Link } from "@tanstack/react-router";
 import { cn } from "cn";
-import { Clock3 } from "lucide-react";
+import { Clock3, Coins } from "lucide-react";
 import { APP_ROUTES } from "#/app/app-route";
 import { CefrBadge } from "#/components/common/cefr-badge";
 import { PremiumBadge } from "#/components/common/premium-badge";
@@ -63,9 +63,17 @@ export function ScenarioCard({
 				{scenario.objective}
 			</p>
 			<div className="mt-auto flex items-center justify-between gap-2 pt-1">
-				<span className="inline-flex items-center gap-1 text-[11px] font-medium text-muted-foreground">
-					<Clock3 className="size-3.5" />
-					{m["voice.card.maxSession"]({ max: scenario.maxDuration })}
+				<span className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1 text-[11px] font-medium text-muted-foreground">
+					<span className="inline-flex items-center gap-1">
+						<Clock3 className="size-3.5" />
+						{m["voice.card.maxSession"]({ max: scenario.maxDuration })}
+					</span>
+					{scenario.aiCreditCost > 0 ? (
+						<span className="inline-flex items-center gap-1">
+							<Coins className="size-3.5" />
+							{m["voice.card.creditCost"]({ credits: scenario.aiCreditCost })}
+						</span>
+					) : null}
 				</span>
 				{premiumBlocked ? (
 					<Button asChild size="sm" className="btn btn-primary">

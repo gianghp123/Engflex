@@ -85,6 +85,20 @@ var actionCharges = map[Action][]Charge{
 // free: no counter is read or written.
 func ActionCharges(action Action) []Charge { return actionCharges[action] }
 
+// CreditCost is the AI-credit badge cost an option card shows: the sum of
+// the action's AI-credit charges only (voice sessions also debit a session
+// slot, which is quota, not a credit badge). Free actions cost 0, and the
+// UI hides a 0-cost badge.
+func CreditCost(action Action) int {
+	total := 0
+	for _, ch := range ActionCharges(action) {
+		if ch.Counter == enums.CounterKindAICredit {
+			total += ch.Amount
+		}
+	}
+	return total
+}
+
 // defaultLimits is the boot snapshot when the DB cannot be read (spec §5.6)
 // — the process must never fail to start, and paid AI still fails closed
 // later because the usage store is checked independently.

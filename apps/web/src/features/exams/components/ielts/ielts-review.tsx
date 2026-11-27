@@ -71,7 +71,11 @@ export function IeltsReview({ attempt }: { attempt: ExamReviewAttempt }) {
 						aside={<Clock className="size-7 text-purple-500" />}
 					/>
 				</div>
-				<AiReviewPanel attemptId={attempt.id} />
+				<AiReviewPanel
+					attemptId={attempt.id}
+					examReviewCost={attempt.aiReviewCreditCost}
+					studyPlanCost={attempt.studyPlanCreditCost}
+				/>
 				<div className="flex flex-wrap gap-2">
 					<Button
 						variant={filter === "all" ? "default" : "outline"}

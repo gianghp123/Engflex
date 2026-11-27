@@ -205,6 +205,8 @@
       "loading": "Đang tải tình huống…",
       "upTo": "Tối đa {max} phút",
       "start": "Bắt đầu luyện với Mo",
+      "creditCost": "{credits} credit AI",
+      "startWithCost": "Bắt đầu hội thoại · {credits} credit",
       "context": {
         "title": "Bối cảnh & tình huống",
         "role": "Vai của bạn",
@@ -226,7 +228,8 @@
     },
     "card": {
       "maxSession": "Tối đa {max} phút",
-      "start": "Bắt đầu luyện"
+      "start": "Bắt đầu luyện",
+      "creditCost": "{credits} credit AI"
     },
     "history": {
       "title": "Lịch sử luyện nói",

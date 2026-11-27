@@ -1,15 +1,18 @@
 import { cn } from "cn";
+import { Coins } from "lucide-react";
 
 export function ScenarioSelectorRow({
 	title,
 	status,
 	selected,
 	onSelect,
+	costText,
 }: {
 	title: string;
 	status: string;
 	selected: boolean;
 	onSelect: () => void;
+	costText?: string;
 }) {
 	return (
 		<button
@@ -23,7 +26,17 @@ export function ScenarioSelectorRow({
 					: "border-border bg-card hover:border-primary",
 			)}
 		>
-			<span className="truncate font-medium text-foreground">{title}</span>
+			<span className="flex min-w-0 flex-col">
+				<span className="block truncate font-medium text-foreground">
+					{title}
+				</span>
+				{costText ? (
+					<span className="mt-0.5 flex items-center gap-1 text-[11px] font-medium text-muted-foreground">
+						<Coins className="size-3.5" />
+						{costText}
+					</span>
+				) : null}
+			</span>
 			<span
 				className={cn(
 					"shrink-0 text-[11px] font-semibold",

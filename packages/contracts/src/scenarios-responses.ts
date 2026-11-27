@@ -38,6 +38,7 @@ export interface Scenario {
   details: ScenarioDetail;
   status: PublishStatus;
   isPremium: boolean;
+  aiCreditCost: number /* int */;
 }
 /**
  * ScenarioObjective is one roleplay task. ID is the 1-based position, local

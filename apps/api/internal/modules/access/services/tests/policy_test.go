@@ -46,6 +46,25 @@ func TestActionCharges(t *testing.T) {
 	}
 }
 
+func TestCreditCost(t *testing.T) {
+	tests := []struct {
+		name   string
+		action accessservices.Action
+		want   int
+	}{
+		{name: "voice start costs one credit (session slot is not a credit)", action: accessservices.ActionVoiceStart, want: 1},
+		{name: "exam review costs one credit", action: accessservices.ActionExamReview, want: 1},
+		{name: "study plan costs two credits", action: accessservices.ActionStudyPlan, want: 2},
+		{name: "writing score is free", action: accessservices.ActionWritingScore, want: 0},
+		{name: "pronunciation is free", action: accessservices.ActionPronunciation, want: 0},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, accessservices.CreditCost(tt.action))
+		})
+	}
+}
+
 func TestEvaluateMatrix(t *testing.T) {
 	voiceUsage := func(credits, sessions int) accessservices.UsageSnapshot {
 		return accessservices.UsageSnapshot{
