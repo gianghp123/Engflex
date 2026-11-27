@@ -12,10 +12,15 @@ import {
 	TableRow,
 } from "#/components/ui/table";
 import {
+	CreditGuideButton,
+	CreditGuideDialog,
+} from "#/features/payments/components/credit-guide-dialog";
+import {
 	UsageHistoryList,
 	usageActionLabel,
 } from "#/features/payments/components/usage/usage-history-list";
 import { useMyUsage } from "#/features/payments/entitlements";
+import { useCreditGuide } from "#/features/payments/hooks/use-credit-guide";
 import { m } from "#/paraglide/messages";
 import { getLocale } from "#/paraglide/runtime";
 
@@ -86,6 +91,7 @@ export function UsagePage({
 	onPageChange: (page: number, opts?: { replace?: boolean }) => void;
 }) {
 	const query = useMyUsage(page, PAGE_SIZE);
+	const guide = useCreditGuide();
 	const total = query.data?.history.total ?? 0;
 	const historyPageSize = query.data?.history.pageSize ?? PAGE_SIZE;
 	const lastPage = Math.max(1, Math.ceil(total / historyPageSize));
@@ -102,11 +108,16 @@ export function UsagePage({
 
 	return (
 		<div className="flex flex-col gap-6">
-			<div>
-				<h1 className="text-2xl font-bold">{m["payments.usage.title"]()}</h1>
-				<p className="mt-1 text-muted-foreground">
-					{m["payments.usage.subtitle"]()}
-				</p>
+			<div className="flex items-start justify-between gap-3">
+				<div>
+					<h1 className="text-2xl font-bold">{m["payments.usage.title"]()}</h1>
+					<p className="mt-1 text-muted-foreground">
+						{m["payments.usage.subtitle"]()}
+					</p>
+				</div>
+				{query.data ? (
+					<CreditGuideButton onClick={() => guide.setOpen(true)} />
+				) : null}
 			</div>
 			{query.isPending ? (
 				<UsagePending />
@@ -215,6 +226,13 @@ export function UsagePage({
 					/>
 				</>
 			)}
+			{query.data ? (
+				<CreditGuideDialog
+					open={guide.open}
+					onClose={guide.close}
+					costs={query.data.costs}
+				/>
+			) : null}
 		</div>
 	);
 }

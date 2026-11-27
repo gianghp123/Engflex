@@ -336,6 +336,14 @@ pre code {
 @utility shadow-edge-neutral-sm {
   box-shadow: 0 3px 0 rgba(0, 0, 0, 0.2);
 }
+@utility text-ai-gradient {
+  background-image: linear-gradient(90deg, var(--primary), var(--accuracy));
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
 @utility surface-card {
   background: var(--card);
   color: var(--card-foreground);

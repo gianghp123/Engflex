@@ -1,3 +1,4 @@
+import { cn } from "cn";
 import type { LucideIcon } from "lucide-react";
 import { ArrowRight, CircleHelp } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -46,6 +47,10 @@ export function InstructionGuideDialog({
 	subtitle,
 	steps,
 	ctaLabel,
+	titleClassName,
+	eyebrowClassName,
+	stepTitleClassName,
+	actionLabelClassName,
 }: {
 	open: boolean;
 	onClose: (dontShowAgain: boolean) => void;
@@ -54,6 +59,10 @@ export function InstructionGuideDialog({
 	subtitle: string;
 	steps: GuideStep[];
 	ctaLabel: string;
+	titleClassName?: string;
+	eyebrowClassName?: string;
+	stepTitleClassName?: string;
+	actionLabelClassName?: string;
 }) {
 	const [dontShowAgain, setDontShowAgain] = useState(false);
 
@@ -68,6 +77,9 @@ export function InstructionGuideDialog({
 		ActionIcon: LucideIcon,
 		actionLabel: string,
 	) => {
+		if (!body.includes("%icon%")) {
+			return <>{body}</>;
+		}
 		const [before, after] = body.split("%icon%");
 		return (
 			<>
@@ -78,7 +90,14 @@ export function InstructionGuideDialog({
 				>
 					<ActionIcon size={12} />
 				</span>{" "}
-				<strong className="text-foreground font-semibold">{actionLabel}</strong>
+				<strong
+					className={cn(
+						"font-semibold",
+						actionLabelClassName ?? "text-foreground",
+					)}
+				>
+					{actionLabel}
+				</strong>
 				{after ?? ""}
 			</>
 		);
@@ -97,11 +116,18 @@ export function InstructionGuideDialog({
 				<DialogHeader>
 					<div className="flex items-center gap-2">
 						<span className="h-2 w-2 rounded-full bg-primary" />
-						<span className="text-primary text-xs font-semibold uppercase tracking-wide">
+						<span
+							className={cn(
+								"text-xs font-semibold uppercase tracking-wide",
+								eyebrowClassName ?? "text-primary",
+							)}
+						>
 							{eyebrow}
 						</span>
 					</div>
-					<DialogTitle className="text-2xl">{title}</DialogTitle>
+					<DialogTitle className={cn("text-2xl", titleClassName)}>
+						{title}
+					</DialogTitle>
 					<DialogDescription>{subtitle}</DialogDescription>
 				</DialogHeader>
 				<div className="grid grid-cols-1 gap-4 bg-muted/50 p-6 md:grid-cols-2 md:p-8">
@@ -119,7 +145,9 @@ export function InstructionGuideDialog({
 										<div className="tile bg-secondary text-secondary-foreground text-xs font-bold">
 											{index + 1}
 										</div>
-										<h2 className="font-bold text-sm">{title}</h2>
+										<h2 className={cn("font-bold text-sm", stepTitleClassName)}>
+											{title}
+										</h2>
 									</div>
 									<p className="text-muted-foreground text-xs leading-relaxed">
 										{renderBody(body, actionIcon, actionLabel)}

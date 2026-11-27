@@ -58,6 +58,37 @@
         "noReset": "the start of next month"
       }
     },
+    "creditGuide": {
+      "eyebrow": "AI credits",
+      "title": "How AI credits work",
+      "subtitle": "Credits power the AI features. Lessons, vocabulary and exam questions stay free.",
+      "cta": "Got it",
+      "reopen": "How AI credits work",
+      "step1": {
+        "title": "Credits power AI, not static learning",
+        "body": "Use %icon% only when you want AI feedback. Reading, listening, vocabulary and exam answers never spend a credit.",
+        "action": "AI features",
+        "footer": "Static content stays free."
+      },
+      "step2": {
+        "title": "Voice session · {credits} credit cost",
+        "body": "Start a %icon%; it uses {credits} credit and one voice slot. Refreshing or retrying the same start does not charge again.",
+        "action": "voice room",
+        "footer": "One voice slot per started session."
+      },
+      "step3": {
+        "title": "Exam AI · review {review} · plan {plan} credit cost",
+        "body": "An %icon% has a {review} credit cost; a study plan has a {plan} credit cost. Reopening a generated result is always free.",
+        "action": "AI review",
+        "footer": "Reopening is free."
+      },
+      "step4": {
+        "title": "Resets, not rollover",
+        "body": "Your balance and reset date are shown on this page. Trial credits are a one-time total; there are no top-ups.",
+        "action": "balance",
+        "footer": "Trial credits do not roll over."
+      }
+    },
     "usage": {
       "crumb": "Usage",
       "back": "Premium",

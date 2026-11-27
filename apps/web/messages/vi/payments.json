@@ -58,6 +58,37 @@
         "noReset": "đầu tháng sau"
       }
     },
+    "creditGuide": {
+      "eyebrow": "Credit AI",
+      "title": "Credit AI hoạt động thế nào",
+      "subtitle": "Credit dùng cho các tính năng AI. Bài học, từ vựng và câu hỏi bài thi vẫn miễn phí.",
+      "cta": "Đã hiểu",
+      "reopen": "Credit AI hoạt động thế nào",
+      "step1": {
+        "title": "Credit dành cho AI, không phải nội dung tĩnh",
+        "body": "Chỉ dùng %icon% khi bạn muốn phản hồi AI. Đọc, nghe, từ vựng và đáp án bài thi không tốn credit.",
+        "action": "tính năng AI",
+        "footer": "Nội dung tĩnh luôn miễn phí."
+      },
+      "step2": {
+        "title": "Buổi luyện nói · chi phí {credits} credit",
+        "body": "Bắt đầu %icon%; hệ thống dùng {credits} credit và một lượt luyện nói. Tải lại hoặc thử lại cùng một lượt bắt đầu không bị trừ thêm.",
+        "action": "phòng luyện nói",
+        "footer": "Mỗi lượt bắt đầu dùng một lượt luyện nói."
+      },
+      "step3": {
+        "title": "AI bài thi · chấm {review} · lộ trình {plan} credit",
+        "body": "Một %icon% có chi phí {review} credit; lộ trình học có chi phí {plan} credit. Mở lại kết quả đã tạo luôn miễn phí.",
+        "action": "lượt chấm AI",
+        "footer": "Mở lại luôn miễn phí."
+      },
+      "step4": {
+        "title": "Đặt lại, không cộng dồn",
+        "body": "Số dư và ngày đặt lại được hiển thị trên trang này. Credit dùng thử là tổng một lần; không có nạp thêm.",
+        "action": "số dư",
+        "footer": "Credit dùng thử không cộng dồn."
+      }
+    },
     "usage": {
       "crumb": "Mức sử dụng",
       "back": "Premium",
