@@ -37,6 +37,45 @@
         "later": "Maybe later",
         "noReset": "the start of next month"
       }
+    },
+    "usage": {
+      "crumb": "Usage",
+      "back": "Premium",
+      "title": "Usage",
+      "subtitle": "Your AI credits, voice sessions, and recent activity.",
+      "error": "Couldn't load your usage. Please try again.",
+      "retry": "Try again",
+      "balance": {
+        "creditsTitle": "AI credits",
+        "creditsValue": "{remaining} of {limit} left",
+        "voiceTitle": "Voice sessions",
+        "voiceValue": "{used} of {limit} used",
+        "resetOn": "Resets {date}",
+        "noReset": "Never resets"
+      },
+      "costs": {
+        "title": "Credit costs",
+        "action": "Action",
+        "credits": "Credits"
+      },
+      "actions": {
+        "voice_session_start": "Voice session",
+        "exam_ai_review": "Exam AI review",
+        "study_plan": "Study plan",
+        "writing_score": "Writing score",
+        "other": "Other"
+      },
+      "history": {
+        "title": "Recent activity",
+        "action": "Activity",
+        "credits": "Credits",
+        "date": "Date",
+        "inProgress": "In progress",
+        "emptyTitle": "No activity yet",
+        "emptyBody": "Voice sessions and AI reviews will show up here once you use them.",
+        "range": "Showing {from}–{to} of {total}",
+        "all": "{count} items"
+      }
     }
   }
 }

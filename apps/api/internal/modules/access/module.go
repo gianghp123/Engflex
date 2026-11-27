@@ -48,7 +48,7 @@ func NewServices(db *gorm.DB, cfg config.Config) *Services {
 	return &Services{
 		Policy:       policy,
 		Usage:        usage,
-		Entitlements: accessservices.NewEntitlementsService(policy),
+		Entitlements: accessservices.NewEntitlementsService(policy, events),
 		Admin:        accessservices.NewAdminAccessService(limits, counters, events, policy),
 		Trial:        accessservices.NewTrialService(trials),
 		Enforce:      cfg.Access.Enforce,
@@ -62,6 +62,7 @@ func RegisterRoutes(rg *gin.RouterGroup, svc *Services) {
 	adminCtl := controllers.NewAdminAccessController(svc.Admin, svc.Trial)
 	premium := rg.Group("/premium")
 	premium.GET("/me", middleware.RequireAuth(), ctl.GetMy)
+	premium.GET("/usage", middleware.RequireAuth(), ctl.GetUsage)
 	premium.POST("/trial", middleware.RequireAuth(), trialCtl.StartMy)
 	admin := rg.Group("/admin", middleware.RequireAuth(), middleware.RequireAdmin())
 	admin.GET("/premium/limits", adminCtl.ListLimits)

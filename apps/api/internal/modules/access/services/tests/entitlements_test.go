@@ -78,7 +78,8 @@ func TestMyEntitlementsShape(t *testing.T) {
 			counters.EXPECT().ListByUser(mock.Anything, "user_1").Return(tt.counters, nil).Once()
 
 			svc := accessservices.NewEntitlementsService(
-				newPolicyFor(t, fakeSubscriptions{sub: tt.sub}, trials, counters, limits))
+				newPolicyFor(t, fakeSubscriptions{sub: tt.sub}, trials, counters, limits),
+				repomocks.NewMockUsageEventRepository(t))
 
 			got, err := svc.MyEntitlements(context.Background(), "user_1", false)
 			require.NoError(t, err)

@@ -95,3 +95,58 @@ export interface MyEntitlements {
   voice: CounterView;
   costs: ActionCost[];
 }
+
+//////////
+// source: usage.go
+/*
+Package responses holds the access module's wire DTOs (tygo inputs).
+*/
+
+/**
+ * UsageCounterView is one metered resource's state on GET /premium/usage
+ * (spec §10). Same shape as CounterView plus the counter key; ResetAt is
+ * omitted for never-resetting total periods (trial).
+ */
+export interface UsageCounterView {
+  counter: CounterKind;
+  limit: number /* int */;
+  used: number /* int */;
+  reserved: number /* int */;
+  remaining: number /* int */;
+  resetAt?: string /* RFC3339 */;
+}
+/**
+ * UsageHistoryItem is one settled charge on GET /premium/usage: the
+ * user-facing action name, the debited credits, the event lifecycle status,
+ * and the entity the charge belongs to. Holds (reserved) rows explain
+ * missing credits; released/expired rows are non-charges and never appear.
+ */
+export interface UsageHistoryItem {
+  id: string;
+  action: string;
+  credits: number /* int */;
+  status: UsageEventStatus;
+  createdAt: string /* RFC3339 */;
+  refType: UsageRefType;
+  refId: string;
+}
+/**
+ * UsageHistory is the paginated event tail on GET /premium/usage.
+ */
+export interface UsageHistory {
+  items: UsageHistoryItem[];
+  page: number /* int */;
+  pageSize: number /* int */;
+  total: number /* int64 */;
+}
+/**
+ * MyUsage is the GET /premium/usage body (spec §10): the caller's plan, both
+ * counter views, the per-action costs table, and the paginated history of
+ * settled charges (committed + reserved, newest first).
+ */
+export interface MyUsage {
+  plan: PlanKey;
+  counters: UsageCounterView[];
+  costs: ActionCost[];
+  history: UsageHistory;
+}

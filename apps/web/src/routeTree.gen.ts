@@ -31,6 +31,7 @@ import { Route as SignUpSplatRouteImport } from './routes/sign-up.$'
 import { Route as AppLessonsIndexRouteImport } from './routes/_app/lessons/index'
 import { Route as AppNotesIndexRouteImport } from './routes/_app/notes/index'
 import { Route as AppPaymentsPricingRouteImport } from './routes/_app/payments/pricing'
+import { Route as AppPaymentsUsageRouteImport } from './routes/_app/payments/usage'
 import { Route as AppStoriesIndexRouteImport } from './routes/_app/stories/index'
 import { Route as AppStoriesSlugRouteImport } from './routes/_app/stories/$slug'
 import { Route as AppVideosIndexRouteImport } from './routes/_app/videos/index'
@@ -172,6 +173,11 @@ const AppNotesIndexRoute = AppNotesIndexRouteImport.update({
 const AppPaymentsPricingRoute = AppPaymentsPricingRouteImport.update({
   id: '/payments/pricing',
   path: '/payments/pricing',
+  getParentRoute: () => AppRouteRoute,
+} as any)
+const AppPaymentsUsageRoute = AppPaymentsUsageRouteImport.update({
+  id: '/payments/usage',
+  path: '/payments/usage',
   getParentRoute: () => AppRouteRoute,
 } as any)
 const AppStoriesIndexRoute = AppStoriesIndexRouteImport.update({
@@ -376,6 +382,7 @@ export interface FileRoutesByFullPath {
   '/sign-up/$': typeof SignUpSplatRoute
   '/admin/': typeof AdminIndexRoute
   '/payments/pricing': typeof AppPaymentsPricingRoute
+  '/payments/usage': typeof AppPaymentsUsageRoute
   '/stories/$slug': typeof AppStoriesSlugRoute
   '/vocabulary/$itemId': typeof AppVocabularyItemIdRoute
   '/voice/preview': typeof AppVoicePreviewRoute
@@ -431,6 +438,7 @@ export interface FileRoutesByTo {
   '/sign-up/$': typeof SignUpSplatRoute
   '/admin': typeof AdminIndexRoute
   '/payments/pricing': typeof AppPaymentsPricingRoute
+  '/payments/usage': typeof AppPaymentsUsageRoute
   '/stories/$slug': typeof AppStoriesSlugRoute
   '/vocabulary/$itemId': typeof AppVocabularyItemIdRoute
   '/voice/preview': typeof AppVoicePreviewRoute
@@ -489,6 +497,7 @@ export interface FileRoutesById {
   '/sign-up/$': typeof SignUpSplatRoute
   '/admin/': typeof AdminIndexRoute
   '/_app/payments/pricing': typeof AppPaymentsPricingRoute
+  '/_app/payments/usage': typeof AppPaymentsUsageRoute
   '/_app/stories/$slug': typeof AppStoriesSlugRoute
   '/_app/vocabulary/$itemId': typeof AppVocabularyItemIdRoute
   '/_app/voice/preview': typeof AppVoicePreviewRoute
@@ -547,6 +556,7 @@ export interface FileRouteTypes {
     | '/sign-up/$'
     | '/admin/'
     | '/payments/pricing'
+    | '/payments/usage'
     | '/stories/$slug'
     | '/vocabulary/$itemId'
     | '/voice/preview'
@@ -602,6 +612,7 @@ export interface FileRouteTypes {
     | '/sign-up/$'
     | '/admin'
     | '/payments/pricing'
+    | '/payments/usage'
     | '/stories/$slug'
     | '/vocabulary/$itemId'
     | '/voice/preview'
@@ -659,6 +670,7 @@ export interface FileRouteTypes {
     | '/sign-up/$'
     | '/admin/'
     | '/_app/payments/pricing'
+    | '/_app/payments/usage'
     | '/_app/stories/$slug'
     | '/_app/vocabulary/$itemId'
     | '/_app/voice/preview'
@@ -866,6 +878,13 @@ declare module '@tanstack/react-router' {
       path: '/payments/pricing'
       fullPath: '/payments/pricing'
       preLoaderRoute: typeof AppPaymentsPricingRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/_app/payments/usage': {
+      id: '/_app/payments/usage'
+      path: '/payments/usage'
+      fullPath: '/payments/usage'
+      preLoaderRoute: typeof AppPaymentsUsageRouteImport
       parentRoute: typeof AppRouteRoute
     }
     '/_app/stories/': {
@@ -1105,6 +1124,7 @@ declare module '@tanstack/react-router' {
 interface AppRouteRouteChildren {
   AppHomeRoute: typeof AppHomeRoute
   AppPaymentsPricingRoute: typeof AppPaymentsPricingRoute
+  AppPaymentsUsageRoute: typeof AppPaymentsUsageRoute
   AppStoriesSlugRoute: typeof AppStoriesSlugRoute
   AppVocabularyItemIdRoute: typeof AppVocabularyItemIdRoute
   AppVoicePreviewRoute: typeof AppVoicePreviewRoute
@@ -1142,6 +1162,7 @@ interface AppRouteRouteChildren {
 const AppRouteRouteChildren: AppRouteRouteChildren = {
   AppHomeRoute: AppHomeRoute,
   AppPaymentsPricingRoute: AppPaymentsPricingRoute,
+  AppPaymentsUsageRoute: AppPaymentsUsageRoute,
   AppStoriesSlugRoute: AppStoriesSlugRoute,
   AppVocabularyItemIdRoute: AppVocabularyItemIdRoute,
   AppVoicePreviewRoute: AppVoicePreviewRoute,

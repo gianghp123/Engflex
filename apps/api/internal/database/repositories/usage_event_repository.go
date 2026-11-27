@@ -45,6 +45,12 @@ type UsageEventRepository interface {
 	// ListByUser returns the most recent events for one user, newest first
 	// (constant query backing the admin usage lookup).
 	ListByUser(ctx context.Context, userID string, limit int) ([]*models.UsageEvent, error)
+	// ListByUserStatus returns one page of a user's events in the given
+	// statuses, newest first (backing GET /premium/usage history).
+	ListByUserStatus(ctx context.Context, userID string, statuses []enums.UsageEventStatus, limit, offset int) ([]*models.UsageEvent, error)
+	// CountByUserStatus counts a user's events in the given statuses
+	// (the history page total).
+	CountByUserStatus(ctx context.Context, userID string, statuses []enums.UsageEventStatus) (int64, error)
 	WithTx(tx *gorm.DB) UsageEventRepository
 }
 
@@ -161,4 +167,28 @@ func (r *usageEventRepository) ListByUser(ctx context.Context, userID string, li
 		return nil, err
 	}
 	return out, nil
+}
+
+func (r *usageEventRepository) ListByUserStatus(ctx context.Context, userID string, statuses []enums.UsageEventStatus, limit, offset int) ([]*models.UsageEvent, error) {
+	out := make([]*models.UsageEvent, 0)
+	if err := r.db.WithContext(ctx).
+		Where("user_id = ? AND status IN ?", userID, statuses).
+		Order("created_at DESC").
+		Limit(limit).
+		Offset(offset).
+		Find(&out).Error; err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (r *usageEventRepository) CountByUserStatus(ctx context.Context, userID string, statuses []enums.UsageEventStatus) (int64, error) {
+	var n int64
+	err := r.db.WithContext(ctx).Model(&models.UsageEvent{}).
+		Where("user_id = ? AND status IN ?", userID, statuses).
+		Count(&n).Error
+	if err != nil {
+		return 0, err
+	}
+	return n, nil
 }

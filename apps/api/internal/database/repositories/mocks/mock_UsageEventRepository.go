@@ -51,6 +51,78 @@ func (_m *MockUsageEventRepository) EXPECT() *MockUsageEventRepository_Expecter 
 	return &MockUsageEventRepository_Expecter{mock: &_m.Mock}
 }
 
+// CountByUserStatus provides a mock function for the type MockUsageEventRepository
+func (_mock *MockUsageEventRepository) CountByUserStatus(ctx context.Context, userID string, statuses []enums.UsageEventStatus) (int64, error) {
+	ret := _mock.Called(ctx, userID, statuses)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CountByUserStatus")
+	}
+
+	var r0 int64
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, []enums.UsageEventStatus) (int64, error)); ok {
+		return returnFunc(ctx, userID, statuses)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, []enums.UsageEventStatus) int64); ok {
+		r0 = returnFunc(ctx, userID, statuses)
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, []enums.UsageEventStatus) error); ok {
+		r1 = returnFunc(ctx, userID, statuses)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockUsageEventRepository_CountByUserStatus_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CountByUserStatus'
+type MockUsageEventRepository_CountByUserStatus_Call struct {
+	*mock.Call
+}
+
+// CountByUserStatus is a helper method to define mock.On call
+//   - ctx context.Context
+//   - userID string
+//   - statuses []enums.UsageEventStatus
+func (_e *MockUsageEventRepository_Expecter) CountByUserStatus(ctx any, userID any, statuses any) *MockUsageEventRepository_CountByUserStatus_Call {
+	return &MockUsageEventRepository_CountByUserStatus_Call{Call: _e.mock.On("CountByUserStatus", ctx, userID, statuses)}
+}
+
+func (_c *MockUsageEventRepository_CountByUserStatus_Call) Run(run func(ctx context.Context, userID string, statuses []enums.UsageEventStatus)) *MockUsageEventRepository_CountByUserStatus_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 []enums.UsageEventStatus
+		if args[2] != nil {
+			arg2 = args[2].([]enums.UsageEventStatus)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockUsageEventRepository_CountByUserStatus_Call) Return(n int64, err error) *MockUsageEventRepository_CountByUserStatus_Call {
+	_c.Call.Return(n, err)
+	return _c
+}
+
+func (_c *MockUsageEventRepository_CountByUserStatus_Call) RunAndReturn(run func(ctx context.Context, userID string, statuses []enums.UsageEventStatus) (int64, error)) *MockUsageEventRepository_CountByUserStatus_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // HasCommitted provides a mock function for the type MockUsageEventRepository
 func (_mock *MockUsageEventRepository) HasCommitted(ctx context.Context, userID string, keys []string) (bool, error) {
 	ret := _mock.Called(ctx, userID, keys)
@@ -324,6 +396,92 @@ func (_c *MockUsageEventRepository_ListByUser_Call) Return(usageEvents []*models
 }
 
 func (_c *MockUsageEventRepository_ListByUser_Call) RunAndReturn(run func(ctx context.Context, userID string, limit int) ([]*models.UsageEvent, error)) *MockUsageEventRepository_ListByUser_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// ListByUserStatus provides a mock function for the type MockUsageEventRepository
+func (_mock *MockUsageEventRepository) ListByUserStatus(ctx context.Context, userID string, statuses []enums.UsageEventStatus, limit int, offset int) ([]*models.UsageEvent, error) {
+	ret := _mock.Called(ctx, userID, statuses, limit, offset)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ListByUserStatus")
+	}
+
+	var r0 []*models.UsageEvent
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, []enums.UsageEventStatus, int, int) ([]*models.UsageEvent, error)); ok {
+		return returnFunc(ctx, userID, statuses, limit, offset)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, []enums.UsageEventStatus, int, int) []*models.UsageEvent); ok {
+		r0 = returnFunc(ctx, userID, statuses, limit, offset)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.UsageEvent)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, []enums.UsageEventStatus, int, int) error); ok {
+		r1 = returnFunc(ctx, userID, statuses, limit, offset)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockUsageEventRepository_ListByUserStatus_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ListByUserStatus'
+type MockUsageEventRepository_ListByUserStatus_Call struct {
+	*mock.Call
+}
+
+// ListByUserStatus is a helper method to define mock.On call
+//   - ctx context.Context
+//   - userID string
+//   - statuses []enums.UsageEventStatus
+//   - limit int
+//   - offset int
+func (_e *MockUsageEventRepository_Expecter) ListByUserStatus(ctx any, userID any, statuses any, limit any, offset any) *MockUsageEventRepository_ListByUserStatus_Call {
+	return &MockUsageEventRepository_ListByUserStatus_Call{Call: _e.mock.On("ListByUserStatus", ctx, userID, statuses, limit, offset)}
+}
+
+func (_c *MockUsageEventRepository_ListByUserStatus_Call) Run(run func(ctx context.Context, userID string, statuses []enums.UsageEventStatus, limit int, offset int)) *MockUsageEventRepository_ListByUserStatus_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 []enums.UsageEventStatus
+		if args[2] != nil {
+			arg2 = args[2].([]enums.UsageEventStatus)
+		}
+		var arg3 int
+		if args[3] != nil {
+			arg3 = args[3].(int)
+		}
+		var arg4 int
+		if args[4] != nil {
+			arg4 = args[4].(int)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+			arg4,
+		)
+	})
+	return _c
+}
+
+func (_c *MockUsageEventRepository_ListByUserStatus_Call) Return(usageEvents []*models.UsageEvent, err error) *MockUsageEventRepository_ListByUserStatus_Call {
+	_c.Call.Return(usageEvents, err)
+	return _c
+}
+
+func (_c *MockUsageEventRepository_ListByUserStatus_Call) RunAndReturn(run func(ctx context.Context, userID string, statuses []enums.UsageEventStatus, limit int, offset int) ([]*models.UsageEvent, error)) *MockUsageEventRepository_ListByUserStatus_Call {
 	_c.Call.Return(run)
 	return _c
 }

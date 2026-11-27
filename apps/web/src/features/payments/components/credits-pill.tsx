@@ -4,9 +4,9 @@ import { APP_ROUTES } from "#/app/app-route";
 import { useEntitlements } from "#/features/payments/entitlements";
 import { m } from "#/paraglide/messages";
 
-/** Header credit meter: remaining AI credits, linking to pricing. Renders
- *  nothing until the entitlements load (or when signed out, where the query
- *  401s and stays empty). */
+/** Header credit meter: remaining AI credits, linking to the usage page.
+ *  Renders nothing until the entitlements load (or when signed out, where
+ *  the query 401s and stays empty). */
 export function CreditsPill() {
 	const { data } = useEntitlements();
 	if (!data) return null;
@@ -15,7 +15,7 @@ export function CreditsPill() {
 	});
 	return (
 		<Link
-			to={APP_ROUTES.PAYMENTS.PRICING}
+			to={APP_ROUTES.PAYMENTS.USAGE}
 			aria-label={label}
 			className="flex items-center gap-1 rounded-full border bg-card px-2.5 py-1 text-xs shadow-xs hover:bg-accent"
 		>

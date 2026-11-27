@@ -1,10 +1,12 @@
-import type { MyEntitlements, TrialStatus } from "@engflex/contracts";
+import type { MyEntitlements, MyUsage, TrialStatus } from "@engflex/contracts";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { API_ROUTES } from "#/app/api-routes";
-import { api } from "#/lib/api";
+import { ApiError, api } from "#/lib/api";
 
 export const entitlementKeys = {
 	me: ["access", "me"] as const,
+	usage: (page: number, pageSize: number) =>
+		["access", "usage", page, pageSize] as const,
 };
 
 export function getEntitlements(): Promise<MyEntitlements> {
@@ -21,6 +23,27 @@ export function useEntitlements() {
 	return useQuery({
 		queryKey: entitlementKeys.me,
 		queryFn: getEntitlements,
+	});
+}
+
+/** The caller's usage view: plan, both counters, the per-action costs table,
+ *  and the paginated charge history. Quota/premium/auth denials settle
+ *  without a retry (the page renders its error state); real failures retry
+ *  with the default backoff. */
+export function getMyUsage(page: number, pageSize: number): Promise<MyUsage> {
+	return api<MyUsage>(API_ROUTES.PAYMENTS.USAGE, undefined, {
+		query: { page, pageSize },
+	});
+}
+
+export function useMyUsage(page: number, pageSize: number) {
+	return useQuery({
+		queryKey: entitlementKeys.usage(page, pageSize),
+		queryFn: () => getMyUsage(page, pageSize),
+		retry: (failureCount: number, error: unknown) =>
+			!(
+				error instanceof ApiError && [401, 403, 404, 429].includes(error.status)
+			) && failureCount < 3,
 	});
 }
 

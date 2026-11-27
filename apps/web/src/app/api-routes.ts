@@ -74,6 +74,7 @@ export const API_ROUTES = {
 		CHECKOUT: "/payments/vnpay/checkout",
 		ME: "/premium/me",
 		TRIAL: "/premium/trial",
+		USAGE: "/premium/usage",
 	},
 	PERSONAS: {
 		LIST: "/personas",

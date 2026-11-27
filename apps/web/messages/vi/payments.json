@@ -37,6 +37,45 @@
         "later": "Để sau",
         "noReset": "đầu tháng sau"
       }
+    },
+    "usage": {
+      "crumb": "Mức sử dụng",
+      "back": "Premium",
+      "title": "Mức sử dụng",
+      "subtitle": "Credit AI, buổi luyện nói và hoạt động gần đây của bạn.",
+      "error": "Không thể tải dữ liệu sử dụng. Vui lòng thử lại.",
+      "retry": "Thử lại",
+      "balance": {
+        "creditsTitle": "Credit AI",
+        "creditsValue": "Còn {remaining}/{limit}",
+        "voiceTitle": "Buổi luyện nói",
+        "voiceValue": "Đã dùng {used}/{limit}",
+        "resetOn": "Làm mới vào {date}",
+        "noReset": "Không bao giờ đặt lại"
+      },
+      "costs": {
+        "title": "Chi phí credit",
+        "action": "Hành động",
+        "credits": "Credit"
+      },
+      "actions": {
+        "voice_session_start": "Buổi luyện nói",
+        "exam_ai_review": "Chấm bài thi AI",
+        "study_plan": "Lộ trình học",
+        "writing_score": "Chấm bài viết",
+        "other": "Khác"
+      },
+      "history": {
+        "title": "Hoạt động gần đây",
+        "action": "Hoạt động",
+        "credits": "Credit",
+        "date": "Ngày",
+        "inProgress": "Đang giữ",
+        "emptyTitle": "Chưa có hoạt động nào",
+        "emptyBody": "Các buổi luyện nói và lượt chấm AI sẽ hiển thị ở đây sau khi bạn sử dụng.",
+        "range": "Hiển thị {from}–{to} / {total}",
+        "all": "{count} mục"
+      }
     }
   }
 }

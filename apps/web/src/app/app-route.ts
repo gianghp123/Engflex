@@ -89,6 +89,7 @@ export const APP_ROUTES = {
 	},
 	PAYMENTS: {
 		PRICING: "/payments/pricing",
+		USAGE: "/payments/usage",
 		RETURN: "/payments/vnpay/return",
 	},
 } as const;
