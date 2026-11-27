@@ -18,6 +18,7 @@ import (
 type ExamController struct {
 	catalog  *services.CatalogService
 	attempts *services.AttemptService
+	costs    accessservices.CreditCostReader
 }
 
 // Statistics godoc
@@ -40,8 +41,8 @@ func (h *ExamController) Statistics(c *gin.Context) {
 	common.OK(c, "exam statistics", dto)
 }
 
-func NewExamController(catalog *services.CatalogService, attempts *services.AttemptService) *ExamController {
-	return &ExamController{catalog: catalog, attempts: attempts}
+func NewExamController(catalog *services.CatalogService, attempts *services.AttemptService, costs accessservices.CreditCostReader) *ExamController {
+	return &ExamController{catalog: catalog, attempts: attempts, costs: costs}
 }
 
 // ListCategories godoc
@@ -145,7 +146,7 @@ func (h *ExamController) Start(c *gin.Context) {
 		common.Fail(c, common.Internal())
 		return
 	}
-	decorateAttempt(&dto)
+	h.decorateAttempt(&dto)
 	common.Created(c, "exam attempt started", dto)
 }
 
@@ -226,7 +227,7 @@ func (h *ExamController) GetAttempt(c *gin.Context) {
 			common.Fail(c, common.Internal())
 			return
 		}
-		decorateReview(&dto)
+		h.decorateReview(&dto)
 		common.OK(c, "exam attempt", dto)
 		return
 	}
@@ -235,7 +236,7 @@ func (h *ExamController) GetAttempt(c *gin.Context) {
 		common.Fail(c, common.Internal())
 		return
 	}
-	decorateAttempt(&dto)
+	h.decorateAttempt(&dto)
 	common.OK(c, "exam attempt", dto)
 }
 
@@ -275,32 +276,33 @@ func (h *ExamController) PatchAttempt(c *gin.Context) {
 	if m.Status == enums.AttemptStatusCompleted {
 		var dto responses.ReviewAttempt
 		_ = utils.Map(&dto, m)
-		decorateReview(&dto)
+		h.decorateReview(&dto)
 		common.OK(c, "exam attempt", dto)
 		return
 	}
 	var dto responses.ExamAttempt
 	_ = utils.Map(&dto, m)
-	decorateAttempt(&dto)
+	h.decorateAttempt(&dto)
 	common.OK(c, "exam attempt", dto)
 }
 
 // decorateAttempt stamps the paid-AI badge costs on an in-progress attempt
-// view; decorateReview does the same for a completed review view. Both are
-// server data from the access policy, set after the blanket Map.
-func decorateAttempt(dto *responses.ExamAttempt) {
+// view; decorateReview does the same for a completed review view. Both read
+// the injected reader (the access snapshot in production), set after the
+// blanket Map.
+func (h *ExamController) decorateAttempt(dto *responses.ExamAttempt) {
 	if dto == nil {
 		return
 	}
-	dto.AIReviewCreditCost = accessservices.CreditCost(accessservices.ActionExamReview)
-	dto.StudyPlanCreditCost = accessservices.CreditCost(accessservices.ActionStudyPlan)
+	dto.AIReviewCreditCost = h.costs.CreditCost(accessservices.ActionExamReview)
+	dto.StudyPlanCreditCost = h.costs.CreditCost(accessservices.ActionStudyPlan)
 }
 
 // decorateReview stamps the paid-AI badge costs on a completed review view.
-func decorateReview(dto *responses.ReviewAttempt) {
+func (h *ExamController) decorateReview(dto *responses.ReviewAttempt) {
 	if dto == nil {
 		return
 	}
-	dto.AIReviewCreditCost = accessservices.CreditCost(accessservices.ActionExamReview)
-	dto.StudyPlanCreditCost = accessservices.CreditCost(accessservices.ActionStudyPlan)
+	dto.AIReviewCreditCost = h.costs.CreditCost(accessservices.ActionExamReview)
+	dto.StudyPlanCreditCost = h.costs.CreditCost(accessservices.ActionStudyPlan)
 }

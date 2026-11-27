@@ -78,10 +78,12 @@
     "premium": {
       "title": "Premium console",
       "description": "Manage plan pricing, premium-gated features, and the subscription list.",
+      "loadError": "Couldn't load pricing settings.",
       "tabs": {
         "plans": "Pricing",
         "features": "Features",
-        "subscriptions": "Subscriptions"
+        "subscriptions": "Subscriptions",
+        "pricing": "Costs & trial"
       },
       "plans": {
         "plan": "Plan",
@@ -118,7 +120,26 @@
         "voiceSession": "Voice sessions",
         "periodDay": "Day",
         "periodMonth": "Month",
-        "periodTotal": "Total"
+        "periodTotal": "Total",
+        "trialMoved": "Trial limits are edited on the Costs & trial tab."
+      },
+      "costs": {
+        "title": "AI action costs",
+        "hint": "Credits charged per action. 0 makes the action temporarily free.",
+        "voiceSession": "Voice session",
+        "examReview": "Exam AI review",
+        "studyPlan": "Study plan",
+        "save": "Save costs",
+        "saved": "Action costs updated"
+      },
+      "trial": {
+        "title": "Trial terms",
+        "description": "Applies to new trials. Existing trial end dates and granted credits do not change.",
+        "days": "Duration (days)",
+        "credits": "Credits",
+        "voiceSessions": "Voice sessions",
+        "save": "Save trial terms",
+        "saved": "Trial terms updated"
       }
     },
     "scenarios": {

@@ -18,7 +18,7 @@ func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB, llmCfg config.LLMConfig, a
 	categories := repositories.NewExamCategoryRepository(db)
 	tests := repositories.NewExamTestRepository(db)
 	attempts := repositories.NewAttemptRepository(db)
-	ctl := controllers.NewExamController(services.NewCatalogService(categories, tests), services.NewAttemptService(attempts, tests, repositories.NewTransactionManager(db)))
+	ctl := controllers.NewExamController(services.NewCatalogService(categories, tests), services.NewAttemptService(attempts, tests, repositories.NewTransactionManager(db)), accessCosts(accessSvc))
 	rg.GET("/exam-categories", middleware.RequireAuth(), ctl.ListCategories)
 	rg.POST("/exam-categories", middleware.RequireAuth(), ctl.CreateCategory)
 	rg.GET("/exam-categories/:categoryId/tests", middleware.RequireAuth(), ctl.ListTests)
@@ -40,6 +40,15 @@ func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB, llmCfg config.LLMConfig, a
 	rg.GET("/exam-attempts/:id/ai-review", middleware.RequireAuth(), aiCtl.GetExamReview)
 	rg.POST("/exam-attempts/:id/study-plan", middleware.RequireAuth(), aiCtl.GenerateStudyPlan)
 	rg.GET("/exam-attempts/:id/study-plan", middleware.RequireAuth(), aiCtl.GetStudyPlan)
+}
+
+// accessCosts returns the snapshot-backed cost reader, defaulting to the
+// code fallback when the access bundle is nil (route-table tests).
+func accessCosts(accessSvc *access.Services) accessservices.CreditCostReader {
+	if accessSvc == nil {
+		return accessservices.DefaultCreditCostReader{}
+	}
+	return accessSvc.Policy
 }
 
 // accessPolicy returns the policy decider, tolerating a nil bundle in

@@ -14,14 +14,23 @@ import (
 	"engflex-api/internal/logger"
 )
 
+// TrialTermsSource is the narrow snapshot surface TrialService starts new
+// trials from: the admin-configured terms, resolved by PolicyService.
+// Existing rows are never rewritten — a snapshot is taken at Start time.
+type TrialTermsSource interface {
+	TrialTerms() TrialTerms
+}
+
 // TrialService starts and reads the once-per-user trial (spec §8.4).
 type TrialService struct {
 	trials repositories.UserTrialRepository
+	terms  TrialTermsSource
 }
 
-// NewTrialService builds the trial service.
-func NewTrialService(trials repositories.UserTrialRepository) *TrialService {
-	return &TrialService{trials: trials}
+// NewTrialService builds the trial service over the trial store and the
+// snapshot terms source. Never pass nil; wiring owns both handles.
+func NewTrialService(trials repositories.UserTrialRepository, terms TrialTermsSource) *TrialService {
+	return &TrialService{trials: trials, terms: terms}
 }
 
 // Start records the trial once: idempotent for an active trial, false
@@ -45,11 +54,12 @@ func (s *TrialService) Start(ctx context.Context, userID string) (bool, error) {
 		return false, nil
 	}
 	now := time.Now().UTC()
+	terms := s.terms.TrialTerms()
 	m := &models.UserTrial{
 		UserID:         userID,
 		StartedAt:      now,
-		EndsAt:         now.AddDate(0, 0, common.TrialDays),
-		CreditsGranted: common.TrialCredits,
+		EndsAt:         now.AddDate(0, 0, terms.Days),
+		CreditsGranted: terms.Credits,
 	}
 	if err := s.trials.Create(ctx, m); err != nil {
 		// A unique violation means a concurrent start won the race.

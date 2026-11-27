@@ -1,26 +1,105 @@
+import type {
+	AccessAction,
+	PricingCatalog,
+	PricingEntitlements,
+	SubscriptionPlan,
+	UsagePeriod,
+} from "@engflex/contracts";
 import { APP_ROUTES } from "#/app/app-route";
 import { MoMascot } from "#/components/common/mo-mascot";
 import { MarketingFooter } from "#/features/marketing/marketing-footer";
 import { m } from "#/paraglide/messages";
 
+function formatVnd(amount: number, currency: string): string {
+	return new Intl.NumberFormat("vi-VN", { style: "currency", currency }).format(
+		amount,
+	);
+}
+function perMonth(amount: number, months: number): string {
+	return formatVnd(Math.round(amount / months), "VND");
+}
+
+/** UsagePeriod is a wire enum — render the localized prose, never the raw code. */
+function periodLabel(period: UsagePeriod): string {
+	switch (period) {
+		case "day":
+			return m["pricing.period.day"]();
+		case "month":
+			return m["pricing.period.month"]();
+		case "total":
+			return m["pricing.period.total"]();
+	}
+}
+
+function planName(plan: SubscriptionPlan): string {
+	switch (plan) {
+		case "1m":
+			return m["pricing.plans.name.1m"]();
+		case "3m":
+			return m["pricing.plans.name.3m"]();
+		case "12m":
+			return m["pricing.plans.name.12m"]();
+	}
+}
+
+/** The catalog only prices the three paid actions; anything else renders as
+ *  "other" rather than leaking a wire code. Labels live with the usage page
+ *  (payments.usage.actions.*) so both surfaces stay in step. */
+function costActionLabel(action: AccessAction): string {
+	switch (action) {
+		case "voice_session_start":
+			return m["payments.usage.actions.voice_session_start"]();
+		case "exam_ai_review":
+			return m["payments.usage.actions.exam_ai_review"]();
+		case "study_plan":
+			return m["payments.usage.actions.study_plan"]();
+		case "writing_score":
+			return m["payments.usage.actions.writing_score"]();
+		default:
+			return m["payments.usage.actions.other"]();
+	}
+}
+
+/** The two live entitlement lines every plan card shows: AI credits and voice
+ *  sessions, each with its own localized period. */
+function EntitlementLines({
+	entitlements,
+}: {
+	entitlements: PricingEntitlements;
+}) {
+	return (
+		<>
+			<li>
+				{m["pricing.plans.entitlements.credits"]({
+					credits: entitlements.credits,
+					period: periodLabel(entitlements.creditsPeriod),
+				})}
+			</li>
+			<li>
+				{m["pricing.plans.entitlements.voice"]({
+					sessions: entitlements.voiceSessions,
+					period: periodLabel(entitlements.voicePeriod),
+				})}
+			</li>
+		</>
+	);
+}
+
 /**
- * The pricing page.
- *
- * MOCK DATA, and the only page here that is. There is no plan, price or
- * subscription model anywhere in the repo and no checkout, so the two tiers
- * below describe the intended split rather than a commitment, and both CTAs lead
- * to sign-up. Move the line between the tiers in `PLANS`; before this page
- * becomes a promise it needs real prices and the policies that go with them —
- * refunds, cancellation, payment methods, billing period. None of those are
- * written here, because they are business decisions, not mock data.
+ * The pricing page, rendered from the live catalog (GET /pricing): the Free
+ * card reads catalog.free, every paid card reads one catalog plan, and the
+ * trial callout and cost list read catalog.trial / catalog.costs. No price or
+ * count on this page is written by hand — amounts, entitlements and costs all
+ * come from the loader.
  *
  * The split follows the landing page's own two halves — "you can work through a
- * lesson, or just talk" — so Free is the lesson path and Plus is the voice half.
+ * lesson, or just talk" — so Free is the lesson path and the paid cards are the
+ * voice half. Both CTAs lead to sign-up.
  *
- * Every product claim is one the landing already makes (see the allowlist in
- * `features/marketing/pages/about-page.tsx`).
+ * Every product claim is one the landing already makes. Do not add a price, a
+ * count or a promise here without the evidence to back it.
  */
-export function PricingPageMarkup() {
+export function PricingPageMarkup({ catalog }: { catalog: PricingCatalog }) {
 	return (
 		<>
 			{/* HERO */}
@@ -64,31 +143,91 @@ export function PricingPageMarkup() {
 			<div className="l-band">
 				<div className="l-wrap">
 					<div className="l-plans">
-						{PLANS.map((plan) => (
+						<div className="l-plan" key="free">
+							<h2 className="l-plan-name">{m["pricing.plans.free.name"]()}</h2>
+							<div className="l-plan-for">{m["pricing.plans.free.for"]()}</div>
+							<div className="l-plan-price">
+								<b>{formatVnd(0, "VND")}</b>
+							</div>
+							<ul className="l-plan-list">
+								<EntitlementLines entitlements={catalog.free} />
+							</ul>
+							<a className="l-btn l-ghost" href={APP_ROUTES.AUTH.SIGN_UP}>
+								{m["pricing.plans.free.cta"]()}
+							</a>
+						</div>
+						{catalog.plans.map((plan, index) => (
 							<div
-								className={plan.featured ? "l-plan l-featured" : "l-plan"}
-								key={plan.name()}
+								className={index === 0 ? "l-plan l-featured" : "l-plan"}
+								key={plan.plan}
 							>
-								<h2 className="l-plan-name">{plan.name()}</h2>
-								<div className="l-plan-for">{plan.pitch()}</div>
+								<h2 className="l-plan-name">{planName(plan.plan)}</h2>
+								<div className="l-plan-for">
+									{m["pricing.plans.paid.for"]()}
+								</div>
 								<div className="l-plan-price">
-									<b>{plan.price()}</b>
-									<span>{plan.period()}</span>
+									<b>{formatVnd(plan.amount, plan.currency)}</b>
+									<span>
+										{m["pricing.plans.perMonth"]({
+											amount: perMonth(plan.amount, plan.months),
+										})}
+									</span>
 								</div>
 								<ul className="l-plan-list">
-									{plan.features.map((feature) => (
-										<li key={feature()}>{feature()}</li>
-									))}
+									{/* Plan credits/voice are monthly limits by contract
+									    (Get composes each plan with PlanMonthlyLimits) —
+									    only the counts ride the wire, so "month" is
+									    the period here, not a guess. */}
+									<EntitlementLines
+										entitlements={{
+											credits: plan.credits,
+											voiceSessions: plan.voiceSessions,
+											creditsPeriod: "month",
+											voicePeriod: "month",
+										}}
+									/>
 								</ul>
 								<a
-									className={plan.featured ? "l-btn" : "l-btn l-ghost"}
+									className={index === 0 ? "l-btn" : "l-btn l-ghost"}
 									href={APP_ROUTES.AUTH.SIGN_UP}
 								>
-									{plan.cta()}
+									{m["pricing.plans.paid.cta"]()}
 								</a>
 							</div>
 						))}
 					</div>
+				</div>
+			</div>
+
+			{/* TRIAL */}
+			<div className="l-band l-white">
+				<div className="l-wrap">
+					<h2>{m["pricing.trial.title"]()}</h2>
+					<p
+						className="l-lede"
+						style={{ margin: "10px 0 0", maxWidth: "64ch" }}
+					>
+						{m["pricing.trial.body"]({
+							days: catalog.trial.days,
+							credits: catalog.trial.credits,
+							sessions: catalog.trial.voiceSessions,
+						})}
+					</p>
+				</div>
+			</div>
+
+			{/* WHAT EACH AI ACTION COSTS */}
+			<div className="l-band">
+				<div className="l-wrap">
+					<h2>{m["pricing.costs.title"]()}</h2>
+					<ul className="l-plan-list" style={{ marginTop: "18px" }}>
+						{catalog.costs.map((cost) => (
+							<li key={cost.action}>
+								{costActionLabel(cost.action)}:{" "}
+								{cost.credits === 0 ? m["pricing.costs.free"]() : cost.credits}
+							</li>
+						))}
+					</ul>
 				</div>
 			</div>
 
@@ -139,43 +278,6 @@ export function PricingPageMarkup() {
 		</>
 	);
 }
-
-/**
- * The two tiers. `featured` is presentation only — it outlines the paid card and
- * gives it the filled CTA, nothing more.
- *
- * Thunks, so the locale resolves at render rather than at module load.
- */
-const PLANS = [
-	{
-		featured: false,
-		name: m["pricing.plans.free.name"],
-		pitch: m["pricing.plans.free.for"],
-		price: m["pricing.plans.free.price"],
-		period: m["pricing.plans.free.period"],
-		features: [
-			m["pricing.plans.free.feature1"],
-			m["pricing.plans.free.feature2"],
-			m["pricing.plans.free.feature3"],
-			m["pricing.plans.free.feature4"],
-		],
-		cta: m["pricing.plans.free.cta"],
-	},
-	{
-		featured: true,
-		name: m["pricing.plans.plus.name"],
-		pitch: m["pricing.plans.plus.for"],
-		price: m["pricing.plans.plus.price"],
-		period: m["pricing.plans.plus.period"],
-		features: [
-			m["pricing.plans.plus.feature1"],
-			m["pricing.plans.plus.feature2"],
-			m["pricing.plans.plus.feature3"],
-			m["pricing.plans.plus.feature4"],
-		],
-		cta: m["pricing.plans.plus.cta"],
-	},
-] as const;
 
 /** True of both tiers, so they sit below the cards rather than inside either. */
 const FACTS = [

@@ -71,22 +71,23 @@ func (s *AIReviewService) getCached(ctx context.Context, userID, attemptID strin
 	return out, nil
 }
 
-// GenerateExamReview charges 1 credit and builds the mistake review for a
-// completed attempt (spec §8.3).
+// GenerateExamReview charges the configured credit cost and builds the
+// mistake review for a completed attempt (spec §8.3).
 func (s *AIReviewService) GenerateExamReview(ctx context.Context, userID, attemptID string, isAdmin bool) (*models.AIOutput, error) {
 	return s.generate(ctx, userID, attemptID, ActionExamReview,
-		enums.AIOutputKindExamReview, 1, "exam_review:"+attemptID, enums.UsageRefTypeExamAttempt, isAdmin, buildReviewPrompt)
+		enums.AIOutputKindExamReview, "exam_review:"+attemptID, enums.UsageRefTypeExamAttempt, isAdmin, buildReviewPrompt)
 }
 
-// GenerateStudyPlan charges 2 credits and links free lessons/videos.
+// GenerateStudyPlan charges the configured credit cost and links free
+// lessons/videos.
 func (s *AIReviewService) GenerateStudyPlan(ctx context.Context, userID, attemptID string, isAdmin bool) (*models.AIOutput, error) {
 	return s.generate(ctx, userID, attemptID, ActionStudyPlan,
-		enums.AIOutputKindStudyPlan, 2, "study_plan:"+attemptID, enums.UsageRefTypeStudyPlan, isAdmin, buildPlanPrompt)
+		enums.AIOutputKindStudyPlan, "study_plan:"+attemptID, enums.UsageRefTypeStudyPlan, isAdmin, buildPlanPrompt)
 }
 
 type promptBuilder func(ctx context.Context, tests repositories.ExamTestRepository, m *models.Attempt) (string, any, string, map[string]any, error)
 
-func (s *AIReviewService) generate(ctx context.Context, userID, attemptID string, action Action, kind enums.AIOutputKind, credits int, idempotencyBase string, refType enums.UsageRefType, isAdmin bool, build promptBuilder) (*models.AIOutput, error) {
+func (s *AIReviewService) generate(ctx context.Context, userID, attemptID string, action Action, kind enums.AIOutputKind, idempotencyBase string, refType enums.UsageRefType, isAdmin bool, build promptBuilder) (*models.AIOutput, error) {
 	m, err := s.attempts.GetByID(ctx, attemptID)
 	if err != nil {
 		appErr := common.FromDBError(err, "attempt")
@@ -112,44 +113,56 @@ func (s *AIReviewService) generate(ctx context.Context, userID, attemptID string
 
 	p, _, err := s.policy.Principal(ctx, userID, isAdmin)
 	var reservation *Reservation
+	// credits stamps the reserved amount, so it must equal the hold: derive
+	// it from the decided charges, not from a second policy read an admin
+	// refresh could have moved in between. The CreditCost fallback runs only
+	// when there is no successful decision (shadow-mode store failures) —
+	// that path never reserves, so there is nothing to mismatch.
+	credits := 0
 	if err != nil {
 		if s.enforce {
 			return nil, err
 		}
 		logger.Report(ctx, "ai review principal failed, proceeding unmetered", err, "attemptID", attemptID)
-	} else if d, derr := s.policy.Decide(ctx, userID, isAdmin, action); derr != nil {
+		credits = s.policy.CreditCost(action)
+	} else if dd, derr := s.policy.Decide(ctx, userID, isAdmin, action); derr != nil {
 		if s.enforce {
 			return nil, derr
 		}
 		logger.Report(ctx, "ai review decide failed, proceeding unmetered", derr, "attemptID", attemptID, "kind", string(kind))
-	} else if p.IsAdmin {
-		slog.InfoContext(ctx, "ai review admin bypass", "attemptID", attemptID, "userID", userID, "kind", string(kind))
-	} else if !d.Allow && s.enforce {
-		return nil, AppError(d)
-	} else if s.enforce {
-		reservation, err = s.usage.Reserve(ctx, userID, p.Plan, d.Charges, idempotencyBase,
-			refType, attemptID, common.ReviewLeaseTTL, time.Now().UTC(), s.policy.Location())
-		if err != nil {
-			appErr, ok := err.(*common.AppError)
-			if !ok {
-				return nil, err
+		credits = s.policy.CreditCost(action)
+	} else {
+		d := dd
+		credits = aiCreditTotal(d.Charges)
+		if p.IsAdmin {
+			slog.InfoContext(ctx, "ai review admin bypass", "attemptID", attemptID, "userID", userID, "kind", string(kind))
+		} else if !d.Allow && s.enforce {
+			return nil, AppError(d)
+		} else if s.enforce && len(d.Charges) > 0 {
+			reservation, err = s.usage.Reserve(ctx, userID, p.Plan, action, d.Charges, idempotencyBase,
+				refType, attemptID, common.ReviewLeaseTTL, time.Now().UTC(), s.policy.Location())
+			if err != nil {
+				appErr, ok := err.(*common.AppError)
+				if !ok {
+					return nil, err
+				}
+				if appErr.Code == "in_progress" {
+					// Committed by a concurrent/past request: replay the cache.
+					if existing, gerr := s.getCached(ctx, userID, attemptID, kind); gerr == nil {
+						return existing, nil
+					}
+				}
+				return nil, appErr
 			}
-			if appErr.Code == "in_progress" {
-				// Committed by a concurrent/past request: replay the cache.
+			if reservation != nil && reservation.Status == ReservationStatusCommitted {
+				// A committed replay: another request already settled this
+				// item's hold — re-read and replay the cache without calling
+				// the LLM.
 				if existing, gerr := s.getCached(ctx, userID, attemptID, kind); gerr == nil {
 					return existing, nil
 				}
+				return nil, common.Conflict("a request for this item is already in progress").WithCode("in_progress")
 			}
-			return nil, appErr
-		}
-		if reservation != nil && reservation.Status == ReservationStatusCommitted {
-			// A committed replay: another request already settled this
-			// item's hold — re-read and replay the cache without calling
-			// the LLM.
-			if existing, gerr := s.getCached(ctx, userID, attemptID, kind); gerr == nil {
-				return existing, nil
-			}
-			return nil, common.Conflict("a request for this item is already in progress").WithCode("in_progress")
 		}
 	}
 
@@ -224,6 +237,19 @@ func (s *AIReviewService) generate(ctx context.Context, userID, attemptID string
 	}
 	slog.InfoContext(ctx, "ai output generated", "attemptID", attemptID, "kind", string(kind), "credits", credits, "metered", reservation != nil)
 	return out, nil
+}
+
+// aiCreditTotal sums the ai_credit charges of a decision: the stamped
+// CreditsCharged must equal the reserved hold, never a second policy read
+// that an admin refresh could have moved in between.
+func aiCreditTotal(charges []Charge) int {
+	total := 0
+	for _, ch := range charges {
+		if ch.Counter == enums.CounterKindAICredit {
+			total += ch.Amount
+		}
+	}
+	return total
 }
 
 // outputStoreError marks an ai_outputs insert failure inside the settle

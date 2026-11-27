@@ -256,6 +256,57 @@ func (_c *MockPolicyDecider_Principal_Call) RunAndReturn(run func(ctx context.Co
 	return _c
 }
 
+// CreditCost provides a mock function for the type MockPolicyDecider
+func (_mock *MockPolicyDecider) CreditCost(action accessservices.Action) int {
+	ret := _mock.Called(action)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CreditCost")
+	}
+
+	var r0 int
+	if returnFunc, ok := ret.Get(0).(func(accessservices.Action) int); ok {
+		r0 = returnFunc(action)
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+	return r0
+}
+
+// MockPolicyDecider_CreditCost_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CreditCost'
+type MockPolicyDecider_CreditCost_Call struct {
+	*mock.Call
+}
+
+// CreditCost is a helper method to define mock.On call
+//   - action accessservices.Action
+func (_e *MockPolicyDecider_Expecter) CreditCost(action any) *MockPolicyDecider_CreditCost_Call {
+	return &MockPolicyDecider_CreditCost_Call{Call: _e.mock.On("CreditCost", action)}
+}
+
+func (_c *MockPolicyDecider_CreditCost_Call) Run(run func(action accessservices.Action)) *MockPolicyDecider_CreditCost_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 accessservices.Action
+		if args[0] != nil {
+			arg0 = args[0].(accessservices.Action)
+		}
+		run(
+			arg0,
+		)
+	})
+	return _c
+}
+
+func (_c *MockPolicyDecider_CreditCost_Call) Return(creditCost int) *MockPolicyDecider_CreditCost_Call {
+	_c.Call.Return(creditCost)
+	return _c
+}
+
+func (_c *MockPolicyDecider_CreditCost_Call) RunAndReturn(run func(action accessservices.Action) int) *MockPolicyDecider_CreditCost_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // NewMockUsageMeter creates a new instance of MockUsageMeter. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
 // The first argument is typically a *testing.T value.
 func NewMockUsageMeter(t interface {
@@ -407,8 +458,8 @@ func (_c *MockUsageMeter_Release_Call) RunAndReturn(run func(ctx context.Context
 }
 
 // Reserve provides a mock function for the type MockUsageMeter
-func (_mock *MockUsageMeter) Reserve(ctx context.Context, userID string, plan enums.PlanKey, charges []accessservices.Charge, idempotencyBase string, refType enums.UsageRefType, refID string, lease time.Duration, now time.Time, loc *time.Location) (*accessservices.Reservation, error) {
-	ret := _mock.Called(ctx, userID, plan, charges, idempotencyBase, refType, refID, lease, now, loc)
+func (_mock *MockUsageMeter) Reserve(ctx context.Context, userID string, plan enums.PlanKey, action accessservices.Action, charges []accessservices.Charge, idempotencyBase string, refType enums.UsageRefType, refID string, lease time.Duration, now time.Time, loc *time.Location) (*accessservices.Reservation, error) {
+	ret := _mock.Called(ctx, userID, plan, action, charges, idempotencyBase, refType, refID, lease, now, loc)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Reserve")
@@ -416,18 +467,18 @@ func (_mock *MockUsageMeter) Reserve(ctx context.Context, userID string, plan en
 
 	var r0 *accessservices.Reservation
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, enums.PlanKey, []accessservices.Charge, string, enums.UsageRefType, string, time.Duration, time.Time, *time.Location) (*accessservices.Reservation, error)); ok {
-		return returnFunc(ctx, userID, plan, charges, idempotencyBase, refType, refID, lease, now, loc)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, enums.PlanKey, accessservices.Action, []accessservices.Charge, string, enums.UsageRefType, string, time.Duration, time.Time, *time.Location) (*accessservices.Reservation, error)); ok {
+		return returnFunc(ctx, userID, plan, action, charges, idempotencyBase, refType, refID, lease, now, loc)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, enums.PlanKey, []accessservices.Charge, string, enums.UsageRefType, string, time.Duration, time.Time, *time.Location) *accessservices.Reservation); ok {
-		r0 = returnFunc(ctx, userID, plan, charges, idempotencyBase, refType, refID, lease, now, loc)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, enums.PlanKey, accessservices.Action, []accessservices.Charge, string, enums.UsageRefType, string, time.Duration, time.Time, *time.Location) *accessservices.Reservation); ok {
+		r0 = returnFunc(ctx, userID, plan, action, charges, idempotencyBase, refType, refID, lease, now, loc)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*accessservices.Reservation)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, string, enums.PlanKey, []accessservices.Charge, string, enums.UsageRefType, string, time.Duration, time.Time, *time.Location) error); ok {
-		r1 = returnFunc(ctx, userID, plan, charges, idempotencyBase, refType, refID, lease, now, loc)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, enums.PlanKey, accessservices.Action, []accessservices.Charge, string, enums.UsageRefType, string, time.Duration, time.Time, *time.Location) error); ok {
+		r1 = returnFunc(ctx, userID, plan, action, charges, idempotencyBase, refType, refID, lease, now, loc)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -443,6 +494,7 @@ type MockUsageMeter_Reserve_Call struct {
 //   - ctx context.Context
 //   - userID string
 //   - plan enums.PlanKey
+//   - action accessservices.Action
 //   - charges []accessservices.Charge
 //   - idempotencyBase string
 //   - refType enums.UsageRefType
@@ -450,11 +502,11 @@ type MockUsageMeter_Reserve_Call struct {
 //   - lease time.Duration
 //   - now time.Time
 //   - loc *time.Location
-func (_e *MockUsageMeter_Expecter) Reserve(ctx any, userID any, plan any, charges any, idempotencyBase any, refType any, refID any, lease any, now any, loc any) *MockUsageMeter_Reserve_Call {
-	return &MockUsageMeter_Reserve_Call{Call: _e.mock.On("Reserve", ctx, userID, plan, charges, idempotencyBase, refType, refID, lease, now, loc)}
+func (_e *MockUsageMeter_Expecter) Reserve(ctx any, userID any, plan any, action any, charges any, idempotencyBase any, refType any, refID any, lease any, now any, loc any) *MockUsageMeter_Reserve_Call {
+	return &MockUsageMeter_Reserve_Call{Call: _e.mock.On("Reserve", ctx, userID, plan, action, charges, idempotencyBase, refType, refID, lease, now, loc)}
 }
 
-func (_c *MockUsageMeter_Reserve_Call) Run(run func(ctx context.Context, userID string, plan enums.PlanKey, charges []accessservices.Charge, idempotencyBase string, refType enums.UsageRefType, refID string, lease time.Duration, now time.Time, loc *time.Location)) *MockUsageMeter_Reserve_Call {
+func (_c *MockUsageMeter_Reserve_Call) Run(run func(ctx context.Context, userID string, plan enums.PlanKey, action accessservices.Action, charges []accessservices.Charge, idempotencyBase string, refType enums.UsageRefType, refID string, lease time.Duration, now time.Time, loc *time.Location)) *MockUsageMeter_Reserve_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -468,33 +520,37 @@ func (_c *MockUsageMeter_Reserve_Call) Run(run func(ctx context.Context, userID 
 		if args[2] != nil {
 			arg2 = args[2].(enums.PlanKey)
 		}
-		var arg3 []accessservices.Charge
+		var arg3 accessservices.Action
 		if args[3] != nil {
-			arg3 = args[3].([]accessservices.Charge)
+			arg3 = args[3].(accessservices.Action)
 		}
-		var arg4 string
+		var arg4 []accessservices.Charge
 		if args[4] != nil {
-			arg4 = args[4].(string)
+			arg4 = args[4].([]accessservices.Charge)
 		}
-		var arg5 enums.UsageRefType
+		var arg5 string
 		if args[5] != nil {
-			arg5 = args[5].(enums.UsageRefType)
+			arg5 = args[5].(string)
 		}
-		var arg6 string
+		var arg6 enums.UsageRefType
 		if args[6] != nil {
-			arg6 = args[6].(string)
+			arg6 = args[6].(enums.UsageRefType)
 		}
-		var arg7 time.Duration
+		var arg7 string
 		if args[7] != nil {
-			arg7 = args[7].(time.Duration)
+			arg7 = args[7].(string)
 		}
-		var arg8 time.Time
+		var arg8 time.Duration
 		if args[8] != nil {
-			arg8 = args[8].(time.Time)
+			arg8 = args[8].(time.Duration)
 		}
-		var arg9 *time.Location
+		var arg9 time.Time
 		if args[9] != nil {
-			arg9 = args[9].(*time.Location)
+			arg9 = args[9].(time.Time)
+		}
+		var arg10 *time.Location
+		if args[10] != nil {
+			arg10 = args[10].(*time.Location)
 		}
 		run(
 			arg0,
@@ -507,6 +563,7 @@ func (_c *MockUsageMeter_Reserve_Call) Run(run func(ctx context.Context, userID 
 			arg7,
 			arg8,
 			arg9,
+			arg10,
 		)
 	})
 	return _c
@@ -517,7 +574,7 @@ func (_c *MockUsageMeter_Reserve_Call) Return(reservation *accessservices.Reserv
 	return _c
 }
 
-func (_c *MockUsageMeter_Reserve_Call) RunAndReturn(run func(ctx context.Context, userID string, plan enums.PlanKey, charges []accessservices.Charge, idempotencyBase string, refType enums.UsageRefType, refID string, lease time.Duration, now time.Time, loc *time.Location) (*accessservices.Reservation, error)) *MockUsageMeter_Reserve_Call {
+func (_c *MockUsageMeter_Reserve_Call) RunAndReturn(run func(ctx context.Context, userID string, plan enums.PlanKey, action accessservices.Action, charges []accessservices.Charge, idempotencyBase string, refType enums.UsageRefType, refID string, lease time.Duration, now time.Time, loc *time.Location) (*accessservices.Reservation, error)) *MockUsageMeter_Reserve_Call {
 	_c.Call.Return(run)
 	return _c
 }

@@ -78,10 +78,12 @@
     "premium": {
       "title": "Quản trị Premium",
       "description": "Quản lý giá các gói, tính năng yêu cầu premium và danh sách subscription.",
+      "loadError": "Không tải được cài đặt giá.",
       "tabs": {
         "plans": "Giá gói",
         "features": "Tính năng",
-        "subscriptions": "Subscription"
+        "subscriptions": "Subscription",
+        "pricing": "Chi phí & dùng thử"
       },
       "plans": {
         "plan": "Gói",
@@ -118,7 +120,26 @@
         "voiceSession": "Buổi luyện nói",
         "periodDay": "Ngày",
         "periodMonth": "Tháng",
-        "periodTotal": "Tổng"
+        "periodTotal": "Tổng",
+        "trialMoved": "Hạn mức dùng thử được chỉnh trong tab Chi phí & dùng thử."
+      },
+      "costs": {
+        "title": "Chi phí AI theo hành động",
+        "hint": "Số credit thu cho mỗi hành động. Đặt 0 để tạm thời miễn phí.",
+        "voiceSession": "Buổi luyện nói",
+        "examReview": "Chấm bài thi bằng AI",
+        "studyPlan": "Lộ trình học",
+        "save": "Lưu chi phí",
+        "saved": "Đã cập nhật chi phí hành động"
+      },
+      "trial": {
+        "title": "Điều khoản dùng thử",
+        "description": "Áp dụng cho lượt dùng thử mới. Ngày kết thúc và credit đã cấp không thay đổi.",
+        "days": "Thời hạn (ngày)",
+        "credits": "Credit",
+        "voiceSessions": "Buổi luyện nói",
+        "save": "Lưu điều khoản dùng thử",
+        "saved": "Đã cập nhật điều khoản dùng thử"
       }
     },
     "scenarios": {

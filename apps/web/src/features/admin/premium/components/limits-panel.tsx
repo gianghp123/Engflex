@@ -46,6 +46,8 @@ function emptyDraft(): Draft {
 	return next;
 }
 
+const EDITABLE_PLANS = PLAN_KEY_VALUES.filter((plan) => plan !== "trial");
+
 function PlanSection({
 	plan,
 	rows,
@@ -184,7 +186,7 @@ export function LimitsPanel() {
 		}
 		return next;
 	}, [query.data]);
-	const plans = PLAN_KEY_VALUES.filter((plan) => drafts[plan].length > 0);
+	const plans = EDITABLE_PLANS.filter((plan) => drafts[plan].length > 0);
 
 	function save(plan: PlanKey, rows: PlanLimitInput[]) {
 		setSavingPlan(plan);
@@ -218,6 +220,9 @@ export function LimitsPanel() {
 						pending={updateMutation.isPending && savingPlan === plan}
 					/>
 				))}
+				<p className="text-xs text-muted-foreground">
+					{m["admin.premium.limits.trialMoved"]()}
+				</p>
 			</div>
 		</CardShell>
 	);

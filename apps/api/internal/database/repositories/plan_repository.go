@@ -16,6 +16,7 @@ import (
 type PlanRepository interface {
 	List(ctx context.Context) ([]*models.Plan, error)
 	GetByPlan(ctx context.Context, plan enums.SubscriptionPlan) (*models.Plan, error)
+	ListActive(ctx context.Context) ([]*models.Plan, error)
 	Update(ctx context.Context, p *models.Plan) error
 	WithTx(tx *gorm.DB) PlanRepository
 }
@@ -48,6 +49,14 @@ func (r *planRepository) GetByPlan(ctx context.Context, plan enums.SubscriptionP
 		return nil, err
 	}
 	return &m, nil
+}
+
+func (r *planRepository) ListActive(ctx context.Context) ([]*models.Plan, error) {
+	var out []*models.Plan
+	if err := r.db.WithContext(ctx).Where("is_active = ?", true).Order("months ASC").Find(&out).Error; err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (r *planRepository) Update(ctx context.Context, p *models.Plan) error {

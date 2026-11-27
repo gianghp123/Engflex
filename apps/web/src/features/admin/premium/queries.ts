@@ -10,19 +10,27 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
 	createPremiumFeature,
 	deletePremiumFeature,
+	getTrialTerms,
+	listActionCosts,
 	listAdminLimits,
 	listAdminPlans,
 	listAdminSubscriptions,
 	listPremiumFeatures,
+	type UpdateActionCosts,
 	type UpdatePlanLimits,
+	type UpdateTrialTerms,
+	updateActionCosts,
 	updatePlan,
 	updatePlanLimits,
 	updatePremiumFeature,
+	updateTrialTerms,
 } from "#/features/admin/premium/service";
 
 const keys = {
 	plans: ["admin", "premium-plans"] as const,
 	limits: ["admin", "premium-limits"] as const,
+	actionCosts: ["admin", "action-costs"] as const,
+	trialTerms: ["admin", "trial-terms"] as const,
 	features: (page: number, pageSize: number) =>
 		["admin", "premium-features", page, pageSize] as const,
 	subscriptions: (
@@ -128,5 +136,38 @@ export function useAdminSubscriptions(
 	return useQuery({
 		queryKey: keys.subscriptions(page, pageSize, status, plan),
 		queryFn: () => listAdminSubscriptions(page, pageSize, status, plan),
+	});
+}
+
+export function useAdminActionCosts() {
+	return useQuery({ queryKey: keys.actionCosts, queryFn: listActionCosts });
+}
+
+export function useUpdateActionCosts() {
+	const invalidate = useInvalidate(keys.actionCosts);
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: (payload: UpdateActionCosts) => updateActionCosts(payload),
+		onSuccess: () => {
+			invalidate();
+			// The pricing pages read the public catalog; refresh it in-session too.
+			void queryClient.invalidateQueries({ queryKey: ["pricing", "catalog"] });
+		},
+	});
+}
+
+export function useAdminTrialTerms() {
+	return useQuery({ queryKey: keys.trialTerms, queryFn: getTrialTerms });
+}
+
+export function useUpdateTrialTerms() {
+	const invalidate = useInvalidate(keys.trialTerms);
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: (payload: UpdateTrialTerms) => updateTrialTerms(payload),
+		onSuccess: () => {
+			invalidate();
+			void queryClient.invalidateQueries({ queryKey: ["pricing", "catalog"] });
+		},
 	});
 }

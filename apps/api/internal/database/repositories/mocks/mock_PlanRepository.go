@@ -180,6 +180,68 @@ func (_c *MockPlanRepository_List_Call) RunAndReturn(run func(ctx context.Contex
 	return _c
 }
 
+// ListActive provides a mock function for the type MockPlanRepository
+func (_mock *MockPlanRepository) ListActive(ctx context.Context) ([]*models.Plan, error) {
+	ret := _mock.Called(ctx)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ListActive")
+	}
+
+	var r0 []*models.Plan
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context) ([]*models.Plan, error)); ok {
+		return returnFunc(ctx)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context) []*models.Plan); ok {
+		r0 = returnFunc(ctx)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.Plan)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = returnFunc(ctx)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockPlanRepository_ListActive_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ListActive'
+type MockPlanRepository_ListActive_Call struct {
+	*mock.Call
+}
+
+// ListActive is a helper method to define mock.On call
+//   - ctx context.Context
+func (_e *MockPlanRepository_Expecter) ListActive(ctx any) *MockPlanRepository_ListActive_Call {
+	return &MockPlanRepository_ListActive_Call{Call: _e.mock.On("ListActive", ctx)}
+}
+
+func (_c *MockPlanRepository_ListActive_Call) Run(run func(ctx context.Context)) *MockPlanRepository_ListActive_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		run(
+			arg0,
+		)
+	})
+	return _c
+}
+
+func (_c *MockPlanRepository_ListActive_Call) Return(plans []*models.Plan, err error) *MockPlanRepository_ListActive_Call {
+	_c.Call.Return(plans, err)
+	return _c
+}
+
+func (_c *MockPlanRepository_ListActive_Call) RunAndReturn(run func(ctx context.Context) ([]*models.Plan, error)) *MockPlanRepository_ListActive_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // Update provides a mock function for the type MockPlanRepository
 func (_mock *MockPlanRepository) Update(ctx context.Context, p *models.Plan) error {
 	ret := _mock.Called(ctx, p)

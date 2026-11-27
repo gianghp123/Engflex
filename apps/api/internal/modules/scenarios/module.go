@@ -6,6 +6,7 @@ import (
 	"gorm.io/gorm"
 
 	"engflex-api/internal/database/repositories"
+	accessservices "engflex-api/internal/modules/access/services"
 	paymentservices "engflex-api/internal/modules/payments/services"
 	"engflex-api/internal/modules/scenarios/controllers"
 	"engflex-api/internal/modules/scenarios/services"
@@ -14,12 +15,15 @@ import (
 
 // RegisterRoutes mounts the catalog endpoints under /api/v1: scenarios,
 // scenario topics, and personas (one feature, three route groups).
-func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB) {
+func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB, costs accessservices.CreditCostReader) {
 	premiumSvc := paymentservices.NewSubscriptionService(
 		repositories.NewSubscriptionRepository(db), repositories.NewPlanRepository(db))
 	svc := services.NewScenarioService(
 		repositories.NewScenarioRepository(db), repositories.NewScenarioTopicRepository(db), premiumSvc)
-	ctl := controllers.NewScenarioController(svc)
+	if costs == nil {
+		costs = accessservices.DefaultCreditCostReader{}
+	}
+	ctl := controllers.NewScenarioController(svc, costs)
 
 	personaSvc := services.NewPersonaService(repositories.NewPersonaRepository(db))
 	personaCtl := controllers.NewPersonaController(personaSvc)

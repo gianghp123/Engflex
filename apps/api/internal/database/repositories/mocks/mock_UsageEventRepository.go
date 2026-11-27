@@ -635,8 +635,8 @@ func (_c *MockUsageEventRepository_ReleaseExpired_Call) RunAndReturn(run func(ct
 }
 
 // ReuseAsReserved provides a mock function for the type MockUsageEventRepository
-func (_mock *MockUsageEventRepository) ReuseAsReserved(ctx context.Context, id string, reservationID string, expiresAt time.Time) (bool, error) {
-	ret := _mock.Called(ctx, id, reservationID, expiresAt)
+func (_mock *MockUsageEventRepository) ReuseAsReserved(ctx context.Context, id string, reservationID string, action enums.AccessAction, amount int, expiresAt time.Time) (bool, error) {
+	ret := _mock.Called(ctx, id, reservationID, action, amount, expiresAt)
 
 	if len(ret) == 0 {
 		panic("no return value specified for ReuseAsReserved")
@@ -644,16 +644,16 @@ func (_mock *MockUsageEventRepository) ReuseAsReserved(ctx context.Context, id s
 
 	var r0 bool
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string, time.Time) (bool, error)); ok {
-		return returnFunc(ctx, id, reservationID, expiresAt)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string, enums.AccessAction, int, time.Time) (bool, error)); ok {
+		return returnFunc(ctx, id, reservationID, action, amount, expiresAt)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string, time.Time) bool); ok {
-		r0 = returnFunc(ctx, id, reservationID, expiresAt)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string, enums.AccessAction, int, time.Time) bool); ok {
+		r0 = returnFunc(ctx, id, reservationID, action, amount, expiresAt)
 	} else {
 		r0 = ret.Get(0).(bool)
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, string, string, time.Time) error); ok {
-		r1 = returnFunc(ctx, id, reservationID, expiresAt)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, string, enums.AccessAction, int, time.Time) error); ok {
+		r1 = returnFunc(ctx, id, reservationID, action, amount, expiresAt)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -669,12 +669,14 @@ type MockUsageEventRepository_ReuseAsReserved_Call struct {
 //   - ctx context.Context
 //   - id string
 //   - reservationID string
+//   - action enums.AccessAction
+//   - amount int
 //   - expiresAt time.Time
-func (_e *MockUsageEventRepository_Expecter) ReuseAsReserved(ctx any, id any, reservationID any, expiresAt any) *MockUsageEventRepository_ReuseAsReserved_Call {
-	return &MockUsageEventRepository_ReuseAsReserved_Call{Call: _e.mock.On("ReuseAsReserved", ctx, id, reservationID, expiresAt)}
+func (_e *MockUsageEventRepository_Expecter) ReuseAsReserved(ctx any, id any, reservationID any, action any, amount any, expiresAt any) *MockUsageEventRepository_ReuseAsReserved_Call {
+	return &MockUsageEventRepository_ReuseAsReserved_Call{Call: _e.mock.On("ReuseAsReserved", ctx, id, reservationID, action, amount, expiresAt)}
 }
 
-func (_c *MockUsageEventRepository_ReuseAsReserved_Call) Run(run func(ctx context.Context, id string, reservationID string, expiresAt time.Time)) *MockUsageEventRepository_ReuseAsReserved_Call {
+func (_c *MockUsageEventRepository_ReuseAsReserved_Call) Run(run func(ctx context.Context, id string, reservationID string, action enums.AccessAction, amount int, expiresAt time.Time)) *MockUsageEventRepository_ReuseAsReserved_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -688,15 +690,25 @@ func (_c *MockUsageEventRepository_ReuseAsReserved_Call) Run(run func(ctx contex
 		if args[2] != nil {
 			arg2 = args[2].(string)
 		}
-		var arg3 time.Time
+		var arg3 enums.AccessAction
 		if args[3] != nil {
-			arg3 = args[3].(time.Time)
+			arg3 = args[3].(enums.AccessAction)
+		}
+		var arg4 int
+		if args[4] != nil {
+			arg4 = args[4].(int)
+		}
+		var arg5 time.Time
+		if args[5] != nil {
+			arg5 = args[5].(time.Time)
 		}
 		run(
 			arg0,
 			arg1,
 			arg2,
 			arg3,
+			arg4,
+			arg5,
 		)
 	})
 	return _c
@@ -707,7 +719,7 @@ func (_c *MockUsageEventRepository_ReuseAsReserved_Call) Return(b bool, err erro
 	return _c
 }
 
-func (_c *MockUsageEventRepository_ReuseAsReserved_Call) RunAndReturn(run func(ctx context.Context, id string, reservationID string, expiresAt time.Time) (bool, error)) *MockUsageEventRepository_ReuseAsReserved_Call {
+func (_c *MockUsageEventRepository_ReuseAsReserved_Call) RunAndReturn(run func(ctx context.Context, id string, reservationID string, action enums.AccessAction, amount int, expiresAt time.Time) (bool, error)) *MockUsageEventRepository_ReuseAsReserved_Call {
 	_c.Call.Return(run)
 	return _c
 }

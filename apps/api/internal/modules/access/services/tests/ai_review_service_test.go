@@ -81,7 +81,7 @@ func TestGetExamReviewCachedReadIsFree(t *testing.T) {
 	require.NotNil(t, got)
 	assert.Equal(t, cached, got)
 	policy.AssertNotCalled(t, "Decide", mock.Anything, mock.Anything, mock.Anything, mock.Anything)
-	usage.AssertNotCalled(t, "Reserve", mock.Anything)
+	usage.AssertNotCalled(t, "Reserve", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything)
 }
 
 func TestGetStudyPlanCachedReadIsFree(t *testing.T) {
@@ -93,7 +93,7 @@ func TestGetStudyPlanCachedReadIsFree(t *testing.T) {
 	require.NotNil(t, got)
 	assert.Equal(t, cached, got)
 	policy.AssertNotCalled(t, "Decide", mock.Anything, mock.Anything, mock.Anything, mock.Anything)
-	usage.AssertNotCalled(t, "Reserve", mock.Anything)
+	usage.AssertNotCalled(t, "Reserve", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything)
 }
 
 func TestGenerateExamReviewChargesOnceAndCaches(t *testing.T) {
@@ -111,7 +111,7 @@ func TestGenerateExamReviewChargesOnceAndCaches(t *testing.T) {
 		Return(accessservices.Decision{Allow: true, Plan: enums.PlanKey1M,
 			Charges: []accessservices.Charge{{Counter: enums.CounterKindAICredit, Amount: 1}}}, nil).Once()
 	policy.EXPECT().Location().Return(time.UTC).Maybe()
-	usage.EXPECT().Reserve(mock.Anything, "user_1", enums.PlanKey1M, mock.Anything,
+	usage.EXPECT().Reserve(mock.Anything, "user_1", enums.PlanKey1M, accessservices.ActionExamReview, mock.Anything,
 		"exam_review:00000000-0000-0000-0000-000000000201", enums.UsageRefTypeExamAttempt,
 		"00000000-0000-0000-0000-000000000201", common.ReviewLeaseTTL, mock.Anything, mock.Anything).
 		Return(&accessservices.Reservation{ID: "res-r1", Status: accessservices.ReservationStatusReserved}, nil).Once()
@@ -127,6 +127,7 @@ func TestGenerateExamReviewChargesOnceAndCaches(t *testing.T) {
 	require.Len(t, outputs.created, 1)
 	assert.Equal(t, 1, outputs.created[0].CreditsCharged)
 	assert.Equal(t, enums.AIOutputKindExamReview, outputs.created[0].Kind)
+	policy.AssertNotCalled(t, "CreditCost", mock.Anything)
 }
 
 func TestGenerateStudyPlanChargesTwoCredits(t *testing.T) {
@@ -144,7 +145,7 @@ func TestGenerateStudyPlanChargesTwoCredits(t *testing.T) {
 		Return(accessservices.Decision{Allow: true, Plan: enums.PlanKey1M,
 			Charges: []accessservices.Charge{{Counter: enums.CounterKindAICredit, Amount: 2}}}, nil).Once()
 	policy.EXPECT().Location().Return(time.UTC).Maybe()
-	usage.EXPECT().Reserve(mock.Anything, "user_1", enums.PlanKey1M,
+	usage.EXPECT().Reserve(mock.Anything, "user_1", enums.PlanKey1M, accessservices.ActionStudyPlan,
 		[]accessservices.Charge{{Counter: enums.CounterKindAICredit, Amount: 2}},
 		"study_plan:00000000-0000-0000-0000-000000000201", enums.UsageRefTypeStudyPlan,
 		"00000000-0000-0000-0000-000000000201", common.ReviewLeaseTTL, mock.Anything, mock.Anything).
@@ -160,6 +161,7 @@ func TestGenerateStudyPlanChargesTwoCredits(t *testing.T) {
 	require.Len(t, outputs.created, 1)
 	assert.Equal(t, 2, outputs.created[0].CreditsCharged, "study plan charges exactly 2 credits")
 	assert.Equal(t, enums.AIOutputKindStudyPlan, outputs.created[0].Kind)
+	policy.AssertNotCalled(t, "CreditCost", mock.Anything)
 }
 
 func TestGenerateExamReviewLLMFailureReleases(t *testing.T) {
@@ -178,7 +180,7 @@ func TestGenerateExamReviewLLMFailureReleases(t *testing.T) {
 			Charges: []accessservices.Charge{{Counter: enums.CounterKindAICredit, Amount: 1}}}, nil).Once()
 	policy.EXPECT().Location().Return(time.UTC).Maybe()
 	usage.EXPECT().Reserve(mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything,
-		mock.Anything, mock.Anything, mock.Anything, mock.Anything).
+		mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).
 		Return(&accessservices.Reservation{ID: "res-r2", Status: accessservices.ReservationStatusReserved}, nil).Once()
 	testsRepo.EXPECT().GetByID(mock.Anything, mock.Anything).Return(&models.ExamTestCatalog{}, nil).Maybe()
 	llm.EXPECT().CompleteStructured(mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).
@@ -192,6 +194,7 @@ func TestGenerateExamReviewLLMFailureReleases(t *testing.T) {
 	require.Equal(t, 503, appErr.Status)
 	require.Equal(t, common.CodeAIUnavailable, appErr.Code)
 	assert.Empty(t, outputs.created, "no output without a charge, no charge without an output")
+	policy.AssertNotCalled(t, "CreditCost", mock.Anything)
 }
 
 func TestGenerateRequiresCompletedAttempt(t *testing.T) {
@@ -242,7 +245,7 @@ func TestGenerateExamReviewReturnsExistingCacheWithoutMetering(t *testing.T) {
 	assert.Equal(t, cached, got, "re-POST on a generated review replays free without metering or a second LLM call")
 	assert.Empty(t, outputs.created)
 	policy.AssertNotCalled(t, "Decide", mock.Anything, mock.Anything, mock.Anything, mock.Anything)
-	usage.AssertNotCalled(t, "Reserve", mock.Anything)
+	usage.AssertNotCalled(t, "Reserve", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything)
 	llm.AssertNotCalled(t, "CompleteStructured", mock.Anything)
 }
 
@@ -264,7 +267,7 @@ func TestGenerateExamReviewCommittedReplayReturnsCache(t *testing.T) {
 			Charges: []accessservices.Charge{{Counter: enums.CounterKindAICredit, Amount: 1}}}, nil).Once()
 	policy.EXPECT().Location().Return(time.UTC).Maybe()
 	usage.EXPECT().Reserve(mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything,
-		mock.Anything, mock.Anything, mock.Anything, mock.Anything).
+		mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).
 		Return(nil, common.Conflict("already committed").WithCode("in_progress"))
 
 	svc := accessservices.NewAIReviewService(attempts, repomocks.NewMockExamTestRepository(t), outputs, llm, policy, usage, true, fakeTxManager{})
@@ -272,6 +275,7 @@ func TestGenerateExamReviewCommittedReplayReturnsCache(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, cached, out, "a committed reservation replays the cache without a second charge or LLM call")
 	llm.AssertNotCalled(t, "CompleteStructured", mock.Anything)
+	policy.AssertNotCalled(t, "CreditCost", mock.Anything)
 }
 
 func TestGenerateShadowModeSkipsMetering(t *testing.T) {
@@ -309,7 +313,9 @@ func TestGenerateShadowModeSkipsMetering(t *testing.T) {
 			require.NoError(t, err, "shadow mode generates despite the denial")
 			require.NotNil(t, out)
 			require.Len(t, outputs.created, 1)
-			usage.AssertNotCalled(t, "Reserve", mock.Anything)
+			assert.Equal(t, 0, outputs.created[0].CreditsCharged, "a denial carries no charges, so the stamp is zero")
+			policy.AssertNotCalled(t, "CreditCost", mock.Anything)
+			usage.AssertNotCalled(t, "Reserve", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything)
 			usage.AssertNotCalled(t, "CommitTx", mock.Anything, mock.Anything, mock.Anything)
 		})
 	}
@@ -347,7 +353,8 @@ func TestGenerateDeniedWhenEnforced(t *testing.T) {
 			require.ErrorAs(t, err, &appErr)
 			require.Equal(t, 429, appErr.Status)
 			require.Equal(t, common.CodeInsufficientCredits, appErr.Code)
-			usage.AssertNotCalled(t, "Reserve", mock.Anything)
+			policy.AssertNotCalled(t, "CreditCost", mock.Anything)
+			usage.AssertNotCalled(t, "Reserve", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything)
 		})
 	}
 }
@@ -358,31 +365,34 @@ func TestGenerateDeniedWhenEnforced(t *testing.T) {
 // user with the same denial keeps the 429.
 func TestGenerateAdminBypassSkipsMetering(t *testing.T) {
 	tests := []struct {
-		name       string
-		action     func(svc *accessservices.AIReviewService) (*models.AIOutput, error)
-		decision   accessservices.Action
-		charges    []accessservices.Charge
-		isAdmin    bool
-		principal  accessservices.Principal
-		wantStatus int
+		name        string
+		action      func(svc *accessservices.AIReviewService) (*models.AIOutput, error)
+		decision    accessservices.Action
+		charges     []accessservices.Charge
+		isAdmin     bool
+		principal   accessservices.Principal
+		wantStatus  int
+		wantCredits int
 	}{
 		{
 			name: "admin review succeeds despite a denial-shaped decide",
 			action: func(svc *accessservices.AIReviewService) (*models.AIOutput, error) {
 				return svc.GenerateExamReview(context.Background(), "user_1", "00000000-0000-0000-0000-000000000201", true)
 			}, decision: accessservices.ActionExamReview,
-			charges:   []accessservices.Charge{{Counter: enums.CounterKindAICredit, Amount: 1}},
-			isAdmin:   true,
-			principal: accessservices.Principal{UserID: "user_1", Plan: enums.PlanKeyAdmin, IsAdmin: true},
+			charges:     []accessservices.Charge{{Counter: enums.CounterKindAICredit, Amount: 1}},
+			isAdmin:     true,
+			principal:   accessservices.Principal{UserID: "user_1", Plan: enums.PlanKeyAdmin, IsAdmin: true},
+			wantCredits: 1,
 		},
 		{
 			name: "admin study plan succeeds despite a denial-shaped decide",
 			action: func(svc *accessservices.AIReviewService) (*models.AIOutput, error) {
 				return svc.GenerateStudyPlan(context.Background(), "user_1", "00000000-0000-0000-0000-000000000201", true)
 			}, decision: accessservices.ActionStudyPlan,
-			charges:   []accessservices.Charge{{Counter: enums.CounterKindAICredit, Amount: 2}},
-			isAdmin:   true,
-			principal: accessservices.Principal{UserID: "user_1", Plan: enums.PlanKeyAdmin, IsAdmin: true},
+			charges:     []accessservices.Charge{{Counter: enums.CounterKindAICredit, Amount: 2}},
+			isAdmin:     true,
+			principal:   accessservices.Principal{UserID: "user_1", Plan: enums.PlanKeyAdmin, IsAdmin: true},
+			wantCredits: 2,
 		},
 		{
 			name: "free user with the same denial is still denied",
@@ -425,7 +435,10 @@ func TestGenerateAdminBypassSkipsMetering(t *testing.T) {
 			}
 			require.NoError(t, err)
 			require.NotNil(t, out)
-			usage.AssertNotCalled(t, "Reserve", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything)
+			require.Len(t, outputs.created, 1)
+			assert.Equal(t, tt.wantCredits, outputs.created[0].CreditsCharged, "unmetered output still stamps the decided charges")
+			policy.AssertNotCalled(t, "CreditCost", mock.Anything)
+			usage.AssertNotCalled(t, "Reserve", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything)
 			usage.AssertNotCalled(t, "CommitTx", mock.Anything, mock.Anything, mock.Anything)
 		})
 	}
@@ -466,6 +479,7 @@ func TestGenerateShadowModeToleratesStoreErrors(t *testing.T) {
 
 			attempts.EXPECT().GetByID(mock.Anything, "00000000-0000-0000-0000-000000000201").Return(completedAttempt(), nil).Once()
 			tt.setup(policy)
+			policy.EXPECT().CreditCost(accessservices.ActionExamReview).Return(1).Once()
 			testsRepo.EXPECT().GetByID(mock.Anything, mock.Anything).Return(&models.ExamTestCatalog{}, nil).Maybe()
 			llm.EXPECT().CompleteStructured(mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
 
@@ -473,7 +487,7 @@ func TestGenerateShadowModeToleratesStoreErrors(t *testing.T) {
 			out, err := svc.GenerateExamReview(context.Background(), "user_1", "00000000-0000-0000-0000-000000000201", false)
 			require.NoError(t, err, "shadow mode never fails on a store error")
 			require.NotNil(t, out)
-			usage.AssertNotCalled(t, "Reserve", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything)
+			usage.AssertNotCalled(t, "Reserve", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything)
 		})
 	}
 }
@@ -497,7 +511,7 @@ func TestGenerateSettleFailureRollsBackAndReleases(t *testing.T) {
 			Charges: []accessservices.Charge{{Counter: enums.CounterKindAICredit, Amount: 1}}}, nil).Once()
 	policy.EXPECT().Location().Return(time.UTC).Maybe()
 	usage.EXPECT().Reserve(mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything,
-		mock.Anything, mock.Anything, mock.Anything, mock.Anything).
+		mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).
 		Return(&accessservices.Reservation{ID: "res-fail", Status: accessservices.ReservationStatusReserved}, nil).Once()
 	testsRepo.EXPECT().GetByID(mock.Anything, mock.Anything).Return(&models.ExamTestCatalog{}, nil).Maybe()
 	llm.EXPECT().CompleteStructured(mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
@@ -510,4 +524,108 @@ func TestGenerateSettleFailureRollsBackAndReleases(t *testing.T) {
 	require.ErrorAs(t, err, &appErr)
 	require.Equal(t, 503, appErr.Status)
 	require.Equal(t, common.CodePolicyUnavailable, appErr.Code)
+	policy.AssertNotCalled(t, "CreditCost", mock.Anything)
+}
+
+// TestGenerateReviewRecordsConfiguredCost pins the Task 3 consumer contract:
+// the generated output stamps the policy's configured credit cost, not a
+// hardcoded literal.
+func TestGenerateReviewRecordsConfiguredCost(t *testing.T) {
+	outputs := &fakeOutputs{}
+	llm := llmmocks.NewMockLLMClient(t)
+	attempts := repomocks.NewMockAttemptRepository(t)
+	testsRepo := repomocks.NewMockExamTestRepository(t)
+	policy := accessmocks.NewMockPolicyDecider(t)
+	usage := accessmocks.NewMockUsageMeter(t)
+
+	attempts.EXPECT().GetByID(mock.Anything, "00000000-0000-0000-0000-000000000201").Return(completedAttempt(), nil).Once()
+	policy.EXPECT().Principal(mock.Anything, "user_1", false).
+		Return(accessservices.Principal{UserID: "user_1", Plan: enums.PlanKey1M}, accessservices.TrialInfo{}, nil).Once()
+	policy.EXPECT().Decide(mock.Anything, "user_1", false, accessservices.ActionExamReview).
+		Return(accessservices.Decision{Allow: true, Plan: enums.PlanKey1M,
+			Charges: []accessservices.Charge{{Counter: enums.CounterKindAICredit, Amount: 3}}}, nil).Once()
+	policy.EXPECT().Location().Return(time.UTC).Maybe()
+	usage.EXPECT().Reserve(mock.Anything, "user_1", enums.PlanKey1M, accessservices.ActionExamReview, mock.Anything,
+		"exam_review:00000000-0000-0000-0000-000000000201", enums.UsageRefTypeExamAttempt,
+		"00000000-0000-0000-0000-000000000201", common.ReviewLeaseTTL, mock.Anything, mock.Anything).
+		Return(&accessservices.Reservation{ID: "res-cost", Status: accessservices.ReservationStatusReserved}, nil).Once()
+	testsRepo.EXPECT().GetByID(mock.Anything, mock.Anything).Return(&models.ExamTestCatalog{}, nil).Maybe()
+	llm.EXPECT().CompleteStructured(mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
+	usage.EXPECT().CommitTx(mock.Anything, mock.Anything, "res-cost").Return(nil).Once()
+
+	svc := accessservices.NewAIReviewService(attempts, testsRepo, outputs, llm, policy, usage, true, fakeTxManager{})
+	out, err := svc.GenerateExamReview(context.Background(), "user_1", "00000000-0000-0000-0000-000000000201", false)
+	require.NoError(t, err)
+	require.NotNil(t, out)
+	require.Len(t, outputs.created, 1)
+	assert.Equal(t, 3, outputs.created[0].CreditsCharged)
+	policy.AssertNotCalled(t, "CreditCost", mock.Anything)
+}
+
+// TestGenerateReviewStampsDecidedChargesNotSeparateRead pins Important 2:
+// an admin price change between the Decide read and the stamp must not
+// mismatch the hold. The decision charges 5 while a separate CreditCost
+// read would report 3 — the output must stamp 5 and the success path must
+// never consult CreditCost.
+func TestGenerateReviewStampsDecidedChargesNotSeparateRead(t *testing.T) {
+	outputs := &fakeOutputs{}
+	llm := llmmocks.NewMockLLMClient(t)
+	attempts := repomocks.NewMockAttemptRepository(t)
+	testsRepo := repomocks.NewMockExamTestRepository(t)
+	policy := accessmocks.NewMockPolicyDecider(t)
+	usage := accessmocks.NewMockUsageMeter(t)
+
+	attempts.EXPECT().GetByID(mock.Anything, "00000000-0000-0000-0000-000000000201").Return(completedAttempt(), nil).Once()
+	policy.EXPECT().Principal(mock.Anything, "user_1", false).
+		Return(accessservices.Principal{UserID: "user_1", Plan: enums.PlanKey1M}, accessservices.TrialInfo{}, nil).Once()
+	policy.EXPECT().Decide(mock.Anything, "user_1", false, accessservices.ActionExamReview).
+		Return(accessservices.Decision{Allow: true, Plan: enums.PlanKey1M,
+			Charges: []accessservices.Charge{{Counter: enums.CounterKindAICredit, Amount: 5}}}, nil).Once()
+	policy.EXPECT().Location().Return(time.UTC).Maybe()
+	usage.EXPECT().Reserve(mock.Anything, "user_1", enums.PlanKey1M, accessservices.ActionExamReview,
+		[]accessservices.Charge{{Counter: enums.CounterKindAICredit, Amount: 5}},
+		"exam_review:00000000-0000-0000-0000-000000000201", enums.UsageRefTypeExamAttempt,
+		"00000000-0000-0000-0000-000000000201", common.ReviewLeaseTTL, mock.Anything, mock.Anything).
+		Return(&accessservices.Reservation{ID: "res-mismatch", Status: accessservices.ReservationStatusReserved}, nil).Once()
+	testsRepo.EXPECT().GetByID(mock.Anything, mock.Anything).Return(&models.ExamTestCatalog{}, nil).Maybe()
+	llm.EXPECT().CompleteStructured(mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
+	usage.EXPECT().CommitTx(mock.Anything, mock.Anything, "res-mismatch").Return(nil).Once()
+
+	svc := accessservices.NewAIReviewService(attempts, testsRepo, outputs, llm, policy, usage, true, fakeTxManager{})
+	out, err := svc.GenerateExamReview(context.Background(), "user_1", "00000000-0000-0000-0000-000000000201", false)
+	require.NoError(t, err)
+	require.NotNil(t, out)
+	require.Len(t, outputs.created, 1)
+	assert.Equal(t, 5, outputs.created[0].CreditsCharged, "the stamp follows the decided charges, not a separate read")
+	policy.AssertNotCalled(t, "CreditCost", mock.Anything)
+}
+
+// TestGenerateReviewSkipsReserveWhenZeroCost pins the Task 3 zero-cost
+// path: an allowed decision with no charges generates unmetered with
+// credits_charged = 0 — a free action must not hold counters.
+func TestGenerateReviewSkipsReserveWhenZeroCost(t *testing.T) {
+	outputs := &fakeOutputs{}
+	llm := llmmocks.NewMockLLMClient(t)
+	attempts := repomocks.NewMockAttemptRepository(t)
+	testsRepo := repomocks.NewMockExamTestRepository(t)
+	policy := accessmocks.NewMockPolicyDecider(t)
+	usage := accessmocks.NewMockUsageMeter(t)
+
+	attempts.EXPECT().GetByID(mock.Anything, "00000000-0000-0000-0000-000000000201").Return(completedAttempt(), nil).Once()
+	policy.EXPECT().Principal(mock.Anything, "user_1", false).
+		Return(accessservices.Principal{UserID: "user_1", Plan: enums.PlanKeyFree}, accessservices.TrialInfo{}, nil).Once()
+	policy.EXPECT().Decide(mock.Anything, "user_1", false, accessservices.ActionExamReview).
+		Return(accessservices.Decision{Allow: true, Plan: enums.PlanKeyFree}, nil).Once()
+	testsRepo.EXPECT().GetByID(mock.Anything, mock.Anything).Return(&models.ExamTestCatalog{}, nil).Maybe()
+	llm.EXPECT().CompleteStructured(mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
+
+	svc := accessservices.NewAIReviewService(attempts, testsRepo, outputs, llm, policy, usage, true, fakeTxManager{})
+	out, err := svc.GenerateExamReview(context.Background(), "user_1", "00000000-0000-0000-0000-000000000201", false)
+	require.NoError(t, err)
+	require.NotNil(t, out)
+	require.Len(t, outputs.created, 1)
+	assert.Equal(t, 0, outputs.created[0].CreditsCharged)
+	policy.AssertNotCalled(t, "CreditCost", mock.Anything)
+	usage.AssertNotCalled(t, "Reserve", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything)
+	usage.AssertNotCalled(t, "CommitTx", mock.Anything, mock.Anything, mock.Anything)
 }

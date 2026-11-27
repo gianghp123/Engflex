@@ -22,7 +22,7 @@ func NewAIReviewController(reviews *accessservices.AIReviewService) *AIReviewCon
 }
 
 // GenerateExamReview godoc
-// @Summary      Generate the AI mistake review for a completed attempt (1 credit)
+// @Summary      Generate the AI mistake review for a completed attempt (charged at the admin-configured action price)
 // @Tags         exams
 // @Security     BearerAuth
 // @Produce      json
@@ -72,7 +72,7 @@ func (h *AIReviewController) GetExamReview(c *gin.Context) {
 }
 
 // GenerateStudyPlan godoc
-// @Summary      Generate the AI study plan for a completed attempt (2 credits)
+// @Summary      Generate the AI study plan for a completed attempt (charged at the admin-configured action price)
 // @Tags         exams
 // @Security     BearerAuth
 // @Produce      json

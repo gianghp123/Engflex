@@ -1,6 +1,7 @@
 // Code generated from ./enums.ts by scripts/gen-enum-values.mjs. DO NOT EDIT.
 import type * as Enums from "./enums.ts";
 
+export const ACCESS_ACTION_VALUES = ["voice_session_start", "exam_ai_review", "study_plan", "writing_score", "pronunciation"] as const satisfies readonly Enums.AccessAction[];
 export const ACTIVITY_TYPE_VALUES = ["reading", "listening", "writing", "speaking"] as const satisfies readonly Enums.ActivityType[];
 export const AIOUTPUT_KIND_VALUES = ["exam_review", "writing_review", "study_plan", "turn_analysis"] as const satisfies readonly Enums.AIOutputKind[];
 export const ATTEMPT_STATUS_VALUES = ["in_progress", "completed", "abandoned"] as const satisfies readonly Enums.AttemptStatus[];

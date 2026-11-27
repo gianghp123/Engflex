@@ -11,6 +11,7 @@ import (
 	"engflex-api/internal/database/repositories"
 	"engflex-api/internal/logger"
 	"engflex-api/internal/modules/access/dtos/responses"
+	"engflex-api/internal/utils"
 )
 
 // EntitlementsService assembles the /premium/me and /premium/usage views
@@ -54,11 +55,7 @@ func (s *EntitlementsService) MyEntitlements(ctx context.Context, userID string,
 	}
 	out.Credits = s.counterView(enums.CounterKindAICredit, limits, usage, now)
 	out.Voice = s.counterView(enums.CounterKindVoiceSession, limits, usage, now)
-	out.Costs = []responses.ActionCost{
-		{Action: string(ActionVoiceStart), Credits: 1},
-		{Action: string(ActionExamReview), Credits: 1},
-		{Action: string(ActionStudyPlan), Credits: 2},
-	}
+	out.Costs = s.actionCosts()
 	slog.InfoContext(ctx, "entitlements resolved", "userID", userID, "plan", string(p.Plan), "isPremium", out.IsPremium)
 	return out, nil
 }
@@ -128,11 +125,7 @@ func (s *EntitlementsService) MyUsage(ctx context.Context, userID string, isAdmi
 			s.usageCounterView(enums.CounterKindAICredit, limits, usage, now),
 			s.usageCounterView(enums.CounterKindVoiceSession, limits, usage, now),
 		},
-		Costs: []responses.ActionCost{
-			{Action: string(ActionVoiceStart), Credits: 1},
-			{Action: string(ActionExamReview), Credits: 1},
-			{Action: string(ActionStudyPlan), Credits: 2},
-		},
+		Costs: s.actionCosts(),
 		History: responses.UsageHistory{
 			Items:    make([]responses.UsageHistoryItem, 0, len(events)),
 			Page:     page,
@@ -143,7 +136,7 @@ func (s *EntitlementsService) MyUsage(ctx context.Context, userID string, isAdmi
 	for _, e := range events {
 		out.History.Items = append(out.History.Items, responses.UsageHistoryItem{
 			ID:        e.ID,
-			Action:    usageActionFor(e.RefType, e.Amount),
+			Action:    string(e.Action),
 			Credits:   e.Amount,
 			Status:    e.Status,
 			CreatedAt: e.CreatedAt,
@@ -194,26 +187,14 @@ func (s *EntitlementsService) usageCounterView(counter enums.CounterKind, limits
 	}
 }
 
-// usageActionFor derives the user-facing action name for a history row from
-// the charged entity. Exam attempts cost 1 for an AI review and 2 for a
-// study plan; anything unrecognized renders as "other" rather than leaking
-// an internal ref type the UI has no copy for.
-func usageActionFor(refType enums.UsageRefType, amount int) string {
-	switch refType {
-	case enums.UsageRefTypeConversation:
-		return string(ActionVoiceStart)
-	case enums.UsageRefTypeExamAttempt:
-		if amount == 2 {
-			return string(ActionStudyPlan)
-		}
-		return string(ActionExamReview)
-	case enums.UsageRefTypeWritingActivity:
-		return string(ActionWritingScore)
-	case enums.UsageRefTypeStudyPlan:
-		return string(ActionStudyPlan)
-	default:
-		return "other"
-	}
+// actionCosts renders the policy catalog snapshot as the per-action costs
+// table for the pricing/upgrade surfaces. copier matches CostEntry to
+// ActionCost by Go field name; the admin/public DTOs share the same shape
+// so the closed action set cannot drift between them.
+func (s *EntitlementsService) actionCosts() []responses.ActionCost {
+	out := make([]responses.ActionCost, 0, len(paidActions))
+	_ = utils.MapSlice(&out, s.policy.ActionCosts())
+	return out
 }
 
 // activeSubscription is a second read owned by this service only because

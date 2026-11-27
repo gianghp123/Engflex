@@ -16,6 +16,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
+	"gorm.io/gorm"
 
 	"engflex-api/internal/common/enums"
 	"engflex-api/internal/database/models"
@@ -70,7 +71,7 @@ func TestAdminUpdatePlanLimitsBinding(t *testing.T) {
 			if tt.want == http.StatusOK {
 				limits.EXPECT().UpsertBatch(mock.Anything, mock.Anything).Return(nil).Once()
 			}
-			svc := accessservices.NewAdminAccessService(limits, nil, nil, policy)
+			svc := accessservices.NewAdminAccessService(limits, nil, nil, nil, nil, nil, policy)
 			ctl := controllers.NewAdminAccessController(svc, nil)
 
 			w := httptest.NewRecorder()
@@ -98,7 +99,7 @@ func TestAdminUserUsageEndpoint(t *testing.T) {
 	eventRepo := repomocks.NewMockUsageEventRepository(t)
 	counterRepo.EXPECT().ListByUser(mock.Anything, "user_1").Return(counters, nil).Once()
 	eventRepo.EXPECT().ListByUser(mock.Anything, "user_1", 50).Return(events, nil).Once()
-	svc := accessservices.NewAdminAccessService(nil, counterRepo, eventRepo, &stubRefresher{})
+	svc := accessservices.NewAdminAccessService(nil, counterRepo, eventRepo, nil, nil, nil, &stubRefresher{})
 	ctl := controllers.NewAdminAccessController(svc, nil)
 
 	w := httptest.NewRecorder()
@@ -111,7 +112,109 @@ func TestAdminUserUsageEndpoint(t *testing.T) {
 	assert.Contains(t, w.Body.String(), "00000000-0000-0000-0000-000000000001")
 }
 
-// stubRefresher is the SnapshotRefresher seam for controller tests.
+// stubRefresher is the SnapshotCatalog seam for controller tests.
 type stubRefresher struct{ calls int }
 
-func (s *stubRefresher) SnapshotLimits(ctx context.Context) error { s.calls++; return nil }
+func (s *stubRefresher) SnapshotCatalog(ctx context.Context) error { s.calls++; return nil }
+
+func TestAdminUpdateActionCostsBinding(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	tests := []struct {
+		name string
+		body string
+		want int
+	}{
+		{
+			name: "valid batch upsert",
+			body: `{"costs":[{"action":"voice_session_start","credits":1},{"action":"exam_ai_review","credits":1},{"action":"study_plan","credits":2}]}`,
+			want: http.StatusOK,
+		},
+		{
+			name: "unknown action rejected",
+			body: `{"costs":[{"action":"nope","credits":1},{"action":"exam_ai_review","credits":1},{"action":"study_plan","credits":2}]}`,
+			want: http.StatusBadRequest,
+		},
+		{
+			name: "absurd credits rejected",
+			body: `{"costs":[{"action":"voice_session_start","credits":` + fmt.Sprint(1000000) + `},{"action":"exam_ai_review","credits":1},{"action":"study_plan","credits":2}]}`,
+			want: http.StatusBadRequest,
+		},
+		{
+			name: "short batch passes binding, fails service",
+			body: `{"costs":[{"action":"voice_session_start","credits":1}]}`,
+			want: http.StatusBadRequest,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			costs := repomocks.NewMockActionCreditCostRepository(t)
+			policy := &stubRefresher{}
+			if tt.want == http.StatusOK {
+				costs.EXPECT().UpsertBatch(mock.Anything, mock.Anything).Return(nil).Once()
+			}
+			svc := accessservices.NewAdminAccessService(nil, nil, nil, costs, nil, nil, policy)
+			ctl := controllers.NewAdminAccessController(svc, nil)
+
+			w := httptest.NewRecorder()
+			c, _ := gin.CreateTestContext(w)
+			c.Request = httptest.NewRequest(http.MethodPut, "/admin/premium/action-costs", bytes.NewBufferString(tt.body))
+			c.Request.Header.Set("Content-Type", "application/json")
+			c.Set("userID", "admin_1")
+
+			ctl.UpdateActionCosts(c)
+			assert.Equal(t, tt.want, w.Code)
+		})
+	}
+}
+
+func TestAdminUpdateTrialTermsBinding(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	tests := []struct {
+		name string
+		body string
+		want int
+	}{
+		{
+			name: "valid terms",
+			body: `{"days":10,"credits":40,"voiceSessions":10}`,
+			want: http.StatusOK,
+		},
+		{
+			name: "zero days rejected",
+			body: `{"days":0,"credits":40,"voiceSessions":10}`,
+			want: http.StatusBadRequest,
+		},
+		{
+			name: "absurd credits rejected",
+			body: `{"days":10,"credits":` + fmt.Sprint(1000000) + `,"voiceSessions":10}`,
+			want: http.StatusBadRequest,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			limits := repomocks.NewMockPlanFeatureLimitRepository(t)
+			settings := repomocks.NewMockTrialSettingRepository(t)
+			tx := repomocks.NewMockTransactionManager(t)
+			policy := &stubRefresher{}
+			if tt.want == http.StatusOK {
+				tx.EXPECT().Run(mock.Anything, mock.Anything).RunAndReturn(
+					func(ctx context.Context, fn func(*gorm.DB) error) error { return fn(nil) }).Once()
+				limits.EXPECT().WithTx(mock.Anything).Return(limits).Once()
+				settings.EXPECT().WithTx(mock.Anything).Return(settings).Once()
+				settings.EXPECT().Upsert(mock.Anything, mock.Anything).Return(nil).Once()
+				limits.EXPECT().UpsertBatch(mock.Anything, mock.Anything).Return(nil).Once()
+			}
+			svc := accessservices.NewAdminAccessService(limits, nil, nil, nil, settings, tx, policy)
+			ctl := controllers.NewAdminAccessController(svc, nil)
+
+			w := httptest.NewRecorder()
+			c, _ := gin.CreateTestContext(w)
+			c.Request = httptest.NewRequest(http.MethodPut, "/admin/premium/trial-terms", bytes.NewBufferString(tt.body))
+			c.Request.Header.Set("Content-Type", "application/json")
+			c.Set("userID", "admin_1")
+
+			ctl.UpdateTrialTerms(c)
+			assert.Equal(t, tt.want, w.Code)
+		})
+	}
+}

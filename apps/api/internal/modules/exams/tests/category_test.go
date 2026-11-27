@@ -17,6 +17,7 @@ import (
 	"engflex-api/internal/common/enums"
 	"engflex-api/internal/database/models"
 	repomocks "engflex-api/internal/database/repositories/mocks"
+	accessservices "engflex-api/internal/modules/access/services"
 	"engflex-api/internal/modules/exams/controllers"
 	"engflex-api/internal/modules/exams/services"
 )
@@ -59,7 +60,7 @@ func TestCreateCategoryHTTP(t *testing.T) {
 					category.ID = uuid.NewString()
 				}).Return(tc.dbErr).Once()
 			}
-			ctl := controllers.NewExamController(services.NewCatalogService(categories, tests), services.NewAttemptService(attempts, tests, txm))
+			ctl := controllers.NewExamController(services.NewCatalogService(categories, tests), services.NewAttemptService(attempts, tests, txm), accessservices.DefaultCreditCostReader{})
 			r := gin.New()
 			r.POST("/exam-categories", func(c *gin.Context) { c.Set("role", tc.role) }, ctl.CreateCategory)
 			req := httptest.NewRequest(http.MethodPost, "/exam-categories", strings.NewReader(tc.body))

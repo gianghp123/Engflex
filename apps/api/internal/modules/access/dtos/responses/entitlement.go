@@ -27,8 +27,8 @@ type TrialView struct {
 
 // ActionCost is one metered action's price for confirm dialogs and pricing.
 type ActionCost struct {
-	Action  string `json:"action"`
-	Credits int    `json:"credits"`
+	Action  enums.AccessAction `json:"action"`
+	Credits int                `json:"credits"`
 }
 
 // MyEntitlements is the GET /premium/me body (spec §10). IsPremium is true

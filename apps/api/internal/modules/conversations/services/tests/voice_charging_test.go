@@ -134,7 +134,7 @@ func TestStartChargesVoiceSession(t *testing.T) {
 	expectVoicePrincipal(t, policy)
 	policy.EXPECT().Decide(mock.Anything, "user_1", false, accessservices.ActionVoiceStart).
 		Return(allowVoiceDecision(), nil).Once()
-	usage.EXPECT().Reserve(mock.Anything, "user_1", enums.PlanKeyFree,
+	usage.EXPECT().Reserve(mock.Anything, "user_1", enums.PlanKeyFree, accessservices.ActionVoiceStart,
 		[]accessservices.Charge{
 			{Counter: enums.CounterKindAICredit, Amount: 1},
 			{Counter: enums.CounterKindVoiceSession, Amount: 1},
@@ -197,7 +197,7 @@ func TestStartEngineFailureReleases(t *testing.T) {
 	policy.EXPECT().Decide(mock.Anything, "user_1", false, accessservices.ActionVoiceStart).
 		Return(accessservices.Decision{Allow: true, Plan: enums.PlanKeyFree,
 			Charges: []accessservices.Charge{{Counter: enums.CounterKindAICredit, Amount: 1}}}, nil).Once()
-	usage.EXPECT().Reserve(mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything,
+	usage.EXPECT().Reserve(mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything,
 		mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).
 		Return(&accessservices.Reservation{ID: "res-9", Status: accessservices.ReservationStatusReserved}, nil).Once()
 	usage.EXPECT().Release(mock.Anything, "res-9").Return(nil).Once()
@@ -222,7 +222,7 @@ func TestStartCacheWriteFailureReleases(t *testing.T) {
 	expectVoicePrincipal(t, policy)
 	policy.EXPECT().Decide(mock.Anything, "user_1", false, accessservices.ActionVoiceStart).
 		Return(allowVoiceDecision(), nil).Once()
-	usage.EXPECT().Reserve(mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything,
+	usage.EXPECT().Reserve(mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything,
 		mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).
 		Return(&accessservices.Reservation{ID: "res-cache", Status: accessservices.ReservationStatusReserved}, nil).Once()
 	usage.EXPECT().Release(mock.Anything, "res-cache").Return(nil).Once()
@@ -254,7 +254,7 @@ func TestStartSettleFailureRollsBackAndReleases(t *testing.T) {
 	expectVoicePrincipal(t, policy)
 	policy.EXPECT().Decide(mock.Anything, "user_1", false, accessservices.ActionVoiceStart).
 		Return(allowVoiceDecision(), nil).Once()
-	usage.EXPECT().Reserve(mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything,
+	usage.EXPECT().Reserve(mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything,
 		mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).
 		Return(&accessservices.Reservation{ID: "res-commit", Status: accessservices.ReservationStatusReserved}, nil).Once()
 	usage.EXPECT().Release(mock.Anything, "res-commit").Return(nil).Once()
@@ -280,7 +280,7 @@ func TestStartRaceLoserReleasesReservation(t *testing.T) {
 	policy.EXPECT().Decide(mock.Anything, "user_1", false, accessservices.ActionVoiceStart).
 		Return(accessservices.Decision{Allow: true, Plan: enums.PlanKeyFree,
 			Charges: []accessservices.Charge{{Counter: enums.CounterKindAICredit, Amount: 1}}}, nil).Once()
-	usage.EXPECT().Reserve(mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything,
+	usage.EXPECT().Reserve(mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything,
 		mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).
 		Return(&accessservices.Reservation{ID: "res-race", Status: accessservices.ReservationStatusReserved}, nil).Once()
 	usage.EXPECT().Release(mock.Anything, "res-race").Return(nil).Once()
@@ -309,7 +309,7 @@ func TestStartInProgressReplayReturns409(t *testing.T) {
 	policy.EXPECT().Decide(mock.Anything, "user_1", false, accessservices.ActionVoiceStart).
 		Return(accessservices.Decision{Allow: true, Plan: enums.PlanKeyFree,
 			Charges: []accessservices.Charge{{Counter: enums.CounterKindAICredit, Amount: 1}}}, nil).Once()
-	usage.EXPECT().Reserve(mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything,
+	usage.EXPECT().Reserve(mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything,
 		mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).
 		Return(nil, common.Conflict("a request for this item is already in progress").
 			WithCode("in_progress")).Once()
@@ -334,7 +334,7 @@ func TestStartCommittedReplayReplaysCache(t *testing.T) {
 	expectVoicePrincipal(t, policy)
 	policy.EXPECT().Decide(mock.Anything, "user_1", false, accessservices.ActionVoiceStart).
 		Return(allowVoiceDecision(), nil).Once()
-	usage.EXPECT().Reserve(mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything,
+	usage.EXPECT().Reserve(mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything,
 		mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).
 		Return(&accessservices.Reservation{ID: "res-old", Status: accessservices.ReservationStatusCommitted}, nil).Once()
 

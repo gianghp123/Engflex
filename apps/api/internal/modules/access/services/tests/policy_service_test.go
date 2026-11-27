@@ -5,7 +5,9 @@
 package tests
 
 import (
+	"bytes"
 	"context"
+	"log/slog"
 	"testing"
 	"time"
 
@@ -19,6 +21,7 @@ import (
 	"engflex-api/internal/common/enums"
 	"engflex-api/internal/database/models"
 	repomocks "engflex-api/internal/database/repositories/mocks"
+	"engflex-api/internal/logger"
 	accessservices "engflex-api/internal/modules/access/services"
 )
 
@@ -41,9 +44,21 @@ func trialRow(daysLeft int) *models.UserTrial {
 		EndsAt: time.Now().Add(time.Duration(daysLeft) * 24 * time.Hour), CreditsGranted: 30}
 }
 
+func defaultCostRows() []*models.ActionCreditCost {
+	return []*models.ActionCreditCost{
+		{Action: enums.AccessActionVoiceStart, Credits: 1},
+		{Action: enums.AccessActionExamReview, Credits: 1},
+		{Action: enums.AccessActionStudyPlan, Credits: 2},
+	}
+}
+
 func newPolicy(t *testing.T, subs accessservices.SubscriptionPlanSource, trials *repomocks.MockUserTrialRepository, counters *repomocks.MockUsageCounterRepository, limits *repomocks.MockPlanFeatureLimitRepository) *accessservices.PolicyService {
 	t.Helper()
-	return accessservices.NewPolicyService(subs, trials, counters, limits, config.AccessConfig{
+	costs := repomocks.NewMockActionCreditCostRepository(t)
+	costs.EXPECT().List(mock.Anything).Return(defaultCostRows(), nil).Maybe()
+	settings := repomocks.NewMockTrialSettingRepository(t)
+	settings.EXPECT().Get(mock.Anything).Return(&models.TrialSetting{ID: true, DurationDays: 7}, nil).Maybe()
+	return accessservices.NewPolicyService(subs, trials, counters, limits, costs, settings, config.AccessConfig{
 		Enforce: true, ContentGating: false, Timezone: "Asia/Ho_Chi_Minh",
 	})
 }
@@ -127,12 +142,74 @@ func TestDecidePolicyStoreUnavailable(t *testing.T) {
 	assert.True(t, d.Allow)
 }
 
+func TestCatalogSnapshotDrivesChargesAndTrialTerms(t *testing.T) {
+	ctx := context.Background()
+	limits := repomocks.NewMockPlanFeatureLimitRepository(t)
+	costs := repomocks.NewMockActionCreditCostRepository(t)
+	settings := repomocks.NewMockTrialSettingRepository(t)
+	trials := repomocks.NewMockUserTrialRepository(t)
+	counters := repomocks.NewMockUsageCounterRepository(t)
+
+	limits.EXPECT().ListAll(mock.Anything).Return(usageCatalog(), nil).Once()
+	costs.EXPECT().List(mock.Anything).Return([]*models.ActionCreditCost{
+		{Action: enums.AccessActionVoiceStart, Credits: 3},
+		{Action: enums.AccessActionExamReview, Credits: 0},
+		{Action: enums.AccessActionStudyPlan, Credits: 5},
+	}, nil).Once()
+	settings.EXPECT().Get(mock.Anything).Return(&models.TrialSetting{ID: true, DurationDays: 10}, nil).Once()
+
+	svc := accessservices.NewPolicyService(fakeSubscriptions{}, trials, counters, limits, costs, settings,
+		config.AccessConfig{Enforce: true, Timezone: "Asia/Ho_Chi_Minh"})
+	require.NoError(t, svc.SnapshotCatalog(ctx))
+
+	assert.Equal(t, []accessservices.Charge{
+		{Counter: enums.CounterKindAICredit, Amount: 3},
+		{Counter: enums.CounterKindVoiceSession, Amount: 1},
+	}, svc.Charges(accessservices.ActionVoiceStart))
+	assert.Empty(t, svc.Charges(accessservices.ActionExamReview), "zero credits = free for an exam review")
+	assert.Equal(t, 5, svc.CreditCost(accessservices.ActionStudyPlan))
+	assert.Equal(t, []accessservices.CostEntry{
+		{Action: accessservices.ActionVoiceStart, Credits: 3},
+		{Action: accessservices.ActionExamReview, Credits: 0},
+		{Action: accessservices.ActionStudyPlan, Credits: 5},
+	}, svc.ActionCosts())
+	assert.Equal(t, accessservices.TrialTerms{Days: 10, Credits: 30, VoiceSessions: 7}, svc.TrialTerms())
+}
+
+func TestDecideZeroCostSkipsUsageReads(t *testing.T) {
+	ctx := context.Background()
+	limits := repomocks.NewMockPlanFeatureLimitRepository(t)
+	costs := repomocks.NewMockActionCreditCostRepository(t)
+	settings := repomocks.NewMockTrialSettingRepository(t)
+	trials := repomocks.NewMockUserTrialRepository(t)
+	counters := repomocks.NewMockUsageCounterRepository(t)
+	subs := fakeSubscriptions{}
+
+	limits.EXPECT().ListAll(mock.Anything).Return(usageCatalog(), nil).Once()
+	costs.EXPECT().List(mock.Anything).Return([]*models.ActionCreditCost{
+		{Action: enums.AccessActionExamReview, Credits: 0},
+		{Action: enums.AccessActionVoiceStart, Credits: 1},
+		{Action: enums.AccessActionStudyPlan, Credits: 2},
+	}, nil).Once()
+	settings.EXPECT().Get(mock.Anything).Return(&models.TrialSetting{ID: true, DurationDays: 7}, nil).Once()
+	trials.EXPECT().Get(mock.Anything, "user_1").Return(nil, gorm.ErrRecordNotFound).Once()
+
+	svc := accessservices.NewPolicyService(subs, trials, counters, limits, costs, settings,
+		config.AccessConfig{Enforce: true, Timezone: "Asia/Ho_Chi_Minh"})
+	require.NoError(t, svc.SnapshotCatalog(ctx))
+	d, err := svc.Decide(ctx, "user_1", false, accessservices.ActionExamReview)
+	require.NoError(t, err)
+	assert.True(t, d.Allow)
+	assert.Empty(t, d.Charges)
+	// counters.ListByUser has no expectation: it must not be called.
+}
+
 func TestSnapshotFallsBackToDefaults(t *testing.T) {
 	limits := repomocks.NewMockPlanFeatureLimitRepository(t)
 	limits.EXPECT().ListAll(mock.Anything).Return(nil, gorm.ErrInvalidDB).Once()
 	svc := newPolicy(t, fakeSubscriptions{},
 		repomocks.NewMockUserTrialRepository(t), repomocks.NewMockUsageCounterRepository(t), limits)
-	require.NoError(t, svc.SnapshotLimits(context.Background()), "a catalog outage must never fail the process (spec §5.6)")
+	require.NoError(t, svc.SnapshotCatalog(context.Background()), "a catalog outage must never fail the process (spec §5.6)")
 	got, err := svc.LimitsForPlan(context.Background(), enums.PlanKeyFree)
 	require.NoError(t, err)
 	assert.Equal(t, 15, got[enums.CounterKindAICredit].Value)
@@ -147,8 +224,8 @@ func TestSnapshotKeepsLastGoodCatalogOnReloadFailure(t *testing.T) {
 	svc := newPolicy(t, fakeSubscriptions{},
 		repomocks.NewMockUserTrialRepository(t), repomocks.NewMockUsageCounterRepository(t), limits)
 	ctx := context.Background()
-	require.NoError(t, svc.SnapshotLimits(ctx))
-	require.NoError(t, svc.SnapshotLimits(ctx), "a failed reload must not fail the process")
+	require.NoError(t, svc.SnapshotCatalog(ctx))
+	require.NoError(t, svc.SnapshotCatalog(ctx), "a failed reload must not fail the process")
 	got, err := svc.LimitsForPlan(ctx, enums.PlanKeyFree)
 	require.NoError(t, err)
 	assert.Equal(t, 42, got[enums.CounterKindAICredit].Value, "the last-good catalog survives a reload failure")
@@ -170,6 +247,53 @@ func TestDecideTrialPlanWithinLimits(t *testing.T) {
 	require.NoError(t, err)
 	require.True(t, d.Allow)
 	assert.Equal(t, enums.PlanKeyTrial, d.Plan)
+}
+
+func TestSnapshotWarnsOnMissingRowsAndFallsSoft(t *testing.T) {
+	tests := []struct {
+		name       string
+		setting    *models.TrialSetting
+		settingErr error
+		wantLog    string
+	}{
+		{name: "missing trial setting warns", setting: nil, settingErr: gorm.ErrRecordNotFound, wantLog: "trial setting missing; using fallback"},
+		{name: "non-positive duration warns", setting: &models.TrialSetting{ID: true, DurationDays: 0}, settingErr: nil, wantLog: "trial setting invalid; using fallback"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var buf bytes.Buffer
+			prev := slog.Default()
+			slog.SetDefault(logger.NewWithWriter(&buf, "warn", "json"))
+			t.Cleanup(func() { slog.SetDefault(prev) })
+
+			ctx := context.Background()
+			limits := repomocks.NewMockPlanFeatureLimitRepository(t)
+			costs := repomocks.NewMockActionCreditCostRepository(t)
+			settings := repomocks.NewMockTrialSettingRepository(t)
+
+			limits.EXPECT().ListAll(mock.Anything).Return(usageCatalog(), nil).Once()
+			// The study-plan cost row is absent: the snapshot must warn and
+			// fall back to the default instead of silently serving it.
+			costs.EXPECT().List(mock.Anything).Return([]*models.ActionCreditCost{
+				{Action: enums.AccessActionVoiceStart, Credits: 3},
+				{Action: enums.AccessActionExamReview, Credits: 0},
+			}, nil).Once()
+			settings.EXPECT().Get(mock.Anything).Return(tt.setting, tt.settingErr).Once()
+
+			svc := accessservices.NewPolicyService(fakeSubscriptions{},
+				repomocks.NewMockUserTrialRepository(t), repomocks.NewMockUsageCounterRepository(t),
+				limits, costs, settings,
+				config.AccessConfig{Enforce: true, Timezone: "Asia/Ho_Chi_Minh"})
+			require.NoError(t, svc.SnapshotCatalog(ctx), "a missing row must never fail the snapshot")
+
+			out := buf.String()
+			require.Contains(t, out, "action credit cost missing; using fallback")
+			require.Contains(t, out, "study_plan", "the warning names the absent action")
+			require.Contains(t, out, tt.wantLog)
+			assert.Equal(t, 2, svc.CreditCost(accessservices.ActionStudyPlan), "missing cost row falls back to the default")
+			assert.Equal(t, accessservices.TrialTerms{Days: common.DefaultTrialDays, Credits: 30, VoiceSessions: 7}, svc.TrialTerms())
+		})
+	}
 }
 
 func TestDecideAdminBypassesUsageStore(t *testing.T) {

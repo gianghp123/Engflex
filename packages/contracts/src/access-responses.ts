@@ -26,6 +26,33 @@ export interface TrialStatus {
 }
 
 //////////
+// source: admin_pricing.go
+
+/**
+ * AdminActionCost is one paid action's credit price for the admin table.
+ */
+export interface AdminActionCost {
+  action: AccessAction;
+  credits: number /* int */;
+  updatedAt: string /* RFC3339 */;
+  updatedBy: string;
+}
+/**
+ * AdminActionCosts is the GET /admin/premium/action-costs body.
+ */
+export type AdminActionCosts = AdminActionCost[];
+/**
+ * AdminTrialTerms is the GET /admin/premium/trial-terms body.
+ */
+export interface AdminTrialTerms {
+  days: number /* int */;
+  credits: number /* int */;
+  voiceSessions: number /* int */;
+  updatedAt: string /* RFC3339 */;
+  updatedBy: string;
+}
+
+//////////
 // source: ai_review.go
 /*
 Package responses holds the access module's wire DTOs (tygo inputs).
@@ -78,7 +105,7 @@ export interface TrialView {
  * ActionCost is one metered action's price for confirm dialogs and pricing.
  */
 export interface ActionCost {
-  action: string;
+  action: AccessAction;
   credits: number /* int */;
 }
 /**
@@ -94,6 +121,35 @@ export interface MyEntitlements {
   credits: CounterView;
   voice: CounterView;
   costs: ActionCost[];
+}
+
+//////////
+// source: pricing.go
+
+export interface PricingCatalog {
+  free: PricingEntitlements;
+  trial: PricingTrial;
+  plans: PricingPlan[];
+  costs: ActionCost[];
+}
+export interface PricingEntitlements {
+  credits: number /* int */;
+  voiceSessions: number /* int */;
+  creditsPeriod: UsagePeriod;
+  voicePeriod: UsagePeriod;
+}
+export interface PricingTrial {
+  days: number /* int */;
+  credits: number /* int */;
+  voiceSessions: number /* int */;
+}
+export interface PricingPlan {
+  plan: SubscriptionPlan;
+  months: number /* int */;
+  amount: number /* int64 */;
+  currency: string;
+  credits: number /* int */;
+  voiceSessions: number /* int */;
 }
 
 //////////

@@ -15,6 +15,15 @@
       "perMonth": "{amount}/tháng",
       "cta": "Nâng cấp ngay",
       "checkoutError": "Không thể tạo thanh toán. Vui lòng thử lại.",
+      "trial": {
+        "title": "Kèm dùng thử miễn phí {days} ngày",
+        "body": "{credits} credit AI và {sessions} buổi luyện nói để trải nghiệm mọi tính năng."
+      },
+      "costs": {
+        "title": "Chi phí credit",
+        "item": "{action}: {credits} credit",
+        "freeItem": "{action}: miễn phí"
+      },
       "sepay": {
         "title": "Quét mã để thanh toán",
         "body": "Quét mã QR bằng app ngân hàng, hoặc chuyển khoản thủ công theo thông tin bên dưới.",

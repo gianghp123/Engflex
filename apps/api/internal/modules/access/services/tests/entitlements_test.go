@@ -109,5 +109,9 @@ func TestMyEntitlementsShape(t *testing.T) {
 
 func newPolicyFor(t *testing.T, subs accessservices.SubscriptionPlanSource, trials *repomocks.MockUserTrialRepository, counters *repomocks.MockUsageCounterRepository, limits *repomocks.MockPlanFeatureLimitRepository) *accessservices.PolicyService {
 	t.Helper()
-	return accessservices.NewPolicyService(subs, trials, counters, limits, config.AccessConfig{Enforce: true, Timezone: "Asia/Ho_Chi_Minh"})
+	costs := repomocks.NewMockActionCreditCostRepository(t)
+	costs.EXPECT().List(mock.Anything).Return(defaultCostRows(), nil).Maybe()
+	settings := repomocks.NewMockTrialSettingRepository(t)
+	settings.EXPECT().Get(mock.Anything).Return(&models.TrialSetting{ID: true, DurationDays: 7}, nil).Maybe()
+	return accessservices.NewPolicyService(subs, trials, counters, limits, costs, settings, config.AccessConfig{Enforce: true, Timezone: "Asia/Ho_Chi_Minh"})
 }

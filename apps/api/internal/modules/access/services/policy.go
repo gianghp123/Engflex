@@ -11,18 +11,83 @@ import (
 	"engflex-api/internal/common/enums"
 )
 
-// Action is a user-facing metered or free capability. The action → charge
-// mapping is Go code, not DB rows (spec §5.5): charges are program
-// behavior, limits are admin pricing.
-type Action string
+// Action is the access policy's name for the shared closed set.
+type Action = enums.AccessAction
 
 const (
-	ActionVoiceStart    Action = "voice_session_start"
-	ActionExamReview    Action = "exam_ai_review"
-	ActionStudyPlan     Action = "study_plan"
-	ActionWritingScore  Action = "writing_score"
-	ActionPronunciation Action = "pronunciation"
+	ActionVoiceStart    = enums.AccessActionVoiceStart
+	ActionExamReview    = enums.AccessActionExamReview
+	ActionStudyPlan     = enums.AccessActionStudyPlan
+	ActionWritingScore  = enums.AccessActionWritingScore
+	ActionPronunciation = enums.AccessActionPronunciation
 )
+
+// chargeTemplate is the code-owned shape of an action's debit. Only the
+// AI-credit amount is overridden by the admin catalog.
+type chargeTemplate struct {
+	counter enums.CounterKind
+	amount  int
+}
+
+var actionChargeStructure = map[Action][]chargeTemplate{
+	ActionVoiceStart:    {{counter: enums.CounterKindAICredit, amount: 1}, {counter: enums.CounterKindVoiceSession, amount: 1}},
+	ActionExamReview:    {{counter: enums.CounterKindAICredit, amount: 1}},
+	ActionStudyPlan:     {{counter: enums.CounterKindAICredit, amount: 2}},
+	ActionWritingScore:  nil,
+	ActionPronunciation: nil,
+}
+
+var defaultCreditCosts = map[Action]int{
+	ActionVoiceStart: 1,
+	ActionExamReview: 1,
+	ActionStudyPlan:  2,
+}
+
+// paidActions is the fixed order the admin/public cost lists render in.
+var paidActions = []Action{ActionVoiceStart, ActionExamReview, ActionStudyPlan}
+
+func defaultActionCreditCosts() map[Action]int {
+	out := make(map[Action]int, len(defaultCreditCosts))
+	for action, credits := range defaultCreditCosts {
+		out[action] = credits
+	}
+	return out
+}
+
+// DefaultCharges is the fallback charge list (DB-outage/tests). Production
+// reads PolicyService.Charges.
+func DefaultCharges(action Action) []Charge {
+	return buildCharges(action, defaultCreditCosts[action])
+}
+
+// DefaultCreditCost is the fallback badge cost for an action.
+func DefaultCreditCost(action Action) int {
+	total := 0
+	for _, ch := range DefaultCharges(action) {
+		if ch.Counter == enums.CounterKindAICredit {
+			total += ch.Amount
+		}
+	}
+	return total
+}
+
+func buildCharges(action Action, creditAmount int) []Charge {
+	templates := actionChargeStructure[action]
+	out := make([]Charge, 0, len(templates))
+	for _, t := range templates {
+		amount := t.amount
+		if t.counter == enums.CounterKindAICredit {
+			amount = creditAmount
+		}
+		if amount > 0 {
+			out = append(out, Charge{Counter: t.counter, Amount: amount})
+		}
+	}
+	if len(out) == 0 {
+		return nil
+	}
+	return out
+}
 
 // Charge is one counter debit an action performs.
 type Charge struct {
@@ -71,34 +136,6 @@ type Decision struct {
 	RequiredPlan    enums.PlanKey
 }
 
-// actionCharges is the single source of truth for what an action costs
-// (spec §5.5). Completion-critical AI is free — never add a charge here.
-var actionCharges = map[Action][]Charge{
-	ActionVoiceStart:    {{Counter: enums.CounterKindAICredit, Amount: 1}, {Counter: enums.CounterKindVoiceSession, Amount: 1}},
-	ActionExamReview:    {{Counter: enums.CounterKindAICredit, Amount: 1}},
-	ActionStudyPlan:     {{Counter: enums.CounterKindAICredit, Amount: 2}},
-	ActionWritingScore:  nil,
-	ActionPronunciation: nil,
-}
-
-// ActionCharges returns the counter debits an action performs. Nil means
-// free: no counter is read or written.
-func ActionCharges(action Action) []Charge { return actionCharges[action] }
-
-// CreditCost is the AI-credit badge cost an option card shows: the sum of
-// the action's AI-credit charges only (voice sessions also debit a session
-// slot, which is quota, not a credit badge). Free actions cost 0, and the
-// UI hides a 0-cost badge.
-func CreditCost(action Action) int {
-	total := 0
-	for _, ch := range ActionCharges(action) {
-		if ch.Counter == enums.CounterKindAICredit {
-			total += ch.Amount
-		}
-	}
-	return total
-}
-
 // defaultLimits is the boot snapshot when the DB cannot be read (spec §5.6)
 // — the process must never fail to start, and paid AI still fails closed
 // later because the usage store is checked independently.
@@ -135,8 +172,8 @@ func DefaultLimits() map[enums.PlanKey]map[enums.CounterKind]Limit {
 
 // Evaluate is the pure PDP (spec §5.5 evaluation order). No I/O, no clock:
 // period keys and resetAt are resolved by the caller.
-func Evaluate(p Principal, action Action, limits map[enums.CounterKind]Limit, usage UsageSnapshot) Decision {
-	d := Decision{Plan: p.Plan, Charges: ActionCharges(action), RequiredPlan: requiredPlanFor(action)}
+func Evaluate(p Principal, action Action, charges []Charge, limits map[enums.CounterKind]Limit, usage UsageSnapshot) Decision {
+	d := Decision{Plan: p.Plan, Charges: charges, RequiredPlan: requiredPlanFor(action)}
 	if p.IsAdmin || p.Plan == enums.PlanKeyAdmin {
 		d.Allow = true
 		d.Code = "admin_bypass"

@@ -74,7 +74,7 @@ func TestReserveAtomicUnderConcurrency(t *testing.T) {
 		go func(i int) {
 			defer wg.Done()
 			<-start
-			_, err := svc.Reserve(ctx, user, enums.PlanKeyFree,
+			_, err := svc.Reserve(ctx, user, enums.PlanKeyFree, accessservices.ActionExamReview,
 				[]accessservices.Charge{{Counter: enums.CounterKindAICredit, Amount: 1}},
 				fmt.Sprintf("exam_review:%d", i), enums.UsageRefTypeExamAttempt, fmt.Sprintf("%d", i),
 				2*time.Minute, time.Now().UTC(), time.UTC)
@@ -127,7 +127,7 @@ func TestReserveReuseAfterReleaseAndExpiry(t *testing.T) {
 	const base = "exam_review:reuse-test"
 
 	// Reserve then release: the counter hold must vanish.
-	res, err := svc.Reserve(ctx, user, enums.PlanKeyFree,
+	res, err := svc.Reserve(ctx, user, enums.PlanKeyFree, accessservices.ActionExamReview,
 		[]accessservices.Charge{{Counter: enums.CounterKindAICredit, Amount: 1}},
 		base, enums.UsageRefTypeExamAttempt, "reuse", 2*time.Minute, time.Now().UTC(), time.UTC)
 	require.NoError(t, err)
@@ -136,7 +136,7 @@ func TestReserveReuseAfterReleaseAndExpiry(t *testing.T) {
 
 	// Same key again: the row is reused, a fresh hold applies, and a new
 	// reservation id is returned — no second event row is created.
-	res2, err := svc.Reserve(ctx, user, enums.PlanKeyFree,
+	res2, err := svc.Reserve(ctx, user, enums.PlanKeyFree, accessservices.ActionExamReview,
 		[]accessservices.Charge{{Counter: enums.CounterKindAICredit, Amount: 1}},
 		base, enums.UsageRefTypeExamAttempt, "reuse", 2*time.Minute, time.Now().UTC(), time.UTC)
 	require.NoError(t, err)
@@ -145,7 +145,7 @@ func TestReserveReuseAfterReleaseAndExpiry(t *testing.T) {
 
 	require.NoError(t, svc.Commit(ctx, res2.ID))
 	// Committed replays are free.
-	res3, err := svc.Reserve(ctx, user, enums.PlanKeyFree,
+	res3, err := svc.Reserve(ctx, user, enums.PlanKeyFree, accessservices.ActionExamReview,
 		[]accessservices.Charge{{Counter: enums.CounterKindAICredit, Amount: 1}},
 		base, enums.UsageRefTypeExamAttempt, "reuse", 2*time.Minute, time.Now().UTC(), time.UTC)
 	require.NoError(t, err)
@@ -168,7 +168,7 @@ func TestSweeperReleasesExpiredReservations(t *testing.T) {
 	ctx := context.Background()
 
 	// Reserve with a lease already in the past: the sweeper must pick it up.
-	res, err := svc.Reserve(ctx, user, enums.PlanKeyFree,
+	res, err := svc.Reserve(ctx, user, enums.PlanKeyFree, accessservices.ActionExamReview,
 		[]accessservices.Charge{{Counter: enums.CounterKindAICredit, Amount: 1}},
 		"exam_review:sweep-test", enums.UsageRefTypeExamAttempt, "sweep", -time.Minute, time.Now().UTC(), time.UTC)
 	require.NoError(t, err)
@@ -207,7 +207,7 @@ func TestReserveRejectsOverLimitOnFreshRow(t *testing.T) {
 
 	// Fresh user, amount 2 against a limit of 1: the guarded fresh-insert
 	// path must deny without creating a counter row (Task 6 fix).
-	_, err := svc.Reserve(ctx, user, enums.PlanKeyFree,
+	_, err := svc.Reserve(ctx, user, enums.PlanKeyFree, accessservices.ActionStudyPlan,
 		[]accessservices.Charge{{Counter: enums.CounterKindAICredit, Amount: 2}},
 		"exam_review:fresh-over-limit", enums.UsageRefTypeExamAttempt, "fresh-over-limit",
 		2*time.Minute, time.Now().UTC(), time.UTC)
@@ -255,7 +255,7 @@ func TestReserveSameBaseConcurrent(t *testing.T) {
 			<-start
 			// voiceCharges reserves ai_credit + voice_session under the
 			// shared base: a whole-group hold.
-			_, err := svc.Reserve(ctx, user, enums.PlanKeyFree,
+			_, err := svc.Reserve(ctx, user, enums.PlanKeyFree, accessservices.ActionVoiceStart,
 				[]accessservices.Charge{
 					{Counter: enums.CounterKindAICredit, Amount: 1},
 					{Counter: enums.CounterKindVoiceSession, Amount: 1},
@@ -319,7 +319,7 @@ func TestRefundCommittedThenReuse(t *testing.T) {
 		{Counter: enums.CounterKindVoiceSession, Amount: 1},
 	}
 
-	res, err := svc.Reserve(ctx, user, enums.PlanKeyFree, charges,
+	res, err := svc.Reserve(ctx, user, enums.PlanKeyFree, accessservices.ActionVoiceStart, charges,
 		base, enums.UsageRefTypeConversation, "conv-refund",
 		2*time.Minute, time.Now().UTC(), time.UTC)
 	require.NoError(t, err)
@@ -335,7 +335,7 @@ func TestRefundCommittedThenReuse(t *testing.T) {
 
 	// A fresh Reserve reuses the released rows under a new group id: a new
 	// hold, no new audit rows.
-	res2, err := svc.Reserve(ctx, user, enums.PlanKeyFree, charges,
+	res2, err := svc.Reserve(ctx, user, enums.PlanKeyFree, accessservices.ActionVoiceStart, charges,
 		base, enums.UsageRefTypeConversation, "conv-refund",
 		2*time.Minute, time.Now().UTC(), time.UTC)
 	require.NoError(t, err)
@@ -353,4 +353,65 @@ func TestRefundCommittedThenReuse(t *testing.T) {
 	for _, h := range holds {
 		assert.Equal(t, 1, h.Reserved, "the fresh hold is back on the counters")
 	}
+}
+
+// generousLimits allows multi-credit holds so the reuse test can change the
+// charge between release and retry (staticLimits caps at 1).
+type generousLimits struct{}
+
+func (generousLimits) LimitsForPlan(ctx context.Context, plan enums.PlanKey) (map[enums.CounterKind]accessservices.Limit, error) {
+	return map[enums.CounterKind]accessservices.Limit{
+		enums.CounterKindAICredit:     {Enabled: true, Value: 100, Period: enums.UsagePeriodMonth},
+		enums.CounterKindVoiceSession: {Enabled: true, Value: 100, Period: enums.UsagePeriodMonth},
+	}, nil
+}
+
+// A reused row adopts the current charge (Important 1): reserve amount 1,
+// release, reserve the same key with amount 3 under a different action,
+// commit. The ledger row must carry amount 3 and the new action, and the
+// counter must settle 3 used with nothing stranded in reserved.
+func TestReserveReuseAdoptsCurrentCharge(t *testing.T) {
+	db := newIntegrationDB(t)
+	svc := accessservices.NewUsageService(
+		repositories.NewUsageCounterRepository(db),
+		repositories.NewUsageEventRepository(db),
+		repositories.NewTransactionManager(db),
+		generousLimits{},
+	)
+	user := uniqueUser(t)
+	ctx := context.Background()
+	const base = "exam_review:reuse-charge"
+
+	res, err := svc.Reserve(ctx, user, enums.PlanKeyFree, accessservices.ActionExamReview,
+		[]accessservices.Charge{{Counter: enums.CounterKindAICredit, Amount: 1}},
+		base, enums.UsageRefTypeExamAttempt, "reuse-charge", 2*time.Minute, time.Now().UTC(), time.UTC)
+	require.NoError(t, err)
+	require.Equal(t, accessservices.ReservationStatusReserved, res.Status)
+	require.NoError(t, svc.Release(ctx, res.ID))
+
+	res2, err := svc.Reserve(ctx, user, enums.PlanKeyFree, accessservices.ActionStudyPlan,
+		[]accessservices.Charge{{Counter: enums.CounterKindAICredit, Amount: 3}},
+		base, enums.UsageRefTypeExamAttempt, "reuse-charge", 2*time.Minute, time.Now().UTC(), time.UTC)
+	require.NoError(t, err)
+	require.Equal(t, accessservices.ReservationStatusReserved, res2.Status)
+	require.NoError(t, svc.Commit(ctx, res2.ID))
+
+	var amount int64
+	require.NoError(t, db.Raw("SELECT amount FROM usage_events WHERE user_id = ? AND idempotency_key = ?",
+		user, base+":ai_credit").Scan(&amount).Error)
+	assert.Equal(t, int64(3), amount, "the reused row carries the current amount")
+	var action string
+	require.NoError(t, db.Raw("SELECT action FROM usage_events WHERE user_id = ? AND idempotency_key = ?",
+		user, base+":ai_credit").Scan(&action).Error)
+	assert.Equal(t, string(enums.AccessActionStudyPlan), action, "the reused row carries the current action")
+
+	type row struct {
+		Used     int
+		Reserved int
+	}
+	var r row
+	require.NoError(t, db.Raw(
+		"SELECT used, reserved FROM usage_counters WHERE user_id = ? AND counter_key = 'ai_credit'", user).Scan(&r).Error)
+	assert.Equal(t, 3, r.Used)
+	assert.Equal(t, 0, r.Reserved, "no difference strands in reserved")
 }

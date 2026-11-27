@@ -20,10 +20,13 @@ type UsageEventRepository interface {
 	Insert(ctx context.Context, m *models.UsageEvent) error
 	// ReuseAsReserved transitions a released/expired row back to reserved
 	// under a new reservation id with a fresh lease (spec §7.2 reuse path).
+	// It also rewrites action/amount to the current charge: an admin price
+	// change between release and retry must not strand the difference in
+	// reserved when CommitTx later settles the row's amount.
 	// It reports whether exactly one row moved: false means the row was not
 	// in a reusable state (already settled or concurrently reused) and the
 	// caller must fail closed, never insert a duplicate.
-	ReuseAsReserved(ctx context.Context, id, reservationID string, expiresAt time.Time) (bool, error)
+	ReuseAsReserved(ctx context.Context, id, reservationID string, action enums.AccessAction, amount int, expiresAt time.Time) (bool, error)
 	// SettleReserved transitions every reserved row of one reservation to
 	// the target status, returning the settled rows so the caller adjusts
 	// counters per (counter, period, amount). There is intentionally no
@@ -83,12 +86,12 @@ func (r *usageEventRepository) Insert(ctx context.Context, m *models.UsageEvent)
 	return r.db.WithContext(ctx).Create(m).Error
 }
 
-func (r *usageEventRepository) ReuseAsReserved(ctx context.Context, id, reservationID string, expiresAt time.Time) (bool, error) {
+func (r *usageEventRepository) ReuseAsReserved(ctx context.Context, id, reservationID string, action enums.AccessAction, amount int, expiresAt time.Time) (bool, error) {
 	res := r.db.WithContext(ctx).Exec(`
 UPDATE usage_events
-SET status = 'reserved', reservation_id = ?, expires_at = ?, settled_at = NULL
+SET status = 'reserved', action = ?, amount = ?, reservation_id = ?, expires_at = ?, settled_at = NULL
 WHERE id = ? AND status IN ('released', 'expired')`,
-		reservationID, expiresAt, id)
+		string(action), amount, reservationID, expiresAt, id)
 	if res.Error != nil {
 		return false, res.Error
 	}

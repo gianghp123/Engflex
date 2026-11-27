@@ -16,6 +16,7 @@ type UsageEvent struct {
 	UserID         string                 `gorm:"not null;uniqueIndex:idx_usage_events_user_idem" json:"userId"`
 	CounterKey     enums.CounterKind      `gorm:"not null;type:text" json:"counterKey"`
 	PeriodKey      string                 `gorm:"not null" json:"periodKey"`
+	Action         enums.AccessAction     `gorm:"not null;type:text" json:"action"`
 	Amount         int                    `gorm:"not null" json:"amount"`
 	Status         enums.UsageEventStatus `gorm:"not null" json:"status"`
 	IdempotencyKey string                 `gorm:"not null;uniqueIndex:idx_usage_events_user_idem" json:"idempotencyKey"`

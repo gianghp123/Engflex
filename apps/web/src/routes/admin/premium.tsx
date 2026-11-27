@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "#/components/ui/tabs";
 import { FeaturesPanel } from "#/features/admin/premium/components/features-panel";
 import { LimitsPanel } from "#/features/admin/premium/components/limits-panel";
 import { PlansPanel } from "#/features/admin/premium/components/plans-panel";
+import { PricingPanel } from "#/features/admin/premium/components/pricing-panel";
 import { SubscriptionsPanel } from "#/features/admin/premium/components/subscriptions-panel";
 import { m } from "#/paraglide/messages";
 
@@ -41,6 +42,9 @@ function AdminPremium() {
 					<TabsTrigger value="limits">
 						{m["admin.premium.limits.tab"]()}
 					</TabsTrigger>
+					<TabsTrigger value="pricing">
+						{m["admin.premium.tabs.pricing"]()}
+					</TabsTrigger>
 				</TabsList>
 				<TabsContent value="plans">
 					<PlansPanel />
@@ -53,6 +57,9 @@ function AdminPremium() {
 				</TabsContent>
 				<TabsContent value="limits">
 					<LimitsPanel />
+				</TabsContent>
+				<TabsContent value="pricing">
+					<PricingPanel />
 				</TabsContent>
 			</Tabs>
 		</div>

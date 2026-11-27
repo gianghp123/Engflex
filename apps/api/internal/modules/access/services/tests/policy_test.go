@@ -41,7 +41,7 @@ func TestActionCharges(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equal(t, tt.want, accessservices.ActionCharges(tt.action))
+			assert.Equal(t, tt.want, accessservices.DefaultCharges(tt.action))
 		})
 	}
 }
@@ -60,9 +60,17 @@ func TestCreditCost(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equal(t, tt.want, accessservices.CreditCost(tt.action))
+			assert.Equal(t, tt.want, accessservices.DefaultCreditCost(tt.action))
 		})
 	}
+}
+
+func TestDefaultCreditCostMatchesLaunchValues(t *testing.T) {
+	assert.Equal(t, 1, accessservices.DefaultCreditCost(accessservices.ActionVoiceStart))
+	assert.Equal(t, 1, accessservices.DefaultCreditCost(accessservices.ActionExamReview))
+	assert.Equal(t, 2, accessservices.DefaultCreditCost(accessservices.ActionStudyPlan))
+	assert.Equal(t, 0, accessservices.DefaultCreditCost(accessservices.ActionWritingScore))
+	assert.Equal(t, 0, accessservices.DefaultCreditCost(accessservices.ActionPronunciation))
 }
 
 func TestEvaluateMatrix(t *testing.T) {
@@ -127,7 +135,7 @@ func TestEvaluateMatrix(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			d := accessservices.Evaluate(tt.p, tt.action, tt.limits, tt.usage)
+			d := accessservices.Evaluate(tt.p, tt.action, accessservices.DefaultCharges(tt.action), tt.limits, tt.usage)
 			require.Equal(t, tt.wantAllow, d.Allow)
 			if tt.wantCode != "" {
 				assert.Equal(t, tt.wantCode, d.Code)
@@ -147,7 +155,7 @@ func TestEvaluateReportsTightestRemaining(t *testing.T) {
 	// counter as limiting (remaining 0 beats remaining 59).
 	d := accessservices.Evaluate(
 		accessservices.Principal{Plan: enums.PlanKey1M},
-		accessservices.ActionVoiceStart, premiumLimits(),
+		accessservices.ActionVoiceStart, accessservices.DefaultCharges(accessservices.ActionVoiceStart), premiumLimits(),
 		accessservices.UsageSnapshot{
 			enums.CounterKindAICredit:     {Used: 99, Reserved: 0},
 			enums.CounterKindVoiceSession: {Used: 1, Reserved: 0},

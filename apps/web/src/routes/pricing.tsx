@@ -1,15 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { MarketingShell } from "#/features/marketing/marketing-shell";
 import { PricingPageMarkup } from "#/features/marketing/pages/pricing-page";
+import { getPricingCatalog } from "#/features/payments/service";
 import { m } from "#/paraglide/messages";
 
-/**
- * The public pricing page, outside `_app` like the landing and About pages.
- *
- * What it shows is mock data: no billing exists yet, so read the note at the top
- * of `PricingPageMarkup` before treating any figure here as real.
- */
 export const Route = createFileRoute("/pricing")({
+	loader: () => getPricingCatalog(),
 	head: () => ({
 		meta: [
 			{ title: m["pricing.meta.title"]() },
@@ -17,12 +13,29 @@ export const Route = createFileRoute("/pricing")({
 		],
 	}),
 	component: PricingPage,
+	errorComponent: PricingUnavailable,
 });
 
 function PricingPage() {
+	const catalog = Route.useLoaderData();
 	return (
 		<MarketingShell>
-			<PricingPageMarkup />
+			<PricingPageMarkup catalog={catalog} />
+		</MarketingShell>
+	);
+}
+
+function PricingUnavailable() {
+	return (
+		<MarketingShell>
+			<div className="container-content py-16">
+				<h1 className="text-2xl font-bold">
+					{m["pricing.unavailable.title"]()}
+				</h1>
+				<p className="mt-2 text-muted-foreground">
+					{m["pricing.unavailable.body"]()}
+				</p>
+			</div>
 		</MarketingShell>
 	);
 }

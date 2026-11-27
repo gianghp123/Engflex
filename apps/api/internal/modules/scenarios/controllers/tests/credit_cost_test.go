@@ -16,6 +16,7 @@ import (
 	"engflex-api/internal/common/enums"
 	"engflex-api/internal/database/models"
 	repomocks "engflex-api/internal/database/repositories/mocks"
+	accessservices "engflex-api/internal/modules/access/services"
 	"engflex-api/internal/modules/scenarios/controllers"
 	"engflex-api/internal/modules/scenarios/services"
 )
@@ -39,7 +40,7 @@ func publishedScenario(id string) *models.Scenario {
 
 func newScenarioRouter(scenarios *repomocks.MockScenarioRepository, topics *repomocks.MockScenarioTopicRepository) *gin.Engine {
 	svc := services.NewScenarioService(scenarios, topics, freePremiumChecker{})
-	ctl := controllers.NewScenarioController(svc)
+	ctl := controllers.NewScenarioController(svc, accessservices.DefaultCreditCostReader{})
 	r := gin.New()
 	// The string "userID" must match middleware.userIDKey (unexported), which
 	// is the gin context key production's RequireAuth stamps.
@@ -67,6 +68,31 @@ func decodeData(t *testing.T, w *httptest.ResponseRecorder) map[string]any {
 		return map[string]any{"__list__": data}
 	}
 	return out
+}
+
+// fixedCostReader pins the wiring: whatever the reader returns is what the
+// badge stamps, proving the DTO reads the injected snapshot.
+type fixedCostReader struct{ credits int }
+
+func (f fixedCostReader) CreditCost(action accessservices.Action) int { return f.credits }
+
+// TestScenarioCostFollowsInjectedReader proves the list badge follows the
+// injected reader (3), not the code fallback (1).
+func TestScenarioCostFollowsInjectedReader(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	scenarios := repomocks.NewMockScenarioRepository(t)
+	scenarios.EXPECT().List(mock.Anything, (*string)(nil), true, 20, 0).
+		Return([]*models.Scenario{publishedScenario("s1")}, nil).Once()
+	scenarios.EXPECT().Count(mock.Anything, (*string)(nil), true).Return(int64(1), nil).Once()
+	svc := services.NewScenarioService(scenarios, repomocks.NewMockScenarioTopicRepository(t), freePremiumChecker{})
+	ctl := controllers.NewScenarioController(svc, fixedCostReader{credits: 3})
+	r := gin.New()
+	r.Use(func(c *gin.Context) { c.Set("userID", "user-1"); c.Next() })
+	r.GET("/scenarios", ctl.List)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, httptest.NewRequest(http.MethodGet, "/scenarios", nil))
+	require.Equal(t, http.StatusOK, w.Code, w.Body.String())
+	assert.Equal(t, float64(3), decodeData(t, w)["__list__"].([]any)[0].(map[string]any)["aiCreditCost"])
 }
 
 // TestScenarioListStampsCreditCost pins the card badge at the HTTP layer:

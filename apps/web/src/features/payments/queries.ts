@@ -3,8 +3,8 @@ import type { Checkout } from "@engflex/contracts";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useEntitlements } from "#/features/payments/entitlements";
 import {
+	getPricingCatalog,
 	getSepayStatus,
-	listPlans,
 	startCheckout,
 	startSepayCheckout,
 } from "#/features/payments/service";
@@ -13,17 +13,17 @@ import { isAdminClaims } from "#/lib/roles";
 /** Exported so a completed checkout can invalidate `me` — paying is the one
  *  thing that changes premium status from outside this module. */
 export const PAYMENT_QUERY_KEYS = {
-	plans: ["payments", "plans"] as const,
+	pricingCatalog: ["pricing", "catalog"] as const,
 	sepayStatus: (reference: string) =>
 		["payments", "sepay", "status", reference] as const,
 };
 
 const keys = PAYMENT_QUERY_KEYS;
 
-export function usePlans() {
+export function usePricingCatalog() {
 	return useQuery({
-		queryKey: keys.plans,
-		queryFn: listPlans,
+		queryKey: keys.pricingCatalog,
+		queryFn: getPricingCatalog,
 	});
 }
 

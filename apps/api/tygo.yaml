@@ -44,6 +44,7 @@ type_mappings:
   "enums.UsageEventStatus": "UsageEventStatus"
   "enums.AIOutputKind": "AIOutputKind"
   "enums.UsageRefType": "UsageRefType"
+  "enums.AccessAction": "AccessAction"
   # embedded by list request DTOs tagged `tstype:",extends"`
   "common.ListParams": "ListParams"
   # embedded by the LLM-triggering request DTOs tagged `tstype:",extends"`

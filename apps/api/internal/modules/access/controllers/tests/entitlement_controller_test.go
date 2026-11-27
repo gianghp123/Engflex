@@ -44,17 +44,25 @@ func usageControllerSvc(t *testing.T) *accessservices.EntitlementsService {
 		{PlanKey: enums.PlanKeyFree, CounterKey: enums.CounterKindAICredit, IsEnabled: true, LimitValue: 15, Period: enums.UsagePeriodMonth},
 		{PlanKey: enums.PlanKeyFree, CounterKey: enums.CounterKindVoiceSession, IsEnabled: true, LimitValue: 3, Period: enums.UsagePeriodMonth},
 	}, nil).Once()
+	costs := repomocks.NewMockActionCreditCostRepository(t)
+	costs.EXPECT().List(mock.Anything).Return([]*models.ActionCreditCost{
+		{Action: enums.AccessActionVoiceStart, Credits: 1},
+		{Action: enums.AccessActionExamReview, Credits: 1},
+		{Action: enums.AccessActionStudyPlan, Credits: 2},
+	}, nil).Once()
+	settings := repomocks.NewMockTrialSettingRepository(t)
+	settings.EXPECT().Get(mock.Anything).Return(&models.TrialSetting{ID: true, DurationDays: 7}, nil).Once()
 	trials.EXPECT().Get(mock.Anything, "user_1").Return(nil, gorm.ErrRecordNotFound).Once()
 	counters.EXPECT().ListByUser(mock.Anything, "user_1").Return([]*models.UsageCounter{}, nil).Once()
 	events.EXPECT().ListByUserStatus(mock.Anything, "user_1",
 		[]enums.UsageEventStatus{enums.UsageEventStatusCommitted, enums.UsageEventStatusReserved},
 		20, 0).Return([]*models.UsageEvent{
 		{ID: "evt-1", UserID: "user_1", CounterKey: enums.CounterKindAICredit, PeriodKey: "2026-11",
-			Amount: 1, Status: enums.UsageEventStatusCommitted,
+			Action: enums.AccessActionExamReview, Amount: 1, Status: enums.UsageEventStatusCommitted,
 			RefType: enums.UsageRefTypeExamAttempt, RefID: "attempt-1"},
 	}, nil).Once()
 	events.EXPECT().CountByUserStatus(mock.Anything, "user_1", mock.Anything).Return(int64(1), nil).Once()
-	policy := accessservices.NewPolicyService(fakeSubs{}, trials, counters, limits,
+	policy := accessservices.NewPolicyService(fakeSubs{}, trials, counters, limits, costs, settings,
 		config.AccessConfig{Enforce: true, Timezone: "Asia/Ho_Chi_Minh"})
 	return accessservices.NewEntitlementsService(policy, events)
 }
@@ -89,12 +97,20 @@ func TestGetUsagePaginationPassthrough(t *testing.T) {
 		{PlanKey: enums.PlanKeyFree, CounterKey: enums.CounterKindAICredit, IsEnabled: true, LimitValue: 15, Period: enums.UsagePeriodMonth},
 		{PlanKey: enums.PlanKeyFree, CounterKey: enums.CounterKindVoiceSession, IsEnabled: true, LimitValue: 3, Period: enums.UsagePeriodMonth},
 	}, nil).Once()
+	costs := repomocks.NewMockActionCreditCostRepository(t)
+	costs.EXPECT().List(mock.Anything).Return([]*models.ActionCreditCost{
+		{Action: enums.AccessActionVoiceStart, Credits: 1},
+		{Action: enums.AccessActionExamReview, Credits: 1},
+		{Action: enums.AccessActionStudyPlan, Credits: 2},
+	}, nil).Once()
+	settings := repomocks.NewMockTrialSettingRepository(t)
+	settings.EXPECT().Get(mock.Anything).Return(&models.TrialSetting{ID: true, DurationDays: 7}, nil).Once()
 	trials.EXPECT().Get(mock.Anything, "user_1").Return(nil, gorm.ErrRecordNotFound).Once()
 	counters.EXPECT().ListByUser(mock.Anything, "user_1").Return([]*models.UsageCounter{}, nil).Once()
 	events.EXPECT().ListByUserStatus(mock.Anything, "user_1", mock.Anything, 5, 5).
 		Return([]*models.UsageEvent{}, nil).Once()
 	events.EXPECT().CountByUserStatus(mock.Anything, "user_1", mock.Anything).Return(int64(0), nil).Once()
-	policy := accessservices.NewPolicyService(fakeSubs{}, trials, counters, limits,
+	policy := accessservices.NewPolicyService(fakeSubs{}, trials, counters, limits, costs, settings,
 		config.AccessConfig{Enforce: true, Timezone: "Asia/Ho_Chi_Minh"})
 	ctl := controllers.NewEntitlementController(accessservices.NewEntitlementsService(policy, events))
 
@@ -114,6 +130,7 @@ func TestGetUsageRequiresAuth(t *testing.T) {
 	// is touched, and bare mocks assert exactly that (zero calls).
 	policy := accessservices.NewPolicyService(fakeSubs{}, repomocks.NewMockUserTrialRepository(t),
 		repomocks.NewMockUsageCounterRepository(t), repomocks.NewMockPlanFeatureLimitRepository(t),
+		repomocks.NewMockActionCreditCostRepository(t), repomocks.NewMockTrialSettingRepository(t),
 		config.AccessConfig{Enforce: true, Timezone: "Asia/Ho_Chi_Minh"})
 	ctl := controllers.NewEntitlementController(accessservices.NewEntitlementsService(policy,
 		repomocks.NewMockUsageEventRepository(t)))

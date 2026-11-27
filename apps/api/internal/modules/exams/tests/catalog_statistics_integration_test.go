@@ -20,6 +20,7 @@ import (
 	"engflex-api/internal/common/enums"
 	"engflex-api/internal/database/models"
 	"engflex-api/internal/database/repositories"
+	accessservices "engflex-api/internal/modules/access/services"
 	"engflex-api/internal/modules/exams/controllers"
 	"engflex-api/internal/modules/exams/dtos/requests"
 	"engflex-api/internal/modules/exams/services"
@@ -96,7 +97,7 @@ func TestExamCatalogStatisticsPostgres(t *testing.T) {
 			categories := repositories.NewExamCategoryRepository(tx)
 			tests := repositories.NewExamTestRepository(tx)
 			attempts := repositories.NewAttemptRepository(tx)
-			ctl := controllers.NewExamController(services.NewCatalogService(categories, tests), services.NewAttemptService(attempts, tests, repositories.NewTransactionManager(tx)))
+			ctl := controllers.NewExamController(services.NewCatalogService(categories, tests), services.NewAttemptService(attempts, tests, repositories.NewTransactionManager(tx)), accessservices.DefaultCreditCostReader{})
 			gin.SetMode(gin.TestMode)
 			router := gin.New()
 			router.Use(func(c *gin.Context) { c.Set("userID", userID) })

@@ -311,7 +311,7 @@ func (s *ConversationService) Start(ctx context.Context, userID, id string, isAd
 // cached ICE instead of calling the engine. Denials and live-hold (409s)
 // come back as errors.
 func (s *ConversationService) reserveVoice(ctx context.Context, userID string, conv *models.Conversation, plan enums.PlanKey, charges []accessservices.Charge) (*accessservices.Reservation, error) {
-	reservation, err := s.access.Usage.Reserve(ctx, userID, plan, charges,
+	reservation, err := s.access.Usage.Reserve(ctx, userID, plan, accessservices.ActionVoiceStart, charges,
 		"conversation:"+conv.ID, enums.UsageRefTypeConversation, conv.ID,
 		common.VoiceLeaseTTL, time.Now().UTC(), s.access.Loc)
 	if err != nil {

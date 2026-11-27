@@ -17,6 +17,7 @@ import (
 	"engflex-api/internal/database/models"
 	"engflex-api/internal/database/repositories"
 	"engflex-api/internal/exams/ielts"
+	accessservices "engflex-api/internal/modules/access/services"
 	"engflex-api/internal/modules/exams/controllers"
 	"engflex-api/internal/modules/exams/dtos/requests"
 	"engflex-api/internal/modules/exams/dtos/responses"
@@ -38,7 +39,7 @@ func TestIeltsPublishedPackagesHTTP(t *testing.T) {
 	require.NoError(t, tx.Error)
 	t.Cleanup(func() { require.NoError(t, tx.Rollback().Error) })
 	tests := repositories.NewExamTestRepository(tx)
-	ctl := controllers.NewExamController(services.NewCatalogService(repositories.NewExamCategoryRepository(tx), tests), services.NewAttemptService(repositories.NewAttemptRepository(tx), tests, repositories.NewTransactionManager(tx)))
+	ctl := controllers.NewExamController(services.NewCatalogService(repositories.NewExamCategoryRepository(tx), tests), services.NewAttemptService(repositories.NewAttemptRepository(tx), tests, repositories.NewTransactionManager(tx)), accessservices.DefaultCreditCostReader{})
 	gin.SetMode(gin.TestMode)
 	router := gin.New()
 	router.Use(func(c *gin.Context) { c.Set("userID", c.GetHeader("X-Test-User")) })

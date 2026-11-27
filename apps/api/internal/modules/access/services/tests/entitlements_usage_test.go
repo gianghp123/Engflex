@@ -23,6 +23,7 @@ import (
 	"engflex-api/internal/common/enums"
 	"engflex-api/internal/database/models"
 	repomocks "engflex-api/internal/database/repositories/mocks"
+	"engflex-api/internal/modules/access/dtos/responses"
 	accessservices "engflex-api/internal/modules/access/services"
 )
 
@@ -48,8 +49,12 @@ func usageCatalog() []*models.PlanFeatureLimit {
 
 func newUsageSvc(t *testing.T, subs accessservices.SubscriptionPlanSource, trials *repomocks.MockUserTrialRepository, counters *repomocks.MockUsageCounterRepository, limits *repomocks.MockPlanFeatureLimitRepository, events *repomocks.MockUsageEventRepository) *accessservices.EntitlementsService {
 	t.Helper()
+	costs := repomocks.NewMockActionCreditCostRepository(t)
+	costs.EXPECT().List(mock.Anything).Return(defaultCostRows(), nil).Maybe()
+	settings := repomocks.NewMockTrialSettingRepository(t)
+	settings.EXPECT().Get(mock.Anything).Return(&models.TrialSetting{ID: true, DurationDays: 7}, nil).Maybe()
 	return accessservices.NewEntitlementsService(
-		accessservices.NewPolicyService(subs, trials, counters, limits, config.AccessConfig{Enforce: true, Timezone: "Asia/Ho_Chi_Minh"}),
+		accessservices.NewPolicyService(subs, trials, counters, limits, costs, settings, config.AccessConfig{Enforce: true, Timezone: "Asia/Ho_Chi_Minh"}),
 		events)
 }
 
@@ -59,52 +64,33 @@ func freeUsageMocks(t *testing.T) (*repomocks.MockUserTrialRepository, *repomock
 	counters := repomocks.NewMockUsageCounterRepository(t)
 	limits := repomocks.NewMockPlanFeatureLimitRepository(t)
 	events := repomocks.NewMockUsageEventRepository(t)
-	limits.EXPECT().ListAll(mock.Anything).Return(usageCatalog(), nil).Once()
-	trials.EXPECT().Get(mock.Anything, "user_1").Return(nil, gorm.ErrRecordNotFound).Once()
-	counters.EXPECT().ListByUser(mock.Anything, "user_1").Return([]*models.UsageCounter{}, nil).Once()
+	limits.EXPECT().ListAll(mock.Anything).Return(usageCatalog(), nil).Maybe()
+	trials.EXPECT().Get(mock.Anything, "user_1").Return(nil, gorm.ErrRecordNotFound).Maybe()
+	counters.EXPECT().ListByUser(mock.Anything, "user_1").Return([]*models.UsageCounter{}, nil).Maybe()
 	return trials, counters, limits, events
 }
 
-func TestUsageActionDerivation(t *testing.T) {
-	tests := []struct {
-		name    string
-		refType enums.UsageRefType
-		amount  int
-		want    string
-	}{
-		{name: "conversation is a voice session start", refType: enums.UsageRefTypeConversation, amount: 1, want: "voice_session_start"},
-		{name: "exam attempt amount 1 is an AI review", refType: enums.UsageRefTypeExamAttempt, amount: 1, want: "exam_ai_review"},
-		{name: "exam attempt amount 2 is a study plan", refType: enums.UsageRefTypeExamAttempt, amount: 2, want: "study_plan"},
-		{name: "writing activity is a writing score", refType: enums.UsageRefTypeWritingActivity, amount: 1, want: "writing_score"},
-		{name: "study plan ref is a study plan", refType: enums.UsageRefTypeStudyPlan, amount: 2, want: "study_plan"},
-		{name: "unknown ref type renders as other", refType: enums.UsageRefType("lesson"), amount: 1, want: "other"},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			trials, counters, limits, events := freeUsageMocks(t)
-			created := time.Now().UTC().Truncate(time.Second)
-			events.EXPECT().ListByUserStatus(mock.Anything, "user_1",
-				[]enums.UsageEventStatus{enums.UsageEventStatusCommitted, enums.UsageEventStatusReserved},
-				20, 0).Return([]*models.UsageEvent{
-				{ID: "evt-1", UserID: "user_1", Amount: tt.amount, Status: enums.UsageEventStatusCommitted,
-					RefType: tt.refType, RefID: "ref-1", CreatedAt: created},
-			}, nil).Once()
-			events.EXPECT().CountByUserStatus(mock.Anything, "user_1", mock.Anything).Return(int64(1), nil).Once()
+func TestMyUsageHistoryRendersEventAction(t *testing.T) {
+	trials, counters, limits, events := freeUsageMocks(t)
+	created := time.Now().UTC().Truncate(time.Second)
+	events.EXPECT().ListByUserStatus(mock.Anything, "user_1",
+		[]enums.UsageEventStatus{enums.UsageEventStatusCommitted, enums.UsageEventStatusReserved},
+		20, 0).Return([]*models.UsageEvent{
+		{ID: "evt-1", UserID: "user_1", Action: enums.AccessActionExamReview, Amount: 2,
+			Status: enums.UsageEventStatusCommitted, RefType: enums.UsageRefTypeExamAttempt, RefID: "ref-1", CreatedAt: created},
+		{ID: "evt-2", UserID: "user_1", Action: enums.AccessActionVoiceStart, Amount: 1,
+			Status: enums.UsageEventStatusReserved, RefType: enums.UsageRefTypeConversation, RefID: "ref-2", CreatedAt: created},
+	}, nil).Once()
+	events.EXPECT().CountByUserStatus(mock.Anything, "user_1", mock.Anything).Return(int64(2), nil).Once()
 
-			svc := newUsageSvc(t, fakeSubscriptions{}, trials, counters, limits, events)
-			got, err := svc.MyUsage(context.Background(), "user_1", false, 1, 20)
-			require.NoError(t, err)
-			require.Len(t, got.History.Items, 1)
-			item := got.History.Items[0]
-			assert.Equal(t, tt.want, item.Action)
-			assert.Equal(t, tt.amount, item.Credits, "credits are the event amount")
-			assert.Equal(t, enums.UsageEventStatusCommitted, item.Status)
-			assert.Equal(t, created, item.CreatedAt)
-			assert.Equal(t, tt.refType, item.RefType)
-			assert.Equal(t, "ref-1", item.RefID)
-			assert.Equal(t, "evt-1", item.ID)
-		})
-	}
+	svc := newUsageSvc(t, fakeSubscriptions{}, trials, counters, limits, events)
+	got, err := svc.MyUsage(context.Background(), "user_1", false, 1, 20)
+	require.NoError(t, err)
+	require.Len(t, got.History.Items, 2)
+	assert.Equal(t, string(enums.AccessActionExamReview), got.History.Items[0].Action, "history renders the ledger action, never a re-derived name")
+	assert.Equal(t, 2, got.History.Items[0].Credits, "the row is amount-misleading on purpose: old amount-sniffing would render study_plan")
+	assert.Equal(t, string(enums.AccessActionVoiceStart), got.History.Items[1].Action)
+	assert.Equal(t, enums.UsageEventStatusReserved, got.History.Items[1].Status)
 }
 
 func TestMyUsageHistoryPagination(t *testing.T) {
@@ -177,6 +163,7 @@ func TestMyUsageCountersMirrorMe(t *testing.T) {
 		policy := accessservices.NewPolicyService(fakeSubscriptions{sub: paidSub(enums.SubscriptionPlanOneMonth)},
 			repomocks.NewMockUserTrialRepository(t), repomocks.NewMockUsageCounterRepository(t),
 			repomocks.NewMockPlanFeatureLimitRepository(t),
+			repomocks.NewMockActionCreditCostRepository(t), repomocks.NewMockTrialSettingRepository(t),
 			config.AccessConfig{Enforce: true, Timezone: "Asia/Ho_Chi_Minh"})
 		monthKey := policy.PeriodKey(enums.UsagePeriodMonth, time.Now().UTC())
 
@@ -214,6 +201,10 @@ func TestMyUsageAdminMirrorsMe(t *testing.T) {
 	limits := repomocks.NewMockPlanFeatureLimitRepository(t)
 	events := repomocks.NewMockUsageEventRepository(t)
 	limits.EXPECT().ListAll(mock.Anything).Return(usageCatalog(), nil).Once()
+	costs := repomocks.NewMockActionCreditCostRepository(t)
+	costs.EXPECT().List(mock.Anything).Return(defaultCostRows(), nil).Once()
+	settings := repomocks.NewMockTrialSettingRepository(t)
+	settings.EXPECT().Get(mock.Anything).Return(&models.TrialSetting{ID: true, DurationDays: 7}, nil).Once()
 	// No counter read: admins bypass metering with zero views, like /premium/me.
 	events.EXPECT().ListByUserStatus(mock.Anything, "user_1", mock.Anything, mock.Anything, mock.Anything).
 		Return([]*models.UsageEvent{}, nil).Once()
@@ -221,7 +212,7 @@ func TestMyUsageAdminMirrorsMe(t *testing.T) {
 
 	svc := accessservices.NewEntitlementsService(
 		accessservices.NewPolicyService(fakeSubscriptions{}, repomocks.NewMockUserTrialRepository(t),
-			repomocks.NewMockUsageCounterRepository(t), limits,
+			repomocks.NewMockUsageCounterRepository(t), limits, costs, settings,
 			config.AccessConfig{Enforce: true, Timezone: "Asia/Ho_Chi_Minh"}),
 		events)
 	got, err := svc.MyUsage(context.Background(), "user_1", true, 1, 20)
@@ -283,4 +274,44 @@ func TestMyUsageStoreFailures(t *testing.T) {
 			assert.Equal(t, common.CodePolicyUnavailable, appErr.Code)
 		})
 	}
+}
+
+// TestUsageCostsComeFromPolicy pins the Task 3 consumer contract: both
+// Costs tables render the policy catalog snapshot (zero included), never
+// hardcoded literals.
+func TestUsageCostsComeFromPolicy(t *testing.T) {
+	trials := repomocks.NewMockUserTrialRepository(t)
+	counters := repomocks.NewMockUsageCounterRepository(t)
+	limits := repomocks.NewMockPlanFeatureLimitRepository(t)
+	events := repomocks.NewMockUsageEventRepository(t)
+	limits.EXPECT().ListAll(mock.Anything).Return(usageCatalog(), nil).Maybe()
+	costs := repomocks.NewMockActionCreditCostRepository(t)
+	costs.EXPECT().List(mock.Anything).Return([]*models.ActionCreditCost{
+		{Action: enums.AccessActionVoiceStart, Credits: 4},
+		{Action: enums.AccessActionExamReview, Credits: 0},
+		{Action: enums.AccessActionStudyPlan, Credits: 6},
+	}, nil).Maybe()
+	settings := repomocks.NewMockTrialSettingRepository(t)
+	settings.EXPECT().Get(mock.Anything).Return(&models.TrialSetting{ID: true, DurationDays: 7}, nil).Maybe()
+	trials.EXPECT().Get(mock.Anything, "user_1").Return(nil, gorm.ErrRecordNotFound).Maybe()
+	counters.EXPECT().ListByUser(mock.Anything, "user_1").Return([]*models.UsageCounter{}, nil).Maybe()
+	events.EXPECT().ListByUserStatus(mock.Anything, "user_1", mock.Anything, mock.Anything, mock.Anything).
+		Return([]*models.UsageEvent{}, nil).Maybe()
+	events.EXPECT().CountByUserStatus(mock.Anything, "user_1", mock.Anything).Return(int64(0), nil).Maybe()
+
+	policy := accessservices.NewPolicyService(fakeSubscriptions{}, trials, counters, limits, costs, settings,
+		config.AccessConfig{Enforce: true, Timezone: "Asia/Ho_Chi_Minh"})
+	svc := accessservices.NewEntitlementsService(policy, events)
+
+	got, err := svc.MyUsage(context.Background(), "user_1", false, 1, 20)
+	require.NoError(t, err)
+	assert.Equal(t, []responses.ActionCost{
+		{Action: enums.AccessActionVoiceStart, Credits: 4},
+		{Action: enums.AccessActionExamReview, Credits: 0},
+		{Action: enums.AccessActionStudyPlan, Credits: 6},
+	}, got.Costs)
+
+	me, err := svc.MyEntitlements(context.Background(), "user_1", false)
+	require.NoError(t, err)
+	assert.Equal(t, got.Costs, me.Costs, "both Costs tables render the same snapshot")
 }

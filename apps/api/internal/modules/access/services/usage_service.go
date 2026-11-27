@@ -72,7 +72,7 @@ func periodKeyFor(period enums.UsagePeriod, now time.Time, loc *time.Location) s
 // The unique (user_id, idempotency_key) rows are the exactly-once guard;
 // committed rows replay as committed, unexpired holds report in_progress,
 // and released/expired rows are reused — never re-inserted.
-func (s *UsageService) Reserve(ctx context.Context, userID string, plan enums.PlanKey, charges []Charge, idempotencyBase string, refType enums.UsageRefType, refID string, lease time.Duration, now time.Time, loc *time.Location) (*Reservation, error) {
+func (s *UsageService) Reserve(ctx context.Context, userID string, plan enums.PlanKey, action enums.AccessAction, charges []Charge, idempotencyBase string, refType enums.UsageRefType, refID string, lease time.Duration, now time.Time, loc *time.Location) (*Reservation, error) {
 	limits, err := s.limits.LimitsForPlan(ctx, plan)
 	if err != nil {
 		appErr := common.ServiceUnavailable("policy unavailable").WithCode(common.CodePolicyUnavailable)
@@ -141,10 +141,12 @@ func (s *UsageService) Reserve(ctx context.Context, userID string, plan enums.Pl
 		for _, key := range keys {
 			ch := byKey[key]
 			if e, ok := found[key]; ok {
-				// Released or expired: reuse the row under the new group.
+				// Released or expired: reuse the row under the new group,
+				// rewriting the charge to the current action/amount so the
+				// later CommitTx settles exactly what the counters reserved.
 				// A row that did not move was settled concurrently — fail
 				// closed rather than inserting a duplicate idempotency key.
-				reused, err := events.ReuseAsReserved(ctx, e.ID, reservationID, expiresAt)
+				reused, err := events.ReuseAsReserved(ctx, e.ID, reservationID, action, ch.Amount, expiresAt)
 				if err != nil {
 					return err
 				}
@@ -159,6 +161,7 @@ func (s *UsageService) Reserve(ctx context.Context, userID string, plan enums.Pl
 				UserID:         userID,
 				CounterKey:     ch.Counter,
 				PeriodKey:      periodKeyFor(lim.Period, now, loc),
+				Action:         action,
 				Amount:         ch.Amount,
 				Status:         enums.UsageEventStatusReserved,
 				IdempotencyKey: key,

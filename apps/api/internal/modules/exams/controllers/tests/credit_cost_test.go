@@ -21,13 +21,18 @@ import (
 	"engflex-api/internal/common/enums"
 	"engflex-api/internal/database/models"
 	repomocks "engflex-api/internal/database/repositories/mocks"
+	accessservices "engflex-api/internal/modules/access/services"
 	"engflex-api/internal/modules/exams/controllers"
 	"engflex-api/internal/modules/exams/services"
 )
 
 func newExamRouter(t *testing.T, attempts *repomocks.MockAttemptRepository, tests *repomocks.MockExamTestRepository, tx *repomocks.MockTransactionManager) *gin.Engine {
+	return newExamRouterWithCosts(t, attempts, tests, tx, accessservices.DefaultCreditCostReader{})
+}
+
+func newExamRouterWithCosts(t *testing.T, attempts *repomocks.MockAttemptRepository, tests *repomocks.MockExamTestRepository, tx *repomocks.MockTransactionManager, costs accessservices.CreditCostReader) *gin.Engine {
 	catalog := services.NewCatalogService(repomocks.NewMockExamCategoryRepository(t), tests)
-	ctl := controllers.NewExamController(catalog, services.NewAttemptService(attempts, tests, tx))
+	ctl := controllers.NewExamController(catalog, services.NewAttemptService(attempts, tests, tx), costs)
 	r := gin.New()
 	// The string "userID" must match middleware.userIDKey (unexported), which
 	// is the gin context key production's RequireAuth stamps.
@@ -53,6 +58,46 @@ func invokeTx(tx *repomocks.MockTransactionManager) *gorm.DB {
 	tx.On("Run", mock.Anything, mock.Anything).
 		Return(func(_ context.Context, fn func(*gorm.DB) error) error { return fn(transaction) })
 	return transaction
+}
+
+// fixedCostReader pins the wiring: whatever the reader returns is what the
+// badges stamp, proving the DTOs read the injected snapshot.
+type fixedCostReader struct{ credits int }
+
+func (f fixedCostReader) CreditCost(action accessservices.Action) int { return f.credits }
+
+// TestStartFollowsInjectedReader proves both badges follow the injected
+// reader (3), not the code fallback (1/2).
+func TestStartFollowsInjectedReader(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	attempts := repomocks.NewMockAttemptRepository(t)
+	tests := repomocks.NewMockExamTestRepository(t)
+	tx := repomocks.NewMockTransactionManager(t)
+	transaction := invokeTx(tx)
+	tests.On("WithTx", transaction).Return(tests)
+	tests.On("GetForUpdate", mock.Anything, "test-1").Return(&models.ExamTest{
+		ID:       "test-1",
+		Category: &models.ExamCategory{Type: enums.ExamTypeTOEIC},
+		Content:  syntheticContent(t),
+	}, nil)
+	attempts.On("WithTx", transaction).Return(attempts)
+	attempts.On("Create", mock.Anything, mock.Anything).Return(nil)
+
+	w := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodPost, "/exam-tests/test-1/attempts", strings.NewReader(`{"mode":"practice","selectedParts":[1]}`))
+	req.Header.Set("Content-Type", "application/json")
+	newExamRouterWithCosts(t, attempts, tests, tx, fixedCostReader{credits: 3}).ServeHTTP(w, req)
+
+	require.Equal(t, http.StatusCreated, w.Code, w.Body.String())
+	var envelope struct {
+		Data struct {
+			AIReviewCreditCost  int `json:"aiReviewCreditCost"`
+			StudyPlanCreditCost int `json:"studyPlanCreditCost"`
+		} `json:"data"`
+	}
+	require.NoError(t, json.Unmarshal(w.Body.Bytes(), &envelope))
+	assert.Equal(t, 3, envelope.Data.AIReviewCreditCost)
+	assert.Equal(t, 3, envelope.Data.StudyPlanCreditCost)
 }
 
 // TestStartStampsCreditCosts pins the paid-AI badges on a freshly started

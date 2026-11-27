@@ -10,6 +10,9 @@ CREATE TABLE usage_events (
     user_id          text        NOT NULL,
     counter_key      text        NOT NULL REFERENCES premium_features(key),
     period_key       text        NOT NULL,
+    action           text        NOT NULL
+                                 CHECK (action IN ('voice_session_start','exam_ai_review',
+                                                   'study_plan','writing_score','pronunciation')),
     amount           integer     NOT NULL CHECK (amount > 0),
     status           text        NOT NULL CHECK (status IN ('reserved','committed','released','expired')),
     idempotency_key  text        NOT NULL,

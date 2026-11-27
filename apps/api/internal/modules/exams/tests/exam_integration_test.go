@@ -24,6 +24,7 @@ import (
 	"engflex-api/internal/common/enums"
 	"engflex-api/internal/database/models"
 	"engflex-api/internal/database/repositories"
+	accessservices "engflex-api/internal/modules/access/services"
 	"engflex-api/internal/modules/exams"
 	"engflex-api/internal/modules/exams/controllers"
 	"engflex-api/internal/modules/exams/services"
@@ -56,7 +57,7 @@ func TestExamPhase2HTTP(t *testing.T) {
 	queryLogger := logger.New(log.New(&queryLog, "", 0), logger.Config{LogLevel: logger.Info})
 	tests := repositories.NewExamTestRepository(tx.Session(&gorm.Session{Logger: queryLogger}))
 	attempts := repositories.NewAttemptRepository(tx.Session(&gorm.Session{Logger: queryLogger}))
-	ctl := controllers.NewExamController(services.NewCatalogService(categories, tests), services.NewAttemptService(attempts, tests, repositories.NewTransactionManager(tx)))
+	ctl := controllers.NewExamController(services.NewCatalogService(categories, tests), services.NewAttemptService(attempts, tests, repositories.NewTransactionManager(tx)), accessservices.DefaultCreditCostReader{})
 	gin.SetMode(gin.TestMode)
 	r := gin.New()
 	r.Use(func(c *gin.Context) { c.Set("userID", c.GetHeader("X-Test-User")); c.Next() })

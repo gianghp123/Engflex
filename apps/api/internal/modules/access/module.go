@@ -23,6 +23,7 @@ type Services struct {
 	Entitlements *accessservices.EntitlementsService
 	Admin        *accessservices.AdminAccessService
 	Trial        *accessservices.TrialService
+	Pricing      *accessservices.PricingService
 	// Enforce mirrors cfg.Access.Enforce so consuming modules (exam AI)
 	// never re-read config: one flag, one source.
 	Enforce bool
@@ -36,21 +37,25 @@ func NewServices(db *gorm.DB, cfg config.Config) *Services {
 	counters := repositories.NewUsageCounterRepository(db)
 	limits := repositories.NewPlanFeatureLimitRepository(db)
 	events := repositories.NewUsageEventRepository(db)
+	creditCosts := repositories.NewActionCreditCostRepository(db)
+	trialSettings := repositories.NewTrialSettingRepository(db)
 
-	policy := accessservices.NewPolicyService(subscriptions, trials, counters, limits, cfg.Access)
-	usage := accessservices.NewUsageService(counters, events, repositories.NewTransactionManager(db), policy)
+	policy := accessservices.NewPolicyService(subscriptions, trials, counters, limits, creditCosts, trialSettings, cfg.Access)
+	txManager := repositories.NewTransactionManager(db)
+	usage := accessservices.NewUsageService(counters, events, txManager, policy)
 	if db != nil {
 		// Route-table tests boot the router with a nil DB and never serve
 		// traffic; the snapshot and sweeper need a live handle.
-		_ = policy.SnapshotLimits(context.Background())
+		_ = policy.SnapshotCatalog(context.Background())
 		usage.StartSweeper(context.Background())
 	}
 	return &Services{
 		Policy:       policy,
 		Usage:        usage,
 		Entitlements: accessservices.NewEntitlementsService(policy, events),
-		Admin:        accessservices.NewAdminAccessService(limits, counters, events, policy),
-		Trial:        accessservices.NewTrialService(trials),
+		Admin:        accessservices.NewAdminAccessService(limits, counters, events, creditCosts, trialSettings, txManager, policy),
+		Trial:        accessservices.NewTrialService(trials, policy),
+		Pricing:      accessservices.NewPricingService(repositories.NewPlanRepository(db), policy),
 		Enforce:      cfg.Access.Enforce,
 	}
 }
@@ -64,9 +69,14 @@ func RegisterRoutes(rg *gin.RouterGroup, svc *Services) {
 	premium.GET("/me", middleware.RequireAuth(), ctl.GetMy)
 	premium.GET("/usage", middleware.RequireAuth(), ctl.GetUsage)
 	premium.POST("/trial", middleware.RequireAuth(), trialCtl.StartMy)
+	rg.GET("/pricing", controllers.NewPricingController(svc.Pricing).Get)
 	admin := rg.Group("/admin", middleware.RequireAuth(), middleware.RequireAdmin())
 	admin.GET("/premium/limits", adminCtl.ListLimits)
 	admin.PUT("/premium/limits/:planKey", adminCtl.UpdatePlanLimits)
+	admin.GET("/premium/action-costs", adminCtl.ListActionCosts)
+	admin.PUT("/premium/action-costs", adminCtl.UpdateActionCosts)
+	admin.GET("/premium/trial-terms", adminCtl.GetTrialTerms)
+	admin.PUT("/premium/trial-terms", adminCtl.UpdateTrialTerms)
 	admin.GET("/users/:id/usage", adminCtl.UserUsage)
 	admin.POST("/users/:id/trial", adminCtl.GrantTrial)
 }

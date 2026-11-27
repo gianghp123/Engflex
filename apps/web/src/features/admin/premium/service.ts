@@ -1,4 +1,7 @@
 import type {
+	AccessAction,
+	AdminActionCost,
+	AdminTrialTerms,
 	CounterKind,
 	CreatePremiumFeature,
 	Pagination,
@@ -113,6 +116,46 @@ export function updatePlanLimits(
 	payload: UpdatePlanLimits,
 ): Promise<void> {
 	return api<void>(API_ROUTES.ADMIN.PREMIUM_LIMIT(plan), {
+		method: "PUT",
+		body: JSON.stringify(payload),
+	});
+}
+
+/** Local request shape: the access requests are not tygo-exported. */
+export interface ActionCostInput {
+	action: AccessAction;
+	credits: number;
+}
+
+/** Local wire copy of requests.UpdateActionCosts. */
+export interface UpdateActionCosts {
+	costs: ActionCostInput[];
+}
+
+/** Local wire copy of requests.UpdateTrialTerms. */
+export interface UpdateTrialTerms {
+	days: number;
+	credits: number;
+	voiceSessions: number;
+}
+
+export function listActionCosts(): Promise<AdminActionCost[]> {
+	return api<AdminActionCost[]>(API_ROUTES.ADMIN.PREMIUM_ACTION_COSTS);
+}
+
+export function updateActionCosts(payload: UpdateActionCosts): Promise<void> {
+	return api<void>(API_ROUTES.ADMIN.PREMIUM_ACTION_COSTS, {
+		method: "PUT",
+		body: JSON.stringify(payload),
+	});
+}
+
+export function getTrialTerms(): Promise<AdminTrialTerms> {
+	return api<AdminTrialTerms>(API_ROUTES.ADMIN.PREMIUM_TRIAL_TERMS);
+}
+
+export function updateTrialTerms(payload: UpdateTrialTerms): Promise<void> {
+	return api<void>(API_ROUTES.ADMIN.PREMIUM_TRIAL_TERMS, {
 		method: "PUT",
 		body: JSON.stringify(payload),
 	});

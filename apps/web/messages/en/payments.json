@@ -15,6 +15,15 @@
       "perMonth": "{amount}/month",
       "cta": "Upgrade now",
       "checkoutError": "Couldn't start checkout. Please try again.",
+      "trial": {
+        "title": "Free {days}-day trial included",
+        "body": "{credits} AI credits and {sessions} voice sessions to try everything."
+      },
+      "costs": {
+        "title": "Credit costs",
+        "item": "{action}: {credits} credits",
+        "freeItem": "{action}: free"
+      },
       "sepay": {
         "title": "Scan to pay",
         "body": "Scan this QR code with your banking app, or transfer manually using the details below.",

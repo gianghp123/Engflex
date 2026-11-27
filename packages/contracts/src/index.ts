@@ -49,6 +49,7 @@ declare global {
   type UsageEventStatus = Enums.UsageEventStatus;
   type AIOutputKind = Enums.AIOutputKind;
   type UsageRefType = Enums.UsageRefType;
+  type AccessAction = Enums.AccessAction;
   type VocabularyPartOfSpeech = Enums.VocabularyPartOfSpeech;
   type ContentType = Enums.ContentType;
 }

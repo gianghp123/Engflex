@@ -8,6 +8,8 @@ import (
 	"engflex-api/internal/modules/access/dtos/requests"
 	"engflex-api/internal/modules/access/dtos/responses"
 	"engflex-api/internal/modules/access/services"
+	"engflex-api/internal/server/middleware"
+	"engflex-api/internal/utils"
 )
 
 // AdminAccessController serves the admin limits, usage, and trial-grant
@@ -114,4 +116,93 @@ func writeTrialStatus(c *gin.Context, started bool) {
 		return
 	}
 	common.OK(c, "trial already used", responses.TrialStatus{Started: false})
+}
+
+// ListActionCosts godoc
+// @Summary      List the per-action credit prices (admin)
+// @Tags         admin-premium
+// @Security     BearerAuth
+// @Produce      json
+// @Success      200 {object} common.ApiResponse{data=responses.AdminActionCosts}
+// @Failure      401 {object} common.ApiResponse
+// @Failure      403 {object} common.ApiResponse
+// @Router       /admin/premium/action-costs [get]
+func (h *AdminAccessController) ListActionCosts(c *gin.Context) {
+	rows, err := h.admin.ListActionCosts(c.Request.Context())
+	if err != nil {
+		common.Fail(c, err)
+		return
+	}
+	var dto []responses.AdminActionCost
+	_ = utils.MapSlice(&dto, rows)
+	common.OK(c, "action costs listed", responses.AdminActionCosts(dto))
+}
+
+// UpdateActionCosts godoc
+// @Summary      Batch-upsert the per-action credit prices (admin)
+// @Tags         admin-premium
+// @Security     BearerAuth
+// @Accept       json
+// @Produce      json
+// @Param        request body requests.UpdateActionCosts true "action costs payload"
+// @Success      200 {object} common.ApiResponse
+// @Failure      400 {object} common.ApiResponse
+// @Failure      401 {object} common.ApiResponse
+// @Failure      403 {object} common.ApiResponse
+// @Failure      422 {object} common.ApiResponse
+// @Router       /admin/premium/action-costs [put]
+func (h *AdminAccessController) UpdateActionCosts(c *gin.Context) {
+	var req requests.UpdateActionCosts
+	if err := c.ShouldBindJSON(&req); err != nil {
+		common.Fail(c, common.BadRequest(err.Error()))
+		return
+	}
+	if err := h.admin.UpdateActionCosts(c.Request.Context(), middleware.UserID(c), req); err != nil {
+		common.Fail(c, err)
+		return
+	}
+	common.OK(c, "action costs updated", nil)
+}
+
+// GetTrialTerms godoc
+// @Summary      Read the trial duration and caps (admin)
+// @Tags         admin-premium
+// @Security     BearerAuth
+// @Produce      json
+// @Success      200 {object} common.ApiResponse{data=responses.AdminTrialTerms}
+// @Failure      401 {object} common.ApiResponse
+// @Failure      403 {object} common.ApiResponse
+// @Router       /admin/premium/trial-terms [get]
+func (h *AdminAccessController) GetTrialTerms(c *gin.Context) {
+	out, err := h.admin.GetTrialTerms(c.Request.Context())
+	if err != nil {
+		common.Fail(c, err)
+		return
+	}
+	common.OK(c, "trial terms", out)
+}
+
+// UpdateTrialTerms godoc
+// @Summary      Rewrite the trial duration and caps (admin)
+// @Tags         admin-premium
+// @Security     BearerAuth
+// @Accept       json
+// @Produce      json
+// @Param        request body requests.UpdateTrialTerms true "trial terms payload"
+// @Success      200 {object} common.ApiResponse
+// @Failure      400 {object} common.ApiResponse
+// @Failure      401 {object} common.ApiResponse
+// @Failure      403 {object} common.ApiResponse
+// @Router       /admin/premium/trial-terms [put]
+func (h *AdminAccessController) UpdateTrialTerms(c *gin.Context) {
+	var req requests.UpdateTrialTerms
+	if err := c.ShouldBindJSON(&req); err != nil {
+		common.Fail(c, common.BadRequest(err.Error()))
+		return
+	}
+	if err := h.admin.UpdateTrialTerms(c.Request.Context(), middleware.UserID(c), req); err != nil {
+		common.Fail(c, err)
+		return
+	}
+	common.OK(c, "trial terms updated", nil)
 }

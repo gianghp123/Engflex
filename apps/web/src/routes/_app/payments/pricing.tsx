@@ -26,9 +26,10 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "#/components/ui/dialog";
+import { usageActionLabel } from "#/features/payments/components/usage/usage-history-list";
 import { entitlementKeys } from "#/features/payments/entitlements";
 import {
-	usePlans,
+	usePricingCatalog,
 	useSepayStatus,
 	useStartSepayCheckout,
 } from "#/features/payments/queries";
@@ -159,7 +160,7 @@ function SepayQrDialog({
 
 function PricingPage() {
 	useBreadcrumbs([{ label: m["payments.pricing.crumb"]() }]);
-	const { data: plans, isPending, isError } = usePlans();
+	const { data: catalog, isPending, isError } = usePricingCatalog();
 	const checkout = useStartSepayCheckout();
 	const [pendingPlan, setPendingPlan] = useState<SubscriptionPlan | null>(null);
 	const [session, setSession] = useState<SepayCheckoutSession | null>(null);
@@ -201,46 +202,80 @@ function PricingPage() {
 			{isError && (
 				<p className="text-destructive">{m["payments.pricing.error"]()}</p>
 			)}
-			{plans && (
-				<div className="grid gap-4 md:grid-cols-3">
-					{plans.map((plan) => {
-						const perMonth = Math.round(plan.amount / plan.months);
-						const isSubmitting =
-							checkout.isPending && pendingPlan === plan.plan;
-						return (
-							<Card key={plan.plan}>
-								<CardHeader>
-									<CardTitle className="text-xl">
-										{planLabel(plan.plan)}
-									</CardTitle>
-								</CardHeader>
-								<CardContent className="flex flex-col gap-1">
-									<span className="text-3xl font-bold">
-										{formatVnd(plan.amount)}
-									</span>
-									<span className="text-sm text-muted-foreground">
-										{m["payments.pricing.perMonth"]({
-											amount: formatVnd(perMonth),
-										})}
-									</span>
-								</CardContent>
-								<CardFooter>
-									<Button
-										type="button"
-										className="w-full"
-										disabled={checkout.isPending}
-										onClick={() => handleCheckout(plan.plan)}
-									>
-										{isSubmitting ? (
-											<Loader2 className="size-4 animate-spin" />
-										) : (
-											m["payments.pricing.cta"]()
-										)}
-									</Button>
-								</CardFooter>
-							</Card>
-						);
-					})}
+			{catalog && (
+				<div className="flex flex-col gap-4">
+					<Card>
+						<CardHeader>
+							<CardTitle className="text-lg">
+								{m["payments.pricing.trial.title"]({
+									days: catalog.trial.days,
+								})}
+							</CardTitle>
+						</CardHeader>
+						<CardContent>
+							<p className="text-sm text-muted-foreground">
+								{m["payments.pricing.trial.body"]({
+									credits: catalog.trial.credits,
+									sessions: catalog.trial.voiceSessions,
+								})}
+							</p>
+						</CardContent>
+					</Card>
+					<div className="grid gap-4 md:grid-cols-3">
+						{catalog.plans.map((plan) => {
+							const perMonth = Math.round(plan.amount / plan.months);
+							const isSubmitting =
+								checkout.isPending && pendingPlan === plan.plan;
+							return (
+								<Card key={plan.plan}>
+									<CardHeader>
+										<CardTitle className="text-xl">
+											{planLabel(plan.plan)}
+										</CardTitle>
+									</CardHeader>
+									<CardContent className="flex flex-col gap-1">
+										<span className="text-3xl font-bold">
+											{formatVnd(plan.amount)}
+										</span>
+										<span className="text-sm text-muted-foreground">
+											{m["payments.pricing.perMonth"]({
+												amount: formatVnd(perMonth),
+											})}
+										</span>
+									</CardContent>
+									<CardFooter>
+										<Button
+											type="button"
+											className="w-full"
+											disabled={checkout.isPending}
+											onClick={() => handleCheckout(plan.plan)}
+										>
+											{isSubmitting ? (
+												<Loader2 className="size-4 animate-spin" />
+											) : (
+												m["payments.pricing.cta"]()
+											)}
+										</Button>
+									</CardFooter>
+								</Card>
+							);
+						})}
+					</div>
+					<p className="text-sm text-muted-foreground">
+						{m["payments.pricing.costs.title"]()}:{" "}
+						{catalog.costs
+							.map((cost) =>
+								cost.credits === 0
+									? m["payments.pricing.costs.freeItem"]({
+											action: usageActionLabel(cost.action),
+										})
+									: m["payments.pricing.costs.item"]({
+											action: usageActionLabel(cost.action),
+											credits: cost.credits,
+										}),
+							)
+							.join(" · ")}
+					</p>
 				</div>
 			)}
 			{session ? (

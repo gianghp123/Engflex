@@ -2,15 +2,15 @@ import type {
 	Checkout,
 	CheckoutSession,
 	MyPremiumStatus,
-	Plan,
+	PricingCatalog,
 	SepayCheckoutSession,
 	SepayStatus,
 } from "@engflex/contracts";
 import { API_ROUTES } from "#/app/api-routes";
 import { api } from "#/lib/api";
 
-export function listPlans(): Promise<Plan[]> {
-	return api<Plan[]>(API_ROUTES.PAYMENTS.PLANS, undefined, {
+export function getPricingCatalog(): Promise<PricingCatalog> {
+	return api<PricingCatalog>(API_ROUTES.PRICING.CATALOG, undefined, {
 		withCredentials: false,
 	});
 }

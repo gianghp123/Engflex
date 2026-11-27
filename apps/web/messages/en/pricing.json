@@ -3,7 +3,7 @@
 	"pricing": {
 		"meta": {
 			"title": "Pricing — Engflex",
-			"description": "Engflex is free to start: 18 lessons from A1 to C2 with four skills each. Plus is 199,000₫ a month for the 15 everyday roleplays and feedback after each conversation."
+			"description": "Engflex is free to start, with lessons from A1 to C2. Paid plans add live roleplays with feedback after each conversation."
 		},
 		"hero": {
 			"title": "Start free.",
@@ -15,34 +15,44 @@
 			"free": {
 				"name": "Free",
 				"for": "Work through a lesson.",
-				"price": "0₫",
-				"period": "for every level",
-				"feature1": "18 lessons from A1 to C2, three at every level",
-				"feature2": "All four steps in every lesson: read it, hear it, write it, say it",
-				"feature3": "108 questions with an explanation for each answer",
-				"feature4": "Pronunciation marked word by word",
 				"cta": "Start free"
 			},
-			"plus": {
-				"name": "Plus",
+			"paid": {
 				"for": "Or talk it through.",
-				"price": "199,000₫",
-				"period": "per month",
-				"feature1": "Everything in Free",
-				"feature2": "All 15 everyday roleplays, seven topics, A1 to B1",
-				"feature3": "A partner who stays in character",
-				"feature4": "Feedback after each conversation",
 				"cta": "Get started"
-			}
+			},
+			"name": {
+				"1m": "Plus · 1 month",
+				"3m": "Plus · 3 months",
+				"12m": "Plus · 12 months"
+			},
+			"entitlements": {
+				"credits": "{credits} AI credits / {period}",
+				"voice": "{sessions} voice sessions / {period}"
+			},
+			"perMonth": "{amount} / month"
+		},
+		"period": {
+			"day": "day",
+			"month": "month",
+			"total": "total"
+		},
+		"trial": {
+			"title": "Try Premium free",
+			"body": "{days} days free with {credits} AI credits and {sessions} voice sessions."
+		},
+		"costs": {
+			"title": "What each AI action costs",
+			"free": "Free"
 		},
 		"included": {
 			"title": "The same either way.",
 			"body": "The lesson path is the same whether you pay or not.",
-			"item1Title": "Four steps in every lesson",
+			"item1Title": "Every skill in every lesson",
 			"item1Body": "read it, hear it, write it, say it",
-			"item2Title": "108 explained questions",
-			"item2Body": "an explanation for each answer",
-			"item3Title": "Pronunciation, word by word",
+			"item2Title": "Every answer explained",
+			"item2Body": "why each answer is right",
+			"item3Title": "Pronunciation, sound by sound",
 			"item3Body": "which sounds slipped"
 		},
 		"closing": {
@@ -50,6 +60,10 @@
 			"body": "Free at every level, from A1 to C2.",
 			"cta": "Get started",
 			"ctaSecondary": "I already have an account"
+		},
+		"unavailable": {
+			"title": "Pricing is unavailable right now",
+			"body": "Please try again in a moment."
 		}
 	}
 }

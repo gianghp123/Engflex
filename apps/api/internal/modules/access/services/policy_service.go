@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 	"sync"
 	"time"
@@ -33,16 +34,35 @@ type TrialInfo struct {
 // PolicyService resolves principals, caches the limit catalog, and turns
 // actions into decisions. Decide is the advisory pre-flight; Reserve
 // (UsageService) is authoritative (spec §5.5).
+type catalogSnapshot struct {
+	limits      map[enums.PlanKey]map[enums.CounterKind]Limit
+	creditCosts map[Action]int
+	trialDays   int
+	loadedAt    time.Time
+}
+
+type CostEntry struct {
+	Action  Action
+	Credits int
+}
+
+type TrialTerms struct {
+	Days          int
+	Credits       int
+	VoiceSessions int
+}
+
 type PolicyService struct {
 	subscriptions SubscriptionPlanSource
 	trials        repositories.UserTrialRepository
 	counters      repositories.UsageCounterRepository
 	limits        repositories.PlanFeatureLimitRepository
+	creditCosts   repositories.ActionCreditCostRepository
+	trialSettings repositories.TrialSettingRepository
 	cfg           config.AccessConfig
 
-	mu         sync.RWMutex
-	snapshot   map[enums.PlanKey]map[enums.CounterKind]Limit
-	snapshotAt time.Time
+	mu       sync.RWMutex
+	snapshot *catalogSnapshot
 }
 
 // PolicyService is the UsageService LimitSource: limits re-resolve at Reserve
@@ -51,60 +71,100 @@ var _ LimitSource = (*PolicyService)(nil)
 
 // NewPolicyService builds the policy service. Never pass nil; wiring builds
 // the snapshot before serving traffic.
-func NewPolicyService(subscriptions SubscriptionPlanSource, trials repositories.UserTrialRepository, counters repositories.UsageCounterRepository, limits repositories.PlanFeatureLimitRepository, cfg config.AccessConfig) *PolicyService {
+func NewPolicyService(subscriptions SubscriptionPlanSource, trials repositories.UserTrialRepository, counters repositories.UsageCounterRepository, limits repositories.PlanFeatureLimitRepository, creditCosts repositories.ActionCreditCostRepository, trialSettings repositories.TrialSettingRepository, cfg config.AccessConfig) *PolicyService {
 	if cfg.Timezone == "" {
 		cfg.Timezone = "Asia/Ho_Chi_Minh"
 	}
 	if _, err := time.LoadLocation(cfg.Timezone); err != nil {
 		slog.Error("invalid APP_TIMEZONE, period keys fall back to UTC", "value", cfg.Timezone)
 	}
-	return &PolicyService{subscriptions: subscriptions, trials: trials, counters: counters, limits: limits, cfg: cfg}
+	return &PolicyService{subscriptions: subscriptions, trials: trials, counters: counters, limits: limits, creditCosts: creditCosts, trialSettings: trialSettings, cfg: cfg}
 }
 
-// SnapshotLimits loads the catalog into memory. On failure it logs and keeps
-// serving: the built-in defaults are installed only when no snapshot exists
-// yet, otherwise the last-good catalog (and its timestamp) is left untouched.
-// The process never fails to boot (spec §5.6).
-func (s *PolicyService) SnapshotLimits(ctx context.Context) error {
-	rows, err := s.limits.ListAll(ctx)
-	if err != nil {
+func (s *PolicyService) SnapshotCatalog(ctx context.Context) error {
+	limitRows, lerr := s.limits.ListAll(ctx)
+	costRows, cerr := s.creditCosts.List(ctx)
+	setting, serr := s.trialSettings.Get(ctx)
+	if lerr != nil || cerr != nil || (serr != nil && !errors.Is(serr, gorm.ErrRecordNotFound)) {
 		appErr := common.Internal()
-		logger.Report(ctx, "policy snapshot load failed", appErr, "cause", err.Error())
+		logger.Report(ctx, "policy catalog load failed", appErr, "limitsErr", errString(lerr), "costsErr", errString(cerr), "trialErr", errString(serr))
 		s.mu.Lock()
 		if s.snapshot == nil {
-			s.snapshot = defaultLimits()
-			s.snapshotAt = time.Now()
+			s.snapshot = fallbackCatalogSnapshot()
 		}
 		s.mu.Unlock()
 		return nil
 	}
-	next := map[enums.PlanKey]map[enums.CounterKind]Limit{}
-	for _, r := range rows {
-		plan, ok := next[r.PlanKey]
+
+	limits := map[enums.PlanKey]map[enums.CounterKind]Limit{}
+	for _, r := range limitRows {
+		plan, ok := limits[r.PlanKey]
 		if !ok {
 			plan = map[enums.CounterKind]Limit{}
-			next[r.PlanKey] = plan
+			limits[r.PlanKey] = plan
 		}
 		plan[r.CounterKey] = Limit{Enabled: r.IsEnabled, Value: r.LimitValue, Period: r.Period}
 	}
+	costs := defaultActionCreditCosts()
+	present := map[Action]bool{}
+	for _, r := range costRows {
+		if _, ok := defaultCreditCosts[r.Action]; ok {
+			costs[r.Action] = r.Credits
+			present[r.Action] = true
+		}
+	}
+	for _, action := range paidActions {
+		if !present[action] {
+			slog.WarnContext(ctx, "action credit cost missing; using fallback", "action", string(action), "credits", defaultCreditCosts[action])
+		}
+	}
+	days := common.DefaultTrialDays
+	if errors.Is(serr, gorm.ErrRecordNotFound) || setting == nil {
+		slog.WarnContext(ctx, "trial setting missing; using fallback", "days", days)
+	} else if setting.DurationDays <= 0 {
+		slog.WarnContext(ctx, "trial setting invalid; using fallback", "days", days, "durationDays", setting.DurationDays)
+	} else {
+		days = setting.DurationDays
+	}
+
 	s.mu.Lock()
-	s.snapshot = next
-	s.snapshotAt = time.Now()
+	s.snapshot = &catalogSnapshot{limits: limits, creditCosts: costs, trialDays: days, loadedAt: time.Now()}
 	s.mu.Unlock()
-	slog.InfoContext(ctx, "policy snapshot loaded", "rows", len(rows))
+	slog.InfoContext(ctx, "policy catalog loaded", "limits", len(limitRows), "costs", len(costRows), "trialDays", days)
 	return nil
+}
+
+func fallbackCatalogSnapshot() *catalogSnapshot {
+	return &catalogSnapshot{
+		limits:      defaultLimits(),
+		creditCosts: defaultActionCreditCosts(),
+		trialDays:   common.DefaultTrialDays,
+		loadedAt:    time.Now(),
+	}
+}
+
+func errString(err error) string {
+	if err == nil {
+		return ""
+	}
+	return err.Error()
 }
 
 // refreshSnapshot reloads when the TTL (30s) has passed; the admin PUT
 // invalidates the writer's snapshot immediately (spec §5.6).
 func (s *PolicyService) refreshSnapshot(ctx context.Context) {
 	s.mu.RLock()
-	stale := time.Since(s.snapshotAt) > 30*time.Second
+	stale := s.snapshot == nil || time.Since(s.snapshot.loadedAt) > 30*time.Second
 	s.mu.RUnlock()
-	if !stale {
-		return
+	if stale {
+		_ = s.SnapshotCatalog(ctx)
 	}
-	_ = s.SnapshotLimits(ctx)
+}
+
+func (s *PolicyService) currentSnapshot() *catalogSnapshot {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	return s.snapshot
 }
 
 // LimitsForPlan implements UsageService's LimitSource: resolved from the
@@ -112,19 +172,69 @@ func (s *PolicyService) refreshSnapshot(ctx context.Context) {
 // the cached snapshot stays immutable to callers.
 func (s *PolicyService) LimitsForPlan(ctx context.Context, plan enums.PlanKey) (map[enums.CounterKind]Limit, error) {
 	s.refreshSnapshot(ctx)
-	s.mu.RLock()
-	defer s.mu.RUnlock()
-	if s.snapshot == nil {
+	snap := s.currentSnapshot()
+	if snap == nil {
 		return defaultLimits()[plan], nil
 	}
-	if planLimits, ok := s.snapshot[plan]; ok {
-		out := make(map[enums.CounterKind]Limit, len(planLimits))
-		for k, v := range planLimits {
-			out[k] = v
-		}
-		return out, nil
+	planLimits, ok := snap.limits[plan]
+	if !ok {
+		return map[enums.CounterKind]Limit{}, nil
 	}
-	return map[enums.CounterKind]Limit{}, nil
+	out := make(map[enums.CounterKind]Limit, len(planLimits))
+	for k, v := range planLimits {
+		out[k] = v
+	}
+	return out, nil
+}
+
+func (s *PolicyService) creditCost(action Action) int {
+	snap := s.currentSnapshot()
+	if snap != nil {
+		if credits, ok := snap.creditCosts[action]; ok {
+			return credits
+		}
+	}
+	return defaultCreditCosts[action]
+}
+
+func (s *PolicyService) Charges(action Action) []Charge {
+	return buildCharges(action, s.creditCost(action))
+}
+
+func (s *PolicyService) CreditCost(action Action) int {
+	total := 0
+	for _, ch := range s.Charges(action) {
+		if ch.Counter == enums.CounterKindAICredit {
+			total += ch.Amount
+		}
+	}
+	return total
+}
+
+func (s *PolicyService) ActionCosts() []CostEntry {
+	out := make([]CostEntry, 0, len(paidActions))
+	for _, action := range paidActions {
+		out = append(out, CostEntry{Action: action, Credits: s.creditCost(action)})
+	}
+	return out
+}
+
+func (s *PolicyService) TrialTerms() TrialTerms {
+	terms := TrialTerms{Days: common.DefaultTrialDays, Credits: common.DefaultTrialCredits, VoiceSessions: common.DefaultTrialVoiceSessions}
+	snap := s.currentSnapshot()
+	if snap == nil {
+		return terms
+	}
+	if snap.trialDays > 0 {
+		terms.Days = snap.trialDays
+	}
+	if lim, ok := snap.limits[enums.PlanKeyTrial][enums.CounterKindAICredit]; ok {
+		terms.Credits = lim.Value
+	}
+	if lim, ok := snap.limits[enums.PlanKeyTrial][enums.CounterKindVoiceSession]; ok {
+		terms.VoiceSessions = lim.Value
+	}
+	return terms
 }
 
 // PlanMonthlyLimits returns a paid plan's (ai_credit, voice_session) monthly
@@ -205,8 +315,9 @@ func (s *PolicyService) Decide(ctx context.Context, userID string, isAdmin bool,
 	if err != nil {
 		return Decision{}, err
 	}
-	if len(ActionCharges(action)) == 0 {
-		return Evaluate(p, action, nil, nil), nil
+	charges := s.Charges(action)
+	if len(charges) == 0 {
+		return Evaluate(p, action, nil, nil, nil), nil
 	}
 	limits, err := s.LimitsForPlan(ctx, p.Plan)
 	if err != nil {
@@ -234,7 +345,7 @@ func (s *PolicyService) Decide(ctx context.Context, userID string, isAdmin bool,
 			}
 		}
 	}
-	d := Evaluate(p, action, limits, usage)
+	d := Evaluate(p, action, charges, limits, usage)
 	if d.LimitingCounter != "" {
 		if lim, ok := limits[d.LimitingCounter]; ok && lim.Period != enums.UsagePeriodTotal {
 			resetAt := s.ResetAt(lim.Period, now)

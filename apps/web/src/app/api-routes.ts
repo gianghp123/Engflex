@@ -69,6 +69,8 @@ export const API_ROUTES = {
 		PREMIUM_SUBSCRIPTIONS: "/admin/premium/subscriptions",
 		PREMIUM_LIMITS: "/admin/premium/limits",
 		PREMIUM_LIMIT: (plan: ApiId) => `/admin/premium/limits/${plan}`,
+		PREMIUM_ACTION_COSTS: "/admin/premium/action-costs",
+		PREMIUM_TRIAL_TERMS: "/admin/premium/trial-terms",
 		USER_USAGE: (id: ApiId) => `/admin/users/${id}/usage`,
 		USER_TRIAL: (id: ApiId) => `/admin/users/${id}/trial`,
 	},
@@ -80,6 +82,9 @@ export const API_ROUTES = {
 		USAGE: "/premium/usage",
 		SEPAY_CHECKOUT: "/payments/sepay/checkout",
 		SEPAY_STATUS: (reference: string) => `/payments/sepay/status/${reference}`,
+	},
+	PRICING: {
+		CATALOG: "/pricing",
 	},
 	PERSONAS: {
 		LIST: "/personas",

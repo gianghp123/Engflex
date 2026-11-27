@@ -108,7 +108,7 @@ func TestReserveReplayMatrix(t *testing.T) {
 
 			if tt.wantStatus == accessservices.ReservationStatusReserved {
 				for _, e := range tt.existing {
-					events.EXPECT().ReuseAsReserved(mock.Anything, e.ID, mock.Anything, mock.Anything).Return(true, nil).Once()
+					events.EXPECT().ReuseAsReserved(mock.Anything, e.ID, mock.Anything, accessservices.ActionVoiceStart, 1, mock.Anything).Return(true, nil).Once()
 				}
 				missing := 2 - len(tt.existing)
 				for i := 0; i < missing; i++ {
@@ -118,7 +118,7 @@ func TestReserveReplayMatrix(t *testing.T) {
 				counters.EXPECT().Reserve(mock.Anything, user, enums.CounterKindVoiceSession, "2026-11", 1, 3).Return(true, nil).Once()
 			}
 
-			res, err := svc.Reserve(context.Background(), user, enums.PlanKeyFree, voiceCharges(),
+			res, err := svc.Reserve(context.Background(), user, enums.PlanKeyFree, accessservices.ActionVoiceStart, voiceCharges(),
 				"conversation:"+convID, enums.UsageRefTypeConversation, convID, 2*time.Minute, fixedNow, time.UTC)
 			if tt.wantErrCode != "" {
 				appErr := &common.AppError{}
@@ -158,7 +158,7 @@ func TestReserveInsufficientCreditsRollsBack(t *testing.T) {
 		{UserID: "user_1", CounterKey: enums.CounterKindVoiceSession, PeriodKey: "2026-11", Used: 3, Reserved: 0},
 	}, nil).Once()
 
-	_, err := svc.Reserve(context.Background(), "user_1", enums.PlanKeyFree, voiceCharges(),
+	_, err := svc.Reserve(context.Background(), "user_1", enums.PlanKeyFree, accessservices.ActionVoiceStart, voiceCharges(),
 		"conversation:00000000-0000-0000-0000-0000000000f2", enums.UsageRefTypeConversation,
 		"00000000-0000-0000-0000-0000000000f2", 2*time.Minute, fixedNow, time.UTC)
 	appErr := &common.AppError{}
@@ -219,7 +219,7 @@ func TestReserveFailsClosedOnStoreError(t *testing.T) {
 	events.EXPECT().WithTx(mock.Anything).Return(events).Once()
 	events.EXPECT().ListByIdempotencyKeysForUpdate(mock.Anything, "user_1", mock.Anything).
 		Return(nil, gorm.ErrInvalidDB).Once()
-	_, err := svc.Reserve(context.Background(), "user_1", enums.PlanKeyFree, voiceCharges(),
+	_, err := svc.Reserve(context.Background(), "user_1", enums.PlanKeyFree, accessservices.ActionVoiceStart, voiceCharges(),
 		"conversation:00000000-0000-0000-0000-0000000000f3", enums.UsageRefTypeConversation,
 		"00000000-0000-0000-0000-0000000000f3", 2*time.Minute, fixedNow, time.UTC)
 	appErr := &common.AppError{}
@@ -252,7 +252,7 @@ func TestReserveReuseGuardsFailClosed(t *testing.T) {
 	}
 	reserve := func(t *testing.T, svc *accessservices.UsageService) error {
 		t.Helper()
-		_, err := svc.Reserve(context.Background(), "user_1", enums.PlanKeyFree, voiceCharges(),
+		_, err := svc.Reserve(context.Background(), "user_1", enums.PlanKeyFree, accessservices.ActionVoiceStart, voiceCharges(),
 			"conversation:00000000-0000-0000-0000-0000000000f1", enums.UsageRefTypeConversation,
 			"00000000-0000-0000-0000-0000000000f1", 2*time.Minute, fixedNow, time.UTC)
 		return err
@@ -291,7 +291,7 @@ func TestReserveReuseGuardsFailClosed(t *testing.T) {
 				events.EXPECT().ListByIdempotencyKeysForUpdate(mock.Anything, "user_1", mock.Anything).
 					Return(eventRows("00000000-0000-0000-0000-0000000000ac", "user_1", enums.UsageEventStatusReleased), nil).Once()
 				// A concurrent settle moved the row first: nothing reusable.
-				events.EXPECT().ReuseAsReserved(mock.Anything, mock.Anything, mock.Anything, mock.Anything).
+				events.EXPECT().ReuseAsReserved(mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).
 					Return(false, nil).Once()
 			},
 		},
@@ -330,7 +330,7 @@ func TestReserveDuplicateInsertReportsInProgress(t *testing.T) {
 	dupErr := &pgconn.PgError{Code: "23505", Message: `duplicate key value violates unique constraint "usage_events_user_id_idem"`}
 	events.EXPECT().Insert(mock.Anything, mock.Anything).Return(dupErr).Once()
 
-	_, err := svc.Reserve(context.Background(), "user_1", enums.PlanKeyFree, voiceCharges(),
+	_, err := svc.Reserve(context.Background(), "user_1", enums.PlanKeyFree, accessservices.ActionVoiceStart, voiceCharges(),
 		"conversation:00000000-0000-0000-0000-0000000000f1", enums.UsageRefTypeConversation,
 		"00000000-0000-0000-0000-0000000000f1", 2*time.Minute, fixedNow, time.UTC)
 	appErr := &common.AppError{}
@@ -458,4 +458,33 @@ func TestRefundCommitted(t *testing.T) {
 			require.NoError(t, svc.RefundCommitted(context.Background(), "user_1", "conversation:00000000-0000-0000-0000-0000000000f6"))
 		})
 	}
+}
+
+// TestReserveWritesActionOnEvents pins the Task 3 ledger contract: freshly
+// inserted event rows carry the reserving action.
+func TestReserveWritesActionOnEvents(t *testing.T) {
+	fixedNow := time.Date(2026, 11, 26, 10, 0, 0, 0, time.UTC)
+	counters := repomocks.NewMockUsageCounterRepository(t)
+	events := repomocks.NewMockUsageEventRepository(t)
+	svc := accessservices.NewUsageService(counters, events, fakeTxManager{}, fakeLimitSource{
+		limits: map[enums.PlanKey]map[enums.CounterKind]accessservices.Limit{
+			enums.PlanKeyFree: {
+				enums.CounterKindAICredit:     {Enabled: true, Value: 15, Period: enums.UsagePeriodMonth},
+				enums.CounterKindVoiceSession: {Enabled: true, Value: 3, Period: enums.UsagePeriodMonth},
+			},
+		},
+	})
+	counters.EXPECT().WithTx(mock.Anything).Return(counters).Once()
+	events.EXPECT().WithTx(mock.Anything).Return(events).Once()
+	events.EXPECT().ListByIdempotencyKeysForUpdate(mock.Anything, "user_1", mock.Anything).Return(nil, nil).Once()
+	events.EXPECT().Insert(mock.Anything, mock.MatchedBy(func(e *models.UsageEvent) bool {
+		return e.Action == enums.AccessActionVoiceStart
+	})).Return(nil).Twice()
+	counters.EXPECT().Reserve(mock.Anything, "user_1", enums.CounterKindAICredit, "2026-11", 1, 15).Return(true, nil).Once()
+	counters.EXPECT().Reserve(mock.Anything, "user_1", enums.CounterKindVoiceSession, "2026-11", 1, 3).Return(true, nil).Once()
+
+	_, err := svc.Reserve(context.Background(), "user_1", enums.PlanKeyFree, accessservices.ActionVoiceStart, voiceCharges(),
+		"conversation:00000000-0000-0000-0000-0000000000f1", enums.UsageRefTypeConversation,
+		"00000000-0000-0000-0000-0000000000f1", 2*time.Minute, fixedNow, time.UTC)
+	require.NoError(t, err)
 }
