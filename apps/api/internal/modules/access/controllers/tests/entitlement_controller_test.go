@@ -16,6 +16,7 @@ import (
 	"gorm.io/gorm"
 
 	"engflex-api/config"
+	"engflex-api/internal/common"
 	"engflex-api/internal/common/enums"
 	"engflex-api/internal/database/models"
 	repomocks "engflex-api/internal/database/repositories/mocks"
@@ -56,7 +57,7 @@ func usageControllerSvc(t *testing.T) *accessservices.EntitlementsService {
 	counters.EXPECT().ListByUser(mock.Anything, "user_1").Return([]*models.UsageCounter{}, nil).Once()
 	events.EXPECT().ListByUserStatus(mock.Anything, "user_1",
 		[]enums.UsageEventStatus{enums.UsageEventStatusCommitted, enums.UsageEventStatusReserved},
-		20, 0).Return([]*models.UsageEvent{
+		common.DefaultPageSize, 0).Return([]*models.UsageEvent{
 		{ID: "evt-1", UserID: "user_1", CounterKey: enums.CounterKindAICredit, PeriodKey: "2026-11",
 			Action: enums.AccessActionExamReview, Amount: 1, Status: enums.UsageEventStatusCommitted,
 			RefType: enums.UsageRefTypeExamAttempt, RefID: "attempt-1"},

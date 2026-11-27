@@ -3,6 +3,7 @@ import type {
 	SubscriptionPlan,
 	SubscriptionStatus,
 } from "@engflex/contracts";
+import { DefaultPageSize } from "@engflex/contracts";
 import { useState } from "react";
 import { Badge } from "#/components/ui/badge";
 import {
@@ -44,7 +45,7 @@ export function SubscriptionsPanel() {
 	const [page, setPage] = useState(1);
 	const [status, setStatus] = useState<SubscriptionStatus | "">("");
 	const [plan, setPlan] = useState<SubscriptionPlan | "">("");
-	const pageSize = 20;
+	const pageSize = DefaultPageSize;
 	const query = useAdminSubscriptions(page, pageSize, status, plan);
 
 	const columns: DataTableColumn<Subscription>[] = [

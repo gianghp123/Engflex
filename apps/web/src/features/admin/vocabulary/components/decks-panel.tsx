@@ -1,4 +1,5 @@
 import type { VocabularyDeckDetail } from "@engflex/contracts";
+import { DefaultPageSize } from "@engflex/contracts";
 import { Eye, EyeOff, Layers, Pencil, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -59,7 +60,7 @@ const EMPTY_FORM: DeckFormState = {
 
 export function DecksPanel() {
 	const [page, setPage] = useState(1);
-	const pageSize = 20;
+	const pageSize = DefaultPageSize;
 	const query = useAdminVocabularyDecks(page, pageSize);
 	const categoriesQuery = useAdminVocabularyCategories(1, 100);
 	const createMutation = useCreateVocabularyDeck();

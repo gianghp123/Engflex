@@ -1,4 +1,5 @@
 import type { VocabularyCategoryResponse } from "@engflex/contracts";
+import { DefaultPageSize } from "@engflex/contracts";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -34,7 +35,7 @@ const EMPTY_FORM: CategoryFormState = { name: "", description: "" };
 
 export function CategoriesPanel() {
 	const [page, setPage] = useState(1);
-	const pageSize = 20;
+	const pageSize = DefaultPageSize;
 	const query = useAdminVocabularyCategories(page, pageSize);
 	const createMutation = useCreateVocabularyCategory();
 	const updateMutation = useUpdateVocabularyCategory();

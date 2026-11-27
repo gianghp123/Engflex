@@ -13,6 +13,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"gorm.io/datatypes"
 
+	"engflex-api/internal/common"
 	"engflex-api/internal/common/enums"
 	"engflex-api/internal/database/models"
 	repomocks "engflex-api/internal/database/repositories/mocks"
@@ -81,7 +82,7 @@ func (f fixedCostReader) CreditCost(action accessservices.Action) int { return f
 func TestScenarioCostFollowsInjectedReader(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	scenarios := repomocks.NewMockScenarioRepository(t)
-	scenarios.EXPECT().List(mock.Anything, (*string)(nil), true, 20, 0).
+	scenarios.EXPECT().List(mock.Anything, (*string)(nil), true, common.DefaultPageSize, 0).
 		Return([]*models.Scenario{publishedScenario("s1")}, nil).Once()
 	scenarios.EXPECT().Count(mock.Anything, (*string)(nil), true).Return(int64(1), nil).Once()
 	svc := services.NewScenarioService(scenarios, repomocks.NewMockScenarioTopicRepository(t), freePremiumChecker{})
@@ -101,7 +102,7 @@ func TestScenarioListStampsCreditCost(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	scenarios := repomocks.NewMockScenarioRepository(t)
 	topics := repomocks.NewMockScenarioTopicRepository(t)
-	scenarios.On("List", mock.Anything, (*string)(nil), true, 20, 0).
+	scenarios.On("List", mock.Anything, (*string)(nil), true, common.DefaultPageSize, 0).
 		Return([]*models.Scenario{publishedScenario("s1")}, nil)
 	scenarios.On("Count", mock.Anything, (*string)(nil), true).Return(int64(1), nil)
 

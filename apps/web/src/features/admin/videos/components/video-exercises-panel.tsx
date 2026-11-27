@@ -1,4 +1,5 @@
 import type { CEFR, VideoExerciseResponse } from "@engflex/contracts";
+import { DefaultPageSize } from "@engflex/contracts";
 import { Eye, EyeOff, FileText, Pencil, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -71,7 +72,7 @@ export function VideoExercisesPanel() {
 	const [search, setSearch] = useState("");
 	const [categoryFilter, setCategoryFilter] = useState("");
 	const [cefrFilter, setCefrFilter] = useState<CEFR | "">("");
-	const pageSize = 20;
+	const pageSize = DefaultPageSize;
 	const query = useAdminVideoExercises(page, pageSize, {
 		search,
 		categoryId: categoryFilter,

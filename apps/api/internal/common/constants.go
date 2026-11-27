@@ -2,7 +2,7 @@ package common
 
 const (
 	DefaultPage     = 1
-	DefaultPageSize = 20
+	DefaultPageSize = 10
 	MaxPageSize     = 100
 
 	// Shared wire limits. Binding tags on request DTOs must match these

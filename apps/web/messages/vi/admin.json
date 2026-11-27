@@ -111,6 +111,7 @@
       "limits": {
         "tab": "Hạn mức",
         "plan": "Gói {plan}",
+        "counter": "Bộ đếm",
         "limit": "Hạn mức",
         "period": "Chu kỳ",
         "enabled": "Đang bật",

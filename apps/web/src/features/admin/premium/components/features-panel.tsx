@@ -1,4 +1,5 @@
 import type { PremiumFeature } from "@engflex/contracts";
+import { DefaultPageSize } from "@engflex/contracts";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -43,7 +44,7 @@ const EMPTY_FORM: FeatureFormState = {
 
 export function FeaturesPanel() {
 	const [page, setPage] = useState(1);
-	const pageSize = 20;
+	const pageSize = DefaultPageSize;
 	const query = useAdminPremiumFeatures(page, pageSize);
 	const createMutation = useCreatePremiumFeature();
 	const updateMutation = useUpdatePremiumFeature();

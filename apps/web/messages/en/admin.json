@@ -111,6 +111,7 @@
       "limits": {
         "tab": "Limits",
         "plan": "Plan {plan}",
+        "counter": "Counter",
         "limit": "Limit",
         "period": "Period",
         "enabled": "Enabled",

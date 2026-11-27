@@ -45,7 +45,7 @@ export const CodeAIUnavailable = "ai_unavailable";
 // source: constants.go
 
 export const DefaultPage = 1;
-export const DefaultPageSize = 20;
+export const DefaultPageSize = 10;
 export const MaxPageSize = 100;
 /**
  * Shared wire limits. Binding tags on request DTOs must match these

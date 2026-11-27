@@ -1,4 +1,5 @@
 import type { Scenario, ScenarioDifficulty } from "@engflex/contracts";
+import { DefaultPageSize } from "@engflex/contracts";
 import { Eye, EyeOff, Pencil, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -98,7 +99,7 @@ const linesOf = (text: string) =>
 
 export function ScenariosPanel() {
 	const [page, setPage] = useState(1);
-	const pageSize = 20;
+	const pageSize = DefaultPageSize;
 	const query = useAdminScenarios(page, pageSize);
 	const topicsQuery = useAdminScenarioTopics();
 	const personasQuery = useAdminPersonas(1, 100);

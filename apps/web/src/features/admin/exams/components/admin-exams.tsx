@@ -1,4 +1,5 @@
 import { useAuth } from "@clerk/tanstack-react-start";
+import { DefaultPageSize } from "@engflex/contracts";
 import { useQuery } from "@tanstack/react-query";
 import { useStore } from "@tanstack/react-store";
 import { FolderOpen, Pencil, Trash2 } from "lucide-react";
@@ -50,7 +51,10 @@ export function AdminExams({
 		retry,
 	});
 	const tests = useQuery({
-		...examTestsQueryOptions(categoryId ?? "", { page, pageSize: 20 }),
+		...examTestsQueryOptions(categoryId ?? "", {
+			page,
+			pageSize: DefaultPageSize,
+		}),
 		enabled: isLoaded && !!categoryId,
 		retry,
 	});

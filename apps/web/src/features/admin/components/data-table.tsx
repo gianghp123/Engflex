@@ -41,7 +41,7 @@ export function DataTable<T>({
 }) {
 	return (
 		<div className="flex flex-col gap-3">
-			<div className="rounded-md border">
+			<div className="rounded-md border bg-card text-card-foreground">
 				<Table>
 					<TableHeader>
 						<TableRow>

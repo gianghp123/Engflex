@@ -6,9 +6,7 @@ import {
 } from "@engflex/contracts";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { CardShell } from "#/components/common/card-shell";
 import { SubmitButton } from "#/components/common/submit-button";
-import { Field, FieldLabel } from "#/components/ui/field";
 import { Input } from "#/components/ui/input";
 import {
 	Select,
@@ -19,6 +17,10 @@ import {
 } from "#/components/ui/select";
 import { Skeleton } from "#/components/ui/skeleton";
 import { Switch } from "#/components/ui/switch";
+import {
+	DataTable,
+	type DataTableColumn,
+} from "#/features/admin/components/data-table";
 import {
 	useAdminLimits,
 	useUpdatePlanLimits,
@@ -62,87 +64,98 @@ function PlanSection({
 	const [form, setForm] = useState<PlanLimitInput[]>(rows);
 	useEffect(() => setForm(rows), [rows]);
 
-	function patch(index: number, next: Partial<PlanLimitInput>) {
+	function patch(counterKey: CounterKind, next: Partial<PlanLimitInput>) {
 		setForm((current) =>
-			current.map((row, rowIndex) =>
-				rowIndex === index ? { ...row, ...next } : row,
+			current.map((row) =>
+				row.counterKey === counterKey ? { ...row, ...next } : row,
 			),
 		);
 	}
 
+	const columns: DataTableColumn<PlanLimitInput>[] = [
+		{
+			id: "counter",
+			header: m["admin.premium.limits.counter"](),
+			cell: (row) => (
+				<span className="font-medium">{COUNTER_LABELS[row.counterKey]()}</span>
+			),
+		},
+		{
+			id: "limit",
+			header: m["admin.premium.limits.limit"](),
+			className: "w-36",
+			cell: (row) => (
+				<Input
+					aria-label={`${COUNTER_LABELS[row.counterKey]()} ${m["admin.premium.limits.limit"]()}`}
+					type="number"
+					min={0}
+					max={100000}
+					className="w-28"
+					value={row.limitValue}
+					onChange={(event) =>
+						patch(row.counterKey, {
+							limitValue: Number(event.target.value),
+						})
+					}
+				/>
+			),
+		},
+		{
+			id: "period",
+			header: m["admin.premium.limits.period"](),
+			className: "w-44",
+			cell: (row) => (
+				<Select
+					value={row.period}
+					onValueChange={(value) =>
+						patch(row.counterKey, { period: value as UsagePeriod })
+					}
+				>
+					<SelectTrigger
+						aria-label={`${COUNTER_LABELS[row.counterKey]()} ${m["admin.premium.limits.period"]()}`}
+						className="w-full"
+					>
+						<SelectValue />
+					</SelectTrigger>
+					<SelectContent>
+						{enumOptions<UsagePeriod>(USAGE_PERIOD_VALUES, PERIOD_LABELS).map(
+							(option) => (
+								<SelectItem key={option.value} value={option.value}>
+									{option.label()}
+								</SelectItem>
+							),
+						)}
+					</SelectContent>
+				</Select>
+			),
+		},
+		{
+			id: "enabled",
+			header: m["admin.premium.limits.enabled"](),
+			className: "w-28",
+			cell: (row) => (
+				<Switch
+					aria-label={`${COUNTER_LABELS[row.counterKey]()} ${m["admin.premium.limits.enabled"]()}`}
+					checked={row.isEnabled}
+					onCheckedChange={(checked) =>
+						patch(row.counterKey, { isEnabled: checked })
+					}
+				/>
+			),
+		},
+	];
+
 	return (
-		<section className="surface-card flex flex-col gap-3 p-4 sm:p-5">
+		<section className="flex flex-col gap-3">
 			<h2 className="text-sm font-bold">
 				{m["admin.premium.limits.plan"]({ plan })}
 			</h2>
-			<div className="flex flex-col gap-3">
-				{form.map((row, index) => (
-					<div
-						key={row.counterKey}
-						className="grid items-end gap-3 sm:grid-cols-[1fr_8rem_10rem_auto]"
-					>
-						<div className="text-sm font-medium">
-							{COUNTER_LABELS[row.counterKey]()}
-						</div>
-						<Field>
-							<FieldLabel htmlFor={`limits-${plan}-${row.counterKey}-value`}>
-								{m["admin.premium.limits.limit"]()}
-							</FieldLabel>
-							<Input
-								id={`limits-${plan}-${row.counterKey}-value`}
-								type="number"
-								min={0}
-								max={100000}
-								value={row.limitValue}
-								onChange={(event) =>
-									patch(index, { limitValue: Number(event.target.value) })
-								}
-							/>
-						</Field>
-						<Field>
-							<FieldLabel htmlFor={`limits-${plan}-${row.counterKey}-period`}>
-								{m["admin.premium.limits.period"]()}
-							</FieldLabel>
-							<Select
-								value={row.period}
-								onValueChange={(value) =>
-									patch(index, { period: value as UsagePeriod })
-								}
-							>
-								<SelectTrigger
-									id={`limits-${plan}-${row.counterKey}-period`}
-									className="w-full"
-								>
-									<SelectValue />
-								</SelectTrigger>
-								<SelectContent>
-									{enumOptions<UsagePeriod>(
-										USAGE_PERIOD_VALUES,
-										PERIOD_LABELS,
-									).map((option) => (
-										<SelectItem key={option.value} value={option.value}>
-											{option.label()}
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
-						</Field>
-						<Field className="flex-row items-center justify-between gap-2">
-							<FieldLabel htmlFor={`limits-${plan}-${row.counterKey}-enabled`}>
-								{m["admin.premium.limits.enabled"]()}
-							</FieldLabel>
-							<Switch
-								id={`limits-${plan}-${row.counterKey}-enabled`}
-								checked={row.isEnabled}
-								onCheckedChange={(checked) =>
-									patch(index, { isEnabled: checked })
-								}
-							/>
-						</Field>
-					</div>
-				))}
-			</div>
-			<div>
+			<DataTable
+				columns={columns}
+				rows={form}
+				rowKey={(row) => row.counterKey}
+			/>
+			<div className="flex justify-end">
 				<SubmitButton
 					type="button"
 					pending={pending}
@@ -205,25 +218,31 @@ export function LimitsPanel() {
 		);
 	}
 
+	if (query.isPending) {
+		return <Skeleton className="h-64 w-full" />;
+	}
+	if (query.isError) {
+		return (
+			<p className="text-sm text-destructive">
+				{m["admin.premium.loadError"]()}
+			</p>
+		);
+	}
+
 	return (
-		<CardShell
-			pending={query.isPending}
-			skeleton={<Skeleton className="h-64 w-full" />}
-		>
-			<div className="flex flex-col gap-4">
-				{plans.map((plan) => (
-					<PlanSection
-						key={plan}
-						plan={plan}
-						rows={drafts[plan]}
-						onSave={(rows) => save(plan, rows)}
-						pending={updateMutation.isPending && savingPlan === plan}
-					/>
-				))}
-				<p className="text-xs text-muted-foreground">
-					{m["admin.premium.limits.trialMoved"]()}
-				</p>
-			</div>
-		</CardShell>
+		<div className="flex flex-col gap-6">
+			{plans.map((plan) => (
+				<PlanSection
+					key={plan}
+					plan={plan}
+					rows={drafts[plan]}
+					onSave={(rows) => save(plan, rows)}
+					pending={updateMutation.isPending && savingPlan === plan}
+				/>
+			))}
+			<p className="text-xs text-muted-foreground">
+				{m["admin.premium.limits.trialMoved"]()}
+			</p>
+		</div>
 	);
 }

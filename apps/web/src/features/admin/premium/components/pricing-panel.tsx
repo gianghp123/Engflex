@@ -5,13 +5,9 @@ import { SubmitButton } from "#/components/common/submit-button";
 import { Input } from "#/components/ui/input";
 import { Skeleton } from "#/components/ui/skeleton";
 import {
-	Table,
-	TableBody,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow,
-} from "#/components/ui/table";
+	DataTable,
+	type DataTableColumn,
+} from "#/features/admin/components/data-table";
 import {
 	useAdminActionCosts,
 	useAdminTrialTerms,
@@ -35,12 +31,14 @@ const ACTION_LABELS: Record<(typeof PAID_ACTIONS)[number], () => string> = {
 
 type TrialKey = "days" | "credits" | "voiceSessions";
 
-const TRIAL_ROWS: {
+interface TrialRow {
 	id: TrialKey;
 	label: () => string;
 	min: number;
 	max: number;
-}[] = [
+}
+
+const TRIAL_ROWS: TrialRow[] = [
 	{
 		id: "days",
 		label: () => m["admin.premium.trial.days"](),
@@ -133,6 +131,68 @@ export function PricingPanel() {
 		setTrial((current) => ({ ...current, [key]: value }));
 	}
 
+	const costColumns: DataTableColumn<(typeof costRows)[number]>[] = [
+		{
+			id: "action",
+			header: m["admin.premium.costs.action"](),
+			cell: (row) => (
+				<span className="font-medium">{ACTION_LABELS[row.action]()}</span>
+			),
+		},
+		{
+			id: "credits",
+			header: m["admin.premium.costs.credits"](),
+			className: "w-40",
+			cell: (row) => (
+				<Input
+					aria-label={`${ACTION_LABELS[row.action]()} ${m["admin.premium.costs.credits"]()}`}
+					type="number"
+					min={0}
+					max={100000}
+					className="w-28"
+					value={row.credits}
+					onChange={(event) =>
+						updateCost(row.action, Number(event.target.value))
+					}
+				/>
+			),
+		},
+		{
+			id: "updated",
+			header: m["admin.premium.costs.updated"](),
+			className: "w-56",
+			cell: (row) => (
+				<span className="text-muted-foreground">
+					{formatUpdated(row.updatedAt)}
+				</span>
+			),
+		},
+	];
+
+	const trialColumns: DataTableColumn<TrialRow>[] = [
+		{
+			id: "setting",
+			header: m["admin.premium.trial.setting"](),
+			cell: (row) => <span className="font-medium">{row.label()}</span>,
+		},
+		{
+			id: "value",
+			header: m["admin.premium.trial.value"](),
+			className: "w-40",
+			cell: (row) => (
+				<Input
+					aria-label={row.label()}
+					type="number"
+					min={row.min}
+					max={row.max}
+					className="w-28"
+					value={trial[row.id]}
+					onChange={(event) => updateTrial(row.id, Number(event.target.value))}
+				/>
+			),
+		},
+	];
+
 	return (
 		<div className="flex flex-col gap-6">
 			<section className="flex flex-col gap-3">
@@ -144,46 +204,11 @@ export function PricingPanel() {
 						{m["admin.premium.costs.hint"]()}
 					</p>
 				</div>
-				<div className="overflow-hidden rounded-md border bg-card text-card-foreground">
-					<Table>
-						<TableHeader>
-							<TableRow>
-								<TableHead>{m["admin.premium.costs.action"]()}</TableHead>
-								<TableHead className="w-40">
-									{m["admin.premium.costs.credits"]()}
-								</TableHead>
-								<TableHead className="w-56">
-									{m["admin.premium.costs.updated"]()}
-								</TableHead>
-							</TableRow>
-						</TableHeader>
-						<TableBody>
-							{costRows.map((row) => (
-								<TableRow key={row.action}>
-									<TableCell className="font-medium">
-										{ACTION_LABELS[row.action]()}
-									</TableCell>
-									<TableCell>
-										<Input
-											aria-label={`${ACTION_LABELS[row.action]()} ${m["admin.premium.costs.credits"]()}`}
-											type="number"
-											min={0}
-											max={100000}
-											className="w-28"
-											value={row.credits}
-											onChange={(event) =>
-												updateCost(row.action, Number(event.target.value))
-											}
-										/>
-									</TableCell>
-									<TableCell className="text-muted-foreground">
-										{formatUpdated(row.updatedAt)}
-									</TableCell>
-								</TableRow>
-							))}
-						</TableBody>
-					</Table>
-				</div>
+				<DataTable
+					columns={costColumns}
+					rows={costRows}
+					rowKey={(row) => row.action}
+				/>
 				<div className="flex justify-end">
 					<SubmitButton
 						type="button"
@@ -213,38 +238,11 @@ export function PricingPanel() {
 						{m["admin.premium.trial.description"]()}
 					</p>
 				</div>
-				<div className="overflow-hidden rounded-md border bg-card text-card-foreground">
-					<Table>
-						<TableHeader>
-							<TableRow>
-								<TableHead>{m["admin.premium.trial.setting"]()}</TableHead>
-								<TableHead className="w-40">
-									{m["admin.premium.trial.value"]()}
-								</TableHead>
-							</TableRow>
-						</TableHeader>
-						<TableBody>
-							{TRIAL_ROWS.map((row) => (
-								<TableRow key={row.id}>
-									<TableCell className="font-medium">{row.label()}</TableCell>
-									<TableCell>
-										<Input
-											aria-label={row.label()}
-											type="number"
-											min={row.min}
-											max={row.max}
-											className="w-28"
-											value={trial[row.id]}
-											onChange={(event) =>
-												updateTrial(row.id, Number(event.target.value))
-											}
-										/>
-									</TableCell>
-								</TableRow>
-							))}
-						</TableBody>
-					</Table>
-				</div>
+				<DataTable
+					columns={trialColumns}
+					rows={TRIAL_ROWS}
+					rowKey={(row) => row.id}
+				/>
 				<div className="flex items-center justify-between gap-3">
 					{trialQuery.data?.updatedAt ? (
 						<p className="text-xs text-muted-foreground">

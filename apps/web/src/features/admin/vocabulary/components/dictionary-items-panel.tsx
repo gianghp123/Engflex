@@ -1,5 +1,8 @@
 import type { CEFR, VocabularyItem } from "@engflex/contracts";
-import { VOCABULARY_PART_OF_SPEECH_VALUES } from "@engflex/contracts";
+import {
+	DefaultPageSize,
+	VOCABULARY_PART_OF_SPEECH_VALUES,
+} from "@engflex/contracts";
 import { Eye, EyeOff, Pencil, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -60,7 +63,7 @@ const EMPTY_FORM: ItemFormState = {
 
 export function DictionaryItemsPanel() {
 	const [page, setPage] = useState(1);
-	const pageSize = 20;
+	const pageSize = DefaultPageSize;
 	const query = useAdminVocabularyItems(page, pageSize);
 	const createMutation = useCreateVocabularyItem();
 	const updateMutation = useUpdateVocabularyItem();

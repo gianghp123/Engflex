@@ -1,4 +1,5 @@
 import type { VideoCategoryResponse } from "@engflex/contracts";
+import { DefaultPageSize } from "@engflex/contracts";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -33,7 +34,7 @@ const EMPTY_FORM: CategoryFormState = { slug: "", name: "" };
 
 export function VideoCategoriesPanel() {
 	const [page, setPage] = useState(1);
-	const pageSize = 20;
+	const pageSize = DefaultPageSize;
 	const query = useAdminVideoCategories(page, pageSize);
 	const createMutation = useCreateVideoCategory();
 	const updateMutation = useUpdateVideoCategory();

@@ -1,4 +1,5 @@
 import type { CEFR, SentenceInput, StoryItem } from "@engflex/contracts";
+import { DefaultPageSize } from "@engflex/contracts";
 import { useQueryClient } from "@tanstack/react-query";
 import {
 	Eye,
@@ -145,7 +146,7 @@ export function StoriesPanel() {
 	const [page, setPage] = useState(1);
 	const [search, setSearch] = useState("");
 	const [cefrFilter, setCefrFilter] = useState<CEFR | "">("");
-	const pageSize = 20;
+	const pageSize = DefaultPageSize;
 	const query = useAdminStories(page, pageSize, {
 		search,
 		cefr: cefrFilter,

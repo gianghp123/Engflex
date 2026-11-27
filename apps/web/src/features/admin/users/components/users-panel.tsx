@@ -1,4 +1,5 @@
 import type { SubscriptionPlan, User } from "@engflex/contracts";
+import { DefaultPageSize } from "@engflex/contracts";
 import { Crown, ShieldMinus, ShieldPlus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -65,7 +66,7 @@ function formatDate(iso: string | undefined): string {
 export function UsersPanel() {
 	const [page, setPage] = useState(1);
 	const [search, setSearch] = useState("");
-	const pageSize = 20;
+	const pageSize = DefaultPageSize;
 	const query = useAdminUsers(page, pageSize, search);
 	const updateRoleMutation = useUpdateUserRole();
 	const grantMutation = useGrantSubscription();
