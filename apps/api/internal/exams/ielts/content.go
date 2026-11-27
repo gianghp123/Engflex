@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 
 	"engflex-api/internal/common/enums"
 )
@@ -31,6 +32,9 @@ type Section struct {
 	Title          string          `json:"title"`
 	Passages       []Passage       `json:"passages"`
 	QuestionGroups []QuestionGroup `json:"questionGroups"`
+	AudioAssetID   *string         `json:"audioAssetId,omitempty"`
+	Transcript     []Paragraph     `json:"transcript,omitempty"`
+	QuestionCount  int             `json:"-"`
 }
 
 type Passage struct {
@@ -47,11 +51,24 @@ type Paragraph struct {
 }
 
 type QuestionGroup struct {
-	ID           string     `json:"id"`
-	Type         string     `json:"type"`
-	Title        *string    `json:"title,omitempty"`
-	Instructions *string    `json:"instructions,omitempty"`
-	Questions    []Question `json:"questions"`
+	ID           string         `json:"id"`
+	Type         string         `json:"type"`
+	Title        *string        `json:"title,omitempty"`
+	Instructions *string        `json:"instructions,omitempty"`
+	Questions    []Question     `json:"questions"`
+	Context      []ContextBlock `json:"context,omitempty"`
+}
+
+// ContextBlock retains nested source formatting, including merged table cells
+// and diagram references. It contains no HTML attributes, scripts or URLs.
+type ContextBlock struct {
+	Tag      string         `json:"tag"`
+	Text     *string        `json:"text,omitempty"`
+	AssetID  *string        `json:"assetId,omitempty"`
+	Alt      *string        `json:"alt,omitempty"`
+	ColSpan  int            `json:"colSpan,omitempty"`
+	RowSpan  int            `json:"rowSpan,omitempty"`
+	Children []ContextBlock `json:"children,omitempty"`
 }
 
 type Question struct {
@@ -64,6 +81,7 @@ type Question struct {
 	CorrectAnswers        []string `json:"correctAnswers,omitempty"`
 	Explanation           *string  `json:"explanation,omitempty"`
 	VietnameseExplanation *string  `json:"vietnameseExplanation,omitempty"`
+	SourceAnswer          *string  `json:"sourceAnswer,omitempty"`
 }
 
 type Option struct {
@@ -83,6 +101,9 @@ func ParseContent(raw []byte) (*Content, error) {
 	if err := d.Decode(&content); err != nil {
 		return nil, fmt.Errorf("decode IELTS content: %w", err)
 	}
+	if err := d.Decode(new(any)); err != io.EOF {
+		return nil, errors.New("invalid trailing IELTS content")
+	}
 
 	if content.SchemaVersion == "" {
 		return nil, errors.New("missing schemaVersion")
@@ -94,11 +115,12 @@ func ParseContent(raw []byte) (*Content, error) {
 	seenQuestions := make(map[string]bool)
 	seenNumbers := make(map[int]bool)
 
-	for _, sec := range content.Sections {
+	for sectionIndex, sec := range content.Sections {
 		if sec.SectionNumber < 1 {
 			return nil, fmt.Errorf("invalid section number: %d", sec.SectionNumber)
 		}
 		for _, qg := range sec.QuestionGroups {
+			content.Sections[sectionIndex].QuestionCount += len(qg.Questions)
 			for _, q := range qg.Questions {
 				if q.ID == "" {
 					return nil, errors.New("question must have non-empty id")
@@ -124,5 +146,8 @@ func ParseContent(raw []byte) (*Content, error) {
 		}
 	}
 
+	if err := validateMedia(&content); err != nil {
+		return nil, err
+	}
 	return &content, nil
 }

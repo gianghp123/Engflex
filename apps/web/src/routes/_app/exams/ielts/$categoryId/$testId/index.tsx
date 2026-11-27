@@ -1,14 +1,20 @@
 import type { ExamMode, ExamTestDetail } from "@engflex/contracts";
-import { createFileRoute, notFound, useNavigate } from "@tanstack/react-router";
+import {
+	createFileRoute,
+	notFound,
+	useHydrated,
+	useNavigate,
+} from "@tanstack/react-router";
 import { Clock, FileText, Layers } from "lucide-react";
 import { useRef, useState } from "react";
+import { toast } from "sonner";
 import { z } from "zod";
 import { APP_ROUTES } from "#/app/app-route";
 import { useBreadcrumbs } from "#/app/breadcrumbs";
 import { BackButton } from "#/components/common/back-button";
 import { CardShell } from "#/components/common/card-shell";
 import { PageLayout } from "#/components/common/page-layout";
-import { Button } from "#/components/ui/button";
+import { SubmitButton } from "#/components/common/submit-button";
 import { Skeleton } from "#/components/ui/skeleton";
 import {
 	examTestQueryOptions,
@@ -65,13 +71,10 @@ function IeltsTestDetailPage() {
 function IeltsTestConfiguration({ test }: { test: ExamTestDetail }) {
 	const navigate = useNavigate();
 	const start = useStartExamAttempt();
+	const hydrated = useHydrated();
 	const startLock = useRef(false);
 
-	const sections = test.ieltsContent?.sections ?? [
-		{ sectionNumber: 1, questionCount: 13 },
-		{ sectionNumber: 2, questionCount: 13 },
-		{ sectionNumber: 3, questionCount: 14 },
-	];
+	const sections = test.ieltsContent?.sections ?? [];
 	const allSections = sections.map((s) => s.sectionNumber);
 
 	const [selectedMode, setSelectedMode] = useState<ExamMode>("exam");
@@ -81,8 +84,7 @@ function IeltsTestConfiguration({ test }: { test: ExamTestDetail }) {
 	const selectedParts =
 		selectedMode === "exam" ? allSections : practiceSections;
 
-	const durationMinutes =
-		test.skill === "listening" ? 40 : test.skill === "writing" ? 60 : 60;
+	const durationMinutes = test.durationMinutes;
 	const totalQuestions = sections.reduce((sum, s) => sum + s.questionCount, 0);
 
 	useBreadcrumbs([
@@ -123,6 +125,7 @@ function IeltsTestConfiguration({ test }: { test: ExamTestDetail }) {
 				params: { id: attempt.id },
 			});
 		} catch {
+			toast.error(m["exams.ielts.test.startFailed"]());
 			startLock.current = false;
 		}
 	};
@@ -268,11 +271,13 @@ function IeltsTestConfiguration({ test }: { test: ExamTestDetail }) {
 					<div className="flex flex-col gap-4 lg:col-span-5">
 						<div className="flex flex-col gap-4 rounded-2xl border border-border/80 bg-card p-6 shadow-sm">
 							<h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
-								Thông tin bài thi
+								{m["exams.ielts.test.summary.title"]()}
 							</h3>
 							<div className="flex flex-col divide-y divide-border/60 text-sm">
 								<div className="flex justify-between py-2">
-									<span className="text-muted-foreground">Chế độ</span>
+									<span className="text-muted-foreground">
+										{m["exams.ielts.test.summary.mode"]()}
+									</span>
 									<span className="font-semibold text-foreground">
 										{selectedMode === "exam"
 											? m["exams.ielts.test.modeExamTitle"]()
@@ -280,33 +285,38 @@ function IeltsTestConfiguration({ test }: { test: ExamTestDetail }) {
 									</span>
 								</div>
 								<div className="flex justify-between py-2">
-									<span className="text-muted-foreground">Section đã chọn</span>
+									<span className="text-muted-foreground">
+										{m["exams.ielts.test.summary.sections"]()}
+									</span>
 									<span className="font-semibold text-foreground">
 										{selectedParts.join(", ")}
 									</span>
 								</div>
 								<div className="flex justify-between py-2">
-									<span className="text-muted-foreground">Thời gian</span>
+									<span className="text-muted-foreground">
+										{m["exams.ielts.test.summary.time"]()}
+									</span>
 									<span className="font-semibold text-foreground">
 										{selectedMode === "exam"
 											? m["exams.ielts.test.duration"]({
 													count: durationMinutes,
 												})
-											: "Không giới hạn"}
+											: m["exams.ielts.take.practice"]()}
 									</span>
 								</div>
 							</div>
 
-							<Button
+							<SubmitButton
 								size="lg"
 								onClick={handleStart}
-								disabled={start.isPending || selectedParts.length === 0}
+								pending={start.isPending}
+								disabled={!hydrated || selectedParts.length === 0}
 								className="mt-2 w-full rounded-xl font-bold shadow-md"
 							>
 								{selectedMode === "exam"
 									? m["exams.ielts.test.startExam"]()
 									: m["exams.ielts.test.startPractice"]()}
-							</Button>
+							</SubmitButton>
 						</div>
 					</div>
 				</div>

@@ -1,6 +1,21 @@
 import { cn } from "cn";
 import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 
+/**
+ * The embed's methods (setPlaybackRate, seekTo, ...) attach asynchronously
+ * after `new YT.Player(...)` returns, once the iframe's postMessage bridge
+ * finishes — calling one before then throws "is not a function". Every
+ * imperative-handle call routes through here so that race never escapes as
+ * an uncaught error.
+ */
+function safePlayerCall<R>(run: () => R | undefined): R | undefined {
+	try {
+		return run();
+	} catch {
+		return undefined;
+	}
+}
+
 export interface YTPlayerInstance {
 	playVideo: () => void;
 	pauseVideo: () => void;
@@ -125,32 +140,46 @@ export const YouTubePlayer = forwardRef<YouTubePlayerRef, YouTubePlayerProps>(
 					segmentStartRef.current = start;
 					segmentEndRef.current = end !== undefined ? end : null;
 					isSeekingRef.current = true;
-					const player = playerInstanceRef.current;
-					if (player) {
-						player.seekTo(start, true);
-						player.playVideo();
-					}
+					// The embed object exists as soon as `new YT.Player(...)`
+					// returns, but its methods attach asynchronously once the
+					// iframe's postMessage bridge finishes — callers (parent
+					// effects firing on mount) can race ahead of that, so every
+					// call here is try/caught rather than trusted to exist.
+					safePlayerCall(() => {
+						const player = playerInstanceRef.current;
+						player?.seekTo(start, true);
+						player?.playVideo();
+					});
 				},
 				play: () => {
-					playerInstanceRef.current?.playVideo();
+					safePlayerCall(() => playerInstanceRef.current?.playVideo());
 				},
 				pause: () => {
 					segmentEndRef.current = null;
 					segmentStartRef.current = null;
 					isSeekingRef.current = false;
-					playerInstanceRef.current?.pauseVideo();
+					safePlayerCall(() => playerInstanceRef.current?.pauseVideo());
 				},
 				seekTo: (seconds: number) => {
-					playerInstanceRef.current?.seekTo(seconds, true);
+					safePlayerCall(() =>
+						playerInstanceRef.current?.seekTo(seconds, true),
+					);
 				},
 				setSpeed: (speed: number) => {
-					playerInstanceRef.current?.setPlaybackRate(speed);
+					safePlayerCall(() =>
+						playerInstanceRef.current?.setPlaybackRate(speed),
+					);
 				},
 				getCurrentTime: () => {
-					return playerInstanceRef.current?.getCurrentTime() ?? 0;
+					return (
+						safePlayerCall(() => playerInstanceRef.current?.getCurrentTime()) ??
+						0
+					);
 				},
 				getAvailableRates: () =>
-					playerInstanceRef.current?.getAvailablePlaybackRates() ?? [],
+					safePlayerCall(() =>
+						playerInstanceRef.current?.getAvailablePlaybackRates(),
+					) ?? [],
 			}),
 			[],
 		);

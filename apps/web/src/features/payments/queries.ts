@@ -2,12 +2,23 @@ import { useAuth } from "@clerk/tanstack-react-start";
 import type { Checkout } from "@engflex/contracts";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useEntitlements } from "#/features/payments/entitlements";
-import { listPlans, startCheckout } from "#/features/payments/service";
+import {
+	getSepayStatus,
+	listPlans,
+	startCheckout,
+	startSepayCheckout,
+} from "#/features/payments/service";
 import { isAdminClaims } from "#/lib/roles";
 
-const keys = {
+/** Exported so a completed checkout can invalidate `me` — paying is the one
+ *  thing that changes premium status from outside this module. */
+export const PAYMENT_QUERY_KEYS = {
 	plans: ["payments", "plans"] as const,
+	sepayStatus: (reference: string) =>
+		["payments", "sepay", "status", reference] as const,
 };
+
+const keys = PAYMENT_QUERY_KEYS;
 
 export function usePlans() {
 	return useQuery({
@@ -19,6 +30,26 @@ export function usePlans() {
 export function useStartCheckout() {
 	return useMutation({
 		mutationFn: (body: Checkout) => startCheckout(body),
+	});
+}
+
+export function useStartSepayCheckout() {
+	return useMutation({
+		mutationFn: (body: Checkout) => startSepayCheckout(body),
+	});
+}
+
+/** Polls a SePay checkout's status every 3s while pending — there's no
+ *  redirect to land on once paid (see SepayCheckoutSession), so the
+ *  frontend is the one watching for the webhook's result to land.
+ *  `enabled` lets the caller stop polling once the dialog closes. */
+export function useSepayStatus(reference: string | null, enabled: boolean) {
+	return useQuery({
+		queryKey: keys.sepayStatus(reference ?? "none"),
+		queryFn: () => getSepayStatus(reference ?? ""),
+		enabled: enabled && Boolean(reference),
+		refetchInterval: (query) =>
+			query.state.data?.status === "pending" ? 3000 : false,
 	});
 }
 

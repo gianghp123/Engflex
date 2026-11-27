@@ -1,3 +1,7 @@
+import type {
+	VideoAttemptResponse,
+	VideoExerciseResponse,
+} from "@engflex/contracts";
 import { createFileRoute } from "@tanstack/react-router";
 import { cn } from "cn";
 import { Clock3, Eye, EyeOff, Mic, MonitorPlay } from "lucide-react";
@@ -5,18 +9,28 @@ import { useEffect, useRef, useState } from "react";
 import { APP_ROUTES } from "#/app/app-route";
 import { type CrumbItem, useBreadcrumbs } from "#/app/breadcrumbs";
 import { PageLayout } from "#/components/common/page-layout";
+import { SubmitButton } from "#/components/common/submit-button";
 import { Button } from "#/components/ui/button";
+import { Empty, EmptyTitle } from "#/components/ui/empty";
 import { Toggle } from "#/components/ui/toggle";
 import { ToggleGroup, ToggleGroupItem } from "#/components/ui/toggle-group";
 import { BookmarkButton } from "#/features/bookmarks/bookmark-button";
+import { PronunciationPanel } from "#/features/lessons/components/speaking/pronunciation-panel";
+import { useRecorder } from "#/features/lessons/hooks/use-recorder";
 import { PracticeToolsDialogs } from "#/features/videos/components/practice-tools-dialogs";
 import { ShadowingPanel } from "#/features/videos/components/shadowing/shadowing-panel";
 import { TranscriptPanel } from "#/features/videos/components/transcript-panel";
+import { VideoHubSkeleton } from "#/features/videos/components/video-hub-skeleton";
 import type { YouTubePlayerRef } from "#/features/videos/components/youtube-player";
 import { extractYouTubeId, pairWords } from "#/features/videos/dictation";
 import { formatDuration } from "#/features/videos/format";
-import { videoDetailQueryOptions } from "#/features/videos/queries";
+import {
+	useOpenShadowingAttempt,
+	usePronounceShadowing,
+	videoDetailQueryOptions,
+} from "#/features/videos/queries";
 import { shadowingPreferences } from "#/features/videos/store";
+import { useShadowingAttempt } from "#/features/videos/use-shadowing-attempt";
 import { loadOr404 } from "#/lib/router/route-loader";
 import { m } from "#/paraglide/messages";
 
@@ -25,6 +39,7 @@ export const Route = createFileRoute("/_app/videos/$videoId/shadowing")({
 		search.view === "watch" ? { view: "watch" } : {},
 	loader: ({ context: { queryClient }, params: { videoId } }) =>
 		loadOr404(queryClient, videoDetailQueryOptions(videoId)),
+	pendingComponent: ShadowingPending,
 	component: ShadowingPage,
 });
 
@@ -40,16 +55,72 @@ const LINE_TOGGLE =
 
 const SPEEDS = [0.75, 1, 1.25, 1.5];
 
+function ShadowingPending() {
+	return (
+		<PageLayout>
+			<VideoHubSkeleton />
+		</PageLayout>
+	);
+}
+
 function ShadowingPage() {
 	const video = Route.useLoaderData();
-	const transcripts = video?.transcripts ?? [];
+	return <ShadowingSession key={video.id} video={video} />;
+}
+
+function ShadowingSession({ video }: { video: VideoExerciseResponse }) {
+	const hasLines = Boolean(video.transcripts?.length);
+	const attempt = useOpenShadowingAttempt(video.id, hasLines);
+	if (
+		hasLines &&
+		(attempt.isPending || (!attempt.isFetchedAfterMount && attempt.isFetching))
+	) {
+		return <ShadowingPending />;
+	}
+	if (hasLines && attempt.isError) {
+		return (
+			<PageLayout>
+				<Empty className="surface-card">
+					<EmptyTitle>{m["videos.shadowing.attempt.loadFailed"]()}</EmptyTitle>
+					<SubmitButton
+						pending={attempt.isFetching}
+						onClick={() => void attempt.refetch()}
+					>
+						{m["common.actions.retry"]()}
+					</SubmitButton>
+				</Empty>
+			</PageLayout>
+		);
+	}
+	return (
+		<ShadowingWorkspace video={video} initialAttempt={attempt.data ?? null} />
+	);
+}
+
+function ShadowingWorkspace({
+	video,
+	initialAttempt,
+}: {
+	video: VideoExerciseResponse;
+	initialAttempt: VideoAttemptResponse | null;
+}) {
+	const transcripts = video.transcripts ?? [];
 
 	const playerRef = useRef<YouTubePlayerRef>(null);
-	const youtubeId = extractYouTubeId(video?.videoUrl ?? "");
+	const youtubeId = extractYouTubeId(video.videoUrl ?? "");
 
 	const { view = "practice" } = Route.useSearch();
 	const navigate = Route.useNavigate();
 	const [settings, setSettings] = shadowingPreferences.usePreferences();
+	const {
+		activeIndex,
+		setActiveIndex,
+		completedCount,
+		isSaving,
+		saveFailed,
+		retrySave,
+		ensureAttemptId,
+	} = useShadowingAttempt(video, initialAttempt);
 	const {
 		showTranscript,
 		showPhonetic,
@@ -69,16 +140,75 @@ function ShadowingPage() {
 	const [toolsOpen, setToolsOpen] = useState<"settings" | "shortcuts" | null>(
 		null,
 	);
-	const [activeIndex, setActiveIndex] = useState(0);
 	useEffect(() => {
 		playerRef.current?.setSpeed(speed);
 	}, [speed]);
 	const [currentTime, setCurrentTime] = useState(0);
 	const lastTimeUpdateRef = useRef(0);
 
+	const {
+		state: recorderState,
+		start: startRecording,
+		stop: stopRecording,
+		reset: resetRecording,
+	} = useRecorder(m["videos.shadowing.record.micDenied"]());
+	const recording = recorderState.status === "recording";
+	const hasRecording = recorderState.status === "ready";
+	const pronounce = usePronounceShadowing();
+	const [recordingUrl, setRecordingUrl] = useState<string | null>(null);
+	useEffect(() => {
+		if (recorderState.status !== "ready") return;
+		const url = URL.createObjectURL(recorderState.blob);
+		setRecordingUrl(url);
+		return () => {
+			URL.revokeObjectURL(url);
+			setRecordingUrl(null);
+		};
+	}, [recorderState]);
+	// A new line starts a fresh take — the previous recording (if any) is
+	// discarded rather than carried over to a sentence it wasn't spoken for.
+	// biome-ignore lint/correctness/useExhaustiveDependencies: fires on line change only; resetRecording/pronounce.reset are stable
+	useEffect(() => {
+		resetRecording();
+		pronounce.reset();
+	}, [activeIndex]);
+	useEffect(() => resetRecording, [resetRecording]);
+	const handleRecord = () => {
+		if (recording) {
+			stopRecording();
+		} else {
+			pronounce.reset();
+			void startRecording();
+		}
+	};
+	const handlePlayRecording = () => {
+		if (!recordingUrl) return;
+		new Audio(recordingUrl).play().catch(() => {});
+	};
+
+	// Auto-submits the moment a take is ready — the same "stop recording →
+	// score" flow as lesson read-aloud, just against a transcript line
+	// instead of a speaking item's reference text.
+	// biome-ignore lint/correctness/useExhaustiveDependencies: fires once per ready blob; the rest are read fresh inside the async callback, not meant to re-trigger the effect
+	useEffect(() => {
+		if (recorderState.status !== "ready") return;
+		const currentLine = transcripts[activeIndex];
+		if (!currentLine) return;
+		void (async () => {
+			const attemptId = await ensureAttemptId();
+			pronounce.mutate({
+				videoId: video.id,
+				attemptId,
+				transcriptId: currentLine.id,
+				audio: recorderState.blob,
+				mime: recorderState.mime,
+			});
+		})();
+	}, [recorderState]);
+
 	const crumbs: CrumbItem[] = [
 		{ label: m["nav.item.videos"](), to: APP_ROUTES.VIDEOS.LIST },
-		...(video?.category
+		...(video.category
 			? [
 					{
 						label: video.category.name,
@@ -87,11 +217,9 @@ function ShadowingPage() {
 					},
 				]
 			: []),
-		{ label: video?.title ?? "" },
+		{ label: video.title },
 	];
 	useBreadcrumbs(crumbs);
-
-	if (!video) return null;
 
 	const line = transcripts[activeIndex];
 	const words = line ? pairWords(line.content, line.phonetic) : [];
@@ -261,14 +389,20 @@ function ShadowingPage() {
 					onSettings={() => setToolsOpen("settings")}
 					onShortcuts={() => setToolsOpen("shortcuts")}
 					onStart={handlePlaySentence}
-					recording={false}
-					hasRecording={false}
+					recording={recording}
+					hasRecording={hasRecording}
+					onRecord={handleRecord}
+					onPlayRecording={handlePlayRecording}
 				/>
 				{showTranscript ? (
 					<TranscriptPanel
 						transcripts={transcripts}
 						activeIndex={activeIndex}
-						progress={0}
+						progress={
+							transcripts.length
+								? (completedCount / transcripts.length) * 100
+								: 0
+						}
 						masked={false}
 						showPhonetic={showPhonetic}
 						showTranslation={showTranslation}
@@ -298,6 +432,34 @@ function ShadowingPage() {
 					/>
 				) : null}
 			</div>
+			{pronounce.data && line ? (
+				<PronunciationPanel
+					result={pronounce.data}
+					referenceText={line.content}
+					selfAudioUrl={recordingUrl}
+				/>
+			) : null}
+			{pronounce.isError ? (
+				<div className="flex flex-wrap items-center justify-end gap-2">
+					<span role="alert">{m["videos.shadowing.record.scoreFailed"]()}</span>
+				</div>
+			) : null}
+			{recorderState.status === "error" ? (
+				<div className="flex flex-wrap items-center justify-end gap-2">
+					<span role="alert">{recorderState.message}</span>
+				</div>
+			) : null}
+			{saveFailed ? (
+				<div className="flex flex-wrap items-center justify-end gap-2">
+					<span role="alert">{m["videos.shadowing.attempt.saveFailed"]()}</span>
+					<SubmitButton pending={isSaving} onClick={retrySave}>
+						{m["common.actions.retry"]()}
+					</SubmitButton>
+				</div>
+			) : null}
+			<output className="block text-right text-sm text-muted-foreground">
+				{isSaving ? m["videos.shadowing.attempt.saving"]() : null}
+			</output>
 		</PageLayout>
 	);
 }

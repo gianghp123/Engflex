@@ -50,8 +50,8 @@ func (_m *MockVideoExerciseRepository) EXPECT() *MockVideoExerciseRepository_Exp
 }
 
 // Count provides a mock function for the type MockVideoExerciseRepository
-func (_mock *MockVideoExerciseRepository) Count(ctx context.Context, onlyPublished bool) (int64, error) {
-	ret := _mock.Called(ctx, onlyPublished)
+func (_mock *MockVideoExerciseRepository) Count(ctx context.Context, f repositories.VideoExerciseFilter) (int64, error) {
+	ret := _mock.Called(ctx, f)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Count")
@@ -59,16 +59,16 @@ func (_mock *MockVideoExerciseRepository) Count(ctx context.Context, onlyPublish
 
 	var r0 int64
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, bool) (int64, error)); ok {
-		return returnFunc(ctx, onlyPublished)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repositories.VideoExerciseFilter) (int64, error)); ok {
+		return returnFunc(ctx, f)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, bool) int64); ok {
-		r0 = returnFunc(ctx, onlyPublished)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repositories.VideoExerciseFilter) int64); ok {
+		r0 = returnFunc(ctx, f)
 	} else {
 		r0 = ret.Get(0).(int64)
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, bool) error); ok {
-		r1 = returnFunc(ctx, onlyPublished)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, repositories.VideoExerciseFilter) error); ok {
+		r1 = returnFunc(ctx, f)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -82,20 +82,20 @@ type MockVideoExerciseRepository_Count_Call struct {
 
 // Count is a helper method to define mock.On call
 //   - ctx context.Context
-//   - onlyPublished bool
-func (_e *MockVideoExerciseRepository_Expecter) Count(ctx any, onlyPublished any) *MockVideoExerciseRepository_Count_Call {
-	return &MockVideoExerciseRepository_Count_Call{Call: _e.mock.On("Count", ctx, onlyPublished)}
+//   - f repositories.VideoExerciseFilter
+func (_e *MockVideoExerciseRepository_Expecter) Count(ctx any, f any) *MockVideoExerciseRepository_Count_Call {
+	return &MockVideoExerciseRepository_Count_Call{Call: _e.mock.On("Count", ctx, f)}
 }
 
-func (_c *MockVideoExerciseRepository_Count_Call) Run(run func(ctx context.Context, onlyPublished bool)) *MockVideoExerciseRepository_Count_Call {
+func (_c *MockVideoExerciseRepository_Count_Call) Run(run func(ctx context.Context, f repositories.VideoExerciseFilter)) *MockVideoExerciseRepository_Count_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 bool
+		var arg1 repositories.VideoExerciseFilter
 		if args[1] != nil {
-			arg1 = args[1].(bool)
+			arg1 = args[1].(repositories.VideoExerciseFilter)
 		}
 		run(
 			arg0,
@@ -110,7 +110,7 @@ func (_c *MockVideoExerciseRepository_Count_Call) Return(n int64, err error) *Mo
 	return _c
 }
 
-func (_c *MockVideoExerciseRepository_Count_Call) RunAndReturn(run func(ctx context.Context, onlyPublished bool) (int64, error)) *MockVideoExerciseRepository_Count_Call {
+func (_c *MockVideoExerciseRepository_Count_Call) RunAndReturn(run func(ctx context.Context, f repositories.VideoExerciseFilter) (int64, error)) *MockVideoExerciseRepository_Count_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -434,8 +434,8 @@ func (_c *MockVideoExerciseRepository_GetDetail_Call) RunAndReturn(run func(ctx 
 }
 
 // List provides a mock function for the type MockVideoExerciseRepository
-func (_mock *MockVideoExerciseRepository) List(ctx context.Context, limit int, offset int, onlyPublished bool) ([]*models.VideoExercise, error) {
-	ret := _mock.Called(ctx, limit, offset, onlyPublished)
+func (_mock *MockVideoExerciseRepository) List(ctx context.Context, f repositories.VideoExerciseFilter) ([]*models.VideoExercise, error) {
+	ret := _mock.Called(ctx, f)
 
 	if len(ret) == 0 {
 		panic("no return value specified for List")
@@ -443,18 +443,18 @@ func (_mock *MockVideoExerciseRepository) List(ctx context.Context, limit int, o
 
 	var r0 []*models.VideoExercise
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, int, int, bool) ([]*models.VideoExercise, error)); ok {
-		return returnFunc(ctx, limit, offset, onlyPublished)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repositories.VideoExerciseFilter) ([]*models.VideoExercise, error)); ok {
+		return returnFunc(ctx, f)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, int, int, bool) []*models.VideoExercise); ok {
-		r0 = returnFunc(ctx, limit, offset, onlyPublished)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repositories.VideoExerciseFilter) []*models.VideoExercise); ok {
+		r0 = returnFunc(ctx, f)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*models.VideoExercise)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, int, int, bool) error); ok {
-		r1 = returnFunc(ctx, limit, offset, onlyPublished)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, repositories.VideoExerciseFilter) error); ok {
+		r1 = returnFunc(ctx, f)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -468,36 +468,24 @@ type MockVideoExerciseRepository_List_Call struct {
 
 // List is a helper method to define mock.On call
 //   - ctx context.Context
-//   - limit int
-//   - offset int
-//   - onlyPublished bool
-func (_e *MockVideoExerciseRepository_Expecter) List(ctx any, limit any, offset any, onlyPublished any) *MockVideoExerciseRepository_List_Call {
-	return &MockVideoExerciseRepository_List_Call{Call: _e.mock.On("List", ctx, limit, offset, onlyPublished)}
+//   - f repositories.VideoExerciseFilter
+func (_e *MockVideoExerciseRepository_Expecter) List(ctx any, f any) *MockVideoExerciseRepository_List_Call {
+	return &MockVideoExerciseRepository_List_Call{Call: _e.mock.On("List", ctx, f)}
 }
 
-func (_c *MockVideoExerciseRepository_List_Call) Run(run func(ctx context.Context, limit int, offset int, onlyPublished bool)) *MockVideoExerciseRepository_List_Call {
+func (_c *MockVideoExerciseRepository_List_Call) Run(run func(ctx context.Context, f repositories.VideoExerciseFilter)) *MockVideoExerciseRepository_List_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 int
+		var arg1 repositories.VideoExerciseFilter
 		if args[1] != nil {
-			arg1 = args[1].(int)
-		}
-		var arg2 int
-		if args[2] != nil {
-			arg2 = args[2].(int)
-		}
-		var arg3 bool
-		if args[3] != nil {
-			arg3 = args[3].(bool)
+			arg1 = args[1].(repositories.VideoExerciseFilter)
 		}
 		run(
 			arg0,
 			arg1,
-			arg2,
-			arg3,
 		)
 	})
 	return _c
@@ -508,7 +496,7 @@ func (_c *MockVideoExerciseRepository_List_Call) Return(videoExercises []*models
 	return _c
 }
 
-func (_c *MockVideoExerciseRepository_List_Call) RunAndReturn(run func(ctx context.Context, limit int, offset int, onlyPublished bool) ([]*models.VideoExercise, error)) *MockVideoExerciseRepository_List_Call {
+func (_c *MockVideoExerciseRepository_List_Call) RunAndReturn(run func(ctx context.Context, f repositories.VideoExerciseFilter) ([]*models.VideoExercise, error)) *MockVideoExerciseRepository_List_Call {
 	_c.Call.Return(run)
 	return _c
 }

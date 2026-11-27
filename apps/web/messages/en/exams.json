@@ -198,8 +198,6 @@
         "filterAll": "All",
         "filterAcademic": "Academic",
         "filterGeneral": "General Training",
-        "filterReading": "Reading",
-        "filterListening": "Listening",
         "testsCount": "{count} tests",
         "startPractice": "Practice now",
         "emptyTitle": "No exam sets available",
@@ -230,7 +228,14 @@
         "selectSections": "Select sections to practice:",
         "sectionItem": "Section {number}",
         "startPractice": "START PRACTICE",
-        "startExam": "START EXAM"
+        "startExam": "START EXAM",
+        "summary": {
+          "title": "Test information",
+          "mode": "Mode",
+          "sections": "Selected sections",
+          "time": "Time"
+        },
+        "startFailed": "The test could not be started. Please try again."
       },
       "history": {
         "title": "IELTS Exam History",
@@ -274,19 +279,16 @@
         "confirmExitCancel": "Stay and continue",
         "confirmExitAction": "Exit test",
         "confirmResetTitle": "Reset test?",
-        "confirmResetDesc": "All answers, highlights, and the timer will be reset from the beginning.",
+        "confirmResetDesc": "Your answers, bookmarks and highlights will be cleared. The exam deadline stays the same.",
         "confirmResetCancel": "Cancel",
         "confirmResetAction": "Reset now",
         "saved": "Autosaved test progress",
-        "saveFailed": "Changes could not be confirmed. Please retry before leaving."
+        "saveFailed": "Changes could not be confirmed. Please retry before leaving.",
+        "practice": "Untimed practice"
       },
       "result": {
-        "title": "IELTS Reading Test Result",
+        "title": "IELTS Test Result",
         "bandScore": "Band Score",
-        "correctCount": "Correct: {correct}/{total}",
-        "accuracy": "Accuracy: {percent}%",
-        "timeSpent": "Time spent: {duration}",
-        "reviewTitle": "Detailed Answer Review",
         "yourAnswer": "Your answer: {answer}",
         "correctAnswer": "Correct answer: {answer}",
         "explanation": "Explanation:",
@@ -294,7 +296,18 @@
         "filterCorrect": "Correct",
         "filterIncorrect": "Incorrect",
         "retakeButton": "Retake test",
-        "closeButton": "Close"
+        "metrics": {
+          "correct": "Correct answers",
+          "accuracy": "Accuracy",
+          "time": "Time spent"
+        },
+        "unanswered": "Not answered"
+      },
+      "media": {
+        "audio": "Section audio",
+        "diagram": "Question diagram",
+        "failed": "Media could not be loaded. Please try again.",
+        "transcript": "Transcript"
       }
     },
     "attempt": {

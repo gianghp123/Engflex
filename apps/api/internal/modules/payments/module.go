@@ -23,7 +23,7 @@ import (
 // limits fills the pricing-table entitlement summary; nil keeps the service
 // catalog-only. The caller's own premium view lives in the access module
 // (GET /premium/me) — this module no longer mounts that path.
-func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB, cfg config.PaymentConfig, limits services.PlanLimitsReader) {
+func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB, cfg config.PaymentConfig, limits services.PlanLimitsReader, sepayCfg config.SepayConfig) {
 	subRepo := repositories.NewSubscriptionRepository(db)
 	txnRepo := repositories.NewPaymentTransactionRepository(db)
 	planRepo := repositories.NewPlanRepository(db)
@@ -38,8 +38,16 @@ func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB, cfg config.PaymentConfig, 
 		PayURL:     cfg.VNPayPayURL,
 		ReturnURL:  cfg.VNPayReturnURL,
 	}, db, subRepo, txnRepo, planRepo)
+	sepaySvc := services.NewSepayService(services.SepayConfig{
+		APIKey:        sepayCfg.APIKey,
+		WebhookSecret: sepayCfg.WebhookSecret,
+		BaseURL:       sepayCfg.BaseURL,
+		BankAccount:   sepayCfg.BankAccount,
+		BankName:      sepayCfg.BankName,
+		AccountHolder: sepayCfg.AccountHolder,
+	}, db, subRepo, txnRepo, planRepo)
 
-	paymentCtl := controllers.NewPaymentController(planSvc, subSvc, vnpaySvc)
+	paymentCtl := controllers.NewPaymentController(planSvc, subSvc, vnpaySvc, sepaySvc)
 	planCtl := controllers.NewPlanController(planSvc)
 	featureCtl := controllers.NewPremiumFeatureController(featureSvc)
 	subAdminCtl := controllers.NewSubscriptionAdminController(subSvc)
@@ -50,6 +58,12 @@ func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB, cfg config.PaymentConfig, 
 	g.GET("/ipn", paymentCtl.IPN)
 	g.GET("/return", paymentCtl.Return)
 
+	sp := rg.Group("/payments/sepay")
+	sp.POST("/checkout", middleware.RequireAuth(), paymentCtl.SepayCheckout)
+	sp.POST("/webhook", paymentCtl.SepayWebhook)
+	sp.GET("/status/:reference", middleware.RequireAuth(), paymentCtl.SepayStatus)
+
+	// GET /premium/me is mounted by the access module.
 	admin := rg.Group("/admin/premium", middleware.RequireAuth(), middleware.RequireAdmin())
 	admin.GET("/plans", planCtl.List)
 	admin.PUT("/plans/:plan", planCtl.Update)

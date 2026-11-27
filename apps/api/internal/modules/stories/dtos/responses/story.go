@@ -18,28 +18,32 @@ type StorySentence struct {
 }
 
 type StoryItem struct {
-	ID              string      `json:"id"`
-	Slug            string      `json:"slug"`
-	Title           string      `json:"title"`
-	TitleVietnamese *string     `json:"titleVietnamese"`
-	CEFRLevel       *enums.CEFR `json:"cefrLevel"`
-	Topic           string      `json:"topic"`
-	ThumbnailURL    *string     `json:"thumbnailUrl"`
-	AudioURL        string      `json:"audioUrl"`
-	Duration        float64     `json:"duration"`
-	CreatedAt       time.Time   `json:"createdAt"`
+	ID              string              `json:"id"`
+	Slug            string              `json:"slug"`
+	Title           string              `json:"title"`
+	TitleVietnamese *string             `json:"titleVietnamese"`
+	CEFRLevel       *enums.CEFR         `json:"cefrLevel"`
+	Topic           string              `json:"topic"`
+	ThumbnailURL    *string             `json:"thumbnailUrl"`
+	AudioURL        string              `json:"audioUrl"`
+	Duration        float64             `json:"duration"`
+	Status          enums.PublishStatus `json:"status"`
+	IsPremium       bool                `json:"isPremium"`
+	CreatedAt       time.Time           `json:"createdAt"`
 }
 
 type StoryDetail struct {
-	ID              string           `json:"id"`
-	Slug            string           `json:"slug"`
-	Title           string           `json:"title"`
-	TitleVietnamese *string          `json:"titleVietnamese"`
-	CEFRLevel       *enums.CEFR      `json:"cefrLevel"`
-	Topic           string           `json:"topic"`
-	ThumbnailURL    *string          `json:"thumbnailUrl"`
-	AudioURL        string           `json:"audioUrl"`
-	Duration        float64          `json:"duration"`
-	Sentences       []*StorySentence `json:"sentences"`
-	CreatedAt       time.Time        `json:"createdAt"`
+	ID              string              `json:"id"`
+	Slug            string              `json:"slug"`
+	Title           string              `json:"title"`
+	TitleVietnamese *string             `json:"titleVietnamese"`
+	CEFRLevel       *enums.CEFR         `json:"cefrLevel"`
+	Topic           string              `json:"topic"`
+	ThumbnailURL    *string             `json:"thumbnailUrl"`
+	AudioURL        string              `json:"audioUrl"`
+	Duration        float64             `json:"duration"`
+	Status          enums.PublishStatus `json:"status"`
+	IsPremium       bool                `json:"isPremium"`
+	Sentences       []*StorySentence    `json:"sentences"`
+	CreatedAt       time.Time           `json:"createdAt"`
 }

@@ -48,6 +48,63 @@ func (_m *MockExamCategoryRepository) EXPECT() *MockExamCategoryRepository_Expec
 	return &MockExamCategoryRepository_Expecter{mock: &_m.Mock}
 }
 
+// Create provides a mock function for the type MockExamCategoryRepository
+func (_mock *MockExamCategoryRepository) Create(ctx context.Context, category *models.ExamCategory) error {
+	ret := _mock.Called(ctx, category)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Create")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *models.ExamCategory) error); ok {
+		r0 = returnFunc(ctx, category)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockExamCategoryRepository_Create_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Create'
+type MockExamCategoryRepository_Create_Call struct {
+	*mock.Call
+}
+
+// Create is a helper method to define mock.On call
+//   - ctx context.Context
+//   - category *models.ExamCategory
+func (_e *MockExamCategoryRepository_Expecter) Create(ctx any, category any) *MockExamCategoryRepository_Create_Call {
+	return &MockExamCategoryRepository_Create_Call{Call: _e.mock.On("Create", ctx, category)}
+}
+
+func (_c *MockExamCategoryRepository_Create_Call) Run(run func(ctx context.Context, category *models.ExamCategory)) *MockExamCategoryRepository_Create_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 *models.ExamCategory
+		if args[1] != nil {
+			arg1 = args[1].(*models.ExamCategory)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockExamCategoryRepository_Create_Call) Return(err error) *MockExamCategoryRepository_Create_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockExamCategoryRepository_Create_Call) RunAndReturn(run func(ctx context.Context, category *models.ExamCategory) error) *MockExamCategoryRepository_Create_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetByID provides a mock function for the type MockExamCategoryRepository
 func (_mock *MockExamCategoryRepository) GetByID(ctx context.Context, id string) (*models.ExamCategory, error) {
 	ret := _mock.Called(ctx, id)

@@ -16,7 +16,7 @@ import (
 // LessonService owns section-first browsing: sections with units attached,
 // in path order. The hub renders the whole path, unpaginated.
 type LessonService interface {
-	ListSections(ctx context.Context, req requests.ListLessons, isAdmin bool) ([]*models.LessonSection, error)
+	ListSections(ctx context.Context, userID string, req requests.ListLessons, isAdmin bool) ([]*models.LessonSection, error)
 	GetDetail(ctx context.Context, id, userID string, isAdmin bool) (*models.Lesson, error)
 	GetDetailBySlug(ctx context.Context, slug, userID string, isAdmin bool) (*models.Lesson, error)
 	Create(ctx context.Context, req requests.CreateLesson) (*models.Lesson, error)
@@ -31,24 +31,70 @@ type LessonService interface {
 type lessonService struct {
 	sections repositories.LessonSectionRepository
 	lessons  repositories.LessonRepository
+	attempts repositories.AttemptRepository
 	premium  common.PremiumChecker
 }
 
 // NewLessonService builds the service over both repositories and the
 // premium checker. None may be nil.
-func NewLessonService(sections repositories.LessonSectionRepository, lessons repositories.LessonRepository, premium common.PremiumChecker) LessonService {
-	return &lessonService{sections: sections, lessons: lessons, premium: premium}
+func NewLessonService(sections repositories.LessonSectionRepository, lessons repositories.LessonRepository, attempts repositories.AttemptRepository, premium common.PremiumChecker) LessonService {
+	return &lessonService{sections: sections, lessons: lessons, attempts: attempts, premium: premium}
 }
 
-func (s *lessonService) ListSections(ctx context.Context, req requests.ListLessons, isAdmin bool) ([]*models.LessonSection, error) {
-	secs, err := s.sections.ListWithUnits(ctx, req.Level, isAdmin)
+func (s *lessonService) ListSections(ctx context.Context, userID string, req requests.ListLessons, isAdmin bool) ([]*models.LessonSection, error) {
+	f := repositories.LessonUnitFilter{Level: req.Level, Search: req.Search, Skill: req.Skill}
+	secs, err := s.sections.ListWithUnits(ctx, f, isAdmin)
 	if err != nil {
 		appErr := common.FromDBError(err, "lesson section")
 		logger.Report(ctx, "list lesson sections failed", appErr)
 		return nil, appErr
 	}
+	if req.Status != "" {
+		secs, err = s.filterByStatus(ctx, secs, userID, req.Status, isAdmin)
+		if err != nil {
+			return nil, err
+		}
+	}
 	slog.InfoContext(ctx, "lesson sections listed", "count", len(secs))
 	return secs, nil
+}
+
+// filterByStatus keeps only units whose derived completion status (from the
+// caller's own attempts) matches the requested one. Unstarted means "no
+// attempt row at all" — never stored as a column (see enums.LessonStatus).
+// Sections left empty by the filter are dropped for learners, same rule as
+// the published-only/level filters above.
+func (s *lessonService) filterByStatus(ctx context.Context, secs []*models.LessonSection, userID string, status enums.LessonStatus, isAdmin bool) ([]*models.LessonSection, error) {
+	rows, err := s.attempts.ListLessonAttempts(ctx, userID)
+	if err != nil {
+		appErr := common.FromDBError(err, "attempt")
+		logger.Report(ctx, "list lesson attempts for status filter failed", appErr, "userID", userID)
+		return nil, appErr
+	}
+	best := bestLessonAttempts(rows)
+	out := make([]*models.LessonSection, 0, len(secs))
+	for _, sec := range secs {
+		units := sec.Units[:0]
+		for _, unit := range sec.Units {
+			unitStatus := enums.LessonStatusUnstarted
+			if a, ok := best[unit.ID]; ok {
+				if a.Status == enums.AttemptStatusCompleted {
+					unitStatus = enums.LessonStatusCompleted
+				} else {
+					unitStatus = enums.LessonStatusInProgress
+				}
+			}
+			if unitStatus == status {
+				units = append(units, unit)
+			}
+		}
+		sec.Units = units
+		if len(sec.Units) == 0 && !isAdmin {
+			continue
+		}
+		out = append(out, sec)
+	}
+	return out, nil
 }
 
 // GetDetail: a draft unit is invisible to non-admins (404, existence not

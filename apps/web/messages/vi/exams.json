@@ -198,8 +198,6 @@
         "filterAll": "Tất cả",
         "filterAcademic": "Academic",
         "filterGeneral": "General Training",
-        "filterReading": "Reading",
-        "filterListening": "Listening",
         "testsCount": "{count} đề thi",
         "startPractice": "Luyện ngay",
         "emptyTitle": "Chưa có bộ đề thi nào",
@@ -230,7 +228,14 @@
         "selectSections": "Chọn section luyện tập:",
         "sectionItem": "Section {number}",
         "startPractice": "BẮT ĐẦU LUYỆN TẬP",
-        "startExam": "BẮT ĐẦU THI THỬ"
+        "startExam": "BẮT ĐẦU THI THỬ",
+        "summary": {
+          "title": "Thông tin bài thi",
+          "mode": "Chế độ",
+          "sections": "Phần đã chọn",
+          "time": "Thời gian"
+        },
+        "startFailed": "Không thể bắt đầu bài thi. Vui lòng thử lại."
       },
       "history": {
         "title": "Lịch sử luyện thi IELTS",
@@ -274,19 +279,16 @@
         "confirmExitCancel": "Ở lại làm tiếp",
         "confirmExitAction": "Thoát bài thi",
         "confirmResetTitle": "Làm lại bài thi?",
-        "confirmResetDesc": "Toàn bộ câu trả lời, highlight và thời gian sẽ được thiết lập lại từ đầu.",
+        "confirmResetDesc": "Đáp án, dấu trang và phần tô sáng sẽ được xóa. Thời hạn làm bài không thay đổi.",
         "confirmResetCancel": "Hủy",
         "confirmResetAction": "Xác nhận làm lại",
         "saved": "Đã tự động lưu bài làm",
-        "saveFailed": "Chưa xác nhận được thay đổi. Hãy thử lại trước khi rời trang."
+        "saveFailed": "Chưa xác nhận được thay đổi. Hãy thử lại trước khi rời trang.",
+        "practice": "Luyện tập không giới hạn thời gian"
       },
       "result": {
-        "title": "Kết quả bài thi IELTS Reading",
+        "title": "Kết quả bài thi IELTS",
         "bandScore": "Band Score",
-        "correctCount": "Số câu đúng: {correct}/{total}",
-        "accuracy": "Độ chính xác: {percent}%",
-        "timeSpent": "Thời gian làm bài: {duration}",
-        "reviewTitle": "Xem lại chi tiết đáp án",
         "yourAnswer": "Đáp án của bạn: {answer}",
         "correctAnswer": "Đáp án đúng: {answer}",
         "explanation": "Giải thích:",
@@ -294,7 +296,18 @@
         "filterCorrect": "Đúng",
         "filterIncorrect": "Sai",
         "retakeButton": "Làm lại bài thi",
-        "closeButton": "Đóng"
+        "metrics": {
+          "correct": "Số câu đúng",
+          "accuracy": "Độ chính xác",
+          "time": "Thời gian làm bài"
+        },
+        "unanswered": "Chưa trả lời"
+      },
+      "media": {
+        "audio": "Âm thanh của phần thi",
+        "diagram": "Sơ đồ câu hỏi",
+        "failed": "Không tải được nội dung đa phương tiện. Vui lòng thử lại.",
+        "transcript": "Bản chép lời"
       }
     },
     "attempt": {

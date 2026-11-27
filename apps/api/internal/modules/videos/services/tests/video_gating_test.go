@@ -64,11 +64,11 @@ func TestVideoAttemptStartGatingFollowsFlag(t *testing.T) {
 				runVideoAttemptTx(t, exercises, attempts, txMgr, tt.exercise)
 			}
 			svc := services.NewVideoAttemptService(
-				attempts, exercises, mocks.NewMockVideoTranscriptRepository(t), txMgr, fakePremiumChecker{},
+				attempts, exercises, mocks.NewMockVideoTranscriptRepository(t), txMgr, nil, fakePremiumChecker{},
 			)
 
 			m, err := svc.StartAttempt(context.Background(), "user_1", gatingVideoID,
-				enums.AttemptTypeDictation, requests.StartVideoAttempt{Type: enums.AttemptTypeDictation})
+				enums.AttemptTypeDictation, requests.StartVideoAttempt{Type: enums.AttemptTypeDictation}, false)
 			if tt.wantErr == 0 {
 				require.NoError(t, err)
 				require.NotNil(t, m)

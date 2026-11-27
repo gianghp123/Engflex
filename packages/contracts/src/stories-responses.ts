@@ -23,6 +23,8 @@ export interface StoryItem {
   thumbnailUrl?: string;
   audioUrl: string;
   duration: number /* float64 */;
+  status: PublishStatus;
+  isPremium: boolean;
   createdAt: string /* RFC3339 */;
 }
 export interface StoryDetail {
@@ -35,6 +37,8 @@ export interface StoryDetail {
   thumbnailUrl?: string;
   audioUrl: string;
   duration: number /* float64 */;
+  status: PublishStatus;
+  isPremium: boolean;
   sentences: (StorySentence | undefined)[];
   createdAt: string /* RFC3339 */;
 }

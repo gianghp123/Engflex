@@ -1,11 +1,16 @@
 import type { VocabularyCategoryResponse } from "@engflex/contracts";
-import { Plus } from "lucide-react";
+import { Pencil, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "#/components/ui/button";
 import { Field, FieldError, FieldLabel } from "#/components/ui/field";
 import { Input } from "#/components/ui/input";
 import { Textarea } from "#/components/ui/textarea";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger,
+} from "#/components/ui/tooltip";
 import { ConfirmDeleteDialog } from "#/features/admin/components/confirm-delete-dialog";
 import {
 	DataTable,
@@ -98,7 +103,7 @@ export function CategoriesPanel() {
 	}
 
 	const columns: DataTableColumn<VocabularyCategoryResponse>[] = [
-		{ id: "name", header: "Name", cell: (row) => row.name },
+		{ id: "name", header: "Name", className: "w-48", cell: (row) => row.name },
 		{
 			id: "description",
 			header: "Description",
@@ -107,24 +112,37 @@ export function CategoriesPanel() {
 		{
 			id: "actions",
 			header: m["admin.table.actions"](),
+			className: "w-28",
 			cell: (row) => (
-				<div className="flex items-center gap-2">
-					<Button
-						type="button"
-						variant="outline"
-						size="sm"
-						onClick={() => openEdit(row)}
-					>
-						{m["admin.actions.edit"]()}
-					</Button>
-					<Button
-						type="button"
-						variant="ghost"
-						size="sm"
-						onClick={() => setDeleteTarget(row)}
-					>
-						{m["admin.actions.delete"]()}
-					</Button>
+				<div className="flex items-center gap-1">
+					<Tooltip>
+						<TooltipTrigger asChild>
+							<Button
+								type="button"
+								variant="outline"
+								size="icon-sm"
+								aria-label={m["admin.actions.edit"]()}
+								onClick={() => openEdit(row)}
+							>
+								<Pencil />
+							</Button>
+						</TooltipTrigger>
+						<TooltipContent>{m["admin.actions.edit"]()}</TooltipContent>
+					</Tooltip>
+					<Tooltip>
+						<TooltipTrigger asChild>
+							<Button
+								type="button"
+								variant="ghost"
+								size="icon-sm"
+								aria-label={m["admin.actions.delete"]()}
+								onClick={() => setDeleteTarget(row)}
+							>
+								<Trash2 />
+							</Button>
+						</TooltipTrigger>
+						<TooltipContent>{m["admin.actions.delete"]()}</TooltipContent>
+					</Tooltip>
 				</div>
 			),
 		},

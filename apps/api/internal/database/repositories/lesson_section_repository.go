@@ -9,11 +9,20 @@ import (
 	"gorm.io/gorm"
 )
 
+// LessonUnitFilter narrows ListWithUnits. Search matches lesson title or
+// description; Skill matches the lesson's details->>'skill' jsonb field
+// (the unit's primary skill focus, not a per-activity property).
+type LessonUnitFilter struct {
+	Level  enums.CEFR
+	Search string
+	Skill  enums.ActivityType
+}
+
 // LessonSectionRepository is the DB access layer for the lesson_sections table.
 type LessonSectionRepository interface {
 	List(ctx context.Context) ([]*models.LessonSection, error)
 	GetByID(ctx context.Context, id string) (*models.LessonSection, error)
-	ListWithUnits(ctx context.Context, level enums.CEFR, isAdmin bool) ([]*models.LessonSection, error)
+	ListWithUnits(ctx context.Context, f LessonUnitFilter, isAdmin bool) ([]*models.LessonSection, error)
 	Create(ctx context.Context, s *models.LessonSection) error
 	Update(ctx context.Context, s *models.LessonSection) error
 	Delete(ctx context.Context, id string) error
@@ -59,14 +68,21 @@ func (r *lessonSectionRepository) GetByID(ctx context.Context, id string) (*mode
 // Sections left empty by a level filter are dropped for learners — the hub
 // renders only sections that have units; an admin keeps every section
 // (including a brand-new, still-lesson-less one) and sees draft units too.
-func (r *lessonSectionRepository) ListWithUnits(ctx context.Context, level enums.CEFR, isAdmin bool) ([]*models.LessonSection, error) {
+func (r *lessonSectionRepository) ListWithUnits(ctx context.Context, f LessonUnitFilter, isAdmin bool) ([]*models.LessonSection, error) {
 	var sections []*models.LessonSection
 	if err := r.db.WithContext(ctx).Order("position ASC").Find(&sections).Error; err != nil {
 		return nil, err
 	}
 	lq := r.db.WithContext(ctx).Model(&models.Lesson{}).Joins("Section")
-	if level != "" {
-		lq = lq.Where("lessons.cefr_level = ?", string(level))
+	if f.Level != "" {
+		lq = lq.Where("lessons.cefr_level = ?", string(f.Level))
+	}
+	if f.Search != "" {
+		like := "%" + f.Search + "%"
+		lq = lq.Where("lessons.title ILIKE ? OR lessons.description ILIKE ?", like, like)
+	}
+	if f.Skill != "" {
+		lq = lq.Where("lessons.details->>'skill' = ?", string(f.Skill))
 	}
 	if !isAdmin {
 		lq = lq.Where("lessons.status = ?", enums.PublishStatusPublished)

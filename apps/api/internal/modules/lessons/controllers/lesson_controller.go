@@ -30,6 +30,9 @@ func NewLessonController(lessons services.LessonService, media config.MediaConfi
 // @Security     BearerAuth
 // @Produce      json
 // @Param        level query string false "CEFR filter"
+// @Param        search query string false "title/description search"
+// @Param        skill query string false "skill focus filter (reading, listening, writing, speaking)"
+// @Param        status query string false "learner completion status (unstarted, in_progress, completed)"
 // @Success      200 {object} common.ApiResponse{data=[]responses.UnitSection}
 // @Router       /lessons [get]
 func (h *LessonController) List(c *gin.Context) {
@@ -40,7 +43,7 @@ func (h *LessonController) List(c *gin.Context) {
 	}
 	// Section-first read: the repository returns sections with units
 	// attached, mirroring the DTO shape, so this is one MapSlice.
-	secs, err := h.lessons.ListSections(c.Request.Context(), req, middleware.Role(c) == enums.UserRoleAdmin)
+	secs, err := h.lessons.ListSections(c.Request.Context(), middleware.UserID(c), req, middleware.Role(c) == enums.UserRoleAdmin)
 	if err != nil {
 		common.Fail(c, err)
 		return

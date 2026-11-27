@@ -51,6 +51,10 @@ services:
       mc anonymous set download local/lesson-audio;
       mc mb -p local/stories;
       mc anonymous set download local/stories;
+      mc mb -p local/toeic;
+      mc anonymous set download local/toeic;
+      mc mb -p local/ielts;
+      mc anonymous set download local/ielts;
       "
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}

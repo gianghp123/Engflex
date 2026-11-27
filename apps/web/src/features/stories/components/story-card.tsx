@@ -4,6 +4,8 @@ import { cn } from "cn";
 import { Bookmark, Clock3, Eye, Headphones } from "lucide-react";
 import { APP_ROUTES } from "#/app/app-route";
 import { CefrBadge } from "#/components/common/cefr-badge";
+import { PremiumBadge } from "#/components/common/premium-badge";
+import { useCanAccessPremium } from "#/features/payments/queries";
 import { m } from "#/paraglide/messages";
 
 export interface StoryCardItem extends StoryItem {
@@ -15,11 +17,15 @@ export interface StoryCardItem extends StoryItem {
 export function StoryCard({ story }: { story: StoryCardItem }) {
 	const minutes = Math.max(1, Math.round(story.duration / 60));
 	const hasAudio = Boolean(story.audioUrl);
+	const canAccessPremium = useCanAccessPremium();
+	const premiumBlocked = story.isPremium && !canAccessPremium;
 
 	return (
 		<Link
-			to={APP_ROUTES.STORIES.DETAIL}
-			params={{ slug: story.slug }}
+			to={
+				premiumBlocked ? APP_ROUTES.PAYMENTS.PRICING : APP_ROUTES.STORIES.DETAIL
+			}
+			params={premiumBlocked ? undefined : { slug: story.slug }}
 			className={cn(
 				"group flex flex-col overflow-hidden rounded-2xl border-2 border-border bg-card p-2 text-left transition-all",
 				"hover:-translate-y-1 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5",
@@ -41,11 +47,12 @@ export function StoryCard({ story }: { story: StoryCardItem }) {
 
 				<div className="pointer-events-none absolute inset-0 rounded-xl ring-1 ring-inset ring-black/10" />
 
-				{story.cefrLevel ? (
-					<div className="absolute top-2 left-2">
+				<div className="absolute top-2 left-2 flex items-center gap-1.5">
+					{story.cefrLevel ? (
 						<CefrBadge value={story.cefrLevel} className="shadow-xs" />
-					</div>
-				) : null}
+					) : null}
+					{story.isPremium ? <PremiumBadge className="shadow-xs" /> : null}
+				</div>
 
 				{hasAudio ? (
 					<div className="absolute right-2 bottom-2 flex items-center gap-1 rounded-full bg-black/75 px-2.5 py-0.5 text-[11px] font-bold text-white shadow-xs backdrop-blur-xs">

@@ -3,6 +3,7 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import { cn } from "cn";
 import {
 	ArrowLeft,
+	BookMarked,
 	BookmarkCheck,
 	GraduationCap,
 	LayoutDashboard,
@@ -63,6 +64,12 @@ const NAV_ITEMS = [
 		to: APP_ROUTES.ADMIN.LESSONS,
 		icon: GraduationCap,
 		tile: "bg-[#dc2626]",
+	},
+	{
+		title: () => m["admin.nav.stories"](),
+		to: APP_ROUTES.ADMIN.STORIES,
+		icon: BookMarked,
+		tile: "bg-[#7c3aed]",
 	},
 	{
 		title: () => m["admin.nav.users"](),

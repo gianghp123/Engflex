@@ -2,7 +2,7 @@ import type {
 	VideoAttemptResponse,
 	VideoExerciseResponse,
 } from "@engflex/contracts";
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { cn } from "cn";
 import { ArrowLeft, Eye, EyeOff } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -49,16 +49,12 @@ import {
 	type LinePractice,
 	useDictationAttempt,
 } from "#/features/videos/use-dictation-attempt";
+import { loadOr404 } from "#/lib/router/route-loader";
 import { m } from "#/paraglide/messages";
 
 export const Route = createFileRoute("/_app/videos/$videoId/dictation")({
-	loader: async ({ context: { queryClient }, params: { videoId } }) => {
-		try {
-			return await queryClient.query(videoDetailQueryOptions(videoId));
-		} catch {
-			throw notFound();
-		}
-	},
+	loader: ({ context: { queryClient }, params: { videoId } }) =>
+		loadOr404(queryClient, videoDetailQueryOptions(videoId)),
 	pendingComponent: DictationPending,
 	component: DictationPage,
 });

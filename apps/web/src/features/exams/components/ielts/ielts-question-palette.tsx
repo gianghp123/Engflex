@@ -1,4 +1,4 @@
-import { Bookmark, ChevronLeft, ChevronRight } from "lucide-react";
+import { Bookmark, ChevronDown, ChevronUp } from "lucide-react";
 import { m } from "#/paraglide/messages";
 
 export interface IeltsPaletteGroup {
@@ -32,77 +32,59 @@ export function IeltsQuestionPalette({
 		totalQuestions > 0 ? Math.round((answeredCount / totalQuestions) * 100) : 0;
 
 	return (
-		<div className="relative flex h-full">
+		<div className="bg-card">
 			<button
 				type="button"
 				onClick={onToggleCollapse}
-				className="absolute -left-3.5 top-1/2 z-20 flex size-7 -translate-y-1/2 items-center justify-center rounded-full border border-border/80 bg-background text-foreground shadow-sm transition-colors hover:bg-muted cursor-pointer"
+				className="flex w-full items-center gap-3 px-4 py-2 text-xs font-semibold hover:bg-muted"
+				aria-expanded={!isCollapsed}
 				aria-label={
 					isCollapsed
 						? m["exams.ielts.take.expandPalette"]()
 						: m["exams.ielts.take.collapsePalette"]()
 				}
 			>
+				<span>{m["exams.ielts.take.progress"]()}</span>
+				<span className="font-mono text-muted-foreground">
+					{answeredCount}/{totalQuestions} ({pct}%)
+				</span>
+				<span className="h-1.5 max-w-40 flex-1 overflow-hidden rounded-full bg-muted">
+					<span
+						className="block h-full bg-emerald-600 transition-all"
+						style={{ width: `${pct}%` }}
+					/>
+				</span>
 				{isCollapsed ? (
-					<ChevronLeft className="size-4" />
+					<ChevronUp className="ml-auto size-4" />
 				) : (
-					<ChevronRight className="size-4" />
+					<ChevronDown className="ml-auto size-4" />
 				)}
 			</button>
-
-			<div
-				className={`flex h-full flex-col border-l border-border/80 bg-card transition-all duration-200 ${
-					isCollapsed ? "w-0 overflow-hidden border-none" : "w-64 md:w-72"
-				}`}
-			>
-				<div className="flex flex-col gap-2 border-b border-border/70 p-4">
-					<div className="flex items-center justify-between text-xs font-bold text-foreground">
-						<span>{m["exams.ielts.take.progress"]()}</span>
-						<span className="font-mono text-muted-foreground">
-							{answeredCount}/{totalQuestions} ({pct}%)
-						</span>
-					</div>
-
-					<div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
-						<div
-							className="h-full bg-emerald-600 transition-all duration-300"
-							style={{ width: `${pct}%` }}
-						/>
-					</div>
-				</div>
-
-				<div className="flex-1 overflow-y-auto p-4 space-y-5 select-none">
+			{!isCollapsed && (
+				<div className="flex gap-5 overflow-x-auto px-4 pb-3">
 					{groups.map((group) => (
-						<div key={group.sectionNumber} className="flex flex-col gap-2">
-							<span className="text-[11px] font-bold tracking-wider text-muted-foreground uppercase">
+						<div
+							key={group.sectionNumber}
+							className="min-w-44 flex-1 space-y-2"
+						>
+							<p className="text-xs font-semibold text-muted-foreground">
 								{group.title}
-							</span>
-
+							</p>
 							<div className="grid grid-cols-5 gap-1.5">
-								{group.questions.map(({ id: qId, questionNumber: num }) => {
-									const isAnswered =
-										answers[qId] != null && answers[qId].trim() !== "";
-									const isBookmarked = bookmarks.has(qId);
-									const isActive = activeQuestionId === qId;
-
+								{group.questions.map(({ id, questionNumber }) => {
+									const answered = Boolean(answers[id]?.trim());
+									const active = activeQuestionId === id;
 									return (
 										<button
-											key={num}
+											key={id}
 											type="button"
-											onClick={() => onSelectQuestion(qId, group.sectionNumber)}
-											className={`relative flex size-8 items-center justify-center rounded-md text-xs font-semibold transition-all cursor-pointer ${
-												isActive
-													? "border-2 border-foreground font-bold shadow-xs"
-													: isAnswered
-														? "bg-sky-500 text-white font-bold"
-														: "border border-border/70 bg-background text-foreground hover:bg-muted"
-											}`}
+											aria-current={active ? "step" : undefined}
+											onClick={() => onSelectQuestion(id, group.sectionNumber)}
+											className={`relative flex h-8 items-center justify-center rounded-md border text-xs font-semibold transition-colors ${answered ? "border-sky-600 bg-sky-600 text-white" : "border-border bg-background hover:bg-muted"} ${active ? "ring-2 ring-foreground ring-offset-1 ring-offset-background" : ""}`}
 										>
-											{num}
-											{isBookmarked && (
-												<span className="absolute -top-1 -right-1 flex size-3 items-center justify-center rounded-full bg-amber-400 text-amber-950">
-													<Bookmark className="size-2 fill-current" />
-												</span>
+											{questionNumber}
+											{bookmarks.has(id) && (
+												<Bookmark className="absolute -right-1 -top-1 size-3 fill-amber-400 text-amber-700" />
 											)}
 										</button>
 									);
@@ -111,7 +93,7 @@ export function IeltsQuestionPalette({
 						</div>
 					))}
 				</div>
-			</div>
+			)}
 		</div>
 	);
 }

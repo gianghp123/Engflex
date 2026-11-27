@@ -1,7 +1,9 @@
-import { useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { cn } from "cn";
+import { Lock } from "lucide-react";
 import { useState } from "react";
 import { APP_ROUTES } from "#/app/app-route";
+import { useCanAccessPremium } from "#/features/payments/queries";
 import type { Video } from "#/features/videos/types";
 import { m } from "#/paraglide/messages";
 import { PracticeChip } from "./practice-chip";
@@ -17,6 +19,8 @@ export function VideoCard({
 }) {
 	const [open, setOpen] = useState(false);
 	const navigate = useNavigate();
+	const canAccessPremium = useCanAccessPremium();
+	const premiumBlocked = video.isPremium && !canAccessPremium;
 	const handleSelectMode = (mode: PracticeMode) => {
 		setOpen(false);
 		if (onSelectMode) {
@@ -40,7 +44,7 @@ export function VideoCard({
 			<article
 				className={cn(
 					"group surface-card-interactive relative flex h-full cursor-pointer flex-col overflow-hidden",
-					video.isPro &&
+					video.isPremium &&
 						"bg-linear-to-b from-card from-55% to-pro-tint [--card-edge-hover:var(--pro)] [--card-edge:var(--pro-border)]",
 				)}
 			>
@@ -50,29 +54,46 @@ export function VideoCard({
 						title={video.title}
 						className={cn(
 							"line-clamp-2 min-h-[42px] text-[15px] leading-[21px] font-bold",
-							video.isPro ? "text-pro" : "text-foreground",
+							video.isPremium ? "text-pro" : "text-foreground",
 						)}
 					>
 						{video.title}
 					</h3>
 					<div className="mt-auto flex items-center justify-between gap-2">
-						<PracticeChip
-							label={m["videos.card.practice.dictation"]()}
-							done={video.practice?.dictation}
-						/>
-						<PracticeChip
-							label={m["videos.card.practice.shadowing"]()}
-							done={video.practice?.shadowing}
-						/>
+						{premiumBlocked ? (
+							<span className="inline-flex items-center gap-1 text-xs font-bold text-muted-foreground">
+								<Lock className="size-3.5" />
+								{m["common.premium.upgradeAction"]()}
+							</span>
+						) : (
+							<>
+								<PracticeChip
+									label={m["videos.card.practice.dictation"]()}
+									done={video.practice?.dictation}
+								/>
+								<PracticeChip
+									label={m["videos.card.practice.shadowing"]()}
+									done={video.practice?.shadowing}
+								/>
+							</>
+						)}
 					</div>
 				</div>
-				<button
-					type="button"
-					aria-label={video.title}
-					aria-haspopup="dialog"
-					onClick={() => setOpen(true)}
-					className="absolute inset-0 cursor-pointer rounded-[22px] focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-ring"
-				/>
+				{premiumBlocked ? (
+					<Link
+						to={APP_ROUTES.PAYMENTS.PRICING}
+						aria-label={video.title}
+						className="absolute inset-0 cursor-pointer rounded-[22px] focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-ring"
+					/>
+				) : (
+					<button
+						type="button"
+						aria-label={video.title}
+						aria-haspopup="dialog"
+						onClick={() => setOpen(true)}
+						className="absolute inset-0 cursor-pointer rounded-[22px] focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-ring"
+					/>
+				)}
 			</article>
 			<PracticeModeDialog
 				open={open}

@@ -1,330 +1,318 @@
 import type { ExamAttempt } from "@engflex/contracts";
-import { useNavigate } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
+import { useHydrated, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { APP_ROUTES } from "#/app/app-route";
-import type {
-	IeltsPassage,
-	IeltsQuestionGroup,
-	IeltsQuestionType,
-} from "#/features/exams/ielts/mock-data";
 import {
+	examKeys,
 	useCancelExamAttempt,
 	usePatchExamAttempt,
 } from "#/features/exams/queries";
 import { m } from "#/paraglide/messages";
+import { IeltsAudio } from "./ielts-audio";
 import { IeltsConfirmModal } from "./ielts-confirm-modal";
 import { IeltsHeader } from "./ielts-header";
 import { IeltsPassagePane } from "./ielts-passage-pane";
-import {
-	type IeltsPaletteGroup,
-	IeltsQuestionPalette,
-} from "./ielts-question-palette";
+import { IeltsQuestionPalette } from "./ielts-question-palette";
 import { IeltsQuestionPane } from "./ielts-question-pane";
 import { IeltsTabBar } from "./ielts-tab-bar";
 
 export function IeltsSession({
-	initialAttempt,
+	initialAttempt: attempt,
 }: {
 	initialAttempt: ExamAttempt;
 }) {
 	const navigate = useNavigate();
+	const hydrated = useHydrated();
+	const queryClient = useQueryClient();
 	const patch = usePatchExamAttempt();
 	const cancel = useCancelExamAttempt();
-
-	const attempt = initialAttempt;
-	const ieltsContent = attempt.examTest?.ieltsContent;
-
-	const sections = ieltsContent?.sections ?? [];
-	const [activeSection, setActiveSection] = useState<number>(
+	const content = attempt.examTest?.ieltsContent;
+	const sections = content?.sections ?? [];
+	const [activeSection, setActiveSection] = useState(
 		sections[0]?.sectionNumber ?? 1,
 	);
 	const [activeQuestionId, setActiveQuestionId] = useState<string | null>(null);
-	const [highlightMode, setHighlightMode] = useState<boolean>(false);
-	const [isPaletteCollapsed, setIsPaletteCollapsed] = useState<boolean>(false);
-	const [actionModal, setActionModal] = useState<"submit" | "exit" | null>(
+	const [highlightMode, setHighlightMode] = useState(false);
+	const [highlightVersion, setHighlightVersion] = useState(0);
+	const [collapsed, setCollapsed] = useState(false);
+	const [action, setAction] = useState<"submit" | "exit" | "reset" | null>(
 		null,
 	);
-
-	const [answers, setAnswers] = useState<Record<string, string>>(() => {
-		const map: Record<string, string> = {};
-		if (attempt.ieltsResult?.answers) {
-			for (const a of attempt.ieltsResult.answers) {
-				if (a.selectedKey) map[a.questionId] = a.selectedKey;
-				else if (a.textValue) map[a.questionId] = a.textValue;
-				else if (a.selectedKeys && a.selectedKeys.length > 0)
-					map[a.questionId] = a.selectedKeys.join(",");
-			}
-		}
-		return map;
-	});
-
-	const [bookmarks, setBookmarks] = useState<Set<string>>(() => {
-		const set = new Set<string>();
-		if (attempt.ieltsResult?.answers) {
-			for (const a of attempt.ieltsResult.answers) {
-				if (a.flagged) set.add(a.questionId);
-			}
-		}
-		return set;
-	});
-
-	const [timeLeft, setTimeLeft] = useState<number>(() => {
-		if (attempt.deadlineAt) {
-			const diff = Math.floor(
-				(new Date(attempt.deadlineAt).getTime() - Date.now()) / 1000,
-			);
-			return Math.max(0, diff);
-		}
-		return 3600;
-	});
-
-	const revisionRef = useRef<number>(attempt.ieltsResult?.revision ?? 1);
+	const [busy, setBusy] = useState(false);
+	const [saveFailed, setSaveFailed] = useState(false);
+	const [saved, setSaved] = useState(false);
+	const changes = useRef(0);
+	const [answers, setAnswers] = useState<Record<string, string>>(() =>
+		Object.fromEntries(
+			(attempt.ieltsResult?.answers ?? []).map((answer) => [
+				answer.questionId,
+				answer.selectedKey ??
+					answer.textValue ??
+					answer.selectedKeys?.join(",") ??
+					"",
+			]),
+		),
+	);
+	const [bookmarks, setBookmarks] = useState(
+		() =>
+			new Set(
+				(attempt.ieltsResult?.answers ?? [])
+					.filter((answer) => answer.flagged)
+					.map((answer) => answer.questionId),
+			),
+	);
+	const [timeLeft, setTimeLeft] = useState<number | null>(() =>
+		attempt.deadlineAt && attempt.startedAt
+			? Math.max(
+					0,
+					Math.ceil(
+						(new Date(attempt.deadlineAt).getTime() -
+							new Date(attempt.startedAt).getTime()) /
+							1000,
+					),
+				)
+			: null,
+	);
 	const answersRef = useRef(answers);
-	answersRef.current = answers;
 	const bookmarksRef = useRef(bookmarks);
-	bookmarksRef.current = bookmarks;
-	const handleSubmitRef = useRef<() => Promise<void>>(() => Promise.resolve());
+	const revision = useRef(attempt.ieltsResult?.revision ?? 1);
+	const debounce = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+	const queue = useRef<Promise<unknown>>(Promise.resolve());
+	const locked = useRef(false);
+	const submitRef = useRef<() => Promise<void>>(async () => {});
 
+	useEffect(() => () => clearTimeout(debounce.current), []);
 	useEffect(() => {
-		if (attempt.mode !== "exam" || !attempt.deadlineAt) return;
+		if (!attempt.deadlineAt || attempt.mode !== "exam") return;
 		const deadline = new Date(attempt.deadlineAt).getTime();
-		const timer = setInterval(() => {
+		const tick = () => {
 			const remaining = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
 			setTimeLeft(remaining);
-			if (remaining === 0) {
+			if (!remaining) {
 				clearInterval(timer);
-				void handleSubmitRef.current();
+				void submitRef.current();
 			}
-		}, 1000);
+		};
+		const timer = setInterval(tick, 1000);
+		tick();
 		return () => clearInterval(timer);
 	}, [attempt.deadlineAt, attempt.mode]);
 
-	const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(
-		undefined,
-	);
-	const saveQueue = useRef<Promise<unknown>>(Promise.resolve());
-
-	useEffect(() => () => clearTimeout(debounceTimerRef.current), []);
-
-	const saveToServer = (submit = false) => {
-		clearTimeout(debounceTimerRef.current);
-		const currentAnswers = answersRef.current;
-		const currentBookmarks = bookmarksRef.current;
-		const answerPayload = sections.flatMap((section) =>
+	const save = (submit = false) => {
+		clearTimeout(debounce.current);
+		setSaved(false);
+		const savedVersion = changes.current;
+		const snapshot = answersRef.current;
+		const flags = bookmarksRef.current;
+		const payload = sections.flatMap((section) =>
 			section.questionGroups.flatMap((group) =>
 				group.questions.map((question) => {
-					const value = currentAnswers[question.id] || null;
-					const hasOptions = Boolean(question.options?.length);
+					const value = snapshot[question.id] || null;
+					const multi = group.type === "multiple_choice_multiple";
 					return {
 						questionId: question.id,
-						selectedKey: hasOptions ? value : null,
-						textValue: hasOptions ? null : value,
-						flagged: currentBookmarks.has(question.id),
+						selectedKey: question.options?.length && !multi ? value : null,
+						selectedKeys: multi && value ? value.split(",") : [],
+						textValue: question.options?.length ? null : value,
+						flagged: flags.has(question.id),
 					};
 				}),
 			),
 		);
-
-		const pending = saveQueue.current
+		const pending = queue.current
 			.catch(() => {})
 			.then(async () => {
 				const updated = await patch.mutateAsync({
 					attemptId: attempt.id,
-					req: {
-						revision: revisionRef.current,
-						submit,
-						answers: answerPayload,
-					},
+					req: { revision: revision.current, submit, answers: payload },
 				});
-				revisionRef.current =
-					updated.ieltsResult?.revision ?? revisionRef.current;
+				revision.current = updated.ieltsResult?.revision ?? revision.current;
+				queryClient.setQueryData(examKeys.attempt(attempt.id), updated);
+				setSaveFailed(false);
+				setSaved(changes.current === savedVersion);
 			});
-		saveQueue.current = pending;
+		queue.current = pending;
 		return pending;
 	};
-
 	const scheduleSave = () => {
-		clearTimeout(debounceTimerRef.current);
-		debounceTimerRef.current = setTimeout(() => {
-			void saveToServer()
-				.then(() => toast.success(m["exams.ielts.take.saved"]()))
-				.catch(() => toast.error(m["exams.ielts.take.saveFailed"]()));
-		}, 2000);
-	};
-
-	const handleAnswerChange = (questionId: string, answer: string) => {
-		setAnswers((prev) => ({ ...prev, [questionId]: answer }));
-		scheduleSave();
-	};
-
-	const handleToggleBookmark = (questionId: string) => {
-		setBookmarks((prev) => {
-			const next = new Set(prev);
-			if (next.has(questionId)) next.delete(questionId);
-			else next.add(questionId);
-			return next;
-		});
-		scheduleSave();
-	};
-
-	const handleSubmit = async () => {
-		setActionModal(null);
-		try {
-			await saveToServer(true);
-
-			void navigate({
-				to: APP_ROUTES.EXAMS.IELTS.RESULT,
-				params: { id: attempt.id },
-				replace: true,
+		changes.current += 1;
+		setSaved(false);
+		clearTimeout(debounce.current);
+		debounce.current = setTimeout(() => {
+			void save().catch(() => {
+				setSaveFailed(true);
+				toast.error(m["exams.ielts.take.saveFailed"]());
 			});
+		}, 1000);
+	};
+	const perform = async (operation: "submit" | "exit" | "reset") => {
+		if (locked.current) return;
+		locked.current = true;
+		setBusy(true);
+		try {
+			if (operation === "reset") {
+				changes.current += 1;
+				setSaved(false);
+				answersRef.current = {};
+				bookmarksRef.current = new Set();
+				setAnswers({});
+				setBookmarks(new Set());
+				setHighlightVersion((version) => version + 1);
+			}
+			await save(operation === "submit");
+			if (operation === "exit") await cancel.mutateAsync(attempt.id);
+			setAction(null);
+			if (operation !== "reset") {
+				await navigate(
+					operation === "submit"
+						? {
+								to: APP_ROUTES.EXAMS.IELTS.RESULT,
+								params: { id: attempt.id },
+								replace: true,
+							}
+						: { to: APP_ROUTES.EXAMS.IELTS.HISTORY, replace: true },
+				);
+			}
 		} catch {
+			setSaveFailed(true);
 			toast.error(m["exams.ielts.take.saveFailed"]());
+		} finally {
+			locked.current = false;
+			setBusy(false);
 		}
 	};
-	handleSubmitRef.current = handleSubmit;
-
-	const handleExit = async () => {
-		setActionModal(null);
-		try {
-			await saveToServer();
-			await cancel.mutateAsync(attempt.id);
-			void navigate({
-				to: APP_ROUTES.EXAMS.IELTS.HISTORY,
-				replace: true,
-			});
-		} catch {
-			toast.error(m["exams.ielts.take.saveFailed"]());
-		}
-	};
-
-	const currentSection =
-		sections.find((s) => s.sectionNumber === activeSection) ?? sections[0];
-
-	const adaptedPassages: IeltsPassage[] = (currentSection?.passages ?? []).map(
-		(p) => ({
-			id: p.id,
-			title: p.title ?? "",
-			paragraphs: p.content.map((c) => c.text),
-		}),
-	);
-
-	const adaptedGroups: IeltsQuestionGroup[] = (
-		currentSection?.questionGroups ?? []
-	).map((g) => ({
-		id: g.id,
-		title: g.title ?? undefined,
-		instruction: g.instructions ?? g.title ?? "",
-		passageRefId: currentSection?.passages[0]?.id ?? "",
-		questions: g.questions.map((q) => ({
-			id: q.id,
-			number: q.questionNumber,
-			type: (q.options && q.options.length > 0
-				? "matching"
-				: "fill_blank") as IeltsQuestionType,
-			prompt: q.stem ?? undefined,
-			options: q.options?.map((opt) => `${opt.key}. ${opt.text}`),
-			optionKeys: q.options?.map((opt) => opt.key),
-			correctAnswer: "",
-			explanation: "",
-		})),
-	}));
-
-	const paletteGroups: IeltsPaletteGroup[] = sections.map((s) => ({
-		sectionNumber: s.sectionNumber,
-		title: s.title || `Section ${s.sectionNumber}`,
-		questions: s.questionGroups.flatMap((g) =>
-			g.questions.map((q) => ({ id: q.id, questionNumber: q.questionNumber })),
+	submitRef.current = () => perform("submit");
+	const current =
+		sections.find((section) => section.sectionNumber === activeSection) ??
+		sections[0];
+	const palette = sections.map((section) => ({
+		sectionNumber: section.sectionNumber,
+		title: section.title,
+		questions: section.questionGroups.flatMap((group) =>
+			group.questions.map((question) => ({
+				id: question.id,
+				questionNumber: question.questionNumber,
+			})),
 		),
 	}));
-
-	const totalQuestions = paletteGroups.reduce(
-		(sum, g) => sum + g.questions.length,
+	const tabs = palette.map((section) => ({
+		sectionNumber: section.sectionNumber,
+		label: m["exams.ielts.take.section"]({ number: section.sectionNumber }),
+		totalQuestions: section.questions.length,
+		answeredCount: section.questions.filter((question) =>
+			answers[question.id]?.trim(),
+		).length,
+	}));
+	const total = palette.reduce(
+		(count, section) => count + section.questions.length,
 		0,
 	);
-	const answeredCount = Object.keys(answers).filter(
-		(k) => answers[k]?.trim() !== "",
-	).length;
-
-	const tabSections = sections.map((s) => {
-		const sQuestions = s.questionGroups.flatMap((g) => g.questions);
-		const answered = sQuestions.filter(
-			(q) => answers[q.id] && answers[q.id].trim() !== "",
-		).length;
-		return {
-			sectionNumber: s.sectionNumber,
-			label: m["exams.ielts.take.section"]({ number: s.sectionNumber }),
-			totalQuestions: sQuestions.length,
-			answeredCount: answered,
-		};
-	});
+	const questionProps = {
+		groups: current?.questionGroups ?? [],
+		answers,
+		bookmarks,
+		activeQuestionId,
+		disabled: busy || !hydrated,
+		onAnswerChange: (id: string, value: string) => {
+			answersRef.current = { ...answersRef.current, [id]: value };
+			setAnswers(answersRef.current);
+			scheduleSave();
+		},
+		onToggleBookmark: (id: string) => {
+			const next = new Set(bookmarksRef.current);
+			if (next.has(id)) next.delete(id);
+			else next.add(id);
+			bookmarksRef.current = next;
+			setBookmarks(next);
+			scheduleSave();
+		},
+	};
+	const confirmation = (
+		<IeltsConfirmModal
+			action={action}
+			answeredCount={
+				Object.values(answers).filter((value) => value.trim()).length
+			}
+			totalCount={total}
+			pending={busy}
+			onClose={() => {
+				if (!busy) setAction(null);
+			}}
+			onConfirm={() => {
+				if (action) void perform(action);
+			}}
+		/>
+	);
 
 	return (
-		<div className="flex h-screen w-screen flex-col overflow-hidden bg-background">
+		<div className="flex h-[calc(100dvh-3.5rem)] w-full flex-col overflow-hidden bg-background">
 			<IeltsHeader
-				testTitle={attempt.examTest?.title ?? "IELTS Test"}
+				testTitle={attempt.examTest?.title ?? m["exams.ielts.hub.title"]()}
 				timeLeft={timeLeft}
 				highlightMode={highlightMode}
-				onToggleHighlight={() => setHighlightMode((prev) => !prev)}
-				onSubmit={() => setActionModal("submit")}
-				onExit={() => setActionModal("exit")}
-				onReset={() => {}}
+				onToggleHighlight={() => setHighlightMode((value) => !value)}
+				onSubmit={() => setAction("submit")}
+				onExit={() => setAction("exit")}
+				onReset={() => setAction("reset")}
+				pending={busy || !hydrated}
 			/>
-
-			<div className="flex flex-1 overflow-hidden">
-				<div className="flex-1 overflow-hidden border-r border-border/80">
+			{saveFailed && (
+				<p
+					role="alert"
+					className="shrink-0 bg-destructive/10 p-2 text-center text-sm text-destructive"
+				>
+					{m["exams.ielts.take.saveFailed"]()}
+				</p>
+			)}
+			{!saveFailed && saved && (
+				<output className="sr-only">{m["exams.ielts.take.saved"]()}</output>
+			)}
+			{current?.audioAssetId && (
+				<div className="shrink-0 px-4 py-2">
+					<IeltsAudio
+						key={current.audioAssetId}
+						identity={current.audioAssetId}
+					/>
+				</div>
+			)}
+			<div
+				inert={!hydrated || busy}
+				className={`grid min-h-0 flex-1 ${current?.passages.length ? "grid-cols-1 grid-rows-2 md:grid-cols-2 md:grid-rows-1" : "grid-cols-1"}`}
+			>
+				{Boolean(current?.passages.length) && (
 					<IeltsPassagePane
-						passages={adaptedPassages}
+						key={`${activeSection}-${highlightVersion}`}
+						passages={current?.passages ?? []}
 						highlightMode={highlightMode}
-						onClearHighlights={() => {}}
 					/>
-				</div>
-
-				<div className="flex-1 overflow-hidden">
-					<IeltsQuestionPane
-						groups={adaptedGroups}
-						answers={answers}
-						bookmarks={bookmarks}
-						activeQuestionId={activeQuestionId}
-						onAnswerChange={handleAnswerChange}
-						onToggleBookmark={handleToggleBookmark}
-					/>
-				</div>
+				)}
+				<IeltsQuestionPane {...questionProps} />
 			</div>
-
-			<div className="shrink-0 border-t border-border/80 bg-background/95 backdrop-blur">
+			<div
+				className="shrink-0 border-t border-border"
+				inert={!hydrated || busy}
+			>
 				<IeltsTabBar
-					sections={tabSections}
+					sections={tabs}
 					activeSection={activeSection}
 					onSelectSection={setActiveSection}
 				/>
 				<IeltsQuestionPalette
-					groups={paletteGroups}
+					groups={palette}
 					answers={answers}
 					bookmarks={bookmarks}
 					activeQuestionId={activeQuestionId}
-					isCollapsed={isPaletteCollapsed}
-					onToggleCollapse={() => setIsPaletteCollapsed((prev) => !prev)}
-					onSelectQuestion={(qId, secNum) => {
-						setActiveQuestionId(qId);
-						if (secNum !== activeSection) {
-							setActiveSection(secNum);
-						}
+					isCollapsed={collapsed}
+					onToggleCollapse={() => setCollapsed((value) => !value)}
+					onSelectQuestion={(id, section) => {
+						setActiveSection(section);
+						setActiveQuestionId(id);
 					}}
 				/>
 			</div>
-
-			{actionModal && (
-				<IeltsConfirmModal
-					action={actionModal}
-					answeredCount={answeredCount}
-					totalCount={totalQuestions}
-					onConfirm={
-						actionModal === "submit" ? () => void handleSubmit() : handleExit
-					}
-					onClose={() => setActionModal(null)}
-				/>
-			)}
+			{confirmation}
 		</div>
 	);
 }

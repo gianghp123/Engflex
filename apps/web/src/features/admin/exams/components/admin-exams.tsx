@@ -1,6 +1,7 @@
 import { useAuth } from "@clerk/tanstack-react-start";
 import { useQuery } from "@tanstack/react-query";
 import { useStore } from "@tanstack/react-store";
+import { FolderOpen, Pencil, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { CardShell } from "#/components/common/card-shell";
 import { Pager } from "#/components/common/pager";
@@ -8,6 +9,11 @@ import { SubmitButton } from "#/components/common/submit-button";
 import { Button } from "#/components/ui/button";
 import { FieldError } from "#/components/ui/field";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "#/components/ui/tabs";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger,
+} from "#/components/ui/tooltip";
 import { ConfirmDeleteDialog } from "#/features/admin/components/confirm-delete-dialog";
 import { DataTable } from "#/features/admin/components/data-table";
 import { ResourceFormDialog } from "#/features/admin/components/resource-form-dialog";
@@ -157,6 +163,7 @@ export function AdminExams({
 									{
 										id: "parts",
 										header: m["admin.exams.editor.parts"](),
+										className: "w-24",
 										cell: (row) => row.content?.parts.length ?? 0,
 									},
 								]}
@@ -207,34 +214,63 @@ export function AdminExams({
 							{
 								id: "tests",
 								header: m["admin.exams.page.tests"](),
+								className: "w-24",
 								cell: (row) => row.tests.length,
 							},
 							{
 								id: "actions",
 								header: m["admin.table.actions"](),
+								className: "w-36",
 								cell: (row) => (
-									<div className="flex flex-wrap gap-2">
-										<Button
-											variant="outline"
-											onClick={() => setSelectedId(row.id)}
-										>
-											{m["admin.exams.page.open"]()}
-										</Button>
-										<Button
-											variant="outline"
-											onClick={() => {
-												setCategoryForm(structuredClone(row));
-												setError(false);
-											}}
-										>
-											{m["admin.actions.edit"]()}
-										</Button>
-										<Button
-											variant="ghost"
-											onClick={() => setRemove({ categoryId: row.id })}
-										>
-											{m["admin.actions.delete"]()}
-										</Button>
+									<div className="flex flex-wrap gap-1">
+										<Tooltip>
+											<TooltipTrigger asChild>
+												<Button
+													variant="outline"
+													size="icon-sm"
+													aria-label={m["admin.exams.page.open"]()}
+													onClick={() => setSelectedId(row.id)}
+												>
+													<FolderOpen />
+												</Button>
+											</TooltipTrigger>
+											<TooltipContent>
+												{m["admin.exams.page.open"]()}
+											</TooltipContent>
+										</Tooltip>
+										<Tooltip>
+											<TooltipTrigger asChild>
+												<Button
+													variant="outline"
+													size="icon-sm"
+													aria-label={m["admin.actions.edit"]()}
+													onClick={() => {
+														setCategoryForm(structuredClone(row));
+														setError(false);
+													}}
+												>
+													<Pencil />
+												</Button>
+											</TooltipTrigger>
+											<TooltipContent>
+												{m["admin.actions.edit"]()}
+											</TooltipContent>
+										</Tooltip>
+										<Tooltip>
+											<TooltipTrigger asChild>
+												<Button
+													variant="ghost"
+													size="icon-sm"
+													aria-label={m["admin.actions.delete"]()}
+													onClick={() => setRemove({ categoryId: row.id })}
+												>
+													<Trash2 />
+												</Button>
+											</TooltipTrigger>
+											<TooltipContent>
+												{m["admin.actions.delete"]()}
+											</TooltipContent>
+										</Tooltip>
 									</div>
 								),
 							},
@@ -266,33 +302,53 @@ export function AdminExams({
 									{
 										id: "parts",
 										header: m["admin.exams.editor.parts"](),
+										className: "w-24",
 										cell: (row) => row.content.parts.length,
 									},
 									{
 										id: "actions",
 										header: m["admin.table.actions"](),
+										className: "w-28",
 										cell: (row) => (
-											<div className="flex gap-2">
-												<Button
-													variant="outline"
-													onClick={() => {
-														setTestForm(row);
-														setError(false);
-													}}
-												>
-													{m["admin.actions.edit"]()}
-												</Button>
-												<Button
-													variant="ghost"
-													onClick={() =>
-														setRemove({
-															categoryId: category.id,
-															testId: row.id,
-														})
-													}
-												>
-													{m["admin.actions.delete"]()}
-												</Button>
+											<div className="flex gap-1">
+												<Tooltip>
+													<TooltipTrigger asChild>
+														<Button
+															variant="outline"
+															size="icon-sm"
+															aria-label={m["admin.actions.edit"]()}
+															onClick={() => {
+																setTestForm(row);
+																setError(false);
+															}}
+														>
+															<Pencil />
+														</Button>
+													</TooltipTrigger>
+													<TooltipContent>
+														{m["admin.actions.edit"]()}
+													</TooltipContent>
+												</Tooltip>
+												<Tooltip>
+													<TooltipTrigger asChild>
+														<Button
+															variant="ghost"
+															size="icon-sm"
+															aria-label={m["admin.actions.delete"]()}
+															onClick={() =>
+																setRemove({
+																	categoryId: category.id,
+																	testId: row.id,
+																})
+															}
+														>
+															<Trash2 />
+														</Button>
+													</TooltipTrigger>
+													<TooltipContent>
+														{m["admin.actions.delete"]()}
+													</TooltipContent>
+												</Tooltip>
 											</div>
 										),
 									},

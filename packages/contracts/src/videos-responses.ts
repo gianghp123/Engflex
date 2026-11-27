@@ -76,6 +76,78 @@ export interface VideoExerciseResponse {
 }
 
 //////////
+// source: video_pronounce.go
+
+/**
+ * PhoneDetail is one mispronounced phone: expected vs heard IPA with confidence.
+ */
+export interface PhoneDetail {
+  expected: string;
+  heard: string;
+  confidence: number /* float64 */;
+}
+/**
+ * ReferencePhone is one reference word's expected IPA, in sentence order.
+ */
+export interface ReferencePhone {
+  word: string;
+  phones: string;
+}
+/**
+ * MispronouncedWord is one engine-flagged word: expected vs heard IPA.
+ */
+export interface MispronouncedWord {
+  word: string;
+  expected: string;
+  heard: string;
+  confidence: number /* float64 */;
+  phones: PhoneDetail[];
+  tip: string;
+}
+/**
+ * Prosody carries the learner's pitch and energy contours, downsampled by
+ * the engine to at most 120 points each.
+ */
+export interface Prosody {
+  f0: number /* float64 */[];
+  energy: number /* float64 */[];
+}
+/**
+ * VideoPronunciationResult is the engine's assessment of one shadowing take
+ * against its transcript line. Named distinctly from lessons'
+ * PronunciationResult (otherwise structurally identical) because swag
+ * resolves @Success comment types by package name alone — two "responses"
+ * packages both exporting the same type name is ambiguous to it even though
+ * Go itself scopes them fine.
+ */
+export interface VideoPronunciationResult {
+  score: number /* float64 */;
+  transcription: string;
+  phonemeErrorRate: number /* float64 */;
+  wordErrorRate: number /* float64 */;
+  acousticDistance: number /* float64 */;
+  errors: MispronouncedWord[];
+  prosody: Prosody;
+  modelCurve: number /* float64 */[];
+  learnerCurve: number /* float64 */[];
+  referencePhones: ReferencePhone[];
+  feedback: string;
+}
+/**
+ * ShadowingLineResult is the persisted summary of one scored take, stored
+ * under VideoProgressPayload.Transcripts[transcriptId] alongside dictation's
+ * DictationLineResult — only the summary survives (score/feedback/what the
+ * engine heard), not the full chip/curve detail the live panel renders once
+ * and never needs again.
+ */
+export interface ShadowingLineResult {
+  score: number /* float64 */;
+  feedback: string;
+  transcription: string;
+  attemptedAt: string /* RFC3339 */;
+}
+
+//////////
 // source: video_transcript.go
 
 export interface VideoTranscriptResponse {

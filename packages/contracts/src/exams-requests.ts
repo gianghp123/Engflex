@@ -13,6 +13,16 @@ export interface StartAttempt {
 }
 
 //////////
+// source: category.go
+
+export interface CreateCategory {
+  slug: string;
+  title: string;
+  type: ExamType;
+  subType?: ExamSubType;
+}
+
+//////////
 // source: patch.go
 
 export interface PatchAttempt {

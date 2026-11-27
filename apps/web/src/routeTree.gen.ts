@@ -23,6 +23,7 @@ import { Route as AdminExamsRouteImport } from './routes/admin/exams'
 import { Route as AdminLessonsRouteImport } from './routes/admin/lessons'
 import { Route as AdminPremiumRouteImport } from './routes/admin/premium'
 import { Route as AdminScenariosRouteImport } from './routes/admin/scenarios'
+import { Route as AdminStoriesRouteImport } from './routes/admin/stories'
 import { Route as AdminUsersRouteImport } from './routes/admin/users'
 import { Route as AdminVideosRouteImport } from './routes/admin/videos'
 import { Route as AdminVocabularyRouteImport } from './routes/admin/vocabulary'
@@ -134,6 +135,11 @@ const AdminPremiumRoute = AdminPremiumRouteImport.update({
 const AdminScenariosRoute = AdminScenariosRouteImport.update({
   id: '/scenarios',
   path: '/scenarios',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminStoriesRoute = AdminStoriesRouteImport.update({
+  id: '/stories',
+  path: '/stories',
   getParentRoute: () => AdminRouteRoute,
 } as any)
 const AdminUsersRoute = AdminUsersRouteImport.update({
@@ -381,6 +387,7 @@ export interface FileRoutesByFullPath {
   '/admin/lessons': typeof AdminLessonsRoute
   '/admin/premium': typeof AdminPremiumRoute
   '/admin/scenarios': typeof AdminScenariosRoute
+  '/admin/stories': typeof AdminStoriesRoute
   '/admin/users': typeof AdminUsersRoute
   '/admin/videos': typeof AdminVideosRoute
   '/admin/vocabulary': typeof AdminVocabularyRoute
@@ -438,6 +445,7 @@ export interface FileRoutesByTo {
   '/admin/lessons': typeof AdminLessonsRoute
   '/admin/premium': typeof AdminPremiumRoute
   '/admin/scenarios': typeof AdminScenariosRoute
+  '/admin/stories': typeof AdminStoriesRoute
   '/admin/users': typeof AdminUsersRoute
   '/admin/videos': typeof AdminVideosRoute
   '/admin/vocabulary': typeof AdminVocabularyRoute
@@ -498,6 +506,7 @@ export interface FileRoutesById {
   '/admin/lessons': typeof AdminLessonsRoute
   '/admin/premium': typeof AdminPremiumRoute
   '/admin/scenarios': typeof AdminScenariosRoute
+  '/admin/stories': typeof AdminStoriesRoute
   '/admin/users': typeof AdminUsersRoute
   '/admin/videos': typeof AdminVideosRoute
   '/admin/vocabulary': typeof AdminVocabularyRoute
@@ -558,6 +567,7 @@ export interface FileRouteTypes {
     | '/admin/lessons'
     | '/admin/premium'
     | '/admin/scenarios'
+    | '/admin/stories'
     | '/admin/users'
     | '/admin/videos'
     | '/admin/vocabulary'
@@ -615,6 +625,7 @@ export interface FileRouteTypes {
     | '/admin/lessons'
     | '/admin/premium'
     | '/admin/scenarios'
+    | '/admin/stories'
     | '/admin/users'
     | '/admin/videos'
     | '/admin/vocabulary'
@@ -674,6 +685,7 @@ export interface FileRouteTypes {
     | '/admin/lessons'
     | '/admin/premium'
     | '/admin/scenarios'
+    | '/admin/stories'
     | '/admin/users'
     | '/admin/videos'
     | '/admin/vocabulary'
@@ -834,6 +846,13 @@ declare module '@tanstack/react-router' {
       path: '/scenarios'
       fullPath: '/admin/scenarios'
       preLoaderRoute: typeof AdminScenariosRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/stories': {
+      id: '/admin/stories'
+      path: '/stories'
+      fullPath: '/admin/stories'
+      preLoaderRoute: typeof AdminStoriesRouteImport
       parentRoute: typeof AdminRouteRoute
     }
     '/admin/users': {
@@ -1229,6 +1248,7 @@ interface AdminRouteRouteChildren {
   AdminLessonsRoute: typeof AdminLessonsRoute
   AdminPremiumRoute: typeof AdminPremiumRoute
   AdminScenariosRoute: typeof AdminScenariosRoute
+  AdminStoriesRoute: typeof AdminStoriesRoute
   AdminUsersRoute: typeof AdminUsersRoute
   AdminVideosRoute: typeof AdminVideosRoute
   AdminVocabularyRoute: typeof AdminVocabularyRoute
@@ -1240,6 +1260,7 @@ const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminLessonsRoute: AdminLessonsRoute,
   AdminPremiumRoute: AdminPremiumRoute,
   AdminScenariosRoute: AdminScenariosRoute,
+  AdminStoriesRoute: AdminStoriesRoute,
   AdminUsersRoute: AdminUsersRoute,
   AdminVideosRoute: AdminVideosRoute,
   AdminVocabularyRoute: AdminVocabularyRoute,

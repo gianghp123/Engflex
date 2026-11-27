@@ -1,6 +1,7 @@
 # engflex-ultimate — Contributor Guide
 
 ## NOTE
+- MinIO: đọc [docs/minio/README.md](docs/minio/README.md) trước khi làm việc với bucket, object key hoặc media; tài liệu đối chiếu MinIO local ngày 11/11/2026.
 - always ask or read real code if you have any confusion, DO NOT GUESSING.
 
 > Stack: Go + Gin + GORM (control plane), PostgreSQL, Clerk auth.

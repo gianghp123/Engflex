@@ -1,5 +1,5 @@
 import type { VocabularyDeckDetail } from "@engflex/contracts";
-import { Plus } from "lucide-react";
+import { Eye, EyeOff, Layers, Pencil, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Badge } from "#/components/ui/badge";
@@ -15,6 +15,11 @@ import {
 } from "#/components/ui/select";
 import { Switch } from "#/components/ui/switch";
 import { Textarea } from "#/components/ui/textarea";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger,
+} from "#/components/ui/tooltip";
 import { ConfirmDeleteDialog } from "#/features/admin/components/confirm-delete-dialog";
 import {
 	DataTable,
@@ -171,15 +176,22 @@ export function DecksPanel() {
 
 	const columns: DataTableColumn<VocabularyDeckDetail>[] = [
 		{ id: "name", header: "Name", cell: (row) => row.name },
-		{ id: "level", header: "Level", cell: (row) => row.level || "—" },
+		{
+			id: "level",
+			header: "Level",
+			className: "w-24",
+			cell: (row) => row.level || "—",
+		},
 		{
 			id: "category",
 			header: "Category",
+			className: "w-36",
 			cell: (row) => row.category?.name ?? "—",
 		},
 		{
 			id: "status",
 			header: m["admin.table.status"](),
+			className: "w-28",
 			cell: (row) => (
 				<div className="flex items-center gap-1.5">
 					<StatusBadge
@@ -194,42 +206,73 @@ export function DecksPanel() {
 		{
 			id: "actions",
 			header: m["admin.table.actions"](),
+			className: "w-44",
 			cell: (row) => (
-				<div className="flex items-center gap-2">
-					<Button
-						type="button"
-						variant="outline"
-						size="sm"
-						onClick={() => setItemsDeck(row)}
-					>
-						Cards
-					</Button>
-					<Button
-						type="button"
-						variant="outline"
-						size="sm"
-						onClick={() => openEdit(row)}
-					>
-						{m["admin.actions.edit"]()}
-					</Button>
-					<Button
-						type="button"
-						variant="outline"
-						size="sm"
-						onClick={() => togglePublish(row)}
-					>
-						{row.status === "published"
-							? m["admin.actions.unpublish"]()
-							: m["admin.actions.publish"]()}
-					</Button>
-					<Button
-						type="button"
-						variant="ghost"
-						size="sm"
-						onClick={() => setDeleteTarget(row)}
-					>
-						{m["admin.actions.delete"]()}
-					</Button>
+				<div className="flex items-center gap-1">
+					<Tooltip>
+						<TooltipTrigger asChild>
+							<Button
+								type="button"
+								variant="outline"
+								size="icon-sm"
+								aria-label="Cards"
+								onClick={() => setItemsDeck(row)}
+							>
+								<Layers />
+							</Button>
+						</TooltipTrigger>
+						<TooltipContent>Cards</TooltipContent>
+					</Tooltip>
+					<Tooltip>
+						<TooltipTrigger asChild>
+							<Button
+								type="button"
+								variant="outline"
+								size="icon-sm"
+								aria-label={m["admin.actions.edit"]()}
+								onClick={() => openEdit(row)}
+							>
+								<Pencil />
+							</Button>
+						</TooltipTrigger>
+						<TooltipContent>{m["admin.actions.edit"]()}</TooltipContent>
+					</Tooltip>
+					<Tooltip>
+						<TooltipTrigger asChild>
+							<Button
+								type="button"
+								variant="outline"
+								size="icon-sm"
+								aria-label={
+									row.status === "published"
+										? m["admin.actions.unpublish"]()
+										: m["admin.actions.publish"]()
+								}
+								onClick={() => togglePublish(row)}
+							>
+								{row.status === "published" ? <EyeOff /> : <Eye />}
+							</Button>
+						</TooltipTrigger>
+						<TooltipContent>
+							{row.status === "published"
+								? m["admin.actions.unpublish"]()
+								: m["admin.actions.publish"]()}
+						</TooltipContent>
+					</Tooltip>
+					<Tooltip>
+						<TooltipTrigger asChild>
+							<Button
+								type="button"
+								variant="ghost"
+								size="icon-sm"
+								aria-label={m["admin.actions.delete"]()}
+								onClick={() => setDeleteTarget(row)}
+							>
+								<Trash2 />
+							</Button>
+						</TooltipTrigger>
+						<TooltipContent>{m["admin.actions.delete"]()}</TooltipContent>
+					</Tooltip>
 				</div>
 			),
 		},

@@ -1,5 +1,5 @@
 import type { CEFR, Gender, Persona } from "@engflex/contracts";
-import { Plus } from "lucide-react";
+import { Pencil, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "#/components/ui/button";
@@ -13,6 +13,11 @@ import {
 	SelectValue,
 } from "#/components/ui/select";
 import { Textarea } from "#/components/ui/textarea";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger,
+} from "#/components/ui/tooltip";
 import { ConfirmDeleteDialog } from "#/features/admin/components/confirm-delete-dialog";
 import {
 	DataTable,
@@ -134,34 +139,58 @@ export function PersonasPanel() {
 
 	const columns: DataTableColumn<Persona>[] = [
 		{ id: "name", header: "Name", cell: (row) => row.name },
-		{ id: "roleTitle", header: "Role", cell: (row) => row.roleTitle },
-		{ id: "gender", header: "Gender", cell: (row) => row.gender },
+		{
+			id: "roleTitle",
+			header: "Role",
+			className: "w-36",
+			cell: (row) => row.roleTitle,
+		},
+		{
+			id: "gender",
+			header: "Gender",
+			className: "w-24",
+			cell: (row) => row.gender,
+		},
 		{
 			id: "cefr",
 			header: "Default CEFR",
+			className: "w-28",
 			cell: (row) => row.defaultCefr ?? "—",
 		},
 		{
 			id: "actions",
 			header: m["admin.table.actions"](),
+			className: "w-28",
 			cell: (row) => (
-				<div className="flex items-center gap-2">
-					<Button
-						type="button"
-						variant="outline"
-						size="sm"
-						onClick={() => openEdit(row)}
-					>
-						{m["admin.actions.edit"]()}
-					</Button>
-					<Button
-						type="button"
-						variant="ghost"
-						size="sm"
-						onClick={() => setDeleteTarget(row)}
-					>
-						{m["admin.actions.delete"]()}
-					</Button>
+				<div className="flex items-center gap-1">
+					<Tooltip>
+						<TooltipTrigger asChild>
+							<Button
+								type="button"
+								variant="outline"
+								size="icon-sm"
+								aria-label={m["admin.actions.edit"]()}
+								onClick={() => openEdit(row)}
+							>
+								<Pencil />
+							</Button>
+						</TooltipTrigger>
+						<TooltipContent>{m["admin.actions.edit"]()}</TooltipContent>
+					</Tooltip>
+					<Tooltip>
+						<TooltipTrigger asChild>
+							<Button
+								type="button"
+								variant="ghost"
+								size="icon-sm"
+								aria-label={m["admin.actions.delete"]()}
+								onClick={() => setDeleteTarget(row)}
+							>
+								<Trash2 />
+							</Button>
+						</TooltipTrigger>
+						<TooltipContent>{m["admin.actions.delete"]()}</TooltipContent>
+					</Tooltip>
 				</div>
 			),
 		},

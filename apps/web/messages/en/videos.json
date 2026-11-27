@@ -149,6 +149,11 @@
         "practice": "Practice",
         "time": "Time {time}"
       },
+      "attempt": {
+        "saving": "Saving progress…",
+        "saveFailed": "Progress could not be saved.",
+        "loadFailed": "Could not load your shadowing progress."
+      },
       "controls": {
         "autoPause": "Auto pause",
         "largeVideo": "Large video",
@@ -157,7 +162,9 @@
       "record": {
         "start": "Record",
         "stop": "Stop recording",
-        "playback": "Play recording"
+        "playback": "Play recording",
+        "micDenied": "Microphone unavailable. Please allow microphone access and try again.",
+        "scoreFailed": "Could not score this recording. Please try again."
       },
       "transcript": {
         "phonetic": "IPA",

@@ -2,16 +2,20 @@ package controllers
 
 import (
 	"encoding/json"
+	"io"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 
 	"engflex-api/internal/common"
+	"engflex-api/internal/common/enums"
 	"engflex-api/internal/database/models"
 	"engflex-api/internal/modules/videos/dtos/requests"
 	"engflex-api/internal/modules/videos/dtos/responses"
 	"engflex-api/internal/modules/videos/services"
 	"engflex-api/internal/server/middleware"
 	"engflex-api/internal/utils"
+	"engflex-api/internal/voice/pronunciation"
 )
 
 type VideoAttemptController struct {
@@ -69,7 +73,8 @@ func (h *VideoAttemptController) StartAttempt(c *gin.Context) {
 		return
 	}
 	userID := middleware.UserID(c)
-	m, err := h.service.StartAttempt(c.Request.Context(), userID, id, req.Type, req)
+	isAdmin := middleware.Role(c) == enums.UserRoleAdmin
+	m, err := h.service.StartAttempt(c.Request.Context(), userID, id, req.Type, req, isAdmin)
 	if err != nil {
 		common.Fail(c, err)
 		return
@@ -173,4 +178,63 @@ func (h *VideoAttemptController) CompleteAttempt(c *gin.Context) {
 		return
 	}
 	common.OK(c, "attempt completed", toVideoAttemptDTO(m))
+}
+
+// Pronounce godoc
+//
+//	@Summary		Score one shadowing take
+//	@Description	Scores recorded audio against a transcript line's text using the shared pronunciation engine
+//	@Tags			Video Attempts
+//	@Security		BearerAuth
+//	@Accept			multipart/form-data
+//	@Produce		json
+//	@Param			id				path		string	true	"Video Exercise ID (uuid)"
+//	@Param			attemptId		path		string	true	"Attempt ID (uuid)"
+//	@Param			transcriptId	formData	string	true	"Transcript line ID (uuid)"
+//	@Param			audio			formData	file	true	"Recorded audio"
+//	@Success		200				{object}	common.ApiResponse{data=responses.VideoPronunciationResult}	"Pronunciation scored"
+//	@Failure		400				{object}	common.ApiResponse	"Invalid ID or missing audio"
+//	@Failure		404				{object}	common.ApiResponse	"Attempt or transcript not found"
+//	@Failure		409				{object}	common.ApiResponse	"Attempt is closed"
+//	@Failure		500				{object}	common.ApiResponse	"Internal server error"
+//	@Router			/video-exercises/{id}/attempts/{attemptId}/pronounce [post]
+func (h *VideoAttemptController) Pronounce(c *gin.Context) {
+	id := c.Param("id")
+	attemptID := c.Param("attemptId")
+	transcriptID := c.PostForm("transcriptId")
+	if transcriptID == "" {
+		common.Fail(c, common.BadRequest("transcriptId is required"))
+		return
+	}
+	file, err := c.FormFile("audio")
+	if err != nil {
+		common.Fail(c, common.BadRequest("audio is required"))
+		return
+	}
+	if file.Size > int64(pronunciation.MaxAudioBytes) {
+		common.Fail(c, common.New(http.StatusRequestEntityTooLarge, "audio too large"))
+		return
+	}
+	f, err := file.Open()
+	if err != nil {
+		common.Fail(c, common.BadRequest("audio is required"))
+		return
+	}
+	defer f.Close()
+	audio, err := io.ReadAll(io.LimitReader(f, int64(pronunciation.MaxAudioBytes)+1))
+	if err != nil {
+		common.Fail(c, common.BadRequest("audio is required"))
+		return
+	}
+	if len(audio) > pronunciation.MaxAudioBytes {
+		common.Fail(c, common.New(http.StatusRequestEntityTooLarge, "audio too large"))
+		return
+	}
+	userID := middleware.UserID(c)
+	res, err := h.service.Pronounce(c.Request.Context(), userID, id, attemptID, transcriptID, audio, file.Header.Get("Content-Type"))
+	if err != nil {
+		common.Fail(c, err)
+		return
+	}
+	common.OK(c, "pronunciation scored", res)
 }

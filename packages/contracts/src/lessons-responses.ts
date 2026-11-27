@@ -121,6 +121,7 @@ export interface PronunciationResult {
   modelCurve: number /* float64 */[];
   learnerCurve: number /* float64 */[];
   referencePhones: ReferencePhone[];
+  feedback: string;
 }
 /**
  * Activity is one ordered lesson part. Exactly one payload pointer is set,

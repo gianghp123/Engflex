@@ -1,5 +1,5 @@
 import type { ActivityType, CEFR, Lesson } from "@engflex/contracts";
-import { Plus } from "lucide-react";
+import { Eye, EyeOff, ListChecks, Pencil, Plus, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Badge } from "#/components/ui/badge";
@@ -15,6 +15,11 @@ import {
 } from "#/components/ui/select";
 import { Switch } from "#/components/ui/switch";
 import { Textarea } from "#/components/ui/textarea";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger,
+} from "#/components/ui/tooltip";
 import { ConfirmDeleteDialog } from "#/features/admin/components/confirm-delete-dialog";
 import {
 	DataTable,
@@ -72,7 +77,14 @@ const EMPTY_FORM: LessonFormState = {
 };
 
 export function LessonsPanel() {
-	const hubQuery = useAdminLessonHub();
+	const [search, setSearch] = useState("");
+	const [levelFilter, setLevelFilter] = useState<CEFR | "">("");
+	const [skillFilter, setSkillFilter] = useState<ActivityType | "">("");
+	const hubQuery = useAdminLessonHub({
+		search,
+		level: levelFilter,
+		skill: skillFilter,
+	});
 	const sectionsQuery = useAdminLessonSections();
 	const createMutation = useCreateLesson();
 	const updateMutation = useUpdateLesson();
@@ -196,11 +208,22 @@ export function LessonsPanel() {
 
 	const columns: DataTableColumn<LessonRow>[] = [
 		{ id: "title", header: "Title", cell: (row) => row.lesson.title },
-		{ id: "section", header: "Section", cell: (row) => row.sectionTitle },
-		{ id: "cefr", header: "CEFR", cell: (row) => row.lesson.cefrLevel },
+		{
+			id: "section",
+			header: "Section",
+			className: "w-40",
+			cell: (row) => row.sectionTitle,
+		},
+		{
+			id: "cefr",
+			header: "CEFR",
+			className: "w-20",
+			cell: (row) => row.lesson.cefrLevel,
+		},
 		{
 			id: "status",
 			header: m["admin.table.status"](),
+			className: "w-28",
 			cell: (row) => (
 				<div className="flex items-center gap-1.5">
 					<StatusBadge
@@ -215,42 +238,73 @@ export function LessonsPanel() {
 		{
 			id: "actions",
 			header: m["admin.table.actions"](),
+			className: "w-44",
 			cell: (row) => (
-				<div className="flex items-center gap-2">
-					<Button
-						type="button"
-						variant="outline"
-						size="sm"
-						onClick={() => setActivitiesLesson(row.lesson)}
-					>
-						Activities
-					</Button>
-					<Button
-						type="button"
-						variant="outline"
-						size="sm"
-						onClick={() => openEdit(row.lesson)}
-					>
-						{m["admin.actions.edit"]()}
-					</Button>
-					<Button
-						type="button"
-						variant="outline"
-						size="sm"
-						onClick={() => togglePublish(row.lesson)}
-					>
-						{row.lesson.status === "published"
-							? m["admin.actions.unpublish"]()
-							: m["admin.actions.publish"]()}
-					</Button>
-					<Button
-						type="button"
-						variant="ghost"
-						size="sm"
-						onClick={() => setDeleteTarget(row.lesson)}
-					>
-						{m["admin.actions.delete"]()}
-					</Button>
+				<div className="flex items-center gap-1">
+					<Tooltip>
+						<TooltipTrigger asChild>
+							<Button
+								type="button"
+								variant="outline"
+								size="icon-sm"
+								aria-label="Activities"
+								onClick={() => setActivitiesLesson(row.lesson)}
+							>
+								<ListChecks />
+							</Button>
+						</TooltipTrigger>
+						<TooltipContent>Activities</TooltipContent>
+					</Tooltip>
+					<Tooltip>
+						<TooltipTrigger asChild>
+							<Button
+								type="button"
+								variant="outline"
+								size="icon-sm"
+								aria-label={m["admin.actions.edit"]()}
+								onClick={() => openEdit(row.lesson)}
+							>
+								<Pencil />
+							</Button>
+						</TooltipTrigger>
+						<TooltipContent>{m["admin.actions.edit"]()}</TooltipContent>
+					</Tooltip>
+					<Tooltip>
+						<TooltipTrigger asChild>
+							<Button
+								type="button"
+								variant="outline"
+								size="icon-sm"
+								aria-label={
+									row.lesson.status === "published"
+										? m["admin.actions.unpublish"]()
+										: m["admin.actions.publish"]()
+								}
+								onClick={() => togglePublish(row.lesson)}
+							>
+								{row.lesson.status === "published" ? <EyeOff /> : <Eye />}
+							</Button>
+						</TooltipTrigger>
+						<TooltipContent>
+							{row.lesson.status === "published"
+								? m["admin.actions.unpublish"]()
+								: m["admin.actions.publish"]()}
+						</TooltipContent>
+					</Tooltip>
+					<Tooltip>
+						<TooltipTrigger asChild>
+							<Button
+								type="button"
+								variant="ghost"
+								size="icon-sm"
+								aria-label={m["admin.actions.delete"]()}
+								onClick={() => setDeleteTarget(row.lesson)}
+							>
+								<Trash2 />
+							</Button>
+						</TooltipTrigger>
+						<TooltipContent>{m["admin.actions.delete"]()}</TooltipContent>
+					</Tooltip>
 				</div>
 			),
 		},
@@ -258,8 +312,50 @@ export function LessonsPanel() {
 
 	return (
 		<div className="flex flex-col gap-4">
-			<div className="flex justify-end">
-				<Button type="button" onClick={openCreate}>
+			<div className="flex flex-wrap items-center gap-3">
+				<Input
+					placeholder="Search by title or description"
+					value={search}
+					onChange={(event) => setSearch(event.target.value)}
+					className="max-w-sm"
+				/>
+				<Select
+					value={levelFilter || "all"}
+					onValueChange={(value) =>
+						setLevelFilter(value === "all" ? "" : (value as CEFR))
+					}
+				>
+					<SelectTrigger className="w-32">
+						<SelectValue />
+					</SelectTrigger>
+					<SelectContent>
+						<SelectItem value="all">All levels</SelectItem>
+						{CEFR_OPTIONS.map((option) => (
+							<SelectItem key={option} value={option}>
+								{option}
+							</SelectItem>
+						))}
+					</SelectContent>
+				</Select>
+				<Select
+					value={skillFilter || "all"}
+					onValueChange={(value) =>
+						setSkillFilter(value === "all" ? "" : (value as ActivityType))
+					}
+				>
+					<SelectTrigger className="w-36">
+						<SelectValue />
+					</SelectTrigger>
+					<SelectContent>
+						<SelectItem value="all">All skills</SelectItem>
+						{SKILL_OPTIONS.map((option) => (
+							<SelectItem key={option} value={option}>
+								{option}
+							</SelectItem>
+						))}
+					</SelectContent>
+				</Select>
+				<Button type="button" onClick={openCreate} className="ml-auto">
 					<Plus data-icon="inline-start" />
 					{m["admin.actions.create"]()}
 				</Button>

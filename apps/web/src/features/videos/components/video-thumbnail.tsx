@@ -75,7 +75,7 @@ export function VideoThumbnail({ video }: { video: Video }) {
 
 			<div className="absolute inset-x-2.5 top-2.5 flex items-start justify-between gap-2">
 				<div className="flex flex-wrap items-center gap-1.5">
-					{video.isPro ? (
+					{video.isPremium ? (
 						<OverlayChip
 							icon={Crown}
 							text={m["videos.card.pro"]()}

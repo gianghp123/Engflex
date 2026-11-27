@@ -10,6 +10,7 @@ import (
 )
 
 type ExamCategoryRepository interface {
+	Create(ctx context.Context, category *models.ExamCategory) error
 	List(ctx context.Context, examType enums.ExamType) ([]*models.ExamCategoryCatalog, error)
 	GetByID(ctx context.Context, id string) (*models.ExamCategory, error)
 }
@@ -18,6 +19,10 @@ type examCategoryRepository struct{ db *gorm.DB }
 
 func NewExamCategoryRepository(db *gorm.DB) ExamCategoryRepository {
 	return &examCategoryRepository{db: db}
+}
+
+func (r *examCategoryRepository) Create(ctx context.Context, category *models.ExamCategory) error {
+	return r.db.WithContext(ctx).Create(category).Error
 }
 
 func (r *examCategoryRepository) List(ctx context.Context, examType enums.ExamType) ([]*models.ExamCategoryCatalog, error) {

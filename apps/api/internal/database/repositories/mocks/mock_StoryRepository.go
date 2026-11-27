@@ -172,6 +172,63 @@ func (_c *MockStoryRepository_Create_Call) RunAndReturn(run func(ctx context.Con
 	return _c
 }
 
+// Delete provides a mock function for the type MockStoryRepository
+func (_mock *MockStoryRepository) Delete(ctx context.Context, id string) error {
+	ret := _mock.Called(ctx, id)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Delete")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) error); ok {
+		r0 = returnFunc(ctx, id)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockStoryRepository_Delete_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Delete'
+type MockStoryRepository_Delete_Call struct {
+	*mock.Call
+}
+
+// Delete is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id string
+func (_e *MockStoryRepository_Expecter) Delete(ctx any, id any) *MockStoryRepository_Delete_Call {
+	return &MockStoryRepository_Delete_Call{Call: _e.mock.On("Delete", ctx, id)}
+}
+
+func (_c *MockStoryRepository_Delete_Call) Run(run func(ctx context.Context, id string)) *MockStoryRepository_Delete_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockStoryRepository_Delete_Call) Return(err error) *MockStoryRepository_Delete_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockStoryRepository_Delete_Call) RunAndReturn(run func(ctx context.Context, id string) error) *MockStoryRepository_Delete_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetByID provides a mock function for the type MockStoryRepository
 func (_mock *MockStoryRepository) GetByID(ctx context.Context, id string) (*models.Story, error) {
 	ret := _mock.Called(ctx, id)
@@ -434,6 +491,126 @@ func (_c *MockStoryRepository_ListTopics_Call) Return(strings []string, err erro
 }
 
 func (_c *MockStoryRepository_ListTopics_Call) RunAndReturn(run func(ctx context.Context) ([]string, error)) *MockStoryRepository_ListTopics_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// ReplaceSentences provides a mock function for the type MockStoryRepository
+func (_mock *MockStoryRepository) ReplaceSentences(ctx context.Context, storyID string, sentences []*models.StorySentence) error {
+	ret := _mock.Called(ctx, storyID, sentences)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ReplaceSentences")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, []*models.StorySentence) error); ok {
+		r0 = returnFunc(ctx, storyID, sentences)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockStoryRepository_ReplaceSentences_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ReplaceSentences'
+type MockStoryRepository_ReplaceSentences_Call struct {
+	*mock.Call
+}
+
+// ReplaceSentences is a helper method to define mock.On call
+//   - ctx context.Context
+//   - storyID string
+//   - sentences []*models.StorySentence
+func (_e *MockStoryRepository_Expecter) ReplaceSentences(ctx any, storyID any, sentences any) *MockStoryRepository_ReplaceSentences_Call {
+	return &MockStoryRepository_ReplaceSentences_Call{Call: _e.mock.On("ReplaceSentences", ctx, storyID, sentences)}
+}
+
+func (_c *MockStoryRepository_ReplaceSentences_Call) Run(run func(ctx context.Context, storyID string, sentences []*models.StorySentence)) *MockStoryRepository_ReplaceSentences_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 []*models.StorySentence
+		if args[2] != nil {
+			arg2 = args[2].([]*models.StorySentence)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockStoryRepository_ReplaceSentences_Call) Return(err error) *MockStoryRepository_ReplaceSentences_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockStoryRepository_ReplaceSentences_Call) RunAndReturn(run func(ctx context.Context, storyID string, sentences []*models.StorySentence) error) *MockStoryRepository_ReplaceSentences_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// Update provides a mock function for the type MockStoryRepository
+func (_mock *MockStoryRepository) Update(ctx context.Context, s *models.Story) error {
+	ret := _mock.Called(ctx, s)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Update")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *models.Story) error); ok {
+		r0 = returnFunc(ctx, s)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockStoryRepository_Update_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Update'
+type MockStoryRepository_Update_Call struct {
+	*mock.Call
+}
+
+// Update is a helper method to define mock.On call
+//   - ctx context.Context
+//   - s *models.Story
+func (_e *MockStoryRepository_Expecter) Update(ctx any, s any) *MockStoryRepository_Update_Call {
+	return &MockStoryRepository_Update_Call{Call: _e.mock.On("Update", ctx, s)}
+}
+
+func (_c *MockStoryRepository_Update_Call) Run(run func(ctx context.Context, s *models.Story)) *MockStoryRepository_Update_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 *models.Story
+		if args[1] != nil {
+			arg1 = args[1].(*models.Story)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockStoryRepository_Update_Call) Return(err error) *MockStoryRepository_Update_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockStoryRepository_Update_Call) RunAndReturn(run func(ctx context.Context, s *models.Story) error) *MockStoryRepository_Update_Call {
 	_c.Call.Return(run)
 	return _c
 }

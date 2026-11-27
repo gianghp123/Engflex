@@ -26,9 +26,11 @@ import (
 func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB, voiceCfg config.VoiceConfig, llmCfg config.LLMConfig, media config.MediaConfig, sessionLimiter gin.HandlerFunc) {
 	premiumSvc := paymentservices.NewSubscriptionService(
 		repositories.NewSubscriptionRepository(db), repositories.NewPlanRepository(db))
+	attemptRepo := repositories.NewAttemptRepository(db)
 	lessonSvc := services.NewLessonService(
 		repositories.NewLessonSectionRepository(db),
 		repositories.NewLessonRepository(db),
+		attemptRepo,
 		premiumSvc,
 	)
 	lessonCtl := controllers.NewLessonController(lessonSvc, media)
@@ -51,6 +53,7 @@ func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB, voiceCfg config.VoiceConfi
 	l.GET("", middleware.RequireAuth(), lessonCtl.List)
 	l.GET("/:id", middleware.RequireAuth(), lessonCtl.GetByID)
 	l.GET("/by-slug/:slug", middleware.RequireAuth(), lessonCtl.GetBySlug)
+	l.GET("/progress", middleware.RequireAuth(), activityCtl.ListProgress)
 	l.POST("", middleware.RequireAuth(), middleware.RequireAdmin(), lessonCtl.Create)
 	l.PUT("/:id", middleware.RequireAuth(), middleware.RequireAdmin(), lessonCtl.Update)
 	l.DELETE("/:id", middleware.RequireAuth(), middleware.RequireAdmin(), lessonCtl.Delete)

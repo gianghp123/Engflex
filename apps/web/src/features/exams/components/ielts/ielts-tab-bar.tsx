@@ -18,7 +18,7 @@ export function IeltsTabBar({
 }) {
 	return (
 		<div className="flex h-11 w-full shrink-0 items-center border-b border-border/80 bg-muted/20 px-4 overflow-x-auto select-none scrollbar-none">
-			<div className="flex items-center gap-1.5">
+			<div className="flex min-w-max items-center gap-1.5">
 				<span className="flex size-7 shrink-0 items-center justify-center text-muted-foreground mr-1">
 					<BookOpen className="size-4" aria-hidden="true" />
 				</span>
@@ -30,7 +30,7 @@ export function IeltsTabBar({
 							key={sec.sectionNumber}
 							type="button"
 							onClick={() => onSelectSection(sec.sectionNumber)}
-							className={`inline-flex items-center gap-2 rounded-md px-3.5 py-1.5 text-xs font-bold transition-all cursor-pointer ${
+							className={`inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-md px-3.5 py-1.5 text-xs font-bold transition-all cursor-pointer ${
 								isActive
 									? "bg-[#1e293b] text-white shadow-xs dark:bg-slate-800"
 									: "text-muted-foreground hover:bg-muted/70 hover:text-foreground"

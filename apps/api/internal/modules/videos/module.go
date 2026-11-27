@@ -7,15 +7,20 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 
+	"engflex-api/config"
 	"engflex-api/internal/database/repositories"
 	paymentservices "engflex-api/internal/modules/payments/services"
 	"engflex-api/internal/modules/videos/controllers"
 	"engflex-api/internal/modules/videos/services"
 	"engflex-api/internal/server/middleware"
+	"engflex-api/internal/voice"
+	"engflex-api/internal/voice/pronunciation"
 )
 
-// RegisterRoutes mounts the video endpoints under /api/v1.
-func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB) {
+// RegisterRoutes mounts the video endpoints under /api/v1. sessionLimiter is
+// an optional IP-keyed throttle (nil = disabled) applied BEFORE auth on the
+// engine-costly pronounce route, same precedent as the lessons module.
+func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB, voiceCfg config.VoiceConfig, sessionLimiter gin.HandlerFunc) {
 	premiumSvc := paymentservices.NewSubscriptionService(
 		repositories.NewSubscriptionRepository(db), repositories.NewPlanRepository(db))
 	exerciseSvc := services.NewVideoExerciseService(repositories.NewVideoExerciseRepository(db), premiumSvc)
@@ -26,6 +31,7 @@ func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB) {
 		repositories.NewVideoExerciseRepository(db),
 		repositories.NewVideoTranscriptRepository(db),
 		repositories.NewTransactionManager(db),
+		pronunciation.NewScorer(voice.NewHTTPPronounceEngine(voiceCfg.PronounceURL, voiceCfg.PronounceTimeout)),
 		premiumSvc,
 	)
 	attemptCtl := controllers.NewVideoAttemptController(attemptSvc)
@@ -55,6 +61,11 @@ func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB) {
 	e.GET("/:id/attempts/open", middleware.RequireAuth(), attemptCtl.GetOpenAttempt)
 	e.PUT("/:id/attempts/:attemptId/progress", middleware.RequireAuth(), attemptCtl.SaveProgress)
 	e.POST("/:id/attempts/:attemptId/complete", middleware.RequireAuth(), attemptCtl.CompleteAttempt)
+	strict := []gin.HandlerFunc{}
+	if sessionLimiter != nil {
+		strict = append(strict, sessionLimiter)
+	}
+	e.POST("/:id/attempts/:attemptId/pronounce", append(strict, middleware.RequireAuth(), attemptCtl.Pronounce)...)
 
 	t := rg.Group("/video-transcripts")
 	t.GET("", middleware.RequireAuth(), transcriptCtl.List)

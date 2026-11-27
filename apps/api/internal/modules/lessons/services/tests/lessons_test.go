@@ -21,17 +21,18 @@ func (f fakePremiumChecker) IsPremium(ctx context.Context, userID string) (bool,
 	return f.isPremium, nil
 }
 
-func setupLesson(t *testing.T) (services.LessonService, *mocks.MockLessonSectionRepository, *mocks.MockLessonRepository) {
+func setupLesson(t *testing.T) (services.LessonService, *mocks.MockLessonSectionRepository, *mocks.MockLessonRepository, *mocks.MockAttemptRepository) {
 	t.Helper()
 	return setupLessonWithPremium(t, false)
 }
 
-func setupLessonWithPremium(t *testing.T, isPremium bool) (services.LessonService, *mocks.MockLessonSectionRepository, *mocks.MockLessonRepository) {
+func setupLessonWithPremium(t *testing.T, isPremium bool) (services.LessonService, *mocks.MockLessonSectionRepository, *mocks.MockLessonRepository, *mocks.MockAttemptRepository) {
 	t.Helper()
 	secMock := mocks.NewMockLessonSectionRepository(t)
 	lessonMock := mocks.NewMockLessonRepository(t)
-	svc := services.NewLessonService(secMock, lessonMock, fakePremiumChecker{isPremium: isPremium})
-	return svc, secMock, lessonMock
+	attemptsMock := mocks.NewMockAttemptRepository(t)
+	svc := services.NewLessonService(secMock, lessonMock, attemptsMock, fakePremiumChecker{isPremium: isPremium})
+	return svc, secMock, lessonMock, attemptsMock
 }
 
 func requireAppError(t *testing.T, err error, expectedStatus int) *common.AppError {

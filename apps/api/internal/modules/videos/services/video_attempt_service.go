@@ -17,14 +17,17 @@ import (
 	"engflex-api/internal/logger"
 	"engflex-api/internal/modules/videos/dtos/requests"
 	"engflex-api/internal/modules/videos/dtos/responses"
+	"engflex-api/internal/utils"
+	"engflex-api/internal/voice/pronunciation"
 )
 
 type VideoAttemptService interface {
-	StartAttempt(ctx context.Context, userID, videoExerciseID string, attemptType enums.AttemptType, req requests.StartVideoAttempt) (*models.Attempt, error)
+	StartAttempt(ctx context.Context, userID, videoExerciseID string, attemptType enums.AttemptType, req requests.StartVideoAttempt, isAdmin bool) (*models.Attempt, error)
 	GetOpenAttempt(ctx context.Context, userID, videoExerciseID string, attemptType enums.AttemptType) (*models.Attempt, error)
 	SaveProgress(ctx context.Context, userID, videoExerciseID, attemptID string, req requests.SaveVideoProgress) (*models.Attempt, error)
 	CompleteAttempt(ctx context.Context, userID, videoExerciseID, attemptID string, req requests.CompleteVideoAttempt) (*models.Attempt, error)
 	AttachPracticeStatus(ctx context.Context, userID string, videos []*responses.VideoExerciseResponse) error
+	Pronounce(ctx context.Context, userID, videoExerciseID, attemptID, transcriptID string, audio []byte, mime string) (*responses.VideoPronunciationResult, error)
 }
 
 type videoAttemptService struct {
@@ -32,14 +35,15 @@ type videoAttemptService struct {
 	exercises    repositories.VideoExerciseRepository
 	transcripts  repositories.VideoTranscriptRepository
 	transactions repositories.TransactionManager
+	scorer       pronunciation.Scorer
 	premium      common.PremiumChecker
 }
 
-func NewVideoAttemptService(attempts repositories.AttemptRepository, exercises repositories.VideoExerciseRepository, transcripts repositories.VideoTranscriptRepository, transactions repositories.TransactionManager, premium common.PremiumChecker) VideoAttemptService {
-	return &videoAttemptService{attempts: attempts, exercises: exercises, transcripts: transcripts, transactions: transactions, premium: premium}
+func NewVideoAttemptService(attempts repositories.AttemptRepository, exercises repositories.VideoExerciseRepository, transcripts repositories.VideoTranscriptRepository, transactions repositories.TransactionManager, scorer pronunciation.Scorer, premium common.PremiumChecker) VideoAttemptService {
+	return &videoAttemptService{attempts: attempts, exercises: exercises, transcripts: transcripts, transactions: transactions, scorer: scorer, premium: premium}
 }
 
-func (s *videoAttemptService) StartAttempt(ctx context.Context, userID, videoExerciseID string, attemptType enums.AttemptType, req requests.StartVideoAttempt) (*models.Attempt, error) {
+func (s *videoAttemptService) StartAttempt(ctx context.Context, userID, videoExerciseID string, attemptType enums.AttemptType, req requests.StartVideoAttempt, isAdmin bool) (*models.Attempt, error) {
 	if _, err := uuid.Parse(videoExerciseID); err != nil {
 		return nil, common.BadRequest("invalid video exercise id")
 	}
@@ -70,8 +74,16 @@ func (s *videoAttemptService) StartAttempt(ctx context.Context, userID, videoExe
 	var attempt *models.Attempt
 	err := s.transactions.Run(ctx, func(tx *gorm.DB) error {
 		// Lock the parent before looking for an open attempt, so simultaneous starts reuse it.
-		if _, err := s.exercises.WithTx(tx).GetByIDForUpdate(ctx, videoExerciseID); err != nil {
+		// The same row answers the premium gate, so GetByID's rule (admin
+		// preview, otherwise a live subscription) applies here too — closing
+		// the gap where a free user could practice a premium video just by
+		// never opening its detail page.
+		exercise, err := s.exercises.WithTx(tx).GetByIDForUpdate(ctx, videoExerciseID)
+		if err != nil {
 			return common.FromDBError(err, "video exercise")
+		}
+		if err := common.RequirePremiumAccess(ctx, s.premium, userID, isAdmin, exercise.IsPremium); err != nil {
+			return err
 		}
 		attempts := s.attempts.WithTx(tx)
 		open, err := attempts.GetVideoAttempt(ctx, userID, videoExerciseID, attemptType)
@@ -194,30 +206,33 @@ func (s *videoAttemptService) SaveProgress(ctx context.Context, userID, videoExe
 			}
 			completed[id] = true
 		}
-		if attempt.Type == enums.AttemptTypeDictation {
-			var previous requests.SaveVideoProgress
-			if err := json.Unmarshal(attempt.Result, &previous); err != nil {
+		var previous requests.SaveVideoProgress
+		if err := json.Unmarshal(attempt.Result, &previous); err != nil {
+			return err
+		}
+		if attempt.Type == enums.AttemptTypeDictation && (previous.DictationVersion == 1 || req.DictationVersion == 1) {
+			if err := mergeDictationProgress(&req, previous, transcripts); err != nil {
 				return err
 			}
-			if previous.DictationVersion == 1 || req.DictationVersion == 1 {
-				if err := mergeDictationProgress(&req, previous, transcripts); err != nil {
-					return err
-				}
-				attempt.Result, err = json.Marshal(req)
-				return err
+			attempt.Result, err = json.Marshal(req)
+			return err
+		}
+		// Every other path (plain dictation, shadowing) merges forward: a
+		// per-line entry already on the attempt — dictation's draft, or a
+		// shadowing score Pronounce persisted — survives a checkpoint save
+		// that doesn't touch that line, instead of being wiped by the empty
+		// map the shadowing frontend always sends here.
+		if req.Transcripts == nil {
+			req.Transcripts = make(map[string]any)
+		}
+		for id, state := range previous.Transcripts {
+			if _, changed := req.Transcripts[id]; valid[id] && !changed {
+				req.Transcripts[id] = state
 			}
-			if req.Transcripts == nil {
-				req.Transcripts = make(map[string]any)
-			}
-			for id, state := range previous.Transcripts {
-				if _, changed := req.Transcripts[id]; valid[id] && !changed {
-					req.Transcripts[id] = state
-				}
-			}
-			for _, id := range previous.CompletedTranscriptIDs {
-				if valid[id] {
-					completed[id] = true
-				}
+		}
+		for _, id := range previous.CompletedTranscriptIDs {
+			if valid[id] {
+				completed[id] = true
 			}
 		}
 		req.CompletedTranscriptIDs = make([]string, 0, len(completed))
@@ -262,6 +277,92 @@ func (s *videoAttemptService) CompleteAttempt(ctx context.Context, userID, video
 		attempt.SubmittedAt = &now
 		return nil
 	})
+}
+
+// Pronounce scores one shadowing take against its transcript line, reusing
+// the same engine/scorer as lesson speaking — only the reference text
+// source differs (a video transcript line here, a speaking item there).
+// The score+feedback is best-effort persisted onto the attempt row (see
+// persistShadowingScore) so it survives a reload; persistence failure never
+// fails the request since the engine call already paid the real cost and
+// the learner is waiting on the result, not the save.
+func (s *videoAttemptService) Pronounce(ctx context.Context, userID, videoExerciseID, attemptID, transcriptID string, audio []byte, mime string) (*responses.VideoPronunciationResult, error) {
+	if _, err := uuid.Parse(videoExerciseID); err != nil {
+		return nil, common.BadRequest("invalid video exercise id")
+	}
+	if _, err := uuid.Parse(attemptID); err != nil {
+		return nil, common.BadRequest("invalid attempt id")
+	}
+	transcript, err := s.transcripts.GetByID(ctx, transcriptID)
+	if err != nil {
+		appErr := common.FromDBError(err, "video transcript")
+		logger.Report(ctx, "pronounce transcript lookup failed", appErr, "transcriptID", transcriptID)
+		return nil, appErr
+	}
+	if transcript.VideoExerciseID != videoExerciseID {
+		return nil, common.BadRequest("transcript does not belong to this video")
+	}
+	attempt, err := s.attempts.GetByID(ctx, attemptID)
+	if err != nil {
+		appErr := common.FromDBError(err, "attempt")
+		logger.Report(ctx, "pronounce attempt lookup failed", appErr, "attemptID", attemptID)
+		return nil, appErr
+	}
+	if attempt.UserID != userID || attempt.VideoExerciseID == nil || *attempt.VideoExerciseID != videoExerciseID {
+		return nil, common.NotFound("attempt not found")
+	}
+	if attempt.Type != enums.AttemptTypeShadowing {
+		return nil, common.UnprocessableEntity("attempt is not a shadowing exercise")
+	}
+	if attempt.Status != enums.AttemptStatusInProgress {
+		return nil, common.Conflict("attempt is closed")
+	}
+	out, err := s.scorer.Score(ctx, transcript.Content, audio, mime)
+	if err != nil {
+		return nil, err
+	}
+	var dto responses.VideoPronunciationResult
+	if utils.Map(&dto, out) != nil {
+		logger.Report(ctx, "pronounce map failed", common.Internal(), "transcriptID", transcriptID)
+		return nil, common.Internal()
+	}
+	if err := s.persistShadowingScore(ctx, userID, videoExerciseID, attemptID, transcriptID, &dto); err != nil {
+		logger.Report(ctx, "pronounce persist failed", common.Internal(), "attemptID", attemptID, "transcriptID", transcriptID)
+	}
+	slog.InfoContext(ctx, "video shadowing pronunciation scored",
+		"videoExerciseID", videoExerciseID, "transcriptID", transcriptID, "score", dto.Score)
+	return &dto, nil
+}
+
+// persistShadowingScore writes one line's score+feedback into
+// Result.Transcripts[transcriptID], keyed the same way dictation keys its
+// DictationLineResult entries, so a reload can show what the learner already
+// scored on a line without re-recording.
+func (s *videoAttemptService) persistShadowingScore(ctx context.Context, userID, videoExerciseID, attemptID, transcriptID string, dto *responses.VideoPronunciationResult) error {
+	_, err := s.changeAttempt(ctx, userID, videoExerciseID, attemptID, "persist shadowing score", func(_ *gorm.DB, attempt *models.Attempt) error {
+		var payload responses.VideoProgressPayload
+		if len(attempt.Result) > 0 {
+			if err := json.Unmarshal(attempt.Result, &payload); err != nil {
+				return err
+			}
+		}
+		if payload.Transcripts == nil {
+			payload.Transcripts = map[string]any{}
+		}
+		payload.Transcripts[transcriptID] = responses.ShadowingLineResult{
+			Score:         dto.Score,
+			Feedback:      dto.Feedback,
+			Transcription: dto.Transcription,
+			AttemptedAt:   time.Now(),
+		}
+		encoded, err := json.Marshal(payload)
+		if err != nil {
+			return err
+		}
+		attempt.Result = encoded
+		return nil
+	})
+	return err
 }
 
 func (s *videoAttemptService) AttachPracticeStatus(ctx context.Context, userID string, videos []*responses.VideoExerciseResponse) error {

@@ -272,4 +272,9 @@ export interface PronounceResult {
   model_curve: number /* float64 */[];
   learner_curve: number /* float64 */[];
   reference_phones: ReferencePhone[];
+  /**
+   * Feedback is the container's own canned coaching line (English, template
+   * text keyed off the flagged words) — passed through as-is, not rebuilt.
+   */
+  feedback: string;
 }

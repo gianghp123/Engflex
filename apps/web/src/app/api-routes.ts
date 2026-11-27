@@ -78,6 +78,8 @@ export const API_ROUTES = {
 		ME: "/premium/me",
 		TRIAL: "/premium/trial",
 		USAGE: "/premium/usage",
+		SEPAY_CHECKOUT: "/payments/sepay/checkout",
+		SEPAY_STATUS: (reference: string) => `/payments/sepay/status/${reference}`,
 	},
 	PERSONAS: {
 		LIST: "/personas",
@@ -133,6 +135,8 @@ export const API_ROUTES = {
 				`/video-exercises/${id}/attempts/${attemptId}/progress`,
 			COMPLETE: (id: ApiId, attemptId: ApiId) =>
 				`/video-exercises/${id}/attempts/${attemptId}/complete`,
+			PRONOUNCE: (id: ApiId, attemptId: ApiId) =>
+				`/video-exercises/${id}/attempts/${attemptId}/pronounce`,
 		},
 	},
 	STORIES: {
@@ -140,6 +144,7 @@ export const API_ROUTES = {
 		BY_ID: (id: ApiId) => `/stories/${id}`,
 		BY_SLUG: (slug: string) => `/stories/by-slug/${slug}`,
 		TOPICS: "/stories/topics",
+		UPLOAD: "/stories/upload",
 	},
 	BOOKMARKS: {
 		LIST: "/bookmarks",

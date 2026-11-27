@@ -19,7 +19,7 @@ type IeltsTakingContent struct {
 	Skill         enums.ExamSkill      `json:"skill"`
 	SubType       enums.ExamSubType    `json:"subType"`
 	Sections      []IeltsTakingSection `json:"sections"`
-	Assets        []Asset              `json:"assets,omitempty"`
+	Assets        []IeltsAsset         `json:"assets,omitempty"`
 }
 
 type IeltsTakingSection struct {
@@ -27,6 +27,7 @@ type IeltsTakingSection struct {
 	Title          string                     `json:"title"`
 	Passages       []IeltsPassage             `json:"passages"`
 	QuestionGroups []IeltsTakingQuestionGroup `json:"questionGroups"`
+	AudioAssetID   *string                    `json:"audioAssetId,omitempty"`
 }
 
 type IeltsPassage struct {
@@ -48,6 +49,7 @@ type IeltsTakingQuestionGroup struct {
 	Title        *string               `json:"title,omitempty"`
 	Instructions *string               `json:"instructions,omitempty"`
 	Questions    []IeltsTakingQuestion `json:"questions"`
+	Context      []IeltsContextBlock   `json:"context,omitempty"`
 }
 
 type IeltsTakingQuestion struct {
@@ -64,7 +66,7 @@ type IeltsReviewContent struct {
 	Skill         enums.ExamSkill      `json:"skill"`
 	SubType       enums.ExamSubType    `json:"subType"`
 	Sections      []IeltsReviewSection `json:"sections"`
-	Assets        []Asset              `json:"assets,omitempty"`
+	Assets        []IeltsAsset         `json:"assets,omitempty"`
 }
 
 type IeltsReviewSection struct {
@@ -72,6 +74,8 @@ type IeltsReviewSection struct {
 	Title          string                     `json:"title"`
 	Passages       []IeltsPassage             `json:"passages"`
 	QuestionGroups []IeltsReviewQuestionGroup `json:"questionGroups"`
+	AudioAssetID   *string                    `json:"audioAssetId,omitempty"`
+	Transcript     []IeltsParagraph           `json:"transcript,omitempty"`
 }
 
 type IeltsReviewQuestionGroup struct {
@@ -80,6 +84,7 @@ type IeltsReviewQuestionGroup struct {
 	Title        *string               `json:"title,omitempty"`
 	Instructions *string               `json:"instructions,omitempty"`
 	Questions    []IeltsReviewQuestion `json:"questions"`
+	Context      []IeltsContextBlock   `json:"context,omitempty"`
 }
 
 type IeltsReviewQuestion struct {
@@ -92,4 +97,22 @@ type IeltsReviewQuestion struct {
 	CorrectAnswers        []string `json:"correctAnswers,omitempty"`
 	Explanation           *string  `json:"explanation,omitempty"`
 	VietnameseExplanation *string  `json:"vietnameseExplanation,omitempty"`
+	SourceAnswer          *string  `json:"sourceAnswer,omitempty"`
+}
+
+type IeltsAsset struct {
+	SourceID string  `json:"sourceId"`
+	Type     string  `json:"type"`
+	SHA256   *string `json:"sha256,omitempty"`
+	URL      *string `json:"url,omitempty"`
+}
+
+type IeltsContextBlock struct {
+	Tag      string              `json:"tag"`
+	Text     *string             `json:"text,omitempty"`
+	AssetID  *string             `json:"assetId,omitempty"`
+	Alt      *string             `json:"alt,omitempty"`
+	ColSpan  int                 `json:"colSpan,omitempty"`
+	RowSpan  int                 `json:"rowSpan,omitempty"`
+	Children []IeltsContextBlock `json:"children,omitempty"`
 }

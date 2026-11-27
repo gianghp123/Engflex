@@ -5,7 +5,6 @@ import type {
 
 export interface Video extends VideoExerciseResponse {
 	views?: number;
-	isPro?: boolean;
 	source?: "youtube";
 	practice?: { dictation: boolean; shadowing: boolean };
 }

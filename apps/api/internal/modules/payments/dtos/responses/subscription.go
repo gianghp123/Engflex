@@ -43,6 +43,30 @@ type CheckoutSession struct {
 	TxnRef     string `json:"txnRef"`
 }
 
+// SepayCheckoutSession is the SePay hand-off: no redirect — the frontend
+// renders QRUrl inline and the learner pays by scanning it in their own
+// banking app, then the frontend polls GetStatus(Reference) until it
+// settles. Named distinctly from CheckoutSession so the two don't collide
+// in the shared contracts barrel.
+type SepayCheckoutSession struct {
+	QRUrl             string `json:"qrUrl"`
+	Reference         string `json:"reference"`
+	Amount            int64  `json:"amount"`
+	BankAccountNumber string `json:"bankAccountNumber"`
+	BankShortName     string `json:"bankShortName"`
+	AccountHolderName string `json:"accountHolderName"`
+}
+
+// SepayStatus is one poll result for a reference returned by
+// SepayCheckoutSession. Status mirrors enums.PaymentTransactionStatus
+// ("pending"/"succeeded"/"failed") as a plain string rather than the typed
+// enum — the frontend only branches on the three literal values, not on
+// package-level semantics.
+type SepayStatus struct {
+	Status    string     `json:"status"`
+	ExpiresAt *time.Time `json:"expiresAt"`
+}
+
 // MyPremiumStatus is the caller's own premium status — the one piece of
 // subscription data exposed to a learner about themselves (everything else
 // under /admin/premium/* is admin-only). The frontend uses this to decide

@@ -14,11 +14,23 @@ import type {
 import { API_ROUTES } from "#/app/api-routes";
 import { api } from "#/lib/api";
 
+export interface LessonHubFilters {
+	search?: string;
+	level?: string;
+	skill?: string;
+}
+
 /** The hub endpoint always returns sections grouped with their units — the
  *  admin table flattens this itself rather than the server exposing a
  *  second, parallel listing shape. Unpaginated, like the learner hub. */
-export function listLessonHub(): Promise<UnitSection[]> {
-	return api<UnitSection[]>(API_ROUTES.LESSONS.LIST);
+export function listLessonHub(
+	filters: LessonHubFilters = {},
+): Promise<UnitSection[]> {
+	const query: Record<string, string> = {};
+	if (filters.search?.trim()) query.search = filters.search.trim();
+	if (filters.level) query.level = filters.level;
+	if (filters.skill) query.skill = filters.skill;
+	return api<UnitSection[]>(API_ROUTES.LESSONS.LIST, undefined, { query });
 }
 
 export function createLesson(payload: CreateLesson): Promise<Lesson> {

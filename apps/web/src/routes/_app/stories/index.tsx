@@ -1,7 +1,8 @@
 import type { CEFR } from "@engflex/contracts";
 import { CEFR_VALUES } from "@engflex/contracts";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useRef } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useMemo } from "react";
 import { APP_ROUTES } from "#/app/app-route";
 import { useBreadcrumbs } from "#/app/breadcrumbs";
 import { CardShell } from "#/components/common/card-shell";
@@ -9,6 +10,7 @@ import { EmptyList } from "#/components/common/empty-list";
 import { MoMascot } from "#/components/common/mo-mascot";
 import { PageLayout } from "#/components/common/page-layout";
 import { SubmitButton } from "#/components/common/submit-button";
+import { Button } from "#/components/ui/button";
 import { useStoryBookmarks } from "#/features/bookmarks/queries";
 import { SavedStories } from "#/features/stories/components/saved-stories";
 import {
@@ -16,22 +18,17 @@ import {
 	StoryCardSkeleton,
 } from "#/features/stories/components/story-card";
 import { StoryFilterBar } from "#/features/stories/components/story-filter-bar";
-import { useInfiniteStories, useStoryTopics } from "#/features/stories/queries";
+import { useStories, useStoryTopics } from "#/features/stories/queries";
 import {
 	STORIES_PAGE_SIZE,
 	type StoriesSearch,
 } from "#/features/stories/types";
-import { parseFilterParam } from "#/lib/router/search-params";
+import { parseFilterParam, parsePage } from "#/lib/router/search-params";
 import { m } from "#/paraglide/messages";
 
 const SKELETON_KEYS = Array.from(
 	{ length: STORIES_PAGE_SIZE },
 	(_, i) => `story-skeleton-${i + 1}`,
-);
-
-const NEXT_PAGE_SKELETON_KEYS = Array.from(
-	{ length: 6 },
-	(_, i) => `story-next-skeleton-${i + 1}`,
 );
 
 export const Route = createFileRoute("/_app/stories/")({
@@ -46,6 +43,7 @@ export const Route = createFileRoute("/_app/stories/")({
 			typeof search.search === "string" && search.search.trim() !== ""
 				? search.search.trim()
 				: undefined,
+		page: parsePage(search.page),
 	}),
 	component: StoriesListPage,
 });
@@ -68,8 +66,10 @@ function StoriesListPage() {
 		[bookmarksQuery.data],
 	);
 
-	const storiesQuery = useInfiniteStories(
+	const page = searchParams.page ?? 1;
+	const storiesQuery = useStories(
 		{
+			page,
 			pageSize: STORIES_PAGE_SIZE,
 			cefr: cefr === "all" ? undefined : cefr,
 			topic: selectedCategory === "all" ? undefined : selectedCategory,
@@ -78,29 +78,11 @@ function StoriesListPage() {
 		searchParams.tab !== "saved",
 	);
 
-	const items = useMemo(
-		() => storiesQuery.data?.pages.flatMap((page) => page.items) ?? [],
-		[storiesQuery.data],
-	);
+	const items = storiesQuery.data?.items ?? [];
+	const pagination = storiesQuery.data?.pagination;
 
-	const sentinelRef = useRef<HTMLDivElement | null>(null);
-	const { hasNextPage, isFetchingNextPage, fetchNextPage } = storiesQuery;
-
-	useEffect(() => {
-		const node = sentinelRef.current;
-		if (!node || !hasNextPage || isFetchingNextPage) return;
-		const observer = new IntersectionObserver(
-			(entries) => {
-				if (entries[0]?.isIntersecting) {
-					void fetchNextPage();
-				}
-			},
-			{ rootMargin: "200px" },
-		);
-		observer.observe(node);
-		return () => observer.disconnect();
-	}, [hasNextPage, isFetchingNextPage, fetchNextPage]);
-
+	/** Any filter change resets to page 1 — a stale page number past the new
+	 *  result set's last page would just render empty. */
 	function updateSearch(next: Partial<StoriesSearch>) {
 		void navigate({
 			to: APP_ROUTES.STORIES.LIST,
@@ -113,7 +95,15 @@ function StoriesListPage() {
 							? undefined
 							: next.tab
 						: searchParams.tab,
+				page: undefined,
 			},
+		});
+	}
+
+	function goToPage(nextPage: number) {
+		void navigate({
+			to: APP_ROUTES.STORIES.LIST,
+			search: { ...searchParams, page: nextPage > 1 ? nextPage : undefined },
 		});
 	}
 
@@ -181,14 +171,31 @@ function StoriesListPage() {
 								story={{ ...story, saved: savedIds.has(story.id) }}
 							/>
 						))}
-						{storiesQuery.isFetchingNextPage
-							? NEXT_PAGE_SKELETON_KEYS.map((key) => (
-									<StoryCardSkeleton key={key} />
-								))
-							: null}
 					</div>
-					{storiesQuery.hasNextPage ? (
-						<div ref={sentinelRef} className="h-4 w-full" aria-hidden="true" />
+					{pagination && pagination.totalPages > 1 ? (
+						<div className="flex items-center justify-center gap-2">
+							<Button
+								type="button"
+								variant="outline"
+								size="icon-sm"
+								disabled={pagination.page <= 1}
+								onClick={() => goToPage(pagination.page - 1)}
+							>
+								<ChevronLeft />
+							</Button>
+							<span className="text-sm text-muted-foreground">
+								{pagination.page}/{pagination.totalPages}
+							</span>
+							<Button
+								type="button"
+								variant="outline"
+								size="icon-sm"
+								disabled={pagination.page >= pagination.totalPages}
+								onClick={() => goToPage(pagination.page + 1)}
+							>
+								<ChevronRight />
+							</Button>
+						</div>
 					) : null}
 				</>
 			)}

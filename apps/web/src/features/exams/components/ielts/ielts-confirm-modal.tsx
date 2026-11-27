@@ -1,6 +1,6 @@
+import { SubmitButton } from "#/components/common/submit-button";
 import {
 	AlertDialog,
-	AlertDialogAction,
 	AlertDialogCancel,
 	AlertDialogContent,
 	AlertDialogDescription,
@@ -16,12 +16,14 @@ export function IeltsConfirmModal({
 	totalCount,
 	onClose,
 	onConfirm,
+	pending = false,
 }: {
 	action: "submit" | "exit" | "reset" | null;
 	answeredCount: number;
 	totalCount: number;
 	onClose: () => void;
 	onConfirm: () => void;
+	pending?: boolean;
 }) {
 	if (!action) return null;
 
@@ -55,7 +57,7 @@ export function IeltsConfirmModal({
 	return (
 		<AlertDialog
 			open={action !== null}
-			onOpenChange={(open) => !open && onClose()}
+			onOpenChange={(open) => !open && !pending && onClose()}
 		>
 			<AlertDialogContent>
 				<AlertDialogHeader>
@@ -65,14 +67,12 @@ export function IeltsConfirmModal({
 					</AlertDialogDescription>
 				</AlertDialogHeader>
 				<AlertDialogFooter>
-					<AlertDialogCancel onClick={onClose}>
+					<AlertDialogCancel onClick={onClose} disabled={pending}>
 						{cancelButtons[action]}
 					</AlertDialogCancel>
-					<AlertDialogAction
-						onClick={() => {
-							onConfirm();
-							onClose();
-						}}
+					<SubmitButton
+						pending={pending}
+						onClick={onConfirm}
 						className={
 							action === "submit"
 								? "bg-emerald-600 hover:bg-emerald-700 text-white"
@@ -80,7 +80,7 @@ export function IeltsConfirmModal({
 						}
 					>
 						{actionButtons[action]}
-					</AlertDialogAction>
+					</SubmitButton>
 				</AlertDialogFooter>
 			</AlertDialogContent>
 		</AlertDialog>

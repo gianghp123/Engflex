@@ -14,7 +14,9 @@ import (
 	"engflex-api/internal/common"
 	"engflex-api/internal/common/enums"
 	"engflex-api/internal/database/models"
+	"engflex-api/internal/database/repositories"
 	"engflex-api/internal/database/repositories/mocks"
+	"engflex-api/internal/modules/videos/dtos/requests"
 	"engflex-api/internal/modules/videos/services"
 )
 
@@ -168,3 +170,32 @@ func TestVideoExerciseService_GetByID_PremiumGating(t *testing.T) {
 }
 
 func strPtr(s string) *string { return &s }
+
+// List must translate ListVideoExercises into the repository filter
+// verbatim (search, categoryId, cefrLevel) — a prior gap left these bound
+// but silently ignored server-side.
+func TestVideoExerciseService_List_FiltersPassthrough(t *testing.T) {
+	svc, mockRepo := setupExercise(t)
+	categoryID := "22222222-2222-2222-2222-222222222222"
+	cefr := enums.CEFRB1
+	req := requests.ListVideoExercises{
+		CategoryID: &categoryID,
+		CEFRLevel:  &cefr,
+	}
+	req.Search = "trailer"
+
+	expected := repositories.VideoExerciseFilter{
+		Search:        "trailer",
+		CategoryID:    categoryID,
+		CEFRLevel:     "B1",
+		OnlyPublished: true,
+		Limit:         20,
+		Offset:        0,
+	}
+	mockRepo.On("List", mock.Anything, expected).Return([]*models.VideoExercise{}, nil)
+	mockRepo.On("Count", mock.Anything, expected).Return(int64(0), nil)
+
+	_, total, err := svc.List(context.Background(), req, 20, 0, false)
+	require.NoError(t, err)
+	assert.Equal(t, int64(0), total)
+}

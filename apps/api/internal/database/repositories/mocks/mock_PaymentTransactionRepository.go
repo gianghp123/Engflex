@@ -108,6 +108,80 @@ func (_c *MockPaymentTransactionRepository_Create_Call) RunAndReturn(run func(ct
 	return _c
 }
 
+// FindPendingMatchForUpdate provides a mock function for the type MockPaymentTransactionRepository
+func (_mock *MockPaymentTransactionRepository) FindPendingMatchForUpdate(ctx context.Context, provider string, text string) (*models.PaymentTransaction, error) {
+	ret := _mock.Called(ctx, provider, text)
+
+	if len(ret) == 0 {
+		panic("no return value specified for FindPendingMatchForUpdate")
+	}
+
+	var r0 *models.PaymentTransaction
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string) (*models.PaymentTransaction, error)); ok {
+		return returnFunc(ctx, provider, text)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string) *models.PaymentTransaction); ok {
+		r0 = returnFunc(ctx, provider, text)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.PaymentTransaction)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, string) error); ok {
+		r1 = returnFunc(ctx, provider, text)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockPaymentTransactionRepository_FindPendingMatchForUpdate_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'FindPendingMatchForUpdate'
+type MockPaymentTransactionRepository_FindPendingMatchForUpdate_Call struct {
+	*mock.Call
+}
+
+// FindPendingMatchForUpdate is a helper method to define mock.On call
+//   - ctx context.Context
+//   - provider string
+//   - text string
+func (_e *MockPaymentTransactionRepository_Expecter) FindPendingMatchForUpdate(ctx any, provider any, text any) *MockPaymentTransactionRepository_FindPendingMatchForUpdate_Call {
+	return &MockPaymentTransactionRepository_FindPendingMatchForUpdate_Call{Call: _e.mock.On("FindPendingMatchForUpdate", ctx, provider, text)}
+}
+
+func (_c *MockPaymentTransactionRepository_FindPendingMatchForUpdate_Call) Run(run func(ctx context.Context, provider string, text string)) *MockPaymentTransactionRepository_FindPendingMatchForUpdate_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 string
+		if args[2] != nil {
+			arg2 = args[2].(string)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockPaymentTransactionRepository_FindPendingMatchForUpdate_Call) Return(paymentTransaction *models.PaymentTransaction, err error) *MockPaymentTransactionRepository_FindPendingMatchForUpdate_Call {
+	_c.Call.Return(paymentTransaction, err)
+	return _c
+}
+
+func (_c *MockPaymentTransactionRepository_FindPendingMatchForUpdate_Call) RunAndReturn(run func(ctx context.Context, provider string, text string) (*models.PaymentTransaction, error)) *MockPaymentTransactionRepository_FindPendingMatchForUpdate_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetByProviderTxnRef provides a mock function for the type MockPaymentTransactionRepository
 func (_mock *MockPaymentTransactionRepository) GetByProviderTxnRef(ctx context.Context, provider string, txnRef string) (*models.PaymentTransaction, error) {
 	ret := _mock.Called(ctx, provider, txnRef)

@@ -11,6 +11,7 @@ import (
 	"gorm.io/gorm"
 
 	"engflex-api/internal/common"
+	"engflex-api/internal/common/enums"
 	"engflex-api/internal/database/models"
 	"engflex-api/internal/database/repositories"
 	"engflex-api/internal/database/repositories/mocks"
@@ -62,19 +63,20 @@ func TestStoryService_ListStories(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			repo := mocks.NewMockStoryRepository(t)
 			f := repositories.StoryFilter{
-				CEFR:   string(tt.req.CEFR),
-				Topic:  tt.req.Topic,
-				Search: tt.req.Search,
-				Limit:  10,
-				Offset: 0,
+				CEFR:          string(tt.req.CEFR),
+				Topic:         tt.req.Topic,
+				Search:        tt.req.Search,
+				OnlyPublished: true,
+				Limit:         10,
+				Offset:        0,
 			}
 			repo.On("List", mock.Anything, f).Return(tt.mockReturn, tt.mockErr)
 			if !tt.wantErr {
 				repo.On("Count", mock.Anything, f).Return(tt.mockCount, nil)
 			}
-			svc := services.NewStoryService(repo)
+			svc := services.NewStoryService(repo, nil, nil)
 
-			list, total, err := svc.ListStories(context.Background(), tt.req, 10, 0)
+			list, total, err := svc.ListStories(context.Background(), tt.req, 10, 0, false)
 			if tt.wantErr {
 				requireAppError(t, err, tt.wantStatus)
 				assert.Nil(t, list)
@@ -90,9 +92,10 @@ func TestStoryService_ListStories(t *testing.T) {
 func TestStoryService_GetBySlug(t *testing.T) {
 	slug := "cinderella"
 	story := &models.Story{
-		ID:    "11111111-1111-1111-1111-111111111111",
-		Slug:  slug,
-		Title: "Cinderella",
+		ID:     "11111111-1111-1111-1111-111111111111",
+		Slug:   slug,
+		Title:  "Cinderella",
+		Status: enums.PublishStatusPublished,
 		Sentences: []*models.StorySentence{
 			{ID: "33333333-3333-3333-3333-333333333333", Sequence: 1, EnglishText: "Once upon a time..."},
 		},
@@ -126,9 +129,9 @@ func TestStoryService_GetBySlug(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			repo := mocks.NewMockStoryRepository(t)
 			repo.On("GetBySlug", mock.Anything, tt.slug).Return(tt.mockReturn, tt.mockErr)
-			svc := services.NewStoryService(repo)
+			svc := services.NewStoryService(repo, nil, nil)
 
-			got, err := svc.GetBySlug(context.Background(), tt.slug)
+			got, err := svc.GetBySlug(context.Background(), tt.slug, "user-1", false)
 			if tt.wantErr {
 				requireAppError(t, err, tt.wantStatus)
 				assert.Nil(t, got)
@@ -167,7 +170,7 @@ func TestStoryService_ListTopics(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			repo := mocks.NewMockStoryRepository(t)
 			repo.On("ListTopics", mock.Anything).Return(tt.mockReturn, tt.mockErr)
-			svc := services.NewStoryService(repo)
+			svc := services.NewStoryService(repo, nil, nil)
 
 			got, err := svc.ListTopics(context.Background())
 			if tt.wantErr {

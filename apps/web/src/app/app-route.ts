@@ -85,6 +85,7 @@ export const APP_ROUTES = {
 		VIDEOS: "/admin/videos",
 		SCENARIOS: "/admin/scenarios",
 		LESSONS: "/admin/lessons",
+		STORIES: "/admin/stories",
 		USERS: "/admin/users",
 		PREMIUM: "/admin/premium",
 	},

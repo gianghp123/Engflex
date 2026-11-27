@@ -18,18 +18,20 @@ export function IeltsHeader({
 	onReset,
 	onExit,
 	onSubmit,
+	pending = false,
 }: {
 	testTitle: string;
-	timeLeft: number;
+	timeLeft: number | null;
 	highlightMode: boolean;
 	onToggleHighlight: () => void;
 	onReset: () => void;
 	onExit: () => void;
 	onSubmit: () => void;
+	pending?: boolean;
 }) {
 	return (
-		<header className="flex h-14 w-full shrink-0 items-center justify-between border-b border-border/80 bg-background px-3 md:px-6">
-			<div className="flex items-center gap-2.5 min-w-0">
+		<header className="flex min-h-14 w-full shrink-0 flex-wrap items-center justify-between gap-2 border-b border-border/80 bg-background px-3 py-2 md:h-14 md:flex-nowrap md:px-6 md:py-0">
+			<div className="flex w-full min-w-0 items-center gap-2.5 md:w-auto md:flex-1">
 				<div className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-red-600 text-white font-bold text-xs shadow-xs">
 					🇬🇧
 				</div>
@@ -38,14 +40,23 @@ export function IeltsHeader({
 				</h1>
 			</div>
 
-			<div className="flex items-center gap-1.5 rounded-full border border-sky-200 bg-sky-50/80 px-3.5 py-1 text-xs font-mono font-bold text-sky-700 shadow-xs dark:border-sky-800 dark:bg-sky-950/40 dark:text-sky-300 md:text-sm">
+			<div className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-sky-200 bg-sky-50/80 px-3.5 py-1 text-xs font-mono font-bold text-sky-700 shadow-xs dark:border-sky-800 dark:bg-sky-950/40 dark:text-sky-300 md:text-sm">
 				<Clock className="size-4" aria-hidden="true" />
 				<span>
-					{m["exams.ielts.take.remaining"]()} {formatSeconds(timeLeft)}
+					{timeLeft === null ? (
+						m["exams.ielts.take.practice"]()
+					) : (
+						<>
+							<span className="sr-only sm:not-sr-only">
+								{m["exams.ielts.take.remaining"]()}{" "}
+							</span>
+							{formatSeconds(timeLeft)}
+						</>
+					)}
 				</span>
 			</div>
 
-			<div className="flex items-center gap-2">
+			<div className="ml-auto flex shrink-0 items-center gap-2">
 				<div className="hidden sm:flex items-center gap-2 mr-2 rounded-lg border border-border/70 bg-muted/30 px-2.5 py-1 text-xs">
 					<Highlighter className="size-3.5 text-amber-500" />
 					<label
@@ -65,16 +76,20 @@ export function IeltsHeader({
 					variant="outline"
 					size="sm"
 					onClick={onReset}
-					className="h-8 text-xs font-semibold gap-1 hidden md:inline-flex"
+					disabled={pending}
+					className="h-8 text-xs font-semibold gap-1"
 					title={m["exams.ielts.take.resetButton"]()}
 				>
 					<RotateCcw className="size-3.5" />
-					<span>{m["exams.ielts.take.resetButton"]()}</span>
+					<span className="sr-only sm:not-sr-only">
+						{m["exams.ielts.take.resetButton"]()}
+					</span>
 				</Button>
 
 				<Button
 					type="button"
 					onClick={onExit}
+					disabled={pending}
 					className="flex h-8 items-center justify-center rounded-lg bg-rose-600 px-3 text-xs font-bold text-white shadow-xs transition-colors hover:bg-rose-700"
 				>
 					{m["exams.ielts.take.exitButton"]()}
@@ -83,6 +98,7 @@ export function IeltsHeader({
 				<SubmitButton
 					type="button"
 					onClick={onSubmit}
+					pending={pending}
 					className="flex h-8 items-center justify-center rounded-lg bg-emerald-600 px-3.5 text-xs font-bold text-white shadow-xs transition-colors hover:bg-emerald-700"
 				>
 					{m["exams.ielts.take.submitButton"]()}

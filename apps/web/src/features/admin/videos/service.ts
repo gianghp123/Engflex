@@ -39,14 +39,25 @@ export function deleteVideoTranscript(id: string) {
 	});
 }
 
+export interface VideoExerciseFilters {
+	search?: string;
+	categoryId?: string;
+	cefrLevel?: string;
+}
+
 export function listVideoExercises(
 	page: number,
 	pageSize: number,
+	filters: VideoExerciseFilters = {},
 ): Promise<{ items: VideoExerciseResponse[]; pagination: Pagination }> {
+	const query: Record<string, string | number> = { page, pageSize };
+	if (filters.search?.trim()) query.search = filters.search.trim();
+	if (filters.categoryId) query.categoryId = filters.categoryId;
+	if (filters.cefrLevel) query.cefrLevel = filters.cefrLevel;
 	return apiPage<VideoExerciseResponse>(
 		API_ROUTES.VIDEO_EXERCISES.LIST,
 		undefined,
-		{ query: { page, pageSize } },
+		{ query },
 	);
 }
 

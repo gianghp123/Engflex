@@ -149,6 +149,11 @@
         "practice": "Luyện",
         "time": "Thời gian {time}"
       },
+      "attempt": {
+        "saving": "Đang lưu tiến độ…",
+        "saveFailed": "Không thể lưu tiến độ.",
+        "loadFailed": "Không thể tải tiến độ luyện shadowing."
+      },
       "controls": {
         "autoPause": "Tự động dừng",
         "largeVideo": "Video kích thước lớn",
@@ -157,7 +162,9 @@
       "record": {
         "start": "Ghi âm",
         "stop": "Dừng ghi âm",
-        "playback": "Phát lại ghi âm"
+        "playback": "Phát lại ghi âm",
+        "micDenied": "Không dùng được micro. Hãy cấp quyền micro rồi thử lại.",
+        "scoreFailed": "Không thể chấm điểm bản ghi âm này. Vui lòng thử lại."
       },
       "transcript": {
         "phonetic": "IPA",

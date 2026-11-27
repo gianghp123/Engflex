@@ -18,14 +18,16 @@ function pickMime(): string | null {
 }
 
 /**
- * Minimal MediaRecorder wrapper for read-aloud capture.
+ * Minimal MediaRecorder wrapper for read-aloud/shadowing capture.
  *
  * `start` resolves once recording has begun (or an `error` state is set);
  * `stop` resolves the recorded chunks into a `ready` blob asynchronously via
  * `onstop`. Microphone denial or a missing `MediaRecorder` lands in `error`
- * with the `micDenied` guidance — this hook never throws.
+ * with `micDeniedMessage` — this hook never throws.
  */
-export function useRecorder(): {
+export function useRecorder(
+	micDeniedMessage: string = m["lessons.speaking.micDenied"](),
+): {
 	state: RecorderState;
 	start: () => Promise<void>;
 	stop: () => void;
@@ -39,10 +41,7 @@ export function useRecorder(): {
 	const start = useCallback(async () => {
 		const picked = pickMime();
 		if (!picked || typeof navigator === "undefined") {
-			setState({
-				status: "error",
-				message: m["lessons.speaking.micDenied"](),
-			});
+			setState({ status: "error", message: micDeniedMessage });
 			return;
 		}
 		try {
@@ -59,12 +58,9 @@ export function useRecorder(): {
 			rec.start();
 			setState({ status: "recording" });
 		} catch {
-			setState({
-				status: "error",
-				message: m["lessons.speaking.micDenied"](),
-			});
+			setState({ status: "error", message: micDeniedMessage });
 		}
-	}, []);
+	}, [micDeniedMessage]);
 
 	const stop = useCallback(() => {
 		const rec = recorder.current;

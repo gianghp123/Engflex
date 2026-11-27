@@ -6,7 +6,6 @@ package mocks
 
 import (
 	"context"
-	"engflex-api/internal/common/enums"
 	"engflex-api/internal/database/models"
 	"engflex-api/internal/database/repositories"
 
@@ -295,8 +294,8 @@ func (_c *MockLessonSectionRepository_List_Call) RunAndReturn(run func(ctx conte
 }
 
 // ListWithUnits provides a mock function for the type MockLessonSectionRepository
-func (_mock *MockLessonSectionRepository) ListWithUnits(ctx context.Context, level enums.CEFR, isAdmin bool) ([]*models.LessonSection, error) {
-	ret := _mock.Called(ctx, level, isAdmin)
+func (_mock *MockLessonSectionRepository) ListWithUnits(ctx context.Context, f repositories.LessonUnitFilter, isAdmin bool) ([]*models.LessonSection, error) {
+	ret := _mock.Called(ctx, f, isAdmin)
 
 	if len(ret) == 0 {
 		panic("no return value specified for ListWithUnits")
@@ -304,18 +303,18 @@ func (_mock *MockLessonSectionRepository) ListWithUnits(ctx context.Context, lev
 
 	var r0 []*models.LessonSection
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, enums.CEFR, bool) ([]*models.LessonSection, error)); ok {
-		return returnFunc(ctx, level, isAdmin)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repositories.LessonUnitFilter, bool) ([]*models.LessonSection, error)); ok {
+		return returnFunc(ctx, f, isAdmin)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, enums.CEFR, bool) []*models.LessonSection); ok {
-		r0 = returnFunc(ctx, level, isAdmin)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repositories.LessonUnitFilter, bool) []*models.LessonSection); ok {
+		r0 = returnFunc(ctx, f, isAdmin)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*models.LessonSection)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, enums.CEFR, bool) error); ok {
-		r1 = returnFunc(ctx, level, isAdmin)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, repositories.LessonUnitFilter, bool) error); ok {
+		r1 = returnFunc(ctx, f, isAdmin)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -329,21 +328,21 @@ type MockLessonSectionRepository_ListWithUnits_Call struct {
 
 // ListWithUnits is a helper method to define mock.On call
 //   - ctx context.Context
-//   - level enums.CEFR
+//   - f repositories.LessonUnitFilter
 //   - isAdmin bool
-func (_e *MockLessonSectionRepository_Expecter) ListWithUnits(ctx any, level any, isAdmin any) *MockLessonSectionRepository_ListWithUnits_Call {
-	return &MockLessonSectionRepository_ListWithUnits_Call{Call: _e.mock.On("ListWithUnits", ctx, level, isAdmin)}
+func (_e *MockLessonSectionRepository_Expecter) ListWithUnits(ctx any, f any, isAdmin any) *MockLessonSectionRepository_ListWithUnits_Call {
+	return &MockLessonSectionRepository_ListWithUnits_Call{Call: _e.mock.On("ListWithUnits", ctx, f, isAdmin)}
 }
 
-func (_c *MockLessonSectionRepository_ListWithUnits_Call) Run(run func(ctx context.Context, level enums.CEFR, isAdmin bool)) *MockLessonSectionRepository_ListWithUnits_Call {
+func (_c *MockLessonSectionRepository_ListWithUnits_Call) Run(run func(ctx context.Context, f repositories.LessonUnitFilter, isAdmin bool)) *MockLessonSectionRepository_ListWithUnits_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 enums.CEFR
+		var arg1 repositories.LessonUnitFilter
 		if args[1] != nil {
-			arg1 = args[1].(enums.CEFR)
+			arg1 = args[1].(repositories.LessonUnitFilter)
 		}
 		var arg2 bool
 		if args[2] != nil {
@@ -363,7 +362,7 @@ func (_c *MockLessonSectionRepository_ListWithUnits_Call) Return(lessonSections 
 	return _c
 }
 
-func (_c *MockLessonSectionRepository_ListWithUnits_Call) RunAndReturn(run func(ctx context.Context, level enums.CEFR, isAdmin bool) ([]*models.LessonSection, error)) *MockLessonSectionRepository_ListWithUnits_Call {
+func (_c *MockLessonSectionRepository_ListWithUnits_Call) RunAndReturn(run func(ctx context.Context, f repositories.LessonUnitFilter, isAdmin bool) ([]*models.LessonSection, error)) *MockLessonSectionRepository_ListWithUnits_Call {
 	_c.Call.Return(run)
 	return _c
 }

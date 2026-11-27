@@ -7,3 +7,48 @@ export interface ListStories extends ListParams {
   cefr: CEFR;
   topic: string;
 }
+/**
+ * SentenceInput is one line of a story's reading timeline. No ID — every
+ * save replaces the whole set (see StoryRepository.ReplaceSentences), so
+ * the admin form just submits the full current set as one array.
+ */
+export interface SentenceInput {
+  sequence: number /* int */;
+  englishText: string;
+  vietnameseText: string;
+  imageUrl?: string;
+  startTimestamp: number /* float64 */;
+  endTimestamp: number /* float64 */;
+}
+export interface CreateStory {
+  slug: string;
+  title: string;
+  titleVietnamese?: string;
+  cefrLevel?: CEFR;
+  topic: string;
+  thumbnailUrl?: string;
+  audioUrl: string;
+  duration: number /* float64 */;
+  isPremium: boolean;
+  sentences: SentenceInput[];
+}
+/**
+ * UpdateStory replaces every field below Status. Status is the one pointer
+ * field — optional, so a plain metadata edit never has to resend it
+ * (mirrors UpdateVideoExercise). Sentences is nil-vs-empty sensitive: a
+ * request that omits the key leaves the existing timeline untouched; `[]`
+ * clears it. See storyService.Update.
+ */
+export interface UpdateStory {
+  slug: string;
+  title: string;
+  titleVietnamese?: string;
+  cefrLevel?: CEFR;
+  topic: string;
+  thumbnailUrl?: string;
+  audioUrl: string;
+  duration: number /* float64 */;
+  status?: PublishStatus;
+  isPremium?: boolean;
+  sentences?: SentenceInput[];
+}

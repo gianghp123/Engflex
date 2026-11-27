@@ -14,17 +14,19 @@ import (
 	"engflex-api/internal/server/middleware"
 )
 
-// PaymentController exposes the VNPay checkout, IPN, return, plan catalog,
-// and the caller's own premium status.
+// PaymentController exposes the VNPay checkout/IPN/return routes, the
+// SePay checkout/webhook/status routes, the plan catalog, and the
+// caller's own premium status.
 type PaymentController struct {
 	plans services.PlanService
 	subs  services.SubscriptionService
 	vnpay services.VNPayService
+	sepay services.SepayService
 }
 
 // NewPaymentController wires the controller to its services.
-func NewPaymentController(plans services.PlanService, subs services.SubscriptionService, vnpay services.VNPayService) *PaymentController {
-	return &PaymentController{plans: plans, subs: subs, vnpay: vnpay}
+func NewPaymentController(plans services.PlanService, subs services.SubscriptionService, vnpay services.VNPayService, sepay services.SepayService) *PaymentController {
+	return &PaymentController{plans: plans, subs: subs, vnpay: vnpay, sepay: sepay}
 }
 
 // Me was superseded by the access module's GET /premium/me
@@ -103,4 +105,72 @@ func (h *PaymentController) Return(c *gin.Context) {
 		"responseCode": c.Query("vnp_ResponseCode"),
 		"txnRef":       c.Query("vnp_TxnRef"),
 	})
+}
+
+// SepayCheckout godoc
+// @Summary      Start a SePay checkout for a premium plan
+// @Description  Returns a VietQR image URL to render inline — no redirect.
+// @Tags         payments
+// @Security     BearerAuth
+// @Accept       json
+// @Produce      json
+// @Param        request body requests.Checkout true "plan selection"
+// @Success      200 {object} common.ApiResponse{data=responses.SepayCheckoutSession}
+// @Router       /payments/sepay/checkout [post]
+func (h *PaymentController) SepayCheckout(c *gin.Context) {
+	var req requests.Checkout
+	if err := c.ShouldBindJSON(&req); err != nil {
+		common.Fail(c, common.BadRequest(err.Error()))
+		return
+	}
+	res, err := h.sepay.BuildCheckoutQR(c.Request.Context(), middleware.UserID(c), req.Plan)
+	if err != nil {
+		common.Fail(c, err)
+		return
+	}
+	common.OK(c, "checkout created", res)
+}
+
+// SepayWebhook godoc
+// @Summary      SePay server-to-server payment notification
+// @Tags         payments
+// @Accept       json
+// @Produce      json
+// @Success      200 {object} object{success=bool}
+// @Router       /payments/sepay/webhook [post]
+func (h *PaymentController) SepayWebhook(c *gin.Context) {
+	if !h.sepay.VerifyWebhookAuth(c.GetHeader("Authorization")) {
+		c.JSON(http.StatusUnauthorized, gin.H{"success": false})
+		return
+	}
+	var payload services.SepayWebhook
+	if err := c.ShouldBindJSON(&payload); err != nil {
+		// Still 200+success: a malformed body is SePay's problem to fix,
+		// not something retrying will resolve, and a rejection here just
+		// triggers endless retries for a payload that will never parse.
+		c.JSON(http.StatusOK, gin.H{"success": true})
+		return
+	}
+	if err := h.sepay.HandleWebhook(c.Request.Context(), payload); err != nil {
+		common.Fail(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"success": true})
+}
+
+// SepayStatus godoc
+// @Summary      Poll a SePay checkout's payment status
+// @Tags         payments
+// @Security     BearerAuth
+// @Produce      json
+// @Param        reference path string true "checkout reference"
+// @Success      200 {object} common.ApiResponse{data=responses.SepayStatus}
+// @Router       /payments/sepay/status/{reference} [get]
+func (h *PaymentController) SepayStatus(c *gin.Context) {
+	res, err := h.sepay.GetStatus(c.Request.Context(), c.Param("reference"))
+	if err != nil {
+		common.Fail(c, err)
+		return
+	}
+	common.OK(c, "status", res)
 }

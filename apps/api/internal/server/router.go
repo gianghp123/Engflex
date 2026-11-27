@@ -173,13 +173,13 @@ func NewRouter(db *gorm.DB, cfg config.Config) *gin.Engine {
 	attempts.RegisterRoutes(v1, db)
 	exams.RegisterRoutes(v1, db, cfg.LLM, accessSvc)
 	scenarios.RegisterRoutes(v1, db)
-	videos.RegisterRoutes(v1, db)
+	videos.RegisterRoutes(v1, db, cfg.Voice, sessionLimiter)
 	vocabulary.RegisterRoutes(v1, db)
 	users.RegisterRoutes(v1, db)
-	payments.RegisterRoutes(v1, db, cfg.Payment, accessSvc.Policy)
+	payments.RegisterRoutes(v1, db, cfg.Payment, accessSvc.Policy, cfg.Sepay)
 	profiles.RegisterRoutes(v1, db)
 	bookmarks.RegisterRoutes(v1, db)
-	stories.RegisterRoutes(v1, db)
+	stories.RegisterRoutes(v1, db, cfg.Minio)
 
 	return r
 }

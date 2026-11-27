@@ -13,9 +13,20 @@
         "12m": "12 tháng"
       },
       "perMonth": "{amount}/tháng",
-      "cta": "Thanh toán với VNPay",
-      "redirecting": "Đang chuyển đến VNPay...",
-      "checkoutError": "Không thể tạo thanh toán. Vui lòng thử lại."
+      "cta": "Nâng cấp ngay",
+      "checkoutError": "Không thể tạo thanh toán. Vui lòng thử lại.",
+      "sepay": {
+        "title": "Quét mã để thanh toán",
+        "body": "Quét mã QR bằng app ngân hàng, hoặc chuyển khoản thủ công theo thông tin bên dưới.",
+        "succeeded": "Đã nhận thanh toán — tài khoản của bạn đã là Premium.",
+        "waiting": "Đang chờ thanh toán...",
+        "done": "Xong",
+        "bank": "Ngân hàng",
+        "account": "Số tài khoản",
+        "holder": "Chủ tài khoản",
+        "amount": "Số tiền",
+        "content": "Nội dung chuyển khoản (bắt buộc)"
+      }
     },
     "return": {
       "crumb": "Kết quả thanh toán",

@@ -62,6 +62,7 @@ type Result struct {
 	ModelCurve       []float64
 	LearnerCurve     []float64
 	ReferencePhones  []ReferencePhone
+	Feedback         string
 }
 
 // Scorer scores one attempt. An interface so module services depend on it

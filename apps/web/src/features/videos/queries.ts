@@ -1,10 +1,12 @@
 import type { ListVideoExercises } from "@engflex/contracts";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import {
 	getOpenDictationAttempt,
+	getOpenShadowingAttempt,
 	getVideo,
 	listCategoryPreviews,
 	listVideos,
+	pronounceShadowing,
 } from "#/features/videos/service";
 
 export const videoKeys = {
@@ -16,6 +18,8 @@ export const videoKeys = {
 	detail: (id: string) => [...videoKeys.all, "detail", id] as const,
 	openDictation: (id: string) =>
 		[...videoKeys.all, "dictation", "open", id] as const,
+	openShadowing: (id: string) =>
+		[...videoKeys.all, "shadowing", "open", id] as const,
 };
 
 export function videoPreviewQueryOptions(previewK: number) {
@@ -58,5 +62,34 @@ export function useOpenDictationAttempt(id: string, enabled: boolean) {
 		enabled,
 		refetchOnMount: "always",
 		refetchOnWindowFocus: false,
+	});
+}
+
+export function useOpenShadowingAttempt(id: string, enabled: boolean) {
+	return useQuery({
+		queryKey: videoKeys.openShadowing(id),
+		queryFn: () => getOpenShadowingAttempt(id),
+		enabled,
+		refetchOnMount: "always",
+		refetchOnWindowFocus: false,
+	});
+}
+
+export function usePronounceShadowing() {
+	return useMutation({
+		mutationFn: (input: {
+			videoId: string;
+			attemptId: string;
+			transcriptId: string;
+			audio: Blob;
+			mime: string;
+		}) =>
+			pronounceShadowing(
+				input.videoId,
+				input.attemptId,
+				input.transcriptId,
+				input.audio,
+				input.mime,
+			),
 	});
 }

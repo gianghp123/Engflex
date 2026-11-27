@@ -25,6 +25,12 @@ type PaymentTransactionRepository interface {
 	// retries IPN until it gets an ack) serialize on this row instead of
 	// both reading "pending" and both applying the result.
 	GetByProviderTxnRefForUpdate(ctx context.Context, provider, txnRef string) (*models.PaymentTransaction, error)
+	// FindPendingMatchForUpdate locks and returns the one pending row whose
+	// provider_txn_ref appears as a substring of text. SePay's bank-transfer
+	// content often arrives prefixed/suffixed by the sender's own banking
+	// app, so webhook matching can't assume an exact match the way VNPay's
+	// vnp_TxnRef round-trip does.
+	FindPendingMatchForUpdate(ctx context.Context, provider, text string) (*models.PaymentTransaction, error)
 	ListBySubscriptionID(ctx context.Context, subscriptionID string) ([]*models.PaymentTransaction, error)
 	UpdateResult(ctx context.Context, id string, status enums.PaymentTransactionStatus, providerTxnNo, responseCode *string, rawResponse datatypes.JSON) error
 	WithTx(tx *gorm.DB) PaymentTransactionRepository
@@ -61,6 +67,19 @@ func (r *paymentTransactionRepository) GetByProviderTxnRefForUpdate(ctx context.
 	if err := r.db.WithContext(ctx).
 		Clauses(clause.Locking{Strength: "UPDATE"}).
 		First(&m, "provider = ? AND provider_txn_ref = ?", provider, txnRef).Error; err != nil {
+		return nil, err
+	}
+	return &m, nil
+}
+
+func (r *paymentTransactionRepository) FindPendingMatchForUpdate(ctx context.Context, provider, text string) (*models.PaymentTransaction, error) {
+	var m models.PaymentTransaction
+	err := r.db.WithContext(ctx).
+		Clauses(clause.Locking{Strength: "UPDATE"}).
+		Where("provider = ? AND status = ? AND ? LIKE '%' || provider_txn_ref || '%'", provider, enums.PaymentTransactionStatusPending, text).
+		Order("created_at DESC").
+		First(&m).Error
+	if err != nil {
 		return nil, err
 	}
 	return &m, nil

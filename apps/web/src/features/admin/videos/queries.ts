@@ -21,6 +21,7 @@ import {
 	updateVideoCategory,
 	updateVideoExercise,
 	updateVideoTranscript,
+	type VideoExerciseFilters,
 } from "#/features/admin/videos/service";
 import { videoKeys } from "#/features/videos/queries";
 import { ApiError } from "#/lib/api";
@@ -77,8 +78,8 @@ export function useDeleteVideoTranscript(videoId: string) {
 }
 
 const keys = {
-	exercises: (page: number, pageSize: number) =>
-		["admin", "video-exercises", page, pageSize] as const,
+	exercises: (page: number, pageSize: number, filters: VideoExerciseFilters) =>
+		["admin", "video-exercises", page, pageSize, filters] as const,
 	categories: (page: number, pageSize: number) =>
 		["admin", "video-categories", page, pageSize] as const,
 };
@@ -88,10 +89,14 @@ function useInvalidate(key: readonly unknown[]) {
 	return () => queryClient.invalidateQueries({ queryKey: key });
 }
 
-export function useAdminVideoExercises(page: number, pageSize: number) {
+export function useAdminVideoExercises(
+	page: number,
+	pageSize: number,
+	filters: VideoExerciseFilters = {},
+) {
 	return useQuery({
-		queryKey: keys.exercises(page, pageSize),
-		queryFn: () => listVideoExercises(page, pageSize),
+		queryKey: keys.exercises(page, pageSize, filters),
+		queryFn: () => listVideoExercises(page, pageSize, filters),
 	});
 }
 

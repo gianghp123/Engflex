@@ -1,4 +1,5 @@
 import type { SubscriptionPlan, User } from "@engflex/contracts";
+import { Crown, ShieldMinus, ShieldPlus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import {
@@ -23,6 +24,11 @@ import {
 	SelectValue,
 } from "#/components/ui/select";
 import { Textarea } from "#/components/ui/textarea";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger,
+} from "#/components/ui/tooltip";
 import {
 	DataTable,
 	type DataTableColumn,
@@ -129,12 +135,14 @@ export function UsersPanel() {
 		{
 			id: "name",
 			header: "Name",
+			className: "w-36",
 			cell: (row) =>
 				[row.firstName, row.lastName].filter(Boolean).join(" ") || "—",
 		},
 		{
 			id: "role",
 			header: "Role",
+			className: "w-24",
 			cell: (row) => (
 				<Badge variant={row.role === "admin" ? "default" : "secondary"}>
 					{row.role}
@@ -144,16 +152,19 @@ export function UsersPanel() {
 		{
 			id: "created",
 			header: "Created",
+			className: "w-28",
 			cell: (row) => formatDate(row.createdAt),
 		},
 		{
 			id: "lastActive",
 			header: "Last active",
+			className: "w-28",
 			cell: (row) => formatDate(row.lastActiveAt),
 		},
 		{
 			id: "premium",
 			header: m["admin.users.premium.column"](),
+			className: "w-36",
 			cell: (row) => (
 				<div className="flex flex-col gap-1">
 					<Badge variant={row.premium ? "default" : "secondary"}>
@@ -174,29 +185,48 @@ export function UsersPanel() {
 		{
 			id: "actions",
 			header: m["admin.table.actions"](),
+			className: "w-28",
 			cell: (row) => (
-				<div className="flex gap-2">
-					<Button
-						type="button"
-						variant="outline"
-						size="sm"
-						onClick={() =>
-							setRoleTarget({
-								user: row,
-								nextRole: row.role === "admin" ? "user" : "admin",
-							})
-						}
-					>
-						{row.role === "admin" ? "Remove admin" : "Make admin"}
-					</Button>
-					<Button
-						type="button"
-						variant="outline"
-						size="sm"
-						onClick={() => openGrantDialog(row)}
-					>
-						{m["admin.users.premium.grantAction"]()}
-					</Button>
+				<div className="flex gap-1">
+					<Tooltip>
+						<TooltipTrigger asChild>
+							<Button
+								type="button"
+								variant="outline"
+								size="icon-sm"
+								aria-label={
+									row.role === "admin" ? "Remove admin" : "Make admin"
+								}
+								onClick={() =>
+									setRoleTarget({
+										user: row,
+										nextRole: row.role === "admin" ? "user" : "admin",
+									})
+								}
+							>
+								{row.role === "admin" ? <ShieldMinus /> : <ShieldPlus />}
+							</Button>
+						</TooltipTrigger>
+						<TooltipContent>
+							{row.role === "admin" ? "Remove admin" : "Make admin"}
+						</TooltipContent>
+					</Tooltip>
+					<Tooltip>
+						<TooltipTrigger asChild>
+							<Button
+								type="button"
+								variant="outline"
+								size="icon-sm"
+								aria-label={m["admin.users.premium.grantAction"]()}
+								onClick={() => openGrantDialog(row)}
+							>
+								<Crown />
+							</Button>
+						</TooltipTrigger>
+						<TooltipContent>
+							{m["admin.users.premium.grantAction"]()}
+						</TooltipContent>
+					</Tooltip>
 				</div>
 			),
 		},

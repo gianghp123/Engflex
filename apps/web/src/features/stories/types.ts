@@ -7,6 +7,7 @@ export interface StoriesSearch {
 	cefr?: "all" | CEFR;
 	topic?: string;
 	search?: string;
+	page?: number;
 }
 
 export interface StoryFilters {

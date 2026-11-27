@@ -49,9 +49,6 @@ export interface PreviewVideoCategories {
  * ListVideoExercises pages the video catalog. Pagination and the title /
  * description search come from the embedded common.ListParams; categoryId
  * and cefrLevel narrow the rows and mirror the response field names.
- * TODO: not yet wired into VideoExerciseController.List/Service/Repository
- * — CategoryID/CEFRLevel bind but are currently ignored server-side. Added
- * now so the contract/frontend shape exists; filtering lands separately.
  */
 export interface ListVideoExercises extends ListParams {
   categoryId?: string;
@@ -62,7 +59,6 @@ export interface CreateVideoExercise {
   title: string;
   description: string;
   videoUrl: string;
-  youtubeUrl: string;
   thumbnailUrl: string;
   cefrLevel?: CEFR;
   duration: number /* float64 */;
@@ -78,7 +74,6 @@ export interface UpdateVideoExercise {
   title: string;
   description: string;
   videoUrl: string;
-  youtubeUrl: string;
   thumbnailUrl: string;
   cefrLevel?: CEFR;
   duration: number /* float64 */;

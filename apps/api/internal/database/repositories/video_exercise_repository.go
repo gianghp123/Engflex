@@ -9,12 +9,23 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-// List/Count take onlyPublished so draft exercises never leak into a
-// non-admin page (filtered before LIMIT/OFFSET so pages and counts agree).
-// GetByID/GetDetail stay unfiltered; the service decides visibility for a
-// single fetch, same as vocabulary items/decks.
+// VideoExerciseFilter narrows List/Count. OnlyPublished keeps draft
+// exercises out of non-admin pages (filtered before LIMIT/OFFSET so pages
+// and counts agree); Search/CategoryID/CEFRLevel are all optional.
+type VideoExerciseFilter struct {
+	Search        string
+	CategoryID    string
+	CEFRLevel     string
+	OnlyPublished bool
+	Limit         int
+	Offset        int
+}
+
+// List/Count take a filter so draft exercises never leak into a non-admin
+// page. GetByID/GetDetail stay unfiltered; the service decides visibility
+// for a single fetch, same as vocabulary items/decks.
 type VideoExerciseRepository interface {
-	List(ctx context.Context, limit int, offset int, onlyPublished bool) ([]*models.VideoExercise, error)
+	List(ctx context.Context, f VideoExerciseFilter) ([]*models.VideoExercise, error)
 	GetByID(ctx context.Context, id string) (*models.VideoExercise, error)
 	GetByIDForUpdate(ctx context.Context, id string) (*models.VideoExercise, error)
 	// GetDetail returns the exercise with its category (one join) and its
@@ -23,7 +34,7 @@ type VideoExerciseRepository interface {
 	Create(ctx context.Context, lesson *models.VideoExercise) error
 	Update(ctx context.Context, lesson *models.VideoExercise) error
 	Delete(ctx context.Context, id string) error
-	Count(ctx context.Context, onlyPublished bool) (int64, error)
+	Count(ctx context.Context, f VideoExerciseFilter) (int64, error)
 	WithTx(tx *gorm.DB) VideoExerciseRepository
 }
 
@@ -38,18 +49,28 @@ func (r *videoExerciseRepository) WithTx(tx *gorm.DB) VideoExerciseRepository {
 	return &videoExerciseRepository{db: tx}
 }
 
-func visiblePublishedVideos(db *gorm.DB, onlyPublished bool) *gorm.DB {
-	if !onlyPublished {
-		return db
+func applyVideoExerciseFilters(db *gorm.DB, f VideoExerciseFilter) *gorm.DB {
+	if f.OnlyPublished {
+		db = db.Where("status = ?", enums.PublishStatusPublished)
 	}
-	return db.Where("status = ?", enums.PublishStatusPublished)
+	if f.Search != "" {
+		like := "%" + f.Search + "%"
+		db = db.Where("title ILIKE ? OR description ILIKE ?", like, like)
+	}
+	if f.CategoryID != "" {
+		db = db.Where("category_id = ?", f.CategoryID)
+	}
+	if f.CEFRLevel != "" {
+		db = db.Where("cefr_level = ?", f.CEFRLevel)
+	}
+	return db
 }
 
-func (r *videoExerciseRepository) List(ctx context.Context, limit int, offset int, onlyPublished bool) ([]*models.VideoExercise, error) {
+func (r *videoExerciseRepository) List(ctx context.Context, f VideoExerciseFilter) ([]*models.VideoExercise, error) {
 	lessons := make([]*models.VideoExercise, 0)
-	query := visiblePublishedVideos(r.db.WithContext(ctx), onlyPublished).Order("id asc")
-	if limit > 0 {
-		query = query.Limit(limit).Offset(offset)
+	query := applyVideoExerciseFilters(r.db.WithContext(ctx), f).Order("id asc")
+	if f.Limit > 0 {
+		query = query.Limit(f.Limit).Offset(f.Offset)
 	}
 	err := query.Find(&lessons).Error
 	if err != nil {
@@ -134,9 +155,9 @@ func (r *videoExerciseRepository) Delete(ctx context.Context, id string) error {
 	return nil
 }
 
-func (r *videoExerciseRepository) Count(ctx context.Context, onlyPublished bool) (int64, error) {
+func (r *videoExerciseRepository) Count(ctx context.Context, f VideoExerciseFilter) (int64, error) {
 	var count int64
-	query := visiblePublishedVideos(r.db.WithContext(ctx).Model(&models.VideoExercise{}), onlyPublished)
+	query := applyVideoExerciseFilters(r.db.WithContext(ctx).Model(&models.VideoExercise{}), f)
 	err := query.Count(&count).Error
 	if err != nil {
 		return 0, err

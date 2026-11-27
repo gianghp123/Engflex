@@ -127,13 +127,14 @@ export interface IeltsTakingContent {
   skill: ExamSkill;
   subType: ExamSubType;
   sections: IeltsTakingSection[];
-  assets: Asset[] | null;
+  assets: IeltsAsset[] | null;
 }
 export interface IeltsTakingSection {
   sectionNumber: number /* int */;
   title: string;
   passages: IeltsPassage[];
   questionGroups: IeltsTakingQuestionGroup[];
+  audioAssetId: string | null;
 }
 export interface IeltsPassage {
   id: string;
@@ -152,6 +153,7 @@ export interface IeltsTakingQuestionGroup {
   title: string | null;
   instructions: string | null;
   questions: IeltsTakingQuestion[];
+  context: IeltsContextBlock[] | null;
 }
 export interface IeltsTakingQuestion {
   id: string;
@@ -166,13 +168,15 @@ export interface IeltsReviewContent {
   skill: ExamSkill;
   subType: ExamSubType;
   sections: IeltsReviewSection[];
-  assets: Asset[] | null;
+  assets: IeltsAsset[] | null;
 }
 export interface IeltsReviewSection {
   sectionNumber: number /* int */;
   title: string;
   passages: IeltsPassage[];
   questionGroups: IeltsReviewQuestionGroup[];
+  audioAssetId: string | null;
+  transcript: IeltsParagraph[] | null;
 }
 export interface IeltsReviewQuestionGroup {
   id: string;
@@ -180,6 +184,7 @@ export interface IeltsReviewQuestionGroup {
   title: string | null;
   instructions: string | null;
   questions: IeltsReviewQuestion[];
+  context: IeltsContextBlock[] | null;
 }
 export interface IeltsReviewQuestion {
   id: string;
@@ -191,6 +196,22 @@ export interface IeltsReviewQuestion {
   correctAnswers: string[] | null;
   explanation: string | null;
   vietnameseExplanation: string | null;
+  sourceAnswer: string | null;
+}
+export interface IeltsAsset {
+  sourceId: string;
+  type: string;
+  sha256: string | null;
+  url: string | null;
+}
+export interface IeltsContextBlock {
+  tag: string;
+  text: string | null;
+  assetId: string | null;
+  alt: string | null;
+  colSpan: number /* int */ | null;
+  rowSpan: number /* int */ | null;
+  children: IeltsContextBlock[] | null;
 }
 
 //////////

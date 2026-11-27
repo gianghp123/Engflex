@@ -520,6 +520,11 @@ def save_json(path, value):
 
 def save_bundle(data, args):
     import httpx
+    from study4_ielts_source import source_skill
+
+    ielts_skill = source_skill(data)
+    if ielts_skill and getattr(args, "minio", False):
+        raise ValueError("IELTS crawl requires --no-minio; named IELTS publishing is not implemented")
 
     source = urlsplit(data.get("source", {}).get("url", ""))
     match = re.match(r"^/tests/(\d+)(?:/|$)", source.path)
@@ -549,7 +554,7 @@ def save_bundle(data, args):
         "runId": run_id,
         "assetRoot": "../..",
         "status": "downloading",
-        "objectKeyPattern": "exams/toeic/{sha256}",
+        "objectKeyPattern": "ielts/<category-slug>/<test-slug>/{audio,images}/<filename>" if ielts_skill else "exams/toeic/{sha256}",
         "minioBucket": minio_bucket,
         "assets": [],
     }
@@ -569,6 +574,8 @@ def save_bundle(data, args):
                     keep_local_media=keep_local,
                     suggested_name=asset_name_map.get(asset["id"]),
                 )
+                if ielts_skill:
+                    entry.pop("minioKey", None)
                 if minio_client:
                     print(
                         f"Uploaded {asset['id']} -> MinIO [{minio_bucket}] {entry['minioKey']} ({entry['bytes']} bytes)"
@@ -686,6 +693,11 @@ async def export_single_test(session, target_url, args, tab_index=None):
 
 def validate_exam_export(data):
     """An archived DOM is not a successful full-test crawl until coverage is checked."""
+    from study4_ielts_source import source_skill, validate_ielts_export
+
+    if source_skill(data):
+        validate_ielts_export(data)
+        return
     from study4_content import exam_items
 
     exam_items(data)

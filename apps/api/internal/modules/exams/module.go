@@ -20,6 +20,7 @@ func RegisterRoutes(rg *gin.RouterGroup, db *gorm.DB, llmCfg config.LLMConfig, a
 	attempts := repositories.NewAttemptRepository(db)
 	ctl := controllers.NewExamController(services.NewCatalogService(categories, tests), services.NewAttemptService(attempts, tests, repositories.NewTransactionManager(db)))
 	rg.GET("/exam-categories", middleware.RequireAuth(), ctl.ListCategories)
+	rg.POST("/exam-categories", middleware.RequireAuth(), ctl.CreateCategory)
 	rg.GET("/exam-categories/:categoryId/tests", middleware.RequireAuth(), ctl.ListTests)
 	rg.GET("/exam-tests/:id", middleware.RequireAuth(), ctl.GetTest)
 	rg.POST("/exam-tests/:id/attempts", middleware.RequireAuth(), ctl.Start)

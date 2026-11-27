@@ -74,4 +74,7 @@ type PronounceResult struct {
 	ModelCurve       []float64           `json:"model_curve"`
 	LearnerCurve     []float64           `json:"learner_curve"`
 	ReferencePhones  []ReferencePhone    `json:"reference_phones"`
+	// Feedback is the container's own canned coaching line (English, template
+	// text keyed off the flagged words) — passed through as-is, not rebuilt.
+	Feedback string `json:"feedback"`
 }

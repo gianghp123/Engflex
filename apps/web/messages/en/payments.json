@@ -13,9 +13,20 @@
         "12m": "12 months"
       },
       "perMonth": "{amount}/month",
-      "cta": "Pay with VNPay",
-      "redirecting": "Redirecting to VNPay...",
-      "checkoutError": "Couldn't start checkout. Please try again."
+      "cta": "Upgrade now",
+      "checkoutError": "Couldn't start checkout. Please try again.",
+      "sepay": {
+        "title": "Scan to pay",
+        "body": "Scan this QR code with your banking app, or transfer manually using the details below.",
+        "succeeded": "Payment received — your account is now Premium.",
+        "waiting": "Waiting for payment...",
+        "done": "Done",
+        "bank": "Bank",
+        "account": "Account number",
+        "holder": "Account holder",
+        "amount": "Amount",
+        "content": "Transfer content (required)"
+      }
     },
     "return": {
       "crumb": "Payment result",

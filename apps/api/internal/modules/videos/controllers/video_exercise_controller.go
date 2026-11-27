@@ -134,13 +134,21 @@ func (h *VideoExerciseController) GetByID(c *gin.Context) {
 //	@Produce		json
 //	@Param			page		query		int													false	"Page number (1-based)"	default(1)
 //	@Param			pageSize	query		int													false	"Page size"				default(20)
+//	@Param			search		query		string												false	"title/description search"
+//	@Param			categoryId	query		string												false	"category id"
+//	@Param			cefrLevel	query		string												false	"CEFR level (A1, A2, B1, B2, C1, C2)"
 //	@Success		200			{object}	common.ApiResponse{data=[]responses.VideoExerciseResponse}	"Lessons retrieved successfully"
 //	@Failure		500			{object}	common.ApiResponse									"Internal server error"
 //	@Router			/video-exercises [get]
 func (h *VideoExerciseController) List(c *gin.Context) {
+	var req requests.ListVideoExercises
+	if err := c.ShouldBindQuery(&req); err != nil {
+		common.Fail(c, common.BadRequest(err.Error()))
+		return
+	}
 	page, pageSize := utils.ParsePagination(c)
 	offset := utils.Offset(page, pageSize)
-	lessons, total, err := h.service.List(c.Request.Context(), pageSize, offset, middleware.Role(c) == enums.UserRoleAdmin)
+	lessons, total, err := h.service.List(c.Request.Context(), req, pageSize, offset, middleware.Role(c) == enums.UserRoleAdmin)
 	if err != nil {
 		common.Fail(c, err)
 		return

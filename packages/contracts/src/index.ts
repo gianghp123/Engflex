@@ -68,6 +68,7 @@ export * from './conversations-responses.ts';
 export * from './vocabulary-requests.ts';
 export * from './vocabulary-responses.ts';
 export type {
+  CreateCategory as CreateExamCategory,
   PatchAttempt as PatchExamAttempt,
   StartAttempt as StartExamAttempt,
   Answer as ExamAnswer,
@@ -89,6 +90,8 @@ export type {
   IeltsTakingSection,
   IeltsPassage,
   IeltsParagraph,
+  IeltsAsset,
+  IeltsContextBlock,
   IeltsTakingQuestionGroup,
   IeltsTakingQuestion,
   IeltsReviewContent,

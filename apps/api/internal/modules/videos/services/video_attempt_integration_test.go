@@ -46,6 +46,7 @@ func TestDictationAttemptPostgres(t *testing.T) {
 		repositories.NewVideoExerciseRepository(db),
 		repositories.NewVideoTranscriptRepository(db),
 		repositories.NewTransactionManager(db),
+		nil,
 		paymentservices.NewSubscriptionService(
 			repositories.NewSubscriptionRepository(db), repositories.NewPlanRepository(db)),
 	)
@@ -57,7 +58,7 @@ func TestDictationAttemptPostgres(t *testing.T) {
 	var starts sync.WaitGroup
 	for i := range attempts {
 		starts.Go(func() {
-			attempts[i], startErrors[i] = svc.StartAttempt(ctx, user, video.ID, start.Type, start)
+			attempts[i], startErrors[i] = svc.StartAttempt(ctx, user, video.ID, start.Type, start, false)
 		})
 	}
 	starts.Wait()
@@ -132,7 +133,7 @@ func TestDictationAttemptPostgres(t *testing.T) {
 	requireStatus(err, http.StatusNotFound)
 
 	level := "normal"
-	scored, err := svc.StartAttempt(ctx, user, video.ID, start.Type, requests.StartVideoAttempt{Type: start.Type, Level: &level})
+	scored, err := svc.StartAttempt(ctx, user, video.ID, start.Type, requests.StartVideoAttempt{Type: start.Type, Level: &level}, false)
 	require.NoError(t, err)
 	require.NotEqual(t, id, scored.ID)
 	easy := "easy"

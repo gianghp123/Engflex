@@ -9,11 +9,12 @@ import (
 )
 
 type StoryFilter struct {
-	CEFR   string
-	Topic  string
-	Search string
-	Limit  int
-	Offset int
+	CEFR          string
+	Topic         string
+	Search        string
+	OnlyPublished bool
+	Limit         int
+	Offset        int
 }
 
 type StoryRepository interface {
@@ -22,7 +23,15 @@ type StoryRepository interface {
 	GetByID(ctx context.Context, id string) (*models.Story, error)
 	GetBySlug(ctx context.Context, slug string) (*models.Story, error)
 	Create(ctx context.Context, s *models.Story) error
+	Update(ctx context.Context, s *models.Story) error
+	Delete(ctx context.Context, id string) error
 	ListTopics(ctx context.Context) ([]string, error)
+	// ReplaceSentences swaps a story's entire sentence timeline: admin-pasted
+	// JSON has no concept of "which rows changed", so every save is a full
+	// replace rather than a diff. Call through WithTx — the delete and the
+	// batch insert must commit together or a mid-save failure could leave a
+	// story with no sentences at all.
+	ReplaceSentences(ctx context.Context, storyID string, sentences []*models.StorySentence) error
 	WithTx(tx *gorm.DB) StoryRepository
 }
 
@@ -48,6 +57,9 @@ func applyStoryFilters(q *gorm.DB, f StoryFilter) *gorm.DB {
 	if f.Search != "" {
 		like := "%" + f.Search + "%"
 		q = q.Where("title ILIKE ? OR title_vietnamese ILIKE ?", like, like)
+	}
+	if f.OnlyPublished {
+		q = q.Where("status = ?", "published")
 	}
 	return q
 }
@@ -105,6 +117,30 @@ func (r *storyRepository) GetBySlug(ctx context.Context, slug string) (*models.S
 
 func (r *storyRepository) Create(ctx context.Context, s *models.Story) error {
 	return r.db.WithContext(ctx).Create(s).Error
+}
+
+func (r *storyRepository) Update(ctx context.Context, s *models.Story) error {
+	return r.db.WithContext(ctx).Save(s).Error
+}
+
+func (r *storyRepository) Delete(ctx context.Context, id string) error {
+	if _, err := parseID(id, "id"); err != nil {
+		return err
+	}
+	return r.db.WithContext(ctx).Delete(&models.Story{}, "id = ?", id).Error
+}
+
+func (r *storyRepository) ReplaceSentences(ctx context.Context, storyID string, sentences []*models.StorySentence) error {
+	if err := r.db.WithContext(ctx).Where("story_id = ?", storyID).Delete(&models.StorySentence{}).Error; err != nil {
+		return err
+	}
+	if len(sentences) == 0 {
+		return nil
+	}
+	for _, sentence := range sentences {
+		sentence.StoryID = storyID
+	}
+	return r.db.WithContext(ctx).Create(&sentences).Error
 }
 
 func (r *storyRepository) ListTopics(ctx context.Context) ([]string, error) {

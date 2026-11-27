@@ -15,6 +15,7 @@ import {
 	deleteLessonActivity,
 	deleteLessonSection,
 	getAdminLessonActivity,
+	type LessonHubFilters,
 	listLessonActivities,
 	listLessonHub,
 	listLessonSections,
@@ -24,7 +25,8 @@ import {
 } from "#/features/admin/lessons/service";
 
 const keys = {
-	hub: ["admin", "lessons"] as const,
+	hubBase: ["admin", "lessons"] as const,
+	hub: (filters: LessonHubFilters) => ["admin", "lessons", filters] as const,
 	sections: ["admin", "lesson-sections"] as const,
 	activities: (lessonId: string) =>
 		["admin", "lesson-activities", lessonId] as const,
@@ -36,12 +38,15 @@ function useInvalidate(key: readonly unknown[]) {
 	return () => queryClient.invalidateQueries({ queryKey: key });
 }
 
-export function useAdminLessonHub() {
-	return useQuery({ queryKey: keys.hub, queryFn: () => listLessonHub() });
+export function useAdminLessonHub(filters: LessonHubFilters = {}) {
+	return useQuery({
+		queryKey: keys.hub(filters),
+		queryFn: () => listLessonHub(filters),
+	});
 }
 
 export function useCreateLesson() {
-	const invalidate = useInvalidate(keys.hub);
+	const invalidate = useInvalidate(keys.hubBase);
 	return useMutation({
 		mutationFn: (payload: CreateLesson) => createLesson(payload),
 		onSuccess: invalidate,
@@ -49,7 +54,7 @@ export function useCreateLesson() {
 }
 
 export function useUpdateLesson() {
-	const invalidate = useInvalidate(keys.hub);
+	const invalidate = useInvalidate(keys.hubBase);
 	return useMutation({
 		mutationFn: ({ id, payload }: { id: string; payload: UpdateLesson }) =>
 			updateLesson(id, payload),
@@ -58,7 +63,7 @@ export function useUpdateLesson() {
 }
 
 export function useDeleteLesson() {
-	const invalidate = useInvalidate(keys.hub);
+	const invalidate = useInvalidate(keys.hubBase);
 	return useMutation({
 		mutationFn: (id: string) => deleteLesson(id),
 		onSuccess: invalidate,

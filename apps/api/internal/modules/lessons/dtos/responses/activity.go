@@ -120,6 +120,7 @@ type PronunciationResult struct {
 	ModelCurve       []float64           `json:"modelCurve"`
 	LearnerCurve     []float64           `json:"learnerCurve"`
 	ReferencePhones  []ReferencePhone    `json:"referencePhones"`
+	Feedback         string              `json:"feedback"`
 }
 
 // Activity is one ordered lesson part. Exactly one payload pointer is set,

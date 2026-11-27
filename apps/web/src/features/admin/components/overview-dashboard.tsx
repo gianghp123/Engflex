@@ -27,7 +27,7 @@ export function AdminOverview() {
 	});
 	const lessons = useQuery({
 		queryKey: ["admin", "lessons"],
-		queryFn: listLessonHub,
+		queryFn: () => listLessonHub(),
 		...options,
 	});
 	const videos = useQuery({

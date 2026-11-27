@@ -23,14 +23,14 @@ import (
 // scenario Details bug (copier silently zeroes a Scanner/Valuer-backed
 // nested field instead of erroring).
 func TestLessonService_Create_MapsDetailsAndStartsDraft(t *testing.T) {
-	_, secMock, lessonMock := setupLesson(t)
+	_, secMock, lessonMock, _ := setupLesson(t)
 	duration := 12
 	lessonMock.On("Create", mock.Anything, mock.MatchedBy(func(m *models.Lesson) bool {
 		return m.Status == enums.PublishStatusDraft &&
 			m.Details.CoverImageURL == "https://example.com/cover.png" &&
 			m.Details.EstimatedDurationMin != nil && *m.Details.EstimatedDurationMin == 12
 	})).Return(nil).Once()
-	svc := services.NewLessonService(secMock, lessonMock, fakePremiumChecker{})
+	svc := services.NewLessonService(secMock, lessonMock, mocks.NewMockAttemptRepository(t), fakePremiumChecker{})
 
 	_, err := svc.Create(context.Background(), requests.CreateLesson{
 		Slug: "unit-1", Title: "Unit 1",
@@ -47,13 +47,13 @@ func TestLessonService_Create_MapsDetailsAndStartsDraft(t *testing.T) {
 
 func TestLessonService_Update_PublishesOnExplicitStatus(t *testing.T) {
 	lessonID := "11111111-1111-1111-1111-111111111111"
-	_, secMock, lessonMock := setupLesson(t)
+	_, secMock, lessonMock, _ := setupLesson(t)
 	lessonMock.On("GetByID", mock.Anything, lessonID).
 		Return(&models.Lesson{ID: lessonID, Status: enums.PublishStatusDraft}, nil).Once()
 	lessonMock.On("Update", mock.Anything, mock.MatchedBy(func(m *models.Lesson) bool {
 		return m.Status == enums.PublishStatusPublished
 	})).Return(nil).Once()
-	svc := services.NewLessonService(secMock, lessonMock, fakePremiumChecker{})
+	svc := services.NewLessonService(secMock, lessonMock, mocks.NewMockAttemptRepository(t), fakePremiumChecker{})
 
 	published := enums.PublishStatusPublished
 	_, err := svc.Update(context.Background(), lessonID, requests.UpdateLesson{Status: &published})

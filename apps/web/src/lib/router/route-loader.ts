@@ -21,9 +21,16 @@ import { ApiError } from "../api/api";
  * sign-in page bounces an active session straight back with fresh
  * credentials, which heals both cases with no error page.
  *
- * Retries exclude control flow: 404 settles instantly to notFound, 401 to
- * the redirect; real failures (timeouts, 500s, down API) retry with the
- * default backoff (~7s worst case for 3) before the retryable error page.
+ * A 403 becomes a pricing-page redirect instead of a crash. Every premium-
+ * gated detail fetch (lessons, videos, stories, vocabulary, scenarios) can
+ * 403 a free user who reached the URL directly — a bookmark, a shared
+ * link, or a stale card — rather than through a card that already checked
+ * `useCanAccessPremium()` client-side first. Redirecting here closes that
+ * gap uniformly instead of requiring every route to handle it.
+ *
+ * Retries exclude control flow: 404 settles instantly to notFound, 401/403
+ * to their redirects; real failures (timeouts, 500s, down API) retry with
+ * the default backoff (~7s worst case for 3) before the retryable error page.
  */
 export async function loadOr404<T, TKey extends readonly unknown[]>(
 	queryClient: QueryClient,
@@ -35,7 +42,7 @@ export async function loadOr404<T, TKey extends readonly unknown[]>(
 			retry: (failureCount: number, error: unknown) =>
 				!(
 					error instanceof ApiError &&
-					(error.status === 404 || error.status === 401)
+					(error.status === 404 || error.status === 401 || error.status === 403)
 				) && failureCount < 3,
 		});
 	} catch (error) {
@@ -44,6 +51,9 @@ export async function loadOr404<T, TKey extends readonly unknown[]>(
 		}
 		if (error instanceof ApiError && error.status === 401) {
 			throw redirect({ href: APP_ROUTES.AUTH.SIGN_IN });
+		}
+		if (error instanceof ApiError && error.status === 403) {
+			throw redirect({ href: APP_ROUTES.PAYMENTS.PRICING });
 		}
 		throw error;
 	}

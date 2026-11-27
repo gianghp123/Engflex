@@ -1,4 +1,5 @@
 import type { Plan } from "@engflex/contracts";
+import { Pencil } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Badge } from "#/components/ui/badge";
@@ -6,6 +7,11 @@ import { Button } from "#/components/ui/button";
 import { Field, FieldLabel } from "#/components/ui/field";
 import { Input } from "#/components/ui/input";
 import { Switch } from "#/components/ui/switch";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger,
+} from "#/components/ui/tooltip";
 import {
 	DataTable,
 	type DataTableColumn,
@@ -80,11 +86,13 @@ export function PlansPanel() {
 		{
 			id: "months",
 			header: m["admin.premium.plans.months"](),
+			className: "w-24",
 			cell: (row) => row.months,
 		},
 		{
 			id: "amount",
 			header: m["admin.premium.plans.amount"](),
+			className: "w-32",
 			cell: (row) =>
 				new Intl.NumberFormat("vi-VN", {
 					style: "currency",
@@ -94,6 +102,7 @@ export function PlansPanel() {
 		{
 			id: "isActive",
 			header: m["admin.table.status"](),
+			className: "w-28",
 			cell: (row) => (
 				<Badge variant={row.isActive ? "default" : "secondary"}>
 					{row.isActive
@@ -105,15 +114,22 @@ export function PlansPanel() {
 		{
 			id: "actions",
 			header: m["admin.table.actions"](),
+			className: "w-20",
 			cell: (row) => (
-				<Button
-					type="button"
-					variant="outline"
-					size="sm"
-					onClick={() => openEdit(row)}
-				>
-					{m["admin.actions.edit"]()}
-				</Button>
+				<Tooltip>
+					<TooltipTrigger asChild>
+						<Button
+							type="button"
+							variant="outline"
+							size="icon-sm"
+							aria-label={m["admin.actions.edit"]()}
+							onClick={() => openEdit(row)}
+						>
+							<Pencil />
+						</Button>
+					</TooltipTrigger>
+					<TooltipContent>{m["admin.actions.edit"]()}</TooltipContent>
+				</Tooltip>
 			),
 		},
 	];

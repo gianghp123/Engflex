@@ -49,7 +49,7 @@ func TestLessonService_GetDetail(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			svc, _, lessonMock := setupLesson(t)
+			svc, _, lessonMock, _ := setupLesson(t)
 			tt.setupMock(lessonMock)
 
 			id := lessonID
@@ -98,7 +98,7 @@ func TestLessonService_GetDetailBySlug(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			svc, _, lessonMock := setupLesson(t)
+			svc, _, lessonMock, _ := setupLesson(t)
 			tt.setupMock(lessonMock)
 
 			res, err := svc.GetDetailBySlug(context.Background(), tt.slug, "user_1", false)
@@ -122,7 +122,7 @@ func TestLessonService_GetDetail_DraftVisibility(t *testing.T) {
 	draft := &models.Lesson{ID: lessonID, Status: enums.PublishStatusDraft}
 
 	t.Run("hidden from non-admin", func(t *testing.T) {
-		svc, _, lessonMock := setupLesson(t)
+		svc, _, lessonMock, _ := setupLesson(t)
 		lessonMock.On("GetDetail", mock.Anything, lessonID).Return(draft, nil)
 
 		res, err := svc.GetDetail(context.Background(), lessonID, "user_1", false)
@@ -131,7 +131,7 @@ func TestLessonService_GetDetail_DraftVisibility(t *testing.T) {
 	})
 
 	t.Run("visible to admin", func(t *testing.T) {
-		svc, _, lessonMock := setupLesson(t)
+		svc, _, lessonMock, _ := setupLesson(t)
 		lessonMock.On("GetDetail", mock.Anything, lessonID).Return(draft, nil)
 
 		res, err := svc.GetDetail(context.Background(), lessonID, "admin_1", true)
@@ -150,7 +150,7 @@ func TestLessonService_GetDetail_PremiumGating(t *testing.T) {
 	premiumLesson := &models.Lesson{ID: lessonID, Status: enums.PublishStatusPublished, IsPremium: true}
 
 	t.Run("blocked for non-premium caller", func(t *testing.T) {
-		svc, _, lessonMock := setupLessonWithPremium(t, false)
+		svc, _, lessonMock, _ := setupLessonWithPremium(t, false)
 		lessonMock.On("GetDetail", mock.Anything, lessonID).Return(premiumLesson, nil)
 
 		res, err := svc.GetDetail(context.Background(), lessonID, "user_1", false)
@@ -159,7 +159,7 @@ func TestLessonService_GetDetail_PremiumGating(t *testing.T) {
 	})
 
 	t.Run("allowed for premium caller", func(t *testing.T) {
-		svc, _, lessonMock := setupLessonWithPremium(t, true)
+		svc, _, lessonMock, _ := setupLessonWithPremium(t, true)
 		lessonMock.On("GetDetail", mock.Anything, lessonID).Return(premiumLesson, nil)
 
 		res, err := svc.GetDetail(context.Background(), lessonID, "user_1", false)
@@ -168,7 +168,7 @@ func TestLessonService_GetDetail_PremiumGating(t *testing.T) {
 	})
 
 	t.Run("admin bypasses the premium check", func(t *testing.T) {
-		svc, _, lessonMock := setupLessonWithPremium(t, false)
+		svc, _, lessonMock, _ := setupLessonWithPremium(t, false)
 		lessonMock.On("GetDetail", mock.Anything, lessonID).Return(premiumLesson, nil)
 
 		res, err := svc.GetDetail(context.Background(), lessonID, "admin_1", true)

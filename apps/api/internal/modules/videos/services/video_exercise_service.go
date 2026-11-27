@@ -13,7 +13,7 @@ import (
 )
 
 type VideoExerciseService interface {
-	List(ctx context.Context, limit int, offset int, isAdmin bool) ([]*models.VideoExercise, int64, error)
+	List(ctx context.Context, req requests.ListVideoExercises, limit int, offset int, isAdmin bool) ([]*models.VideoExercise, int64, error)
 	GetByID(ctx context.Context, id, userID string, isAdmin bool) (*models.VideoExercise, error)
 	Create(ctx context.Context, req requests.CreateVideoExercise) (*models.VideoExercise, error)
 	Update(ctx context.Context, id string, req requests.UpdateVideoExercise) (*models.VideoExercise, error)
@@ -29,14 +29,26 @@ func NewVideoExerciseService(repo repositories.VideoExerciseRepository, premium 
 	return &videoExerciseService{repo: repo, premium: premium}
 }
 
-func (s *videoExerciseService) List(ctx context.Context, limit, offset int, isAdmin bool) ([]*models.VideoExercise, int64, error) {
-	lessons, err := s.repo.List(ctx, limit, offset, !isAdmin)
+func (s *videoExerciseService) List(ctx context.Context, req requests.ListVideoExercises, limit, offset int, isAdmin bool) ([]*models.VideoExercise, int64, error) {
+	f := repositories.VideoExerciseFilter{
+		Search:        req.Search,
+		OnlyPublished: !isAdmin,
+		Limit:         limit,
+		Offset:        offset,
+	}
+	if req.CategoryID != nil {
+		f.CategoryID = *req.CategoryID
+	}
+	if req.CEFRLevel != nil {
+		f.CEFRLevel = string(*req.CEFRLevel)
+	}
+	lessons, err := s.repo.List(ctx, f)
 	if err != nil {
 		appErr := common.FromDBError(err, "video exercise")
 		logger.Report(ctx, "failed to list video exercises", appErr)
 		return nil, 0, appErr
 	}
-	total, err := s.repo.Count(ctx, !isAdmin)
+	total, err := s.repo.Count(ctx, f)
 	if err != nil {
 		appErr := common.FromDBError(err, "video exercise")
 		logger.Report(ctx, "failed to count video exercises", appErr)

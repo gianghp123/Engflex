@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { isIeltsMediaKey } from "#/features/exams/ielts/media";
 import { isToeicMediaKey } from "#/features/exams/media-key";
 
 const MINIO_INTERNAL =
@@ -8,11 +9,11 @@ const MEDIA_BUCKET = process.env.MEDIA_BUCKET?.trim() || "lesson-audio";
 /**
  * Same-origin media forward for every lesson-media object (audio today,
  * any content-type tomorrow — nothing here is audio-specific). Lesson media
- * uses MEDIA_BUCKET. Story objects use the stories bucket. The fixed toeic bucket exposes only its image/audio
- * folders; full exam JSON stays private. Range requests
- * are forwarded and 206s passed through verbatim (`<audio>`/`<video>`
- * seeking breaks otherwise). No auth: posture identical to today's
- * anonymous media reads; pages stay gated.
+ * uses MEDIA_BUCKET. Story objects use the stories bucket. The fixed
+ * toeic/ielts buckets expose only their image/audio folders; full exam JSON
+ * stays private. Range requests are forwarded and 206s passed through
+ * verbatim (`<audio>`/`<video>` seeking breaks otherwise). No auth: posture
+ * identical to today's anonymous media reads; pages stay gated.
  */
 export const Route = createFileRoute("/api/media/$")({
 	server: {
@@ -23,12 +24,23 @@ export const Route = createFileRoute("/api/media/$")({
 					return Response.json({ message: "bad media key" }, { status: 404 });
 				}
 				const toeic = key.startsWith("toeic/");
+				const ielts = key.startsWith("ielts/");
+				if (ielts && !isIeltsMediaKey(key)) {
+					return Response.json({ message: "bad media key" }, { status: 404 });
+				}
 				if (toeic && !isToeicMediaKey(key)) {
 					return Response.json({ message: "bad media key" }, { status: 404 });
 				}
 				const stories = key.startsWith("stories/");
-				const bucket = toeic ? "toeic" : stories ? "stories" : MEDIA_BUCKET;
-				const objectKey = toeic || stories ? key.slice(bucket.length + 1) : key;
+				const bucket = toeic
+					? "toeic"
+					: ielts
+						? "ielts"
+						: stories
+							? "stories"
+							: MEDIA_BUCKET;
+				const objectKey =
+					toeic || ielts || stories ? key.slice(bucket.length + 1) : key;
 				const object = objectKey.split("/").map(encodeURIComponent).join("/");
 				const range = request.headers.get("range");
 				let upstream: Response;

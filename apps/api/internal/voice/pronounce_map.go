@@ -48,6 +48,7 @@ type containerAssessment struct {
 	Transcribe       string               `json:"transcribe"`
 	Differences      containerDifferences `json:"differences"`
 	Prosody          containerProsody     `json:"prosody"`
+	Feedback         string               `json:"feedback"`
 }
 
 // containerPhonemes is the raw POST /phonemes reply: the token each word owns.
@@ -154,5 +155,6 @@ func mapContainerAssessment(assessmentRaw, phonemesRaw []byte) (*responses.Prono
 		ModelCurve:      downsampleCurve(diffs.ExpectedVector),
 		LearnerCurve:    downsampleCurve(diffs.TranscribedVector),
 		ReferencePhones: groupReferencePhones(phonemes.Phonemes, phonemes.Words),
+		Feedback:        assessment.Feedback,
 	}, nil
 }

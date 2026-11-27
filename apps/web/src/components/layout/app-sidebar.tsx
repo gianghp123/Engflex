@@ -41,6 +41,7 @@ import {
 	SidebarMenuSubItem,
 	useSidebar,
 } from "#/components/ui/sidebar";
+import { useCanAccessPremium } from "#/features/payments/queries";
 import { useProfile } from "#/features/profiles/queries";
 import { AccountButton } from "#/integrations/clerk/account-button";
 import { isAdminClaims } from "#/lib/roles";
@@ -148,6 +149,10 @@ export function AppSidebar() {
 	});
 	const { sessionClaims } = useAuth();
 	const isAdmin = isAdminClaims(sessionClaims);
+	// The Premium entry is an upsell, so it retires once there is nothing
+	// left to sell: a subscriber (or an admin, who gets the same access)
+	// only ever lands on the pricing page by mistake.
+	const isPremium = useCanAccessPremium();
 
 	return (
 		<Sidebar collapsible="icon">
@@ -203,14 +208,19 @@ export function AppSidebar() {
 							</SidebarMenuButton>
 						</SidebarMenuItem>
 					) : null}
-					<SidebarMenuItem>
-						<SidebarMenuButton asChild tooltip={m["payments.pricing.crumb"]()}>
-							<Link to={APP_ROUTES.PAYMENTS.PRICING} className="font-medium">
-								<Sparkles data-icon="inline-start" />
-								<span>{m["payments.pricing.crumb"]()}</span>
-							</Link>
-						</SidebarMenuButton>
-					</SidebarMenuItem>
+					{isPremium ? null : (
+						<SidebarMenuItem>
+							<SidebarMenuButton
+								asChild
+								tooltip={m["payments.pricing.crumb"]()}
+							>
+								<Link to={APP_ROUTES.PAYMENTS.PRICING} className="font-medium">
+									<Sparkles data-icon="inline-start" />
+									<span>{m["payments.pricing.crumb"]()}</span>
+								</Link>
+							</SidebarMenuButton>
+						</SidebarMenuItem>
+					)}
 					<SidebarMenuItem>
 						<SidebarMenuButton asChild tooltip={m["about.crumb"]()}>
 							<Link to={APP_ROUTES.ABOUT} className="font-medium">

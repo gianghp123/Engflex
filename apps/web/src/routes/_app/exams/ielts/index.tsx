@@ -47,9 +47,6 @@ function IeltsHubPage() {
 	const [subTypeFilter, setSubTypeFilter] = useState<
 		"all" | "academic" | "general_training"
 	>("all");
-	const [skillFilter, setSkillFilter] = useState<
-		"all" | "reading" | "listening"
-	>("all");
 
 	const {
 		data: categories,
@@ -106,26 +103,6 @@ function IeltsHubPage() {
 					{m["exams.ielts.hub.filterGeneral"]()}
 				</Button>
 				<div className="mx-2 h-4 w-px bg-border/80" />
-				<Button
-					variant={skillFilter === "reading" ? "secondary" : "ghost"}
-					size="sm"
-					onClick={() =>
-						setSkillFilter(skillFilter === "reading" ? "all" : "reading")
-					}
-					className="rounded-full"
-				>
-					{m["exams.ielts.hub.filterReading"]()}
-				</Button>
-				<Button
-					variant={skillFilter === "listening" ? "secondary" : "ghost"}
-					size="sm"
-					onClick={() =>
-						setSkillFilter(skillFilter === "listening" ? "all" : "listening")
-					}
-					className="rounded-full"
-				>
-					{m["exams.ielts.hub.filterListening"]()}
-				</Button>
 			</div>
 
 			{isLoading ? (
